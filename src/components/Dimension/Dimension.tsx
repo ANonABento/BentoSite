@@ -34,6 +34,7 @@ import {
   ModelInfoDisplay,
   ModelSelector, 
   ControlPanel, 
+  CameraPresetsWidget,
   LoadingSpinner, 
   LoadingProgress, 
   ErrorMessage 
@@ -89,7 +90,7 @@ export default function DimensionViewer() {
     setRetryCount(prev => prev + 1);
   };
 
-  // Phase 1.7: Screenshot functionality
+  // Screenshot functionality
   const handleScreenshot = useCallback(() => {
     try {
       const canvas = canvasRef.current;
@@ -119,7 +120,7 @@ export default function DimensionViewer() {
     }
   }, [selectedModel.name]);
 
-  // Phase 1.7: Fullscreen functionality
+  // Fullscreen functionality
   const handleFullscreen = useCallback(() => {
     const container = document.querySelector('.dimension-viewer-container') as HTMLElement;
     if (!container) return;
@@ -145,71 +146,16 @@ export default function DimensionViewer() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  // Phase 1.7: Camera preset functionality
-  const handleCameraPreset = useCallback((preset: keyof typeof CAMERA_PRESETS) => {
+  // Camera preset functionality
+  const handleCameraPreset = useCallback((preset: string) => {
     if (controlsRef.current && controlsRef.current.object) {
-      const position = CAMERA_PRESETS[preset];
-      controlsRef.current.object.position.set(...position);
-      controlsRef.current.update();
-      setShowCameraPresets(false);
+      const position = CAMERA_PRESETS[preset as keyof typeof CAMERA_PRESETS];
+      if (position) {
+        controlsRef.current.object.position.set(...position);
+        controlsRef.current.update();
+      }
     }
   }, []);
-
-  // Phase 1.7: 360° view export
-  const handle360Export = useCallback(async () => {
-    if (!controlsRef.current || !canvasRef.current) return;
-
-    const canvas = canvasRef.current;
-    const originalPosition = controlsRef.current.object.position.clone();
-    const images: string[] = [];
-    
-    try {
-      // Capture 36 images (every 10 degrees)
-      for (let i = 0; i < 36; i++) {
-        const angle = (i * 10) * (Math.PI / 180);
-        const radius = 10;
-        
-        // Position camera in a circle
-        controlsRef.current.object.position.set(
-          Math.cos(angle) * radius,
-          0,
-          Math.sin(angle) * radius
-        );
-        controlsRef.current.update();
-        
-        // Small delay to ensure rendering is complete
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Capture image
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const url = URL.createObjectURL(blob);
-            images.push(url);
-          }
-        }, 'image/png');
-      }
-      
-      // Restore original position
-      controlsRef.current.object.position.copy(originalPosition);
-      controlsRef.current.update();
-      
-      // Create download link for the first image (as example)
-      // In a full implementation, you'd create a ZIP file with all images
-      if (images.length > 0) {
-        const link = document.createElement('a');
-        link.href = images[0];
-        link.download = `${selectedModel.name.replace(/[^a-z0-9]/gi, '_')}_360_frame_01.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Clean up URLs
-        images.forEach(url => URL.revokeObjectURL(url));
-      }
-    } catch (error) {
-      console.error('360 export failed:', error);
-    }
-  }, [selectedModel.name]);
 
   // Event handlers
   const handleModelClick = () => {
@@ -242,7 +188,7 @@ export default function DimensionViewer() {
     setShowModelInfo(true);
   };
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts (removed 360 export)
   useKeyboardShortcuts({
     onResetView: handleResetView,
     onToggleAutoRotate: () => {
@@ -255,7 +201,6 @@ export default function DimensionViewer() {
     onToggleFullscreen: handleFullscreen,
     onZoomFit: handleZoomFit,
     onCameraPresets: () => setShowCameraPresets(!showCameraPresets),
-    on360Export: handle360Export,
   });
 
   // Touch gestures for pinch zoom
@@ -269,7 +214,7 @@ export default function DimensionViewer() {
 
   return (
     <div className={`w-full h-full bg-zinc-700 relative ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
-      {/* Model Selector Modal - Phase 1.6 */}
+      {/* Model Selector Modal */}
       {showModelSelector && (
         <ModelSelector
           models={AVAILABLE_MODELS}
@@ -366,7 +311,7 @@ export default function DimensionViewer() {
         </React.Suspense>
       )}
       
-      {/* Model Info Display - Phase 1.6 */}
+      {/* Model Info Display */}
       {showModelInfo && !error && (
         <ModelInfoDisplay model={selectedModel} isMobile={isMobile} />
       )}
@@ -390,31 +335,19 @@ export default function DimensionViewer() {
         </button>
       )}
 
-      {/* Camera Preset Selector - Phase 1.7 */}
+      {/* Camera Presets Widget - Auto-positioned directly under the control widget */}
       {showCameraPresets && (
-        <div className="absolute top-16 right-4 bg-gray-900 bg-opacity-90 backdrop-blur-sm rounded-lg p-4 shadow-lg z-50">
-          <h3 className="text-white font-semibold mb-3 text-sm">Camera Presets</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {Object.entries(CAMERA_PRESETS).map(([name, position]) => (
-              <button
-                key={name}
-                onClick={() => handleCameraPreset(name as keyof typeof CAMERA_PRESETS)}
-                className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors capitalize"
-              >
-                {name}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={() => setShowCameraPresets(false)}
-            className="mt-3 w-full px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition-colors"
-          >
-            Close
-          </button>
-        </div>
+        <CameraPresetsWidget
+          presets={CAMERA_PRESETS}
+          onPresetSelect={handleCameraPreset}
+          onClose={() => setShowCameraPresets(false)}
+          // Auto-positioning enabled - positions itself relative to container bounds
+          autoPosition={true}
+          isMobile={isMobile}
+        />
       )}
       
-      {/* Control Panel Overlay - Updated for Phase 1.7 */}
+      {/* Control Panel Overlay */}
       <ControlPanel
         autoRotate={autoRotate}
         isWireframe={isWireframe}
@@ -425,11 +358,11 @@ export default function DimensionViewer() {
         onScreenshot={handleScreenshot}
         onFullscreen={handleFullscreen}
         onCameraPresets={() => setShowCameraPresets(!showCameraPresets)}
-        on360Export={handle360Export}
         onModelManager={handleModelManager}
         selectedModelName={selectedModel.name}
         isMobile={isMobile}
         screenSize={screenSize}
+        showCameraPresets={showCameraPresets}
       />
       
       {/* Auto-rotate notification for mobile */}

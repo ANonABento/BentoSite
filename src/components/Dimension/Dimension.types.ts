@@ -34,11 +34,11 @@ export interface ControlPanelProps {
   onScreenshot: () => void;
   onFullscreen: () => void;
   onCameraPresets: () => void;
-  on360Export: () => void;
   onModelManager: () => void;
   selectedModelName: string;
   isMobile: boolean;
   screenSize: { width: number; height: number };
+  showCameraPresets?: boolean;
 }
 
 export interface ModelSelectorProps {
@@ -97,16 +97,6 @@ export interface CollapsibleWidgetProps {
   isMobile: boolean;
   autoPosition?: boolean;
 }
-export interface CollapsibleWidgetProps {
-  title: string;
-  icon: React.ReactNode;
-  defaultPosition: { x: number; y: number };
-  isCollapsed: boolean;
-  onToggleCollapse: () => void;
-  children: React.ReactNode;
-  className?: string;
-  isMobile: boolean;
-}
 
 export interface LoadingProgressProps {
   progress: number;
@@ -124,6 +114,15 @@ export interface KeyboardShortcutsHelpProps {
 
 export interface PerformanceHUDProps {
   isMobile: boolean;
+}
+
+export interface CameraPresetsWidgetProps {
+  presets: Record<string, readonly [number, number, number]>;
+  onPresetSelect: (preset: string) => void;
+  onClose?: () => void;
+  defaultPosition?: { x: number; y: number }; // Made optional for auto-positioning
+  isMobile: boolean;
+  autoPosition?: boolean; // Add autoPosition prop
 }
 
 export interface DimensionViewerProps {
