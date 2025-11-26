@@ -61,8 +61,18 @@ export function CollapsibleWidget({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     console.log('DEBUG: handleMouseDown called, isCollapsed:', isCollapsed, 'target:', e.target);
-    if (isCollapsed) return;
-
+    
+    // Don't start drag if clicking on interactive elements inside the widget
+    const target = e.target as HTMLElement;
+    const interactiveElements = ['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA'];
+    const isInteractiveElement = interactiveElements.includes(target.tagName) || 
+                                target.closest('button, a, input, select, textarea');
+    
+    if (isInteractiveElement) {
+      return; // Let the interactive element handle its own click
+    }
+    
+    // Always allow dragging from anywhere else on the widget
     setIsDragging(true);
     setDragStartTime(Date.now());
     setHasMoved(false);
@@ -74,6 +84,7 @@ export function CollapsibleWidget({
       });
     }
     e.preventDefault();
+    e.stopPropagation();
   };
 
   const handleMouseMove = (e: MouseEvent) => {
@@ -97,15 +108,26 @@ export function CollapsibleWidget({
     setPosition({ x: newX, y: newY });
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e: MouseEvent) => {
     const dragDuration = Date.now() - dragStartTime;
-    setIsDragging(false);
-
-    // Only trigger collapse if it was a quick click with no movement
-    if (dragDuration < 200 && !hasMoved) {
+    
+    // Check if the mouse up event originated from the header area
+    const target = e.target as HTMLElement;
+    const isHeaderClick = target.closest('.widget-header');
+    
+    // Don't trigger toggle if mouse up was on an interactive element
+    const interactiveElements = ['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA'];
+    const isInteractiveElement = interactiveElements.includes(target.tagName) || 
+                                target.closest('button, a, input, select, textarea');
+    
+    // Only toggle if it was a quick click (under 200ms) with no movement AND on header AND not on interactive element
+    if (dragDuration < 200 && !hasMoved && isHeaderClick && !isInteractiveElement) {
       console.log('DEBUG: handleMouseUp triggering toggle');
       onToggleCollapse();
     }
+    
+    // Clean up dragging state
+    setIsDragging(false);
   };
 
   useEffect(() => {
@@ -137,37 +159,14 @@ export function CollapsibleWidget({
       >
         {/* Header - Now fully clickable for collapse/expand */}
         <div
-          className="flex items-center justify-between p-3 border-b border-gray-700 cursor-pointer"
-          onClick={(e) => {
-            console.log('DEBUG: header onClick triggered');
-            e.stopPropagation();
-            onToggleCollapse();
-          }}
+          className="widget-header flex items-center justify-between p-3 border-b border-gray-700 cursor-pointer"
         >
           {/* Left side: Icon and Title - Both clickable */}
-          <div
-            className="flex items-center space-x-2 cursor-pointer"
-            onClick={(e) => {
-              console.log('DEBUG: left side onClick triggered');
-              e.stopPropagation();
-              onToggleCollapse();
-            }}
-          >
-            <div className="cursor-pointer" onClick={(e) => {
-              console.log('DEBUG: icon onClick triggered');
-              e.stopPropagation();
-              onToggleCollapse();
-            }}>
+          <div className="flex items-center space-x-2">
+            <div className="text-blue-400">
               {icon}
             </div>
-            <h3
-              className="font-semibold text-white text-sm cursor-pointer hover:text-blue-300 transition-colors"
-              onClick={(e) => {
-                console.log('DEBUG: title onClick triggered');
-                e.stopPropagation();
-                onToggleCollapse();
-              }}
-            >
+            <h3 className="font-semibold text-white text-sm hover:text-blue-300 transition-colors">
               {title}
             </h3>
           </div>
@@ -175,11 +174,6 @@ export function CollapsibleWidget({
           {/* Right side: Toggle button (^) - Clickable */}
           <button
             className="text-gray-400 hover:text-white transition-colors cursor-pointer p-1 rounded hover:bg-gray-700"
-            onClick={(e) => {
-              console.log('DEBUG: toggle button onClick triggered');
-              e.stopPropagation();
-              onToggleCollapse();
-            }}
             title={isCollapsed ? 'Expand' : 'Collapse'}
           >
             {isCollapsed ? (
@@ -211,7 +205,7 @@ export function ModelInfoDisplay({ model, isMobile }: ModelInfoDisplayProps) {
   const [showPerformance, setShowPerformance] = useState(false);
 
   const infoIcon = (
-    <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   );
