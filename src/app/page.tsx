@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 
-const ThreeViewer = dynamic(() => import('../components/Dimension'), { ssr: false });
+const ThreeViewer = dynamic(() => import('../components/Dimension/Dimension'), { ssr: false });
 const Chatbot = dynamic(() => import('../components/Chat'), { ssr: false });
 
 export default function Home() {
