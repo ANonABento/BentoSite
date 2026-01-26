@@ -2,7 +2,7 @@
 
 import React, { useRef, forwardRef, useImperativeHandle } from 'react';
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
-import { OrbitControls, Box, Grid, Text } from '@react-three/drei';
+import { OrbitControls, Box, Grid, Text, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 // @ts-ignore
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader';
@@ -12,8 +12,16 @@ import type {
   LODModelProps,
   BillboardTextProps,
   FallbackModelProps,
-  STLModelWrapperProps
+  STLModelWrapperProps,
+  ModelFormat
 } from './Dimension.types';
+
+// Utility to detect model format from path
+export function getModelFormat(path: string): ModelFormat {
+  const extension = path.split('.').pop()?.toLowerCase();
+  if (extension === 'gltf' || extension === 'glb') return 'gltf';
+  return 'stl';
+}
 
 // Billboard Text Component (always faces camera)
 export function BillboardText({ text, position, color = "#dc2626", size = 0.8 }: BillboardTextProps) {
@@ -357,7 +365,71 @@ export const ResponsiveOrbitControls = forwardRef<any, ResponsiveOrbitControlsPr
 
 ResponsiveOrbitControls.displayName = 'ResponsiveOrbitControls';
 
-// STL Model wrapper with comprehensive error handling
+// GLTF Model Component
+interface GLTFModelProps {
+  modelPath: string;
+  autoRotate: boolean;
+  onClick: () => void;
+  isWireframe: boolean;
+}
+
+export function GLTFModel({ modelPath, autoRotate, onClick, isWireframe }: GLTFModelProps) {
+  const groupRef = useRef<THREE.Group>(null!);
+  const { scene } = useGLTF(modelPath);
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                   window.innerWidth < 768 ||
+                   ('ontouchstart' in window);
+
+  useFrame((state, delta) => {
+    if (groupRef.current && autoRotate) {
+      groupRef.current.rotation.y += delta * 0.3;
+    }
+  });
+
+  // Apply wireframe to all meshes in the scene
+  React.useEffect(() => {
+    scene.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        if (Array.isArray(child.material)) {
+          child.material.forEach((mat) => {
+            if (mat instanceof THREE.MeshStandardMaterial) {
+              mat.wireframe = isWireframe;
+            }
+          });
+        } else if (child.material instanceof THREE.MeshStandardMaterial) {
+          child.material.wireframe = isWireframe;
+        }
+        child.castShadow = !isMobile;
+        child.receiveShadow = !isMobile;
+      }
+    });
+  }, [scene, isWireframe, isMobile]);
+
+  return (
+    <group ref={groupRef} onClick={onClick}>
+      <primitive object={scene} scale={1} />
+    </group>
+  );
+}
+
+// Universal Model wrapper - handles both STL and GLTF/GLB formats
+export function ModelWrapper({ modelPath = '/models/placeholder.stl', onError, autoRotate, onClick, isWireframe }: STLModelWrapperProps) {
+  const format = getModelFormat(modelPath);
+  
+  return (
+    <React.Suspense fallback={<SkeletonLoader />}>
+      <ErrorBoundary onError={onError}>
+        {format === 'gltf' ? (
+          <GLTFModel modelPath={modelPath} autoRotate={autoRotate} onClick={onClick} isWireframe={isWireframe} />
+        ) : (
+          <LODModel modelPath={modelPath} autoRotate={autoRotate} onClick={onClick} isWireframe={isWireframe} />
+        )}
+      </ErrorBoundary>
+    </React.Suspense>
+  );
+}
+
+// STL Model wrapper with comprehensive error handling (kept for backwards compatibility)
 export function STLModelWrapper({ modelPath = '/models/placeholder.stl', onError, autoRotate, onClick, isWireframe }: STLModelWrapperProps) {
   return (
     <React.Suspense fallback={<SkeletonLoader />}>

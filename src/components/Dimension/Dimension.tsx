@@ -41,10 +41,10 @@ import {
 } from './Dimension.ui';
 
 // Import 3D components
-import { 
-  STLModelWrapper,
+import {
+  ModelWrapper,
   StationaryBackground,
-  ResponsiveOrbitControls 
+  ResponsiveOrbitControls
 } from './Dimension.3d';
 
 // Camera preset positions
@@ -257,7 +257,7 @@ export default function DimensionViewer() {
               performance={{ min: MIN_PERFORMANCE_SCALE }}
               gl={{ preserveDrawingBuffer: true }}
             >
-              {/* Skeleton loader is handled in STLModelWrapper */}
+              {/* Skeleton loader is handled in ModelWrapper */}
             </Canvas>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none" 
                  style={{ zIndex: 1000 }}>
@@ -293,10 +293,10 @@ export default function DimensionViewer() {
             
             <StationaryBackground />
             
-            <STLModelWrapper 
+            <ModelWrapper
               modelPath={selectedModel.path}
-              onError={handleError} 
-              autoRotate={autoRotate} 
+              onError={handleError}
+              autoRotate={autoRotate}
               onClick={handleModelClick}
               isWireframe={isWireframe}
             />

@@ -1,5 +1,7 @@
 // Dimension.tsx - Types and Interfaces
 
+export type ModelFormat = 'stl' | 'gltf' | 'glb';
+
 export interface ModelInfo {
   id: string;
   name: string;
@@ -14,6 +16,7 @@ export interface ModelInfo {
   vertexCount: number;
   description: string;
   category: string;
+  format?: ModelFormat; // Optional, defaults to 'stl' for backwards compatibility
 }
 
 export interface ModelError {
