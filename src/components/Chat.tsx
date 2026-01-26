@@ -10,7 +10,11 @@ interface Message {
   timestamp: number;
 }
 
-export default function Chatbot() {
+interface ChatbotProps {
+  onReady?: (sendFn: (content: string) => void) => void;
+}
+
+export default function Chatbot({ onReady }: ChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -33,7 +37,7 @@ export default function Chatbot() {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  const sendMessage = async (content: string) => {
+  const sendMessage = useCallback(async (content: string) => {
     if (!content.trim() || isLoading) return;
 
     const userMessage: Message = {
@@ -83,7 +87,14 @@ export default function Chatbot() {
       setIsLoading(false);
       inputRef.current?.focus();
     }
-  };
+  }, [messages, isLoading]);
+
+  // Expose sendMessage to parent component
+  useEffect(() => {
+    if (onReady) {
+      onReady(sendMessage);
+    }
+  }, [onReady, sendMessage]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

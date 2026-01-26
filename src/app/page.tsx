@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Header from '../components/Header';
 
 const ThreeViewer = dynamic(() => import('../components/Dimension/Dimension'), {
@@ -33,10 +33,31 @@ const ProjectsModal = dynamic(
   { ssr: false }
 );
 
+const SkillsSection = dynamic(
+  () => import('../components/Skills/SkillsSection'),
+  { ssr: false }
+);
+
 export default function Home() {
   const [activeSection, setActiveSection] = useState<'3d' | 'chat'>('3d');
   const [isExpanded3D, setIsExpanded3D] = useState(false);
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
+  const [chatSendFn, setChatSendFn] = useState<((content: string) => void) | null>(null);
+
+  const handleAskAboutSkill = useCallback((skill: string) => {
+    const message = `Tell me about your experience with ${skill}`;
+    
+    // On mobile, switch to chat tab first
+    if (activeSection !== 'chat') {
+      setActiveSection('chat');
+      // Delay message to allow tab animation
+      setTimeout(() => {
+        chatSendFn?.(message);
+      }, 150);
+    } else {
+      chatSendFn?.(message);
+    }
+  }, [chatSendFn, activeSection]);
 
   return (
     <div className="flex flex-col h-screen bg-[#0a0a0f] bg-grid overflow-hidden">
@@ -126,15 +147,21 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Chat Section */}
+        {/* Right Column: Skills + Chat */}
         <div
           className={`
             ${activeSection === 'chat' ? 'flex' : 'hidden'} md:flex
             ${isExpanded3D ? 'md:w-80' : 'md:w-1/2'}
-            flex-col min-h-0 flex-1 md:flex-initial
+            flex-col gap-4 min-h-0 flex-1 md:flex-initial
             transition-all duration-300
           `}
         >
+          {/* Skills Section */}
+          <div className="glass rounded-2xl overflow-hidden flex-shrink-0">
+            <SkillsSection onAskAI={handleAskAboutSkill} />
+          </div>
+
+          {/* AI Assistant */}
           <div className="glass rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0">
             {/* Chat Header */}
             <div className="flex-shrink-0 px-4 py-3 border-b border-white/5 flex items-center justify-between">
@@ -146,7 +173,7 @@ export default function Home() {
             </div>
             {/* Chat Content */}
             <div className="flex-1 min-h-0">
-              <Chatbot />
+              <Chatbot onReady={(fn) => setChatSendFn(() => fn)} />
             </div>
           </div>
         </div>
