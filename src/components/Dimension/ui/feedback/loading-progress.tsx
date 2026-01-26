@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 
 import type { LoadingProgressProps } from '../../Dimension.types';
-import { DESIGN_SYSTEM, formatPercentage } from '../shared';
+import { formatPercentage } from '../shared';
 
 export function LoadingProgress({ progress }: LoadingProgressProps) {
   const [isInitialRender, setIsInitialRender] = useState(true);
@@ -15,13 +15,13 @@ export function LoadingProgress({ progress }: LoadingProgressProps) {
   }, []);
 
   return (
-    <div className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900/95 backdrop-blur-sm rounded-xl p-4 pointer-events-none shadow-2xl border border-gray-700/50 z-40 ${isInitialRender ? '' : ''}`} role="status" aria-live="polite" aria-label={`Loading progress: ${progress}%`}>
+    <div className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 glass rounded-xl p-4 pointer-events-none shadow-2xl z-40 ${isInitialRender ? '' : ''}`} role="status" aria-live="polite" aria-label={`Loading progress: ${progress}%`}>
       <div className="flex items-center justify-between mb-3">
-        <span className={`text-sm ${DESIGN_SYSTEM.colors.text.secondary} font-medium`}>Loading Model</span>
-        <span className={`text-sm ${DESIGN_SYSTEM.colors.text.primary} font-mono`}>{formatPercentage(progress)}%</span>
+        <span className={`text-sm text-gray-300 font-medium`}>Loading Model</span>
+        <span className={`text-sm text-white font-mono`}>{formatPercentage(progress)}%</span>
       </div>
       <div className="w-64 bg-gray-700 rounded-full h-3 overflow-hidden">
-        <div className={`bg-gradient-to-r from-blue-500 to-blue-400 h-3 rounded-full ${isInitialRender ? '' : 'transition-all duration-300 ease-out'} relative`} style={{ width: `${progress}%` }}>
+        <div className={`bg-gradient-to-r from-indigo-500 to-violet-500 h-3 rounded-full ${isInitialRender ? '' : 'transition-all duration-300 ease-out'} relative`} style={{ width: `${progress}%` }}>
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/20 animate-pulse"></div>
         </div>
       </div>

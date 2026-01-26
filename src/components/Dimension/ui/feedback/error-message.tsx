@@ -4,7 +4,6 @@
 import React, { useState, useEffect } from 'react';
 
 import type { ErrorMessageProps } from '../../Dimension.types';
-import { DESIGN_SYSTEM } from '../shared';
 
 export function ErrorMessage({ error, onRetry, isMobile }: ErrorMessageProps) {
   const [isInitialRender, setIsInitialRender] = useState(true);
@@ -47,10 +46,10 @@ export function ErrorMessage({ error, onRetry, isMobile }: ErrorMessageProps) {
 
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm pointer-events-none z-50" role="alert" aria-live="assertive">
-      <div className={`${DESIGN_SYSTEM.colors.bg.primary} backdrop-blur-sm rounded-xl p-8 text-center border ${DESIGN_SYSTEM.colors.border.secondary} pointer-events-auto shadow-2xl ${isInitialRender ? '' : 'transform transition-all duration-200 hover:scale-105'} ${isMobile ? 'mx-6 max-w-sm' : 'max-w-lg mx-4'}`}>
+      <div className={`glass rounded-xl p-8 text-center pointer-events-auto shadow-2xl ${isInitialRender ? '' : 'transform transition-all duration-200 hover:scale-105'} ${isMobile ? 'mx-6 max-w-sm' : 'max-w-lg mx-4'}`}>
         {getErrorIcon()}
         <h3 className="text-xl font-bold text-white mb-3">{getErrorType()}</h3>
-        <p className={`${DESIGN_SYSTEM.colors.text.secondary} mb-6 text-sm leading-relaxed`}>{error.message}</p>
+        <p className={`text-gray-300 mb-6 text-sm leading-relaxed`}>{error.message}</p>
         <div className="space-y-4">
           {error.retryable && (
             <button 
@@ -67,10 +66,10 @@ export function ErrorMessage({ error, onRetry, isMobile }: ErrorMessageProps) {
           <div className={`${isMobile ? 'text-left' : 'text-center'} space-y-2`}>
             <h4 className="text-sm font-semibold text-gray-300 mb-3">Troubleshooting Tips:</h4>
             <div className="grid grid-cols-1 gap-2 text-xs">
-              <div className="flex items-start space-x-2"><span className="text-blue-400 mt-0.5">•</span><span className={DESIGN_SYSTEM.colors.text.tertiary}>Check your internet connection</span></div>
-              <div className="flex items-start space-x-2"><span className="text-blue-400 mt-0.5">•</span><span className={DESIGN_SYSTEM.colors.text.tertiary}>Ensure the model file exists</span></div>
-              <div className="flex items-start space-x-2"><span className="text-blue-400 mt-0.5">•</span><span className={DESIGN_SYSTEM.colors.text.tertiary}>Verify STL file format</span></div>
-              <div className="flex items-start space-x-2"><span className="text-blue-400 mt-0.5">•</span><span className={DESIGN_SYSTEM.colors.text.tertiary}>Try selecting a different model</span></div>
+              <div className="flex items-start space-x-2"><span className="text-indigo-400 mt-0.5">•</span><span className="text-gray-400">Check your internet connection</span></div>
+              <div className="flex items-start space-x-2"><span className="text-indigo-400 mt-0.5">•</span><span className="text-gray-400">Ensure the model file exists</span></div>
+              <div className="flex items-start space-x-2"><span className="text-indigo-400 mt-0.5">•</span><span className="text-gray-400">Verify STL file format</span></div>
+              <div className="flex items-start space-x-2"><span className="text-indigo-400 mt-0.5">•</span><span className="text-gray-400">Try selecting a different model</span></div>
             </div>
           </div>
         </div>

@@ -4,7 +4,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 import type { CollapsibleWidgetProps } from '../../Dimension.types';
-import { DESIGN_SYSTEM } from '../shared/design-system';
 
 export function CollapsibleWidget({
   title,
@@ -162,21 +161,20 @@ export function CollapsibleWidget({
     >
       <div
         className={`
-          backdrop-blur-sm rounded-xl border border-opacity-20
-          ${DESIGN_SYSTEM.colors.bg.primary} ${DESIGN_SYSTEM.colors.border.secondary}
+          glass rounded-xl
           ${isMobile ? 'w-48' : 'w-72'} 
           ${isCollapsed ? 'h-12' : ''}
-          ${isDragging ? 'ring-2 ring-blue-400/50' : ''}
+          ${isDragging ? 'ring-2 ring-indigo-400/50' : ''}
         `}
         onMouseDown={handleMouseDown}
       >
         {/* Header with toggle button only */}
         <div
           className={`
-            widget-header flex items-center justify-between px-4 py-3 border-b border-gray-700/50
+            widget-header flex items-center justify-between px-4 py-3 border-b border-white/10
             cursor-pointer
-            hover:bg-gray-700/30 focus-within:bg-gray-700/30
-            ${isKeyboardFocused ? 'ring-2 ring-blue-500/50 ring-inset' : ''}
+            hover:bg-white/5
+            ${isKeyboardFocused ? 'ring-2 ring-indigo-500/50 ring-inset' : ''}
           `}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsKeyboardFocused(true)}
@@ -187,16 +185,16 @@ export function CollapsibleWidget({
           aria-label={`Toggle ${title} panel`}
         >
           <div className="flex items-center space-x-2">
-            <div className={`text-blue-400 hover:text-blue-300`}>
+            <div className={`text-indigo-400 hover:text-indigo-300`}>
               {icon}
             </div>
-            <h3 className={`font-semibold text-sm ${DESIGN_SYSTEM.colors.text.primary} hover:text-blue-300`}>
+            <h3 className={`font-semibold text-sm text-white hover:text-indigo-300`}>
               {title}
             </h3>
           </div>
 
           <button
-            className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 active:scale-95 transform"
+            className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 active:scale-95 transform"
             title={isCollapsed ? 'Expand panel' : 'Collapse panel'}
             aria-label={isCollapsed ? `Expand ${title} panel` : `Collapse ${title} panel`}
             onClick={(e) => {
@@ -212,7 +210,7 @@ export function CollapsibleWidget({
 
         {/* Content */}
         {!isCollapsed && (
-          <div className={`${DESIGN_SYSTEM.spacing.sm} ${DESIGN_SYSTEM.colors.text.primary}`}>
+          <div className={`p-3 text-white`}>
             {children}
           </div>
         )}
