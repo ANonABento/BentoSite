@@ -9,6 +9,7 @@ import { PROJECTS, getAllCategories, searchProjects } from '@/lib/projects-data'
 import type { ProjectCategory } from '@/lib/projects-data';
 import { ProjectCard } from './ProjectCard';
 import { staggerContainer, staggerItem, buttonTap } from '@/lib/animations';
+import { useFocusTrap } from '@/lib/use-focus-trap';
 
 interface ProjectsModalProps {
   isOpen: boolean;
@@ -20,41 +21,25 @@ interface ProjectsModalProps {
 export function ProjectsModal({ isOpen, onClose, onLoad3DModel, isMobile = false }: ProjectsModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ProjectCategory | 'All'>('All');
-  const [isInitialRender, setIsInitialRender] = useState(true);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
 
-  // Disable initial transition for smoother open
-  useEffect(() => {
-    const timer = setTimeout(() => setIsInitialRender(false), 0);
-    return () => clearTimeout(timer);
-  }, []);
+  // Focus trap for accessibility
+  const modalRef = useFocusTrap<HTMLDivElement>({
+    isActive: isOpen,
+    onEscape: onClose,
+    initialFocusRef: searchInputRef,
+  });
 
-  // Focus search input on open
+  // Lock body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
-      searchInputRef.current?.focus();
-    }
-  }, [isOpen]);
-
-  // Handle escape key
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'hidden';
     }
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   const categories = getAllCategories();
   const filteredProjects = searchTerm
@@ -75,7 +60,6 @@ export function ProjectsModal({ isOpen, onClose, onLoad3DModel, isMobile = false
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          ref={modalRef}
           className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-[60]"
           role="dialog"
           aria-modal="true"
@@ -87,6 +71,7 @@ export function ProjectsModal({ isOpen, onClose, onLoad3DModel, isMobile = false
           transition={{ duration: 0.2 }}
         >
           <motion.div
+            ref={modalRef}
             className={`
               glass-strong rounded-2xl shadow-2xl overflow-hidden
               ${isMobile ? 'w-full h-full max-w-none rounded-none' : 'w-full max-w-5xl max-h-[90vh]'}

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* Dark theme (default) */
 :root {
   --background: #0a0a0f;
   --foreground: #e5e5e5;
@@ -7,6 +8,44 @@
   --accent-secondary: #8b5cf6;
   --accent-cyan: #06b6d4;
   --border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-bg-strong: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --code-bg: rgba(99, 102, 241, 0.15);
+  --code-text: #c4b5fd;
+  --scrollbar-track: rgba(255, 255, 255, 0.02);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
+  --selection-bg: rgba(99, 102, 241, 0.3);
+  --grid-line: rgba(99, 102, 241, 0.03);
+}
+
+/* Light theme */
+.light {
+  --background: #fafafa;
+  --foreground: #18181b;
+  --accent: #4f46e5;
+  --accent-secondary: #7c3aed;
+  --accent-cyan: #0891b2;
+  --border: rgba(0, 0, 0, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-strong: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --text-primary: #18181b;
+  --text-secondary: #52525b;
+  --text-muted: #a1a1aa;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --code-bg: rgba(79, 70, 229, 0.1);
+  --code-text: #4f46e5;
+  --scrollbar-track: rgba(0, 0, 0, 0.02);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.1);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.2);
+  --selection-bg: rgba(79, 70, 229, 0.2);
+  --grid-line: rgba(79, 70, 229, 0.05);
 }
 
 @theme inline {
@@ -16,10 +55,16 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Theme transition */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Base border radius - more subtle */
@@ -29,17 +74,28 @@ body {
 
 /* Glassmorphism utilities */
 .glass {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .glass-strong {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass-bg-strong);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--glass-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Light theme specific glass adjustments */
+.light .glass {
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+.light .glass-strong {
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
 }
 
 /* Gradient text utility */
@@ -85,20 +141,26 @@ body {
 /* Background grid pattern */
 .bg-grid {
   background-image: 
-    linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 50px 50px;
 }
 
 /* Soft shadows */
 .shadow-soft {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 32px var(--shadow-color);
 }
 
 .shadow-glow {
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.4),
     0 0 20px rgba(99, 102, 241, 0.1);
+}
+
+.light .shadow-glow {
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 0 20px rgba(79, 70, 229, 0.1);
 }
 
 /* Scrollbar styling */
@@ -108,23 +170,23 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--scrollbar-track);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Selection color */
 ::selection {
-  background: rgba(99, 102, 241, 0.3);
-  color: #fff;
+  background: var(--selection-bg);
+  color: var(--text-primary);
 }
 
 /* Typing animation for chat */
@@ -171,7 +233,7 @@ body {
 
 .markdown-content strong {
   font-weight: 600;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .markdown-content em {
@@ -194,7 +256,7 @@ body {
 .markdown-content h3,
 .markdown-content h4 {
   font-weight: 600;
-  color: #fff;
+  color: var(--text-primary);
   margin-top: 1rem;
   margin-bottom: 0.5rem;
 }
@@ -224,7 +286,7 @@ body {
 
 .markdown-content pre {
   background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
   border-radius: 0.75rem;
   padding: 0.875rem;
   overflow-x: auto;
@@ -233,28 +295,84 @@ body {
   font-size: 0.8125rem;
 }
 
+.light .markdown-content pre {
+  background: rgba(0, 0, 0, 0.05);
+}
+
 .markdown-content code {
   font-family: var(--font-mono), monospace;
   font-size: 0.8125em;
 }
 
 .markdown-content :not(pre) > code {
-  background: rgba(99, 102, 241, 0.15);
+  background: var(--code-bg);
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
-  color: #c4b5fd;
+  color: var(--code-text);
 }
 
 .markdown-content blockquote {
   border-left: 3px solid var(--accent);
   padding-left: 1rem;
   margin: 0.75rem 0;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
   font-style: italic;
 }
 
 .markdown-content hr {
   border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--glass-border);
   margin: 1rem 0;
+}
+
+/* Skip to content link */
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 9999;
+  padding: 1rem;
+  background: var(--accent);
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: 0 0 0.5rem 0;
+}
+
+.skip-to-content:focus {
+  left: 0;
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .glass,
+  .glass-strong {
+    background: white !important;
+    backdrop-filter: none !important;
+    border: 1px solid #e5e5e5 !important;
+    box-shadow: none !important;
+  }
+
+  .bg-grid {
+    background-image: none !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  a {
+    color: #4f46e5 !important;
+  }
+
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #666;
+  }
 }

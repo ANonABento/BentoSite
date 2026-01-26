@@ -18,6 +18,11 @@ A prioritized list of enhancements organized by impact and effort.
 - [x] Projects Showcase Section with modal-based UI
 - [x] Skills Visualization with AI chat integration
 - [x] Animated Transitions (Framer Motion)
+- [x] Dark/Light Mode Toggle with system preference detection
+- [x] Skip-to-content link for accessibility
+- [x] Focus trap in modals
+- [x] Loading skeletons for project cards
+- [x] Print stylesheet for resume
 
 ---
 
@@ -147,21 +152,23 @@ Interactive hotspots on 3D models with info panels.
 
 ---
 
-### 2.3 Dark/Light Mode Toggle
+### ~~2.3 Dark/Light Mode Toggle~~ ✅ COMPLETED
 **Priority:** Low-Medium | **Effort:** Medium
 
-Theme switcher with system preference detection.
+~~Theme switcher with system preference detection.~~
 
-**Features:**
-- Toggle button in header
-- Persist preference in localStorage
-- Respect system preference initially
-- Smooth transition between themes
+**Implemented:**
+- [x] Toggle button in header (sun/moon icons)
+- [x] Persist preference in localStorage
+- [x] Respect system preference initially
+- [x] Smooth transition between themes (0.3s ease)
+- [x] Flash prevention script in head
 
-**Files to modify:**
-- `src/app/globals.css` (light theme variables)
-- `src/components/Header.tsx` (toggle button)
-- Create theme context
+**Files created/modified:**
+- `src/lib/theme-context.tsx` (new - ThemeProvider and useTheme hook)
+- `src/app/globals.css` (light theme CSS variables, theme transitions)
+- `src/components/Header.tsx` (ThemeToggle component)
+- `src/app/layout.tsx` (ThemeProvider wrapper, flash prevention script)
 
 ---
 
@@ -279,15 +286,15 @@ Speech-to-text for chat input.
 
 These can be done quickly between larger features:
 
-- [ ] Add loading skeletons for project cards
+- [x] Add loading skeletons for project cards ✅
 - [ ] Improve error messages with retry buttons
-- [ ] Add keyboard navigation (Tab, Enter)
+- [x] Add keyboard navigation (Tab, Enter) ✅
 - [ ] Optimize images (WebP, lazy loading)
-- [ ] Add print stylesheet for resume
+- [x] Add print stylesheet for resume ✅
 - [x] Create custom 404 page ✅
 - [ ] Add breadcrumb for navigation
-- [ ] Implement focus trap in modals
-- [ ] Add skip-to-content link for accessibility
+- [x] Implement focus trap in modals ✅
+- [x] Add skip-to-content link for accessibility ✅
 
 ---
 
