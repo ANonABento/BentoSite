@@ -10,6 +10,7 @@ interface HeaderProps {
   email?: string;
   resumeUrl?: string;
   compact?: boolean;
+  onProjectsClick?: () => void;
 }
 
 export default function Header({
@@ -20,6 +21,7 @@ export default function Header({
   email = 'hello@example.com',
   resumeUrl = '/resume.pdf',
   compact = false,
+  onProjectsClick,
 }: HeaderProps) {
   const [isHovered, setIsHovered] = useState<string | null>(null);
 
@@ -93,6 +95,20 @@ export default function Header({
               {link.icon}
             </a>
           ))}
+          {onProjectsClick && (
+            <button
+              onClick={onProjectsClick}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium
+                glass text-gray-300 hover:text-white hover:bg-white/10
+                transition-all duration-200"
+              aria-label="View projects"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              <span className="hidden sm:inline">Projects</span>
+            </button>
+          )}
           <ResumeButton className="ml-2" />
         </div>
       </header>
