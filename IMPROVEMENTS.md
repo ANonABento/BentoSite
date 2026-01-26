@@ -85,21 +85,23 @@ A prioritized list of enhancements organized by impact and effort.
 
 ---
 
-### 1.4 Chat Enhancements
+### ~~1.4 Chat Enhancements~~ ✅ COMPLETED
 **Priority:** High | **Effort:** Medium
 
-Make the AI chat more powerful and persistent.
+~~Make the AI chat more powerful and persistent.~~
 
-**Features:**
-- [ ] Markdown rendering in responses (react-markdown)
-- [ ] Conversation persistence (localStorage)
-- [ ] Quick action buttons ("View Resume", "See Projects")
-- [ ] Copy message button
-- [ ] Feedback mechanism (thumbs up/down)
+**Implemented:**
+- [x] Markdown rendering in responses (react-markdown)
+- [x] Conversation persistence (localStorage)
+- [x] Quick action buttons ("View Resume", "See Projects")
+- [x] Copy message button (hover-to-reveal with clipboard feedback)
+- [x] Feedback mechanism (thumbs up/down on assistant messages)
 
-**Files to modify:**
-- `src/components/Chat.tsx`
-- `package.json` (add react-markdown)
+**Files created/modified:**
+- `src/components/Chat.tsx` (major refactor with 5 new features)
+- `src/app/globals.css` (markdown content styles)
+- `src/app/page.tsx` (quick action callbacks)
+- `package.json` (added react-markdown)
 
 ---
 

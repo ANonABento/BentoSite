@@ -173,7 +173,11 @@ export default function Home() {
             </div>
             {/* Chat Content */}
             <div className="flex-1 min-h-0">
-              <Chatbot onReady={(fn) => setChatSendFn(() => fn)} />
+              <Chatbot
+                onReady={(fn) => setChatSendFn(() => fn)}
+                onViewResume={() => window.open('/resume.pdf', '_blank')}
+                onSeeProjects={() => setIsProjectsOpen(true)}
+              />
             </div>
           </div>
         </div>
