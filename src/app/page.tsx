@@ -62,7 +62,7 @@ export default function Home() {
   }, [chatSendFn, activeSection]);
 
   return (
-    <div className="flex flex-col h-screen bg-[#0a0a0f] bg-grid overflow-hidden">
+    <div id="main-content" className="flex flex-col h-screen bg-[var(--background)] bg-grid overflow-hidden transition-colors duration-300">
       {/* Header - compact on mobile */}
       <motion.div
         className="flex-shrink-0 p-4 md:p-6"

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTheme } from '@/lib/theme-context';
 
 interface HeaderProps {
   name?: string;
@@ -11,6 +12,60 @@ interface HeaderProps {
   resumeUrl?: string;
   compact?: boolean;
   onProjectsClick?: () => void;
+}
+
+// Theme toggle button component
+function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme();
+
+  return (
+    <button
+      onClick={toggleTheme}
+      className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+    >
+      {theme === 'dark' ? (
+        // Sun icon for switching to light mode
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+          />
+        </svg>
+      ) : (
+        // Moon icon for switching to dark mode
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+          />
+        </svg>
+      )}
+    </button>
+  );
+}
+
+// Resume download button component
+function ResumeButton({ resumeUrl, className = '' }: { resumeUrl: string; className?: string }) {
+  return (
+    <a
+      href={resumeUrl}
+      download
+      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm
+        bg-gradient-to-r from-indigo-600 to-violet-600 text-white
+        hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:scale-105
+        transition-all duration-300 ${className}`}
+    >
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <span className="hidden sm:inline">Resume</span>
+    </a>
+  );
 }
 
 export default function Header({
@@ -58,22 +113,6 @@ export default function Header({
     },
   ];
 
-  const ResumeButton = ({ className = '' }: { className?: string }) => (
-    <a
-      href={resumeUrl}
-      download
-      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm
-        bg-gradient-to-r from-indigo-600 to-violet-600 text-white
-        hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:scale-105
-        transition-all duration-300 ${className}`}
-    >
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-      <span className="hidden sm:inline">Resume</span>
-    </a>
-  );
-
   if (compact) {
     return (
       <header className="flex items-center justify-between px-4 py-3 glass rounded-xl">
@@ -83,6 +122,7 @@ export default function Header({
           <span className="text-sm text-gray-400 hidden sm:inline">{tagline}</span>
         </div>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           {socialLinks.map((link) => (
             <a
               key={link.id}
@@ -109,7 +149,7 @@ export default function Header({
               <span className="hidden sm:inline">Projects</span>
             </button>
           )}
-          <ResumeButton className="ml-2" />
+          <ResumeButton resumeUrl={resumeUrl} className="ml-2" />
         </div>
       </header>
     );
@@ -156,7 +196,7 @@ export default function Header({
                 <span className="text-sm font-medium hidden sm:inline">{link.label}</span>
               </a>
             ))}
-            <ResumeButton />
+            <ResumeButton resumeUrl={resumeUrl} />
           </div>
         </div>
       </div>

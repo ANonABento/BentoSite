@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 
 import type { ControlPanelProps } from '../../Dimension.types';
 import { CollapsibleWidget } from './collapsible-widget';
-import { DESIGN_SYSTEM } from '../shared';
 import { buttonTap } from '@/lib/animations';
 
 export function ControlPanel({
@@ -20,9 +19,7 @@ export function ControlPanel({
   onFullscreen,
   onCameraPresets,
   onModelManager,
-  selectedModelName,
   isMobile,
-  screenSize,
   showCameraPresets
 }: ControlPanelProps & { showCameraPresets?: boolean }) {
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
@@ -166,11 +163,11 @@ export function ControlPanel({
                 whileTap={buttonTap}
                 className={`
                   p-2 rounded-lg flex flex-col items-center justify-center
-                  focus:outline-none focus:ring-2 focus:ring-blue-500/50
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500/50
                   min-h-[60px]
                   ${button.active
-                    ? 'bg-blue-600 text-white shadow-lg ring-2 ring-blue-400/30'
-                    : 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white shadow-md'
+                    ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg ring-2 ring-indigo-400/30'
+                    : 'bg-white/5 backdrop-blur border border-white/10 hover:bg-white/10 text-gray-300 hover:text-white shadow-md'
                   }
                 `}
                 title={`${button.label} (${button.shortcut}) - ${button.description}`}
