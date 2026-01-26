@@ -28,9 +28,15 @@ const Chatbot = dynamic(() => import('../components/Chat'), {
   ),
 });
 
+const ProjectsModal = dynamic(
+  () => import('../components/Projects/ProjectsModal').then((mod) => mod.ProjectsModal),
+  { ssr: false }
+);
+
 export default function Home() {
   const [activeSection, setActiveSection] = useState<'3d' | 'chat'>('3d');
   const [isExpanded3D, setIsExpanded3D] = useState(false);
+  const [isProjectsOpen, setIsProjectsOpen] = useState(false);
 
   return (
     <div className="flex flex-col h-screen bg-[#0a0a0f] bg-grid overflow-hidden">
@@ -44,6 +50,7 @@ export default function Home() {
           email="hello@example.com"
           resumeUrl="/resume.pdf"
           compact
+          onProjectsClick={() => setIsProjectsOpen(true)}
         />
       </div>
 
@@ -144,6 +151,17 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Projects Modal */}
+      <ProjectsModal
+        isOpen={isProjectsOpen}
+        onClose={() => setIsProjectsOpen(false)}
+        onLoad3DModel={(modelPath) => {
+          setIsProjectsOpen(false);
+          // TODO: Pass modelPath to ThreeViewer when controlled prop is added
+          console.log('Load 3D model:', modelPath);
+        }}
+      />
     </div>
   );
 }
