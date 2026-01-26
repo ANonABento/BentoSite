@@ -13,6 +13,8 @@ A prioritized list of enhancements organized by impact and effort.
 - [x] GLTF/GLB model support
 - [x] Dark theme model selector
 - [x] Resume download button
+- [x] SEO & Social Meta Tags (OG, Twitter cards, JSON-LD, robots.txt, sitemap.xml)
+- [x] Custom 404 page with glassmorphism theme
 
 ---
 
@@ -59,22 +61,25 @@ Interactive skill tags that connect to the AI assistant.
 
 ---
 
-### 1.3 SEO & Social Meta Tags
+### ~~1.3 SEO & Social Meta Tags~~ ✅ COMPLETED
 **Priority:** High | **Effort:** Low
 
-Essential for LinkedIn shares and Google discoverability.
+~~Essential for LinkedIn shares and Google discoverability.~~
 
-**Features:**
-- Open Graph meta tags (title, description, image)
-- Twitter card meta tags
-- Structured data (JSON-LD for Person)
-- Proper favicon set
-- robots.txt and sitemap.xml
+**Implemented:**
+- [x] Open Graph meta tags (title, description, image)
+- [x] Twitter card meta tags
+- [x] Structured data (JSON-LD for Person)
+- [x] robots.txt and sitemap.xml (dynamic via Next.js)
+- [x] Centralized site config (`src/lib/site-config.ts`)
 
-**Files to create/modify:**
-- `src/app/layout.tsx` (metadata)
-- `public/og-image.png` (create)
-- `public/favicon.ico` (update if needed)
+**Files created/modified:**
+- `src/lib/site-config.ts` (new - centralized config)
+- `src/app/layout.tsx` (comprehensive metadata)
+- `src/app/opengraph-image.tsx` (dynamic OG image)
+- `src/app/twitter-image.tsx` (dynamic Twitter image)
+- `src/app/robots.ts` (dynamic robots.txt)
+- `src/app/sitemap.ts` (dynamic sitemap)
 
 ---
 
@@ -265,7 +270,7 @@ These can be done quickly between larger features:
 - [ ] Add keyboard navigation (Tab, Enter)
 - [ ] Optimize images (WebP, lazy loading)
 - [ ] Add print stylesheet for resume
-- [ ] Create custom 404 page
+- [x] Create custom 404 page ✅
 - [ ] Add breadcrumb for navigation
 - [ ] Implement focus trap in modals
 - [ ] Add skip-to-content link for accessibility
