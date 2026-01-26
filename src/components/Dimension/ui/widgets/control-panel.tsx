@@ -2,10 +2,12 @@
 // Extracted from Dimension.ui.tsx for better maintainability
 
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 
 import type { ControlPanelProps } from '../../Dimension.types';
 import { CollapsibleWidget } from './collapsible-widget';
 import { DESIGN_SYSTEM } from '../shared';
+import { buttonTap } from '@/lib/animations';
 
 export function ControlPanel({
   autoRotate,
@@ -158,12 +160,13 @@ export function ControlPanel({
         {!isCollapsed && (
           <div className="grid grid-cols-4 gap-2">
             {allControls.map((button, index) => (
-              <button
+              <motion.button
                 key={index}
                 onClick={button.onClick}
+                whileTap={buttonTap}
                 className={`
                   p-2 rounded-lg flex flex-col items-center justify-center
-                  transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/50
+                  focus:outline-none focus:ring-2 focus:ring-blue-500/50
                   min-h-[60px]
                   ${button.active
                     ? 'bg-blue-600 text-white shadow-lg ring-2 ring-blue-400/30'
@@ -177,7 +180,7 @@ export function ControlPanel({
                 <div className="mb-1">{button.icon}</div>
                 <div className="text-xs font-medium text-center leading-tight">{button.label}</div>
                 <div className="text-xs opacity-70 mt-1">{button.shortcut}</div>
-              </button>
+              </motion.button>
             ))}
           </div>
         )}

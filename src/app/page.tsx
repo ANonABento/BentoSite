@@ -2,7 +2,9 @@
 
 import dynamic from 'next/dynamic';
 import { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Header from '../components/Header';
+import { fadeInUp, tabContent, defaultViewport, buttonTap } from '@/lib/animations';
 
 const ThreeViewer = dynamic(() => import('../components/Dimension/Dimension'), {
   ssr: false,
@@ -62,7 +64,12 @@ export default function Home() {
   return (
     <div className="flex flex-col h-screen bg-[#0a0a0f] bg-grid overflow-hidden">
       {/* Header - compact on mobile */}
-      <div className="flex-shrink-0 p-4 md:p-6">
+      <motion.div
+        className="flex-shrink-0 p-4 md:p-6"
+        initial="hidden"
+        animate="visible"
+        variants={fadeInUp}
+      >
         <Header
           name="Your Name"
           tagline="Hardware & Software Engineer"
@@ -73,13 +80,14 @@ export default function Home() {
           compact
           onProjectsClick={() => setIsProjectsOpen(true)}
         />
-      </div>
+      </motion.div>
 
       {/* Mobile Toggle Tabs */}
       <div className="md:hidden flex-shrink-0 px-4 pb-4">
         <div className="glass rounded-xl p-1 flex">
-          <button
+          <motion.button
             onClick={() => setActiveSection('3d')}
+            whileTap={buttonTap}
             className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
               activeSection === '3d'
                 ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg'
@@ -87,9 +95,10 @@ export default function Home() {
             }`}
           >
             3D Viewer
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             onClick={() => setActiveSection('chat')}
+            whileTap={buttonTap}
             className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
               activeSection === 'chat'
                 ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg'
@@ -97,22 +106,21 @@ export default function Home() {
             }`}
           >
             Chat with AI
-          </button>
+          </motion.button>
         </div>
       </div>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col md:flex-row gap-4 px-4 pb-4 md:px-6 md:pb-6 min-h-0">
-        {/* 3D Viewer Section */}
-        <div
-          className={`
-            ${activeSection === '3d' ? 'flex' : 'hidden'} md:flex
-            ${isExpanded3D ? 'flex-1' : 'md:w-1/2'}
-            flex-col min-h-0
-            transition-all duration-300
-          `}
-        >
-          <div className="glass rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0">
+        {/* 3D Viewer Section - Desktop always visible, Mobile uses AnimatePresence */}
+        <div className="hidden md:flex md:w-1/2 flex-col min-h-0 transition-all duration-300">
+          <motion.div
+            className="glass rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0"
+            initial="hidden"
+            whileInView="visible"
+            viewport={defaultViewport}
+            variants={fadeInUp}
+          >
             {/* 3D Viewer Header */}
             <div className="flex-shrink-0 px-4 py-3 border-b border-white/5 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -144,17 +152,78 @@ export default function Home() {
             <div className="flex-1 min-h-0">
               <ThreeViewer />
             </div>
-          </div>
+          </motion.div>
         </div>
 
-        {/* Right Column: Skills + Chat */}
-        <div
+        {/* Mobile Content with AnimatePresence */}
+        <AnimatePresence mode="wait">
+          {activeSection === '3d' && (
+            <motion.div
+              key="3d-mobile"
+              className="md:hidden flex flex-col min-h-0 flex-1"
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={tabContent}
+            >
+              <div className="glass rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0">
+                <div className="flex-shrink-0 px-4 py-3 border-b border-white/5 flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                  <span className="text-sm text-gray-400">Interactive 3D Viewer</span>
+                </div>
+                <div className="flex-1 min-h-0">
+                  <ThreeViewer />
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeSection === 'chat' && (
+            <motion.div
+              key="chat-mobile"
+              className="md:hidden flex flex-col gap-4 min-h-0 flex-1"
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={tabContent}
+            >
+              {/* Skills Section */}
+              <div className="glass rounded-2xl overflow-hidden flex-shrink-0">
+                <SkillsSection onAskAI={handleAskAboutSkill} />
+              </div>
+              {/* AI Assistant */}
+              <div className="glass rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0">
+                <div className="flex-shrink-0 px-4 py-3 border-b border-white/5 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+                    <span className="text-sm text-gray-400">AI Assistant</span>
+                  </div>
+                  <span className="text-xs text-indigo-400/60">Powered by Gemini</span>
+                </div>
+                <div className="flex-1 min-h-0">
+                  <Chatbot
+                    onReady={(fn) => setChatSendFn(() => fn)}
+                    onViewResume={() => window.open('/resume.pdf', '_blank')}
+                    onSeeProjects={() => setIsProjectsOpen(true)}
+                  />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Right Column: Skills + Chat - Desktop only */}
+        <motion.div
           className={`
-            ${activeSection === 'chat' ? 'flex' : 'hidden'} md:flex
+            hidden md:flex
             ${isExpanded3D ? 'md:w-80' : 'md:w-1/2'}
-            flex-col gap-4 min-h-0 flex-1 md:flex-initial
+            flex-col gap-4 min-h-0
             transition-all duration-300
           `}
+          initial="hidden"
+          whileInView="visible"
+          viewport={defaultViewport}
+          variants={fadeInUp}
         >
           {/* Skills Section */}
           <div className="glass rounded-2xl overflow-hidden flex-shrink-0">
@@ -173,10 +242,14 @@ export default function Home() {
             </div>
             {/* Chat Content */}
             <div className="flex-1 min-h-0">
-              <Chatbot onReady={(fn) => setChatSendFn(() => fn)} />
+              <Chatbot
+                onReady={(fn) => setChatSendFn(() => fn)}
+                onViewResume={() => window.open('/resume.pdf', '_blank')}
+                onSeeProjects={() => setIsProjectsOpen(true)}
+              />
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Projects Modal */}
