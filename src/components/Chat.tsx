@@ -106,7 +106,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all duration-200"
+      className="p-1.5 rounded-sm bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all duration-200"
       aria-label={copied ? 'Copied!' : 'Copy message'}
       title={copied ? 'Copied!' : 'Copy message'}
     >
@@ -185,7 +185,7 @@ function QuickActions({
           onClick={onViewResume}
           disabled={disabled}
           whileTap={!disabled ? buttonTap : undefined}
-          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-gradient-to-r from-indigo-600/20 to-violet-600/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/30 hover:text-white transition-all duration-200 disabled:opacity-50"
+          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-sm bg-gradient-to-r from-violet-500/20 to-purple-600/20 border border-violet-500/30 text-violet-300 hover:bg-violet-500/30 hover:text-white transition-all duration-200 disabled:opacity-50"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -198,7 +198,7 @@ function QuickActions({
           onClick={onSeeProjects}
           disabled={disabled}
           whileTap={!disabled ? buttonTap : undefined}
-          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-gradient-to-r from-violet-600/20 to-cyan-600/20 border border-violet-500/30 text-violet-300 hover:bg-violet-600/30 hover:text-white transition-all duration-200 disabled:opacity-50"
+          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-sm bg-gradient-to-r from-purple-500/20 to-orange-500/20 border border-orange-500/30 text-orange-300 hover:bg-orange-500/30 hover:text-white transition-all duration-200 disabled:opacity-50"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -350,10 +350,10 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
           >
             <div className="relative group max-w-[85%]">
               <div
-                className={`px-4 py-3 rounded-2xl ${
+                className={`px-4 py-3 ${
                   message.role === 'user'
-                    ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-br-md'
-                    : 'glass text-gray-200 rounded-bl-md'
+                    ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-sm'
+                    : 'glass text-gray-200 rounded-sm'
                 }`}
               >
                 {message.role === 'assistant' ? (
@@ -391,11 +391,11 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
         {/* Typing Indicator */}
         {isLoading && (
           <div className="flex justify-start">
-            <div className="glass px-4 py-3 rounded-2xl rounded-bl-md">
+            <div className="glass px-4 py-3 rounded-sm">
               <div className="flex items-center gap-1">
-                <span className="typing-dot w-2 h-2 bg-indigo-400 rounded-full" />
-                <span className="typing-dot w-2 h-2 bg-indigo-400 rounded-full" />
-                <span className="typing-dot w-2 h-2 bg-indigo-400 rounded-full" />
+                <span className="typing-dot w-2 h-2 bg-violet-400 rounded-full" />
+                <span className="typing-dot w-2 h-2 bg-violet-400 rounded-full" />
+                <span className="typing-dot w-2 h-2 bg-violet-400 rounded-full" />
               </div>
             </div>
           </div>
@@ -421,7 +421,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
                 onClick={() => handleSuggestedQuestion(question)}
                 disabled={isLoading}
                 whileTap={!isLoading ? buttonTap : undefined}
-                className="text-xs px-3 py-1.5 rounded-full glass text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200 disabled:opacity-50"
+                className="text-xs px-3 py-1.5 rounded-sm glass text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200 disabled:opacity-50"
               >
                 {question}
               </motion.button>
@@ -447,13 +447,13 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask me anything..."
             disabled={isLoading}
-            className="flex-1 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-200 disabled:opacity-50"
+            className="flex-1 bg-white/5 backdrop-blur-xl border border-white/10 rounded-sm px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all duration-200 disabled:opacity-50"
           />
           <motion.button
             type="submit"
             disabled={isLoading || !input.trim()}
             whileTap={!(isLoading || !input.trim()) ? buttonTap : undefined}
-            className="px-4 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl font-medium transition-all duration-200 hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] disabled:opacity-50 disabled:hover:shadow-none"
+            className="px-4 py-3 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-sm font-medium transition-all duration-200 hover:shadow-[0_0_20px_rgba(167,139,250,0.4)] disabled:opacity-50 disabled:hover:shadow-none"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path

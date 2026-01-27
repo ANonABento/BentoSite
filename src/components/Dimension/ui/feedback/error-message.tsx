@@ -66,10 +66,10 @@ export function ErrorMessage({ error, onRetry, isMobile }: ErrorMessageProps) {
           <div className={`${isMobile ? 'text-left' : 'text-center'} space-y-2`}>
             <h4 className="text-sm font-semibold text-gray-300 mb-3">Troubleshooting Tips:</h4>
             <div className="grid grid-cols-1 gap-2 text-xs">
-              <div className="flex items-start space-x-2"><span className="text-indigo-400 mt-0.5">•</span><span className="text-gray-400">Check your internet connection</span></div>
-              <div className="flex items-start space-x-2"><span className="text-indigo-400 mt-0.5">•</span><span className="text-gray-400">Ensure the model file exists</span></div>
-              <div className="flex items-start space-x-2"><span className="text-indigo-400 mt-0.5">•</span><span className="text-gray-400">Verify STL file format</span></div>
-              <div className="flex items-start space-x-2"><span className="text-indigo-400 mt-0.5">•</span><span className="text-gray-400">Try selecting a different model</span></div>
+              <div className="flex items-start space-x-2"><span className="text-violet-400 mt-0.5">•</span><span className="text-gray-400">Check your internet connection</span></div>
+              <div className="flex items-start space-x-2"><span className="text-violet-400 mt-0.5">•</span><span className="text-gray-400">Ensure the model file exists</span></div>
+              <div className="flex items-start space-x-2"><span className="text-violet-400 mt-0.5">•</span><span className="text-gray-400">Verify STL file format</span></div>
+              <div className="flex items-start space-x-2"><span className="text-violet-400 mt-0.5">•</span><span className="text-gray-400">Try selecting a different model</span></div>
             </div>
           </div>
         </div>

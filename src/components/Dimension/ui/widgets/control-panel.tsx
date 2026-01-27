@@ -162,11 +162,11 @@ export function ControlPanel({
                 onClick={button.onClick}
                 whileTap={buttonTap}
                 className={`
-                  p-2 rounded-lg flex flex-col items-center justify-center
-                  focus:outline-none focus:ring-2 focus:ring-indigo-500/50
+                  p-2 rounded flex flex-col items-center justify-center
+                  focus:outline-none focus:ring-2 focus:ring-violet-500/50
                   min-h-[60px]
                   ${button.active
-                    ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg ring-2 ring-indigo-400/30'
+                    ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg ring-2 ring-violet-400/30'
                     : 'bg-white/5 backdrop-blur border border-white/10 hover:bg-white/10 text-gray-300 hover:text-white shadow-md'
                   }
                 `}

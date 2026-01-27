@@ -21,7 +21,7 @@ function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+      className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-all duration-200"
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >
       {theme === 'dark' ? (
@@ -55,9 +55,9 @@ function ResumeButton({ resumeUrl, className = '' }: { resumeUrl: string; classN
     <a
       href={resumeUrl}
       download
-      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm
-        bg-gradient-to-r from-indigo-600 to-violet-600 text-white
-        hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:scale-105
+      className={`flex items-center gap-2 px-4 py-2.5 rounded-sm font-medium text-sm
+        bg-gradient-to-r from-violet-500 to-purple-600 text-white
+        hover:shadow-[0_0_20px_rgba(167,139,250,0.4)] hover:scale-105
         transition-all duration-300 ${className}`}
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,7 +129,7 @@ export default function Header({
               href={link.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+              className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-all duration-200"
               aria-label={link.label}
             >
               {link.icon}
@@ -138,7 +138,7 @@ export default function Header({
           {onProjectsClick && (
             <button
               onClick={onProjectsClick}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium
+              className="flex items-center gap-2 px-3 py-2 rounded-sm text-sm font-medium
                 glass text-gray-300 hover:text-white hover:bg-white/10
                 transition-all duration-200"
               aria-label="View projects"
@@ -158,7 +158,7 @@ export default function Header({
   return (
     <header className="relative overflow-hidden">
       {/* Background gradient effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-violet-500/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-violet-400/5 via-transparent to-purple-500/5" />
 
       <div className="relative px-6 py-8 md:py-12">
         <div className="max-w-4xl mx-auto text-center">
@@ -183,10 +183,10 @@ export default function Header({
                 onMouseEnter={() => setIsHovered(link.id)}
                 onMouseLeave={() => setIsHovered(null)}
                 className={`
-                  flex items-center gap-2 px-4 py-2.5 rounded-xl
+                  flex items-center gap-2 px-4 py-2.5 rounded-sm
                   transition-all duration-300 transform
                   ${isHovered === link.id
-                    ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white scale-105 shadow-[0_0_20px_rgba(99,102,241,0.4)]'
+                    ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white scale-105 shadow-[0_0_20px_rgba(167,139,250,0.4)]'
                     : 'glass text-gray-300 hover:text-white'
                   }
                 `}
@@ -202,7 +202,7 @@ export default function Header({
       </div>
 
       {/* Bottom gradient line */}
-      <div className="h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
+      <div className="h-px bg-gradient-to-r from-transparent via-violet-500/50 to-transparent" />
     </header>
   );
 }

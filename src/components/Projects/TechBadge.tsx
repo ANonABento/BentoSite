@@ -14,11 +14,11 @@ export function TechBadge({ tech, size = 'sm' }: TechBadgeProps) {
     <span
       className={`
         ${sizeClasses}
-        rounded-full font-medium
+        rounded-sm font-medium
         bg-white/5 border border-white/10
         text-gray-300
         transition-all duration-150
-        hover:bg-white/10 hover:border-indigo-500/30 hover:text-white
+        hover:bg-white/10 hover:border-violet-500/30 hover:text-white
       `}
     >
       {tech}

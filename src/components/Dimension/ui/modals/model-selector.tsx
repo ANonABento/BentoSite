@@ -48,9 +48,9 @@ export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, 
         <div className="px-6 py-4 border-b border-white/10">
           <div className="flex items-center justify-between mb-4">
             <h2 id="model-selector-title" className="text-xl font-bold text-white">Select 3D Model</h2>
-            <button 
-              onClick={onClose} 
-              className={`text-gray-400 hover:text-white ${isInitialRender ? '' : 'transition-colors duration-150'} p-2 rounded-xl hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/50`} 
+            <button
+              onClick={onClose}
+              className={`text-gray-400 hover:text-white ${isInitialRender ? '' : 'transition-colors duration-150'} p-2 rounded-lg hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-violet-500/50`}
               aria-label="Close model selector"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -62,14 +62,14 @@ export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, 
           {/* Search and filter */}
           <div className="space-y-4">
             <div className="relative">
-              <input 
+              <input
                 ref={searchInputRef}
-                type="text" 
-                placeholder="Search models..." 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-                className={`w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 ${isInitialRender ? '' : 'transition-all duration-150'}`} 
-                aria-label="Search models by name or description" 
+                type="text"
+                placeholder="Search models..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={`w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 ${isInitialRender ? '' : 'transition-all duration-150'}`}
+                aria-label="Search models by name or description"
               />
               <svg className="absolute left-3 top-3.5 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -81,7 +81,7 @@ export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, 
                 <button 
                   key={category} 
                   onClick={() => setSelectedCategory(category)} 
-                  className={`px-4 py-2 rounded-full text-sm font-medium ${isInitialRender ? '' : 'transition-all duration-150 transform hover:scale-105'} focus:outline-none focus:ring-2 focus:ring-indigo-500/50 ${selectedCategory === category ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg' : 'bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10'}`} 
+                  className={`px-4 py-2 rounded-full text-sm font-medium ${isInitialRender ? '' : 'transition-all duration-150 transform hover:scale-105'} focus:outline-none focus:ring-2 focus:ring-violet-500/50 ${selectedCategory === category ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg' : 'bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10'}`} 
                   aria-pressed={selectedCategory === category}
                 >
                   {category}
@@ -104,13 +104,13 @@ export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, 
           ) : (
             <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
               {filteredModels.map((model: any) => (
-                <div 
-                  key={model.id} 
-                  onClick={() => handleModelClick(model)} 
-                  className={`border-2 rounded-xl p-4 cursor-pointer ${isInitialRender ? '' : 'transition-all duration-200 transform hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(99,102,241,0.2)]'} ${selectedModel.id === model.id ? 'border-indigo-500 bg-indigo-500/10 shadow-[0_0_20px_rgba(99,102,241,0.3)]' : 'border-white/10 hover:border-white/20 hover:bg-white/5 bg-white/[0.02]'} focus:outline-none focus:ring-2 focus:ring-indigo-500/50`} 
-                  tabIndex={0} 
-                  role="button" 
-                  aria-label={`Select ${model.name} model`} 
+                <div
+                  key={model.id}
+                  onClick={() => handleModelClick(model)}
+                  className={`border-2 rounded-lg p-4 cursor-pointer ${isInitialRender ? '' : 'transition-all duration-200 transform hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(167,139,250,0.2)]'} ${selectedModel.id === model.id ? 'border-violet-500 bg-violet-500/10 shadow-[0_0_20px_rgba(167,139,250,0.3)]' : 'border-white/10 hover:border-white/20 hover:bg-white/5 bg-white/[0.02]'} focus:outline-none focus:ring-2 focus:ring-violet-500/50`}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Select ${model.name} model`}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleModelClick(model); }}}
                 >
                   <div className="w-full h-32 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg mb-4 flex items-center justify-center border border-white/5">
@@ -121,7 +121,7 @@ export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, 
                   <h3 className="font-bold text-white mb-2 leading-tight">{model.name}</h3>
                   <p className="text-sm text-gray-400 mb-3 line-clamp-2 leading-relaxed">{model.description}</p>
                   <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">{model.category}</span>
+                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-violet-500/20 text-violet-300 border border-violet-500/30">{model.category}</span>
                     <span className="text-xs text-gray-500 font-mono">{formatFileSize(model.fileSize)}</span>
                   </div>
                 </div>
