@@ -21,7 +21,7 @@ export function LoadingProgress({ progress }: LoadingProgressProps) {
         <span className={`text-sm text-white font-mono`}>{formatPercentage(progress)}%</span>
       </div>
       <div className="w-64 bg-gray-700 rounded-full h-3 overflow-hidden">
-        <div className={`bg-gradient-to-r from-indigo-500 to-violet-500 h-3 rounded-full ${isInitialRender ? '' : 'transition-all duration-300 ease-out'} relative`} style={{ width: `${progress}%` }}>
+        <div className={`bg-gradient-to-r from-violet-400 to-purple-500 h-3 rounded-full ${isInitialRender ? '' : 'transition-all duration-300 ease-out'} relative`} style={{ width: `${progress}%` }}>
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/20 animate-pulse"></div>
         </div>
       </div>

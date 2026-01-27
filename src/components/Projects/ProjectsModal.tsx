@@ -91,7 +91,7 @@ export function ProjectsModal({ isOpen, onClose, onLoad3DModel, isMobile = false
                 <motion.button
                   onClick={onClose}
                   whileTap={buttonTap}
-                  className="text-gray-400 hover:text-white transition-colors duration-150 p-2 rounded-xl hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                  className="text-gray-400 hover:text-white transition-colors duration-150 p-2 rounded-lg hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
                   aria-label="Close projects modal"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -110,7 +110,7 @@ export function ProjectsModal({ isOpen, onClose, onLoad3DModel, isMobile = false
                     placeholder="Search projects..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-150"
+                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all duration-150"
                     aria-label="Search projects by name, description, or technology"
                   />
                   <svg
@@ -134,9 +134,9 @@ export function ProjectsModal({ isOpen, onClose, onLoad3DModel, isMobile = false
                       className={`
                         px-4 py-2 rounded-full text-sm font-medium
                         transition-all duration-150 transform hover:scale-105
-                        focus:outline-none focus:ring-2 focus:ring-indigo-500/50
+                        focus:outline-none focus:ring-2 focus:ring-violet-500/50
                         ${selectedCategory === category
-                          ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg'
+                          ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg'
                           : 'bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10'
                         }
                       `}

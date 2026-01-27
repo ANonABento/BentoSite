@@ -143,16 +143,16 @@ export function CameraPresetsWidget({
       <div className={`
         glass rounded-xl
         ${isMobile ? 'w-48' : 'w-72'} 
-        shadow-lg ring-2 ring-indigo-400/50
+        shadow-lg ring-2 ring-violet-400/50
       `}>
         {/* Header with only close button */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
           <div className="flex items-center space-x-2">
-            <div className="text-indigo-400">{cameraIcon}</div>
+            <div className="text-violet-400">{cameraIcon}</div>
             <h3 className={`font-semibold text-sm text-white`}>Camera Presets</h3>
           </div>
           <button
-            className="text-gray-400 hover:text-red-400 p-1 rounded-lg hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-red-500/50 active:scale-95 transform"
+            className="text-gray-400 hover:text-red-400 p-1 rounded hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-red-500/50 active:scale-95 transform"
             title="Close presets"
             aria-label="Close camera presets"
             onClick={onClose}
@@ -171,7 +171,7 @@ export function CameraPresetsWidget({
                 <button
                   key={name}
                   onClick={() => onPresetSelect(name as keyof typeof presets)}
-                  className="px-3 py-2 text-xs rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300 hover:text-white shadow-md hover:shadow-lg"
+                  className="px-3 py-2 text-xs rounded transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-violet-500/50 bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300 hover:text-white shadow-md hover:shadow-lg"
                 >
                   <div className="capitalize font-medium">{name}</div>
                 </button>

@@ -22,12 +22,12 @@ export function ProjectCard({ project, onLoad3DModel }: ProjectCardProps) {
         backdrop-blur-xl rounded-2xl border border-white/10 bg-white/5 p-4
         transition-all duration-200 ease-out
         hover:scale-[1.02] hover:border-white/20
-        hover:shadow-[0_0_30px_rgba(99,102,241,0.2)]
-        focus:outline-none focus:ring-2 focus:ring-indigo-500/50
+        hover:shadow-[0_0_30px_rgba(167,139,250,0.2)]
+        focus:outline-none focus:ring-2 focus:ring-violet-500/50
       `}
     >
-      {/* Thumbnail placeholder */}
-      <div className="relative w-full h-36 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl mb-4 flex items-center justify-center border border-white/5 overflow-hidden">
+      {/* Thumbnail - bento compartment (sharp inner corners) */}
+      <div className="relative w-full h-36 bg-gradient-to-br from-gray-800 to-gray-900 rounded-sm mb-4 flex items-center justify-center border border-white/10 overflow-hidden">
         {project.thumbnail ? (
           <Image
             src={project.thumbnail}
@@ -57,7 +57,7 @@ export function ProjectCard({ project, onLoad3DModel }: ProjectCardProps) {
       <div className="flex items-center justify-between mb-2">
         <span
           className={`
-            px-2 py-0.5 rounded-full text-xs font-medium
+            px-2.5 py-1 rounded-none text-xs font-medium uppercase tracking-wide
             ${project.status === 'Completed'
               ? 'bg-green-500/20 text-green-300 border border-green-500/30'
               : project.status === 'In Progress'
@@ -93,15 +93,15 @@ export function ProjectCard({ project, onLoad3DModel }: ProjectCardProps) {
 
       {/* Action buttons */}
       {hasLinks && (
-        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-white/5">
+        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-white/10">
           {project.links.liveDemo && (
             <a
               href={project.links.liveDemo}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
-                bg-gradient-to-r from-indigo-600 to-violet-600 text-white
-                hover:shadow-[0_0_15px_rgba(99,102,241,0.4)]
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
+                bg-gradient-to-r from-violet-500 to-purple-600 text-white
+                hover:shadow-[0_0_15px_rgba(167,139,250,0.4)]
                 transition-all duration-200"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +115,7 @@ export function ProjectCard({ project, onLoad3DModel }: ProjectCardProps) {
               href={project.links.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
                 bg-white/5 text-gray-300 border border-white/10
                 hover:bg-white/10 hover:text-white
                 transition-all duration-200"
@@ -129,9 +129,9 @@ export function ProjectCard({ project, onLoad3DModel }: ProjectCardProps) {
           {project.links.modelPath && onLoad3DModel && (
             <button
               onClick={() => onLoad3DModel(project.links.modelPath!)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
-                bg-gradient-to-r from-cyan-600 to-blue-600 text-white
-                hover:shadow-[0_0_15px_rgba(6,182,212,0.4)]
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
+                bg-gradient-to-r from-orange-500 to-amber-500 text-white
+                hover:shadow-[0_0_15px_rgba(251,146,60,0.4)]
                 transition-all duration-200"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

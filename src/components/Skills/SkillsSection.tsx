@@ -14,7 +14,7 @@ interface SkillsSectionProps {
 const categoryConfig: Record<SkillCategory, { label: string; color: string; icon: React.ReactNode }> = {
   hardware: {
     label: 'Hardware',
-    color: 'cyan',
+    color: 'orange',
     icon: (
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
@@ -23,7 +23,7 @@ const categoryConfig: Record<SkillCategory, { label: string; color: string; icon
   },
   software: {
     label: 'Software',
-    color: 'indigo',
+    color: 'violet',
     icon: (
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
@@ -52,9 +52,9 @@ function SkillPill({
   onAskAI?: (skill: string) => void;
 }) {
   const colorClasses: Record<SkillCategory, string> = {
-    hardware: 'hover:border-cyan-500/40 hover:shadow-[0_0_12px_rgba(6,182,212,0.25)]',
-    software: 'hover:border-indigo-500/40 hover:shadow-[0_0_12px_rgba(99,102,241,0.25)]',
-    tools: 'hover:border-violet-500/40 hover:shadow-[0_0_12px_rgba(139,92,246,0.25)]',
+    hardware: 'hover:border-orange-500/40 hover:shadow-[0_0_12px_rgba(251,146,60,0.25)]',
+    software: 'hover:border-violet-500/40 hover:shadow-[0_0_12px_rgba(167,139,250,0.25)]',
+    tools: 'hover:border-purple-500/40 hover:shadow-[0_0_12px_rgba(168,85,247,0.25)]',
   };
 
   return (
@@ -62,11 +62,11 @@ function SkillPill({
       onClick={() => onAskAI?.(skill)}
       whileTap={buttonTap}
       className={`
-        px-3 py-1.5 rounded-full text-xs font-medium
+        px-3 py-1.5 rounded-sm text-xs font-medium
         bg-white/5 border border-white/10 text-gray-300
         transition-all duration-200 transform
         hover:scale-105 hover:bg-white/10 hover:text-white
-        focus:outline-none focus:ring-2 focus:ring-indigo-500/50
+        focus:outline-none focus:ring-2 focus:ring-violet-500/50
         active:scale-95
         ${colorClasses[category]}
       `}
@@ -90,9 +90,9 @@ function CategorySection({
 }) {
   const config = categoryConfig[category];
   const textColorClass: Record<SkillCategory, string> = {
-    hardware: 'text-cyan-400',
-    software: 'text-indigo-400',
-    tools: 'text-violet-400',
+    hardware: 'text-orange-400',
+    software: 'text-violet-400',
+    tools: 'text-purple-400',
   };
 
   return (
@@ -130,7 +130,7 @@ export function SkillsSection({ onAskAI }: SkillsSectionProps) {
         className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors border-b border-white/5"
       >
         <div className="flex items-center gap-2">
-          <svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
           <span className="text-sm font-medium text-white">My Skills</span>

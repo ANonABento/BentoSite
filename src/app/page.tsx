@@ -11,7 +11,7 @@ const ThreeViewer = dynamic(() => import('../components/Dimension/Dimension'), {
   loading: () => (
     <div className="w-full h-full flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+        <div className="w-12 h-12 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" />
         <span className="text-gray-400 text-sm">Loading 3D Viewer...</span>
       </div>
     </div>
@@ -23,7 +23,7 @@ const Chatbot = dynamic(() => import('../components/Chat'), {
   loading: () => (
     <div className="w-full h-full flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
+        <div className="w-12 h-12 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
         <span className="text-gray-400 text-sm">Loading Chat...</span>
       </div>
     </div>
@@ -88,9 +88,9 @@ export default function Home() {
           <motion.button
             onClick={() => setActiveSection('3d')}
             whileTap={buttonTap}
-            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className={`flex-1 py-2.5 px-4 rounded-none text-sm font-medium transition-all duration-200 ${
               activeSection === '3d'
-                ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg'
+                ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
@@ -99,9 +99,9 @@ export default function Home() {
           <motion.button
             onClick={() => setActiveSection('chat')}
             whileTap={buttonTap}
-            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className={`flex-1 py-2.5 px-4 rounded-none text-sm font-medium transition-all duration-200 ${
               activeSection === 'chat'
-                ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg'
+                ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
@@ -124,7 +124,7 @@ export default function Home() {
             {/* 3D Viewer Header */}
             <div className="flex-shrink-0 px-4 py-3 border-b border-white/5 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
                 <span className="text-sm text-gray-400">Interactive 3D Viewer</span>
               </div>
               <button
@@ -168,7 +168,7 @@ export default function Home() {
             >
               <div className="glass rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0">
                 <div className="flex-shrink-0 px-4 py-3 border-b border-white/5 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                  <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
                   <span className="text-sm text-gray-400">Interactive 3D Viewer</span>
                 </div>
                 <div className="flex-1 min-h-0">
@@ -198,7 +198,7 @@ export default function Home() {
                     <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
                     <span className="text-sm text-gray-400">AI Assistant</span>
                   </div>
-                  <span className="text-xs text-indigo-400/60">Powered by Gemini</span>
+                  <span className="text-xs text-violet-400/60">Powered by Gemini</span>
                 </div>
                 <div className="flex-1 min-h-0">
                   <Chatbot
@@ -238,7 +238,7 @@ export default function Home() {
                 <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
                 <span className="text-sm text-gray-400">AI Assistant</span>
               </div>
-              <span className="text-xs text-indigo-400/60 hidden sm:inline">Powered by Gemini</span>
+              <span className="text-xs text-violet-400/60 hidden sm:inline">Powered by Gemini</span>
             </div>
             {/* Chat Content */}
             <div className="flex-1 min-h-0">

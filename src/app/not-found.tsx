@@ -5,7 +5,7 @@ export default function NotFound() {
     <div className="min-h-screen bg-[var(--background)] bg-grid flex items-center justify-center p-4">
       {/* Ambient glow effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px]" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-[100px]" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-[100px]" />
       </div>
 
@@ -28,8 +28,8 @@ export default function NotFound() {
         <Link
           href="/"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium
-            bg-gradient-to-r from-indigo-600 to-violet-600 text-white
-            hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:scale-105
+            bg-gradient-to-r from-violet-500 to-purple-600 text-white
+            hover:shadow-[0_0_20px_rgba(167,139,250,0.4)] hover:scale-105
             transition-all duration-300"
         >
           <svg
@@ -50,13 +50,13 @@ export default function NotFound() {
 
         {/* Decorative dots */}
         <div className="mt-8 flex justify-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-indigo-500/50 animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-violet-500/50 animate-pulse" />
           <div
             className="w-2 h-2 rounded-full bg-violet-500/50 animate-pulse"
             style={{ animationDelay: '0.2s' }}
           />
           <div
-            className="w-2 h-2 rounded-full bg-cyan-500/50 animate-pulse"
+            className="w-2 h-2 rounded-full bg-orange-500/50 animate-pulse"
             style={{ animationDelay: '0.4s' }}
           />
         </div>
