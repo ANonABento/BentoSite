@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { SUGGESTED_QUESTIONS, PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { buttonTap } from '@/lib/animations';
+import { useToast } from '@/components/ui/Toast';
 
 // === TYPES & CONSTANTS ===
 
@@ -85,13 +86,14 @@ function clearStoredMessages(): void {
 
 // === SUB-COMPONENTS ===
 
-function CopyButton({ text }: { text: string }) {
+function CopyButton({ text, onCopied }: { text: string; onCopied?: () => void }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
+      onCopied?.();
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // Fallback for older browsers
@@ -104,6 +106,7 @@ function CopyButton({ text }: { text: string }) {
       document.execCommand('copy');
       document.body.removeChild(textArea);
       setCopied(true);
+      onCopied?.();
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -225,6 +228,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { success: toastSuccess } = useToast();
 
   // Load messages from localStorage on mount (client-side only)
   useEffect(() => {
@@ -413,7 +417,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
               </div>
               {/* Copy button - appears on hover */}
               <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <CopyButton text={message.content} />
+                <CopyButton text={message.content} onCopied={() => toastSuccess('Copied to clipboard!')} />
               </div>
             </div>
           </div>

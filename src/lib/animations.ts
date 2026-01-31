@@ -1,4 +1,36 @@
-import { Variants } from 'framer-motion';
+import { Variants, Transition } from 'framer-motion';
+
+// Premium easing curves
+export const easings = {
+  // Smooth deceleration - great for entrances
+  easeOutQuart: [0.25, 1, 0.5, 1] as const,
+  // Gentle acceleration then deceleration
+  easeInOutQuart: [0.76, 0, 0.24, 1] as const,
+  // Snappy spring-like feel
+  easeOutBack: [0.34, 1.56, 0.64, 1] as const,
+  // Smooth and premium
+  easeOutExpo: [0.16, 1, 0.3, 1] as const,
+  // Apple-style smooth
+  apple: [0.25, 0.46, 0.45, 0.94] as const,
+};
+
+// Smooth reveal with blur - premium entrance effect
+export const smoothReveal: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 30,
+    filter: 'blur(10px)',
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: {
+      duration: 0.7,
+      ease: easings.apple,
+    },
+  },
+};
 
 // Standard section entrance - fade up
 export const fadeInUp: Variants = {
@@ -11,7 +43,7 @@ export const fadeInUp: Variants = {
     y: 0,
     transition: {
       duration: 0.5,
-      ease: 'easeOut',
+      ease: easings.easeOutQuart,
     },
   },
 };
@@ -20,14 +52,14 @@ export const fadeInUp: Variants = {
 export const fadeInLeft: Variants = {
   hidden: {
     opacity: 0,
-    x: -20,
+    x: -30,
   },
   visible: {
     opacity: 1,
     x: 0,
     transition: {
       duration: 0.5,
-      ease: 'easeOut',
+      ease: easings.easeOutQuart,
     },
   },
 };
@@ -35,19 +67,19 @@ export const fadeInLeft: Variants = {
 export const fadeInRight: Variants = {
   hidden: {
     opacity: 0,
-    x: 20,
+    x: 30,
   },
   visible: {
     opacity: 1,
     x: 0,
     transition: {
       duration: 0.5,
-      ease: 'easeOut',
+      ease: easings.easeOutQuart,
     },
   },
 };
 
-// Container for staggered children
+// Container for staggered children - enhanced timing
 export const staggerContainer: Variants = {
   hidden: {
     opacity: 1,
@@ -55,24 +87,24 @@ export const staggerContainer: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.05,
-      delayChildren: 0.1,
+      staggerChildren: 0.08,
+      delayChildren: 0.15,
     },
   },
 };
 
-// Individual stagger item
+// Individual stagger item with better motion
 export const staggerItem: Variants = {
   hidden: {
     opacity: 0,
-    y: 10,
+    y: 15,
   },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.3,
-      ease: 'easeOut',
+      duration: 0.4,
+      ease: easings.easeOutQuart,
     },
   },
 };
@@ -85,7 +117,7 @@ export const staggerFast: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.03,
+      staggerChildren: 0.04,
       delayChildren: 0.05,
     },
   },
@@ -95,14 +127,31 @@ export const staggerFast: Variants = {
 export const scaleIn: Variants = {
   hidden: {
     opacity: 0,
-    scale: 0.9,
+    scale: 0.85,
   },
   visible: {
     opacity: 1,
     scale: 1,
     transition: {
-      duration: 0.2,
-      ease: 'easeOut',
+      duration: 0.3,
+      ease: easings.easeOutBack,
+    },
+  },
+};
+
+// Pop in with slight overshoot
+export const popIn: Variants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.8,
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 300,
+      damping: 20,
     },
   },
 };
@@ -117,8 +166,8 @@ export const tabContent: Variants = {
     opacity: 1,
     x: 0,
     transition: {
-      duration: 0.2,
-      ease: 'easeOut',
+      duration: 0.25,
+      ease: easings.easeOutQuart,
     },
   },
   exit: {
@@ -127,6 +176,60 @@ export const tabContent: Variants = {
     transition: {
       duration: 0.15,
       ease: 'easeIn',
+    },
+  },
+};
+
+// Card hover with 3D tilt effect
+export const cardHover = {
+  rest: {
+    scale: 1,
+    rotateX: 0,
+    rotateY: 0,
+    transition: {
+      duration: 0.3,
+      ease: easings.easeOutQuart,
+    },
+  },
+  hover: {
+    scale: 1.02,
+    transition: {
+      duration: 0.3,
+      ease: easings.easeOutQuart,
+    },
+  },
+};
+
+// Glow pulse animation for attention
+export const glowPulse: Variants = {
+  initial: {
+    boxShadow: '0 0 0 rgba(167, 139, 250, 0)',
+  },
+  animate: {
+    boxShadow: [
+      '0 0 0 rgba(167, 139, 250, 0)',
+      '0 0 20px rgba(167, 139, 250, 0.4)',
+      '0 0 0 rgba(167, 139, 250, 0)',
+    ],
+    transition: {
+      duration: 2,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    },
+  },
+};
+
+// Skeleton loading pulse
+export const skeletonPulse: Variants = {
+  initial: {
+    opacity: 0.4,
+  },
+  animate: {
+    opacity: [0.4, 0.7, 0.4],
+    transition: {
+      duration: 1.5,
+      repeat: Infinity,
+      ease: 'easeInOut',
     },
   },
 };
@@ -141,8 +244,90 @@ export const buttonTap = {
   },
 };
 
+// Enhanced button hover
+export const buttonHover = {
+  scale: 1.02,
+  transition: {
+    type: 'spring' as const,
+    stiffness: 400,
+    damping: 25,
+  },
+};
+
+// Floating animation for decorative elements
+export const float: Variants = {
+  initial: {
+    y: 0,
+  },
+  animate: {
+    y: [-5, 5, -5],
+    transition: {
+      duration: 4,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    },
+  },
+};
+
 // Viewport settings for scroll-triggered animations
 export const defaultViewport = {
   once: true,
-  margin: '-50px',
+  margin: '-80px',
+};
+
+// Viewport for elements that should animate earlier
+export const earlyViewport = {
+  once: true,
+  margin: '-20px',
+};
+
+// Spring transition presets
+export const springTransition: Transition = {
+  type: 'spring',
+  stiffness: 300,
+  damping: 25,
+};
+
+export const snappySpring: Transition = {
+  type: 'spring',
+  stiffness: 500,
+  damping: 30,
+};
+
+export const gentleSpring: Transition = {
+  type: 'spring',
+  stiffness: 200,
+  damping: 20,
+};
+
+// Page section stagger - for main page sections
+export const sectionStagger: Variants = {
+  hidden: {
+    opacity: 0,
+  },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+// Section item with blur reveal
+export const sectionItem: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 40,
+    filter: 'blur(8px)',
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: {
+      duration: 0.6,
+      ease: easings.apple,
+    },
+  },
 };
