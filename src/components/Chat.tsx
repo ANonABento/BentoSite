@@ -16,8 +16,13 @@ interface Message {
   feedback?: 'positive' | 'negative' | null;
 }
 
+interface ChatFunctions {
+  send: (content: string) => void;
+  clear: () => void;
+}
+
 interface ChatbotProps {
-  onReady?: (sendFn: (content: string) => void) => void;
+  onReady?: (fns: ChatFunctions) => void;
   onViewResume?: () => void;
   onSeeProjects?: () => void;
 }
@@ -185,7 +190,7 @@ function QuickActions({
           onClick={onViewResume}
           disabled={disabled}
           whileTap={!disabled ? buttonTap : undefined}
-          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-sm bg-gradient-to-r from-violet-500/20 to-purple-600/20 border border-violet-500/30 text-violet-300 hover:bg-violet-500/30 hover:text-white transition-all duration-200 disabled:opacity-50"
+          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-sm bg-orange-500/20 border border-orange-500/30 text-orange-300 hover:bg-orange-500/30 hover:text-white transition-all duration-200 disabled:opacity-50"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -198,7 +203,7 @@ function QuickActions({
           onClick={onSeeProjects}
           disabled={disabled}
           whileTap={!disabled ? buttonTap : undefined}
-          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-sm bg-gradient-to-r from-purple-500/20 to-orange-500/20 border border-orange-500/30 text-orange-300 hover:bg-orange-500/30 hover:text-white transition-all duration-200 disabled:opacity-50"
+          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-sm bg-violet-500/20 border border-violet-500/30 text-violet-300 hover:bg-violet-500/30 hover:text-white transition-all duration-200 disabled:opacity-50"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -259,44 +264,70 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
     async (content: string) => {
       if (!content.trim() || isLoading) return;
 
+      const messageId = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
       const userMessage: Message = {
-        id: Date.now().toString(),
+        id: messageId,
         role: 'user',
         content: content.trim(),
         timestamp: Date.now(),
       };
 
+      // Use functional update to avoid stale closure on messages
       setMessages((prev) => [...prev, userMessage]);
       setInput('');
       setIsLoading(true);
       setError(null);
 
       try {
+        // Create AbortController for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+        // Use functional form to get current messages
+        const currentMessages = await new Promise<Message[]>((resolve) => {
+          setMessages((prev) => {
+            resolve(prev);
+            return prev;
+          });
+        });
+
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            messages: [...messages, userMessage].map((m) => ({
+            messages: currentMessages.map((m) => ({
               role: m.role,
               content: m.content,
             })),
           }),
+          signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
+
+        // Check response status before parsing JSON
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Server error: ${response.status}`);
+        }
 
         const data = await response.json();
 
         const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
           role: 'assistant',
-          content: data.message || data.error || 'Sorry, I could not process your request.',
+          content: data.message || 'Sorry, I could not process your request.',
           timestamp: Date.now(),
         };
 
         setMessages((prev) => [...prev, assistantMessage]);
-      } catch {
-        setError('Failed to send message. Please try again.');
+      } catch (err) {
+        const errorMsg = err instanceof Error && err.name === 'AbortError'
+          ? 'Request timed out. Please try again.'
+          : 'Failed to send message. Please try again.';
+        setError(errorMsg);
         const errorMessage: Message = {
-          id: (Date.now() + 1).toString(),
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
           role: 'assistant',
           content: `I apologize, but I'm having trouble connecting right now. You can reach ${PORTFOLIO_DATA.personal.name} directly at ${PORTFOLIO_DATA.personal.email}.`,
           timestamp: Date.now(),
@@ -307,13 +338,13 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
         inputRef.current?.focus();
       }
     },
-    [messages, isLoading]
+    [isLoading]
   );
 
-  // Expose sendMessage to parent component
+  // Expose sendMessage and clearChat to parent component
   useEffect(() => {
     if (onReady) {
-      onReady(sendMessage);
+      onReady({ send: sendMessage, clear: clearChat });
     }
   }, [onReady, sendMessage]);
 
@@ -352,7 +383,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
               <div
                 className={`px-4 py-3 ${
                   message.role === 'user'
-                    ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-sm'
+                    ? 'bg-violet-500 text-white rounded-sm'
                     : 'glass text-gray-200 rounded-sm'
                 }`}
               >
@@ -453,7 +484,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
             type="submit"
             disabled={isLoading || !input.trim()}
             whileTap={!(isLoading || !input.trim()) ? buttonTap : undefined}
-            className="px-4 py-3 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-sm font-medium transition-all duration-200 hover:shadow-[0_0_20px_rgba(167,139,250,0.4)] disabled:opacity-50 disabled:hover:shadow-none"
+            className="px-4 py-3 bg-violet-500 hover:bg-violet-400 active:bg-violet-600 text-white rounded-sm font-medium transition-all duration-200 hover:shadow-[0_0_20px_rgba(167,139,250,0.3)] disabled:opacity-50 disabled:hover:shadow-none"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -466,16 +497,6 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
           </motion.button>
         </form>
 
-        {/* Clear Chat Button */}
-        {messages.length > 1 && (
-          <motion.button
-            onClick={clearChat}
-            whileTap={buttonTap}
-            className="mt-2 text-xs text-gray-500 hover:text-gray-300 transition-colors w-full text-center"
-          >
-            Clear conversation
-          </motion.button>
-        )}
       </div>
     </div>
   );

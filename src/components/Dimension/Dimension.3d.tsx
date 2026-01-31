@@ -1,20 +1,40 @@
 // Dimension.tsx - 3D and Three.js Components
 
-import React, { useRef, forwardRef, useImperativeHandle } from 'react';
-import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
+import React, { useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
+import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import { OrbitControls, Box, Grid, Text, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-// @ts-ignore
-import { STLLoader } from 'three/examples/jsm/loaders/STLLoader';
+import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 
-import type { 
+import type {
   ResponsiveOrbitControlsProps,
   LODModelProps,
   BillboardTextProps,
   FallbackModelProps,
   STLModelWrapperProps,
-  ModelFormat
+  ModelFormat,
+  ModelError
 } from './Dimension.types';
+
+// Centralized mobile detection helper
+function detectMobile(): boolean {
+  if (typeof window === 'undefined') return false;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+         window.innerWidth < 768 ||
+         ('ontouchstart' in window);
+}
+
+// Design system colors for 3D components
+const COLORS = {
+  error: '#dc2626',
+  errorText: '#ef4444',
+  muted: '#9ca3af',
+  model: '#666666',
+  skeleton: '#444444',
+} as const;
+
+// Reusable origin vector to avoid allocations in render loop
+const ORIGIN = new THREE.Vector3(0, 0, 0);
 
 // Utility to detect model format from path
 export function getModelFormat(path: string): ModelFormat {
@@ -24,9 +44,9 @@ export function getModelFormat(path: string): ModelFormat {
 }
 
 // Billboard Text Component (always faces camera)
-export function BillboardText({ text, position, color = "#dc2626", size = 0.8 }: BillboardTextProps) {
-  const textRef = useRef<any>(null);
-  
+export function BillboardText({ text, position, color = COLORS.error, size = 0.8 }: BillboardTextProps) {
+  const textRef = useRef<THREE.Object3D>(null);
+
   useFrame((state) => {
     if (textRef.current) {
       // Make text always face the camera
@@ -51,14 +71,12 @@ export function BillboardText({ text, position, color = "#dc2626", size = 0.8 }:
 
 // Fallback Geometry Component - Wireframe Red Box
 export function FallbackModel({ error }: FallbackModelProps) {
-  const meshRef = useRef<THREE.Mesh>(null!);
+  const meshRef = useRef<THREE.Mesh>(null);
   const [clicked, setClicked] = React.useState(false);
-  const [autoRotate, setAutoRotate] = React.useState(true);
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                   window.innerWidth < 768 ||
-                   ('ontouchstart' in window);
+  const [autoRotate] = React.useState(true);
+  const isMobile = useMemo(() => detectMobile(), []);
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     if (meshRef.current && autoRotate) {
       meshRef.current.rotation.x += delta * 0.2;
       meshRef.current.rotation.y += delta * 0.3;
@@ -75,31 +93,30 @@ export function FallbackModel({ error }: FallbackModelProps) {
         onClick={() => setClicked(!clicked)}
         castShadow={!isMobile}
         receiveShadow={!isMobile}
-        // Enable frustum culling
         frustumCulled={true}
       >
-        <meshStandardMaterial 
-          color={error ? "#dc2626" : "#666666"} 
+        <meshStandardMaterial
+          color={error ? COLORS.error : COLORS.model}
           wireframe={true}
           transparent={false}
         />
       </Box>
-      
+
       {/* Error indicator text (billboard - always faces camera) */}
       {error && (
-        <BillboardText 
-          text="MODEL ERROR" 
-          position={[0, 2.5, 0]} 
-          color="#ef4444" 
+        <BillboardText
+          text="MODEL ERROR"
+          position={[0, 2.5, 0]}
+          color={COLORS.errorText}
           size={0.6}
         />
       )}
-      
+
       {/* Helper instruction text (billboard) */}
-      <BillboardText 
-        text="Click cube • Using fallback geometry" 
-        position={[0, -2.5, 0]} 
-        color="#9ca3af" 
+      <BillboardText
+        text="Click cube • Using fallback geometry"
+        position={[0, -2.5, 0]}
+        color={COLORS.muted}
         size={0.4}
       />
     </group>
@@ -107,28 +124,26 @@ export function FallbackModel({ error }: FallbackModelProps) {
 }
 
 export function SkeletonLoader() {
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                   window.innerWidth < 768 ||
-                   ('ontouchstart' in window);
-  const controlsRef = useRef<any>(null);
-  
+  const isMobile = useMemo(() => detectMobile(), []);
+  const controlsRef = useRef(null);
+
   return (
     <>
       <ambientLight intensity={0.3} />
       <pointLight position={[15, 15, 15]} intensity={isMobile ? 0.6 : 0.8} />
       <pointLight position={[-10, 10, -10]} intensity={isMobile ? 0.2 : 0.4} />
-      
+
       <StationaryBackground />
-      
+
       {/* Skeleton 3D model placeholder */}
       <Box
         position={[0, 0, 0]}
         scale={[1, 1, 1]}
         frustumCulled={true}
       >
-        <meshStandardMaterial color="#444444" wireframe />
+        <meshStandardMaterial color={COLORS.skeleton} wireframe />
       </Box>
-      
+
       <ResponsiveOrbitControls ref={controlsRef} autoRotate={true} onResetView={() => {}} isMobile={isMobile} />
     </>
   );
@@ -136,9 +151,7 @@ export function SkeletonLoader() {
 
 // Stationary background components
 export function StationaryBackground() {
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                   window.innerWidth < 768 ||
-                   ('ontouchstart' in window);
+  const isMobile = useMemo(() => detectMobile(), []);
   
   return (
     <>
@@ -220,82 +233,63 @@ export function StationaryBackground() {
 
 // Level of Detail Component
 export function LODModel({ modelPath = '/models/placeholder.stl', autoRotate, onClick, isWireframe }: LODModelProps) {
-  const meshRef = useRef<THREE.Mesh>(null!);
-  const [clicked, setClicked] = React.useState(false);
+  const meshRef = useRef<THREE.Mesh>(null);
   const { camera } = useThree();
-  const [fps, setFps] = React.useState(60);
+  const fpsRef = useRef(60);
   const frameCountRef = useRef(0);
-  const lastTimeRef = useRef(performance.now());
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                   window.innerWidth < 768 ||
-                   ('ontouchstart' in window);
-  
-  // FPS monitoring
-  const updateFps = () => {
-    frameCountRef.current++;
-    const currentTime = performance.now();
-    
-    if (currentTime >= lastTimeRef.current + 1000) {
-      setFps(Math.round((frameCountRef.current * 1000) / (currentTime - lastTimeRef.current)));
-      frameCountRef.current = 0;
-      lastTimeRef.current = currentTime;
-    }
-  };
-  
-  // Calculate distance from camera
-  const distanceFromCamera = camera.position.distanceTo(meshRef.current?.position || new THREE.Vector3(0, 0, 0));
-  
-  // Determine LOD level based on distance and device performance
-  const getLODLevel = () => {
-    if (isMobile || fps < 30) {
-      // Lower LOD for mobile or low performance
-      if (distanceFromCamera > 10) return 2; // Low detail
-      if (distanceFromCamera > 5) return 1;  // Medium detail
-      return 0; // High detail
-    } else {
-      // Higher LOD for desktop with good performance
-      if (distanceFromCamera > 20) return 2; // Low detail
-      if (distanceFromCamera > 10) return 1; // Medium detail
-      return 0; // High detail
-    }
-  };
-  
-  const lodLevel = getLODLevel();
-  
+  const lastTimeRef = useRef(0); // Initialized in first useFrame call
+  const isMobile = useMemo(() => detectMobile(), []);
+
   // Use useLoader with error handling
-  let geometry;
-  try {
-    geometry = useLoader(STLLoader, modelPath);
-  } catch (error) {
-    throw error; // Re-throw to be caught by error boundary
-  }
-  
-  useFrame((state, delta) => {
+  const geometry = useLoader(STLLoader, modelPath);
+
+  useFrame((_, delta) => {
     if (meshRef.current && autoRotate) {
       meshRef.current.rotation.x += delta * 0.2;
       meshRef.current.rotation.y += delta * 0.3;
     }
-    
-    // Update performance monitor
-    updateFps();
+
+    // Throttled FPS monitoring (only update once per second)
+    const currentTime = performance.now();
+    // Initialize lastTimeRef on first frame
+    if (lastTimeRef.current === 0) {
+      lastTimeRef.current = currentTime;
+    }
+    frameCountRef.current++;
+    if (currentTime >= lastTimeRef.current + 1000) {
+      fpsRef.current = Math.round((frameCountRef.current * 1000) / (currentTime - lastTimeRef.current));
+      frameCountRef.current = 0;
+      lastTimeRef.current = currentTime;
+    }
   });
 
-  // Apply geometry simplification based on LOD level
-  let scale = clicked ? 0.015 : 0.01;
-  let materialProps: THREE.MeshStandardMaterialParameters = { color: "#666666" };
+  // Calculate distance from camera using reusable vector
+  const meshPosition = meshRef.current?.position || ORIGIN;
+  const distanceFromCamera = camera.position.distanceTo(meshPosition);
+  const fps = fpsRef.current;
 
-  if (lodLevel === 2) {
-    // Low detail: smaller scale
-    scale *= 0.8;
-  } else if (lodLevel === 1) {
-    // Medium detail: medium scale
-    scale *= 0.9;
-  }
-  
-  // Apply wireframe override
-  if (isWireframe) {
-    materialProps = { ...materialProps, wireframe: true };
-  }
+  // Determine LOD level based on distance and device performance
+  const lodLevel = useMemo(() => {
+    if (isMobile || fps < 30) {
+      if (distanceFromCamera > 10) return 2;
+      if (distanceFromCamera > 5) return 1;
+      return 0;
+    } else {
+      if (distanceFromCamera > 20) return 2;
+      if (distanceFromCamera > 10) return 1;
+      return 0;
+    }
+  }, [isMobile, fps, distanceFromCamera]);
+
+  // Calculate scale based on LOD level
+  const baseScale = 0.01;
+  const scale = lodLevel === 2 ? baseScale * 0.8 : lodLevel === 1 ? baseScale * 0.9 : baseScale;
+
+  // Material props
+  const materialProps = useMemo(() => ({
+    color: COLORS.model,
+    wireframe: isWireframe,
+  }), [isWireframe]);
 
   return (
     <mesh
@@ -304,9 +298,8 @@ export function LODModel({ modelPath = '/models/placeholder.stl', autoRotate, on
       scale={scale}
       position={[0, 0, 0]}
       onClick={onClick}
-      castShadow={!isMobile} // Disable shadows on mobile
+      castShadow={!isMobile}
       receiveShadow={!isMobile}
-      // Enable frustum culling
       frustumCulled={true}
     >
       <meshStandardMaterial {...materialProps} />
@@ -315,11 +308,12 @@ export function LODModel({ modelPath = '/models/placeholder.stl', autoRotate, on
 }
 
 // Responsive Orbit Controls with Ref
-export const ResponsiveOrbitControls = forwardRef<any, ResponsiveOrbitControlsProps>(({ 
-  autoRotate, 
-  onResetView,
-  isMobile 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const ResponsiveOrbitControls = forwardRef<any, ResponsiveOrbitControlsProps>(({
+  autoRotate,
+  isMobile
 }, ref) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const controlsRef = useRef<any>(null);
   
   useImperativeHandle(ref, () => controlsRef.current);
@@ -374,13 +368,11 @@ interface GLTFModelProps {
 }
 
 export function GLTFModel({ modelPath, autoRotate, onClick, isWireframe }: GLTFModelProps) {
-  const groupRef = useRef<THREE.Group>(null!);
+  const groupRef = useRef<THREE.Group>(null);
   const { scene } = useGLTF(modelPath);
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                   window.innerWidth < 768 ||
-                   ('ontouchstart' in window);
+  const isMobile = useMemo(() => detectMobile(), []);
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     if (groupRef.current && autoRotate) {
       groupRef.current.rotation.y += delta * 0.3;
     }
@@ -441,29 +433,49 @@ export function STLModelWrapper({ modelPath = '/models/placeholder.stl', onError
 }
 
 // Custom Error Boundary Component
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode; onError: (error: any) => void },
-  { hasError: boolean; error?: any }
-> {
-  constructor(props: { children: React.ReactNode; onError: (error: any) => void }) {
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  onError: (error: ModelError) => void;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error?: ModelError;
+}
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error: any): { hasError: boolean; error?: any } {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     // Determine error type and create appropriate error object
-    let modelError;
-    
-    if (error.message.includes('404') || error.message.includes('Not Found')) {
+    let modelError: ModelError;
+    const message = error?.message || '';
+
+    if (message.includes('404') || message.includes('Not Found')) {
       modelError = {
         message: 'Model file not found. Please check the file path or select a different model.',
         code: 'FILE_NOT_FOUND',
         retryable: true
       };
-    } else if (error.message.includes('format') || error.message.includes('parse')) {
+    } else if (message.includes('format') || message.includes('parse')) {
       modelError = {
         message: 'Invalid STL format. Please ensure the file is a valid STL model.',
         code: 'INVALID_FORMAT',
+        retryable: true
+      };
+    } else if (message.includes('CORS') || message.includes('cross-origin')) {
+      modelError = {
+        message: 'Cross-origin request blocked. Please check server configuration.',
+        code: 'CORS_ERROR',
+        retryable: false
+      };
+    } else if (message.includes('timeout') || message.includes('Timeout')) {
+      modelError = {
+        message: 'Request timed out. Please check your connection and try again.',
+        code: 'TIMEOUT',
         retryable: true
       };
     } else {
@@ -478,7 +490,14 @@ class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('3D Model Error Boundary caught an error:', error, errorInfo);
+    // Only log in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('3D Model Error Boundary caught an error:', error, errorInfo);
+    }
+    // Notify parent component of error
+    if (this.state.error) {
+      this.props.onError(this.state.error);
+    }
   }
 
   render() {
