@@ -8,7 +8,7 @@ import Header from '../components/Header';
 import { AboutSection } from '../components/About/AboutSection';
 import { TimelineSection } from '../components/Timeline/TimelineSection';
 import { FeaturedProjects } from '../components/Projects/FeaturedProjects';
-import { TestimonialsSection } from '../components/Testimonials/TestimonialsSection';
+// Testimonials section removed - no placeholder content
 import { sectionStagger, sectionItem } from '@/lib/animations';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 
@@ -153,24 +153,25 @@ export default function Home() {
             <motion.div variants={sectionItem} className="space-y-6">
               <div className="space-y-2">
                 <motion.p
-                  className="text-violet-400 font-medium"
+                  className="text-violet-400 font-medium flex items-center gap-2"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.2 }}
                 >
-                  Welcome to my portfolio
+                  <span className="inline-block w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                  UWaterloo Computer Engineering
                 </motion.p>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
                   I build
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-orange-400">
-                    {' '}interactive{' '}
+                    {' '}robots{' '}
                   </span>
-                  experiences
+                  that think
                 </h1>
               </div>
               <p className="text-lg text-gray-400 max-w-lg">
-                Creative developer specializing in 3D web applications, modern interfaces,
-                and bringing ideas to life with code.
+                Robotics engineer specializing in embedded systems, AI integration, and
+                human-robot interaction. From PCB design to GPU-accelerated pipelines.
               </p>
               <div className="flex flex-wrap gap-4">
                 <motion.button
@@ -179,7 +180,7 @@ export default function Home() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  View My Work
+                  View My Robots
                 </motion.button>
                 <motion.button
                   onClick={() => setIsChatOpen(true)}
@@ -187,7 +188,7 @@ export default function Home() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  Chat with AI
+                  Ask Me Anything
                 </motion.button>
               </div>
             </motion.div>
@@ -262,9 +263,6 @@ export default function Home() {
           </motion.div>
         </motion.div>
       </section>
-
-      {/* Testimonials */}
-      <TestimonialsSection />
 
       {/* Footer */}
       <footer className="py-12 border-t border-white/5">

@@ -5,9 +5,9 @@ import { sectionItem, staggerContainer, staggerItem } from '@/lib/animations';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 
 const highlights = [
-  { label: 'Years Experience', value: '5+' },
-  { label: 'Projects Completed', value: '20+' },
-  { label: 'Technologies', value: '15+' },
+  { label: 'Robots Built', value: '6+' },
+  { label: 'Hackathon Wins', value: '3' },
+  { label: 'Technologies', value: '20+' },
 ];
 
 export function AboutSection() {
@@ -32,16 +32,13 @@ export function AboutSection() {
           {/* Bio Content */}
           <motion.div variants={sectionItem} className="space-y-6">
             <p className="text-lg text-gray-300 leading-relaxed">
-              I&apos;m a passionate developer who loves building interactive experiences
-              that blend creativity with technical excellence. With expertise spanning
-              hardware engineering to web development, I bring a unique perspective
-              to every project.
+              I&apos;m a Computer Engineering student at the <span className="text-violet-400 font-medium">University of Waterloo</span> with a passion for building robots that interact naturally with humans.
             </p>
             <p className="text-gray-400 leading-relaxed">
-              My journey started with tinkering with electronics and has evolved into
-              crafting modern web applications with 3D visualizations, AI integrations,
-              and intuitive user interfaces. I believe in writing clean, maintainable
-              code and creating experiences that delight users.
+              My work spans the full stack of robotics—from designing custom PCBs and 3D-printed mechanisms to implementing GPU-accelerated AI pipelines with LLMs and computer vision. I&apos;ve built everything from gesture-controlled robot arms using AR glasses to expressive robot heads that can hold conversations.
+            </p>
+            <p className="text-gray-400 leading-relaxed">
+              When I&apos;m not soldering or debugging ROS2 nodes, you&apos;ll find me competing at hackathons or tinkering with new sensor technologies.
             </p>
 
             {/* Highlights */}
@@ -79,7 +76,7 @@ export function AboutSection() {
               <div className="relative space-y-4 font-mono text-sm">
                 <div className="flex items-center gap-2 text-gray-500">
                   <span className="text-violet-400">const</span>
-                  <span className="text-orange-400">developer</span>
+                  <span className="text-orange-400">engineer</span>
                   <span>=</span>
                   <span className="text-gray-400">{'{'}</span>
                 </div>
@@ -89,23 +86,31 @@ export function AboutSection() {
                     <span className="text-emerald-400"> &quot;{PORTFOLIO_DATA.personal.name}&quot;</span>,
                   </div>
                   <div>
-                    <span className="text-gray-500">role:</span>
-                    <span className="text-emerald-400"> &quot;{PORTFOLIO_DATA.personal.title}&quot;</span>,
+                    <span className="text-gray-500">school:</span>
+                    <span className="text-emerald-400"> &quot;UWaterloo&quot;</span>,
                   </div>
                   <div>
-                    <span className="text-gray-500">skills:</span>
+                    <span className="text-gray-500">focus:</span>
                     <span className="text-gray-400"> [</span>
-                    <span className="text-amber-400">&quot;React&quot;</span>,
-                    <span className="text-amber-400"> &quot;TypeScript&quot;</span>,
-                    <span className="text-amber-400"> &quot;Three.js&quot;</span>
+                  </div>
+                  <div className="pl-4">
+                    <span className="text-amber-400">&quot;Robotics&quot;</span>,
+                  </div>
+                  <div className="pl-4">
+                    <span className="text-amber-400">&quot;Embedded Systems&quot;</span>,
+                  </div>
+                  <div className="pl-4">
+                    <span className="text-amber-400">&quot;AI/ML&quot;</span>
+                  </div>
+                  <div>
                     <span className="text-gray-400">]</span>,
                   </div>
                   <div>
-                    <span className="text-gray-500">passion:</span>
-                    <span className="text-emerald-400"> &quot;Building amazing things&quot;</span>,
+                    <span className="text-gray-500">currentlyBuilding:</span>
+                    <span className="text-emerald-400"> &quot;expressive robots&quot;</span>,
                   </div>
                   <div>
-                    <span className="text-gray-500">available:</span>
+                    <span className="text-gray-500">openToWork:</span>
                     <span className="text-violet-400"> true</span>
                   </div>
                 </div>
