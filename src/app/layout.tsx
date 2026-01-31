@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { siteConfig } from '@/lib/site-config';
 import { ThemeProvider } from '@/lib/theme-context';
+import { ToastProvider } from '@/components/ui/Toast';
 import './globals.css';
 
 const geistSans = Geist({
@@ -119,7 +120,9 @@ export default function RootLayout({
           Skip to main content
         </a>
         <ThemeProvider>
-          {children}
+          <ToastProvider>
+            {children}
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>
