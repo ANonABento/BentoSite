@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useState, useCallback, Component, ReactNode, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '../components/Header';
@@ -8,7 +9,7 @@ import { AboutSection } from '../components/About/AboutSection';
 import { TimelineSection } from '../components/Timeline/TimelineSection';
 import { FeaturedProjects } from '../components/Projects/FeaturedProjects';
 import { TestimonialsSection } from '../components/Testimonials/TestimonialsSection';
-import { smoothReveal, sectionStagger, sectionItem, buttonTap } from '@/lib/animations';
+import { sectionStagger, sectionItem } from '@/lib/animations';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 
 // Error Boundary for graceful error handling
@@ -271,7 +272,7 @@ export default function Home() {
           <p className="text-gray-500">
             &copy; {new Date().getFullYear()} {PORTFOLIO_DATA.personal.name}. Built with Next.js, Three.js, and passion.
           </p>
-          <a
+          <Link
             href="/classic"
             className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-violet-400 transition-colors"
           >
@@ -279,7 +280,7 @@ export default function Home() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
             </svg>
             Try Classic Bento Layout
-          </a>
+          </Link>
         </div>
       </footer>
 
