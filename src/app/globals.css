@@ -4,9 +4,31 @@
 :root {
   --background: #0a0a0f;
   --foreground: #e5e5e5;
-  --accent: #A78BFA;
-  --accent-secondary: #9061F9;
-  --accent-orange: #FB923C;
+
+  /* Primary palette - Purple for interactive, Orange for highlights */
+  --purple: #A78BFA;
+  --purple-hover: #C4B5FD;
+  --purple-active: #8B5CF6;
+  --purple-muted: rgba(167, 139, 250, 0.2);
+
+  --orange: #FB923C;
+  --orange-hover: #FDBA74;
+  --orange-active: #F97316;
+  --orange-muted: rgba(251, 146, 60, 0.2);
+
+  /* Semantic color roles */
+  --interactive: var(--purple);           /* buttons, links, focus states */
+  --interactive-hover: var(--purple-hover);
+  --interactive-active: var(--purple-active);
+  --highlight: var(--orange);             /* CTAs, status, attention */
+  --highlight-hover: var(--orange-hover);
+  --highlight-active: var(--orange-active);
+
+  /* Legacy aliases (for backwards compat during migration) */
+  --accent: var(--purple);
+  --accent-secondary: var(--purple-active);
+  --accent-orange: var(--orange);
+
   --border: rgba(255, 255, 255, 0.1);
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-bg-strong: rgba(255, 255, 255, 0.1);
@@ -33,9 +55,31 @@
 .light {
   --background: #fafafa;
   --foreground: #18181b;
-  --accent: #9061F9;
-  --accent-secondary: #7C3AED;
-  --accent-orange: #EA580C;
+
+  /* Primary palette - adjusted for light mode contrast */
+  --purple: #8B5CF6;
+  --purple-hover: #7C3AED;
+  --purple-active: #6D28D9;
+  --purple-muted: rgba(139, 92, 246, 0.15);
+
+  --orange: #EA580C;
+  --orange-hover: #C2410C;
+  --orange-active: #9A3412;
+  --orange-muted: rgba(234, 88, 12, 0.15);
+
+  /* Semantic color roles */
+  --interactive: var(--purple);
+  --interactive-hover: var(--purple-hover);
+  --interactive-active: var(--purple-active);
+  --highlight: var(--orange);
+  --highlight-hover: var(--orange-hover);
+  --highlight-active: var(--orange-active);
+
+  /* Legacy aliases */
+  --accent: var(--purple);
+  --accent-secondary: var(--purple-active);
+  --accent-orange: var(--orange);
+
   --border: rgba(0, 0, 0, 0.1);
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-bg-strong: rgba(255, 255, 255, 0.85);
@@ -44,13 +88,13 @@
   --text-secondary: #52525b;
   --text-muted: #a1a1aa;
   --shadow-color: rgba(0, 0, 0, 0.1);
-  --code-bg: rgba(144, 97, 249, 0.1);
-  --code-text: #9061F9;
+  --code-bg: rgba(139, 92, 246, 0.1);
+  --code-text: #7C3AED;
   --scrollbar-track: rgba(0, 0, 0, 0.02);
   --scrollbar-thumb: rgba(0, 0, 0, 0.1);
   --scrollbar-thumb-hover: rgba(0, 0, 0, 0.2);
-  --selection-bg: rgba(144, 97, 249, 0.2);
-  --grid-line: rgba(144, 97, 249, 0.05);
+  --selection-bg: rgba(139, 92, 246, 0.2);
+  --grid-line: rgba(139, 92, 246, 0.05);
 }
 
 @theme inline {
@@ -103,44 +147,52 @@ body {
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
 }
 
-/* Gradient text utility */
-.text-gradient {
-  background: linear-gradient(135deg, #A78BFA 0%, #9061F9 50%, #FB923C 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* Accent text utilities - solid colors, no gradients */
+.text-purple {
+  color: var(--purple);
+}
+
+.text-orange {
+  color: var(--orange);
 }
 
 /* Glow effects */
 .glow-purple {
-  box-shadow: 0 0 30px rgba(167, 139, 250, 0.3);
+  box-shadow: 0 0 20px var(--purple-muted);
 }
 
 .glow-orange {
-  box-shadow: 0 0 20px rgba(251, 146, 60, 0.3);
+  box-shadow: 0 0 20px var(--orange-muted);
 }
 
 .glow-subtle {
-  box-shadow: 0 0 15px rgba(167, 139, 250, 0.15);
+  box-shadow: 0 0 12px var(--purple-muted);
 }
 
-/* Animated gradient border */
-.gradient-border {
-  position: relative;
+/* Solid color borders */
+.border-purple {
+  border-color: var(--purple);
 }
 
-.gradient-border::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  padding: 1px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, #A78BFA, #9061F9, #FB923C);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
+.border-orange {
+  border-color: var(--orange);
+}
+
+/* Background utilities */
+.bg-purple {
+  background-color: var(--purple);
+}
+
+.bg-purple-muted {
+  background-color: var(--purple-muted);
+}
+
+.bg-orange {
+  background-color: var(--orange);
+}
+
+.bg-orange-muted {
+  background-color: var(--orange-muted);
 }
 
 /* Background grid pattern */
@@ -212,14 +264,24 @@ body {
   animation-delay: 0.4s;
 }
 
-/* Pulse glow animation */
+/* Pulse glow animation - orange for attention */
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(167, 139, 250, 0.2); }
-  50% { box-shadow: 0 0 30px rgba(167, 139, 250, 0.4); }
+  0%, 100% { box-shadow: 0 0 15px var(--orange-muted); }
+  50% { box-shadow: 0 0 25px rgba(251, 146, 60, 0.4); }
 }
 
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Purple pulse for interactive states */
+@keyframes pulse-glow-purple {
+  0%, 100% { box-shadow: 0 0 15px var(--purple-muted); }
+  50% { box-shadow: 0 0 25px rgba(167, 139, 250, 0.4); }
+}
+
+.animate-pulse-glow-purple {
+  animation: pulse-glow-purple 2s ease-in-out infinite;
 }
 
 /* Markdown content styles for chat */
@@ -346,6 +408,34 @@ body {
 
 .skip-to-content:focus {
   left: 0;
+}
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .typing-dot {
+    animation: none;
+    opacity: 0.6;
+  }
+
+  .animate-pulse,
+  .animate-spin,
+  .animate-pulse-glow {
+    animation: none;
+  }
+
+  /* Disable background grid animation if any */
+  .bg-grid {
+    background-attachment: scroll;
+  }
 }
 
 /* Print styles */

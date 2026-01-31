@@ -21,12 +21,11 @@ import {
 import { isMobileDevice } from './Dimension.utils';
 
 // Import hooks
-import { 
-  useIsMobile, 
-  useScreenSize, 
-  usePerformanceMonitor, 
-  useKeyboardShortcuts, 
-  useTouchGestures 
+import {
+  useIsMobile,
+  useScreenSize,
+  usePerformanceMonitor,
+  useKeyboardShortcuts
 } from './Dimension.hooks';
 
 // Import UI components
@@ -59,6 +58,25 @@ const CAMERA_PRESETS = {
   reset: CAMERA_POSITION
 } as const;
 
+// Get initial model safely with validation
+function getInitialModel(): ModelInfo {
+  if (AVAILABLE_MODELS.length === 0) {
+    // Return a fallback model if array is empty
+    return {
+      id: 'fallback',
+      name: 'No Models Available',
+      path: DEFAULT_MODEL_PATH,
+      thumbnail: '',
+      fileSize: 0,
+      dimensions: { width: 0, height: 0, depth: 0 },
+      vertexCount: 0,
+      description: 'No models configured',
+      category: 'None'
+    };
+  }
+  return AVAILABLE_MODELS[0];
+}
+
 export default function DimensionViewer() {
   // Component state
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -66,7 +84,7 @@ export default function DimensionViewer() {
   const [retryCount, setRetryCount] = useState(0);
   const [autoRotate, setAutoRotate] = useState(true);
   const [isWireframe, setIsWireframe] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<ModelInfo>(AVAILABLE_MODELS[0]);
+  const [selectedModel, setSelectedModel] = useState<ModelInfo>(getInitialModel);
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [showModelInfo, setShowModelInfo] = useState(!useIsMobile());
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -189,6 +207,7 @@ export default function DimensionViewer() {
   };
 
   // Keyboard shortcuts (removed 360 export)
+  // Note: Touch gestures (pinch zoom) are handled natively by OrbitControls
   useKeyboardShortcuts({
     onResetView: handleResetView,
     onToggleAutoRotate: () => {
@@ -201,15 +220,6 @@ export default function DimensionViewer() {
     onToggleFullscreen: handleFullscreen,
     onZoomFit: handleZoomFit,
     onCameraPresets: () => setShowCameraPresets(!showCameraPresets),
-  });
-
-  // Touch gestures for pinch zoom
-  useTouchGestures((delta) => {
-    if (controlsRef.current && delta !== 0) {
-      const zoomFactor = delta > 0 ? 0.9 : 1.1;
-      controlsRef.current.dollyIn(zoomFactor);
-      controlsRef.current.update();
-    }
   });
 
   return (

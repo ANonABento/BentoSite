@@ -3,7 +3,7 @@
 
 export const PORTFOLIO_DATA = {
   personal: {
-    name: 'Your Name',
+    name: 'Bob',
     title: 'Hardware & Software Engineer',
     location: 'Your Location',
     email: 'your@email.com',

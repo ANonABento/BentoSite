@@ -138,7 +138,7 @@ export function ControlPanel({
   ];
 
   const controlsIcon = (
-    <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <svg className="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
     </svg>
   );
@@ -162,12 +162,12 @@ export function ControlPanel({
                 onClick={button.onClick}
                 whileTap={buttonTap}
                 className={`
-                  p-2 rounded flex flex-col items-center justify-center
+                  p-2 rounded-sm flex flex-col items-center justify-center
                   focus:outline-none focus:ring-2 focus:ring-violet-500/50
-                  min-h-[60px]
+                  min-h-[60px] transition-all duration-200
                   ${button.active
-                    ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg ring-2 ring-violet-400/30'
-                    : 'bg-white/5 backdrop-blur border border-white/10 hover:bg-white/10 text-gray-300 hover:text-white shadow-md'
+                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20 ring-1 ring-orange-400/30'
+                    : 'bg-white/5 backdrop-blur border border-white/10 hover:bg-white/10 hover:border-violet-500/30 text-gray-300 hover:text-white'
                   }
                 `}
                 title={`${button.label} (${button.shortcut}) - ${button.description}`}

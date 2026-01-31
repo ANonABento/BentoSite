@@ -49,15 +49,16 @@ function ThemeToggle() {
   );
 }
 
-// Resume download button component
+// Resume download button component - Orange CTA (highlight/attention)
 function ResumeButton({ resumeUrl, className = '' }: { resumeUrl: string; className?: string }) {
   return (
     <a
       href={resumeUrl}
       download
       className={`flex items-center gap-2 px-4 py-2.5 rounded-sm font-medium text-sm
-        bg-gradient-to-r from-violet-500 to-purple-600 text-white
-        hover:shadow-[0_0_20px_rgba(167,139,250,0.4)] hover:scale-105
+        bg-orange-500 hover:bg-orange-400 active:bg-orange-600 text-white
+        hover:shadow-[0_0_20px_rgba(251,146,60,0.3)] hover:scale-105
+        border border-orange-400/20
         transition-all duration-300 ${className}`}
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,8 +118,8 @@ export default function Header({
     return (
       <header className="flex items-center justify-between px-4 py-3 glass rounded-xl">
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-bold text-gradient">{name}</h1>
-          <span className="text-sm text-gray-400 hidden sm:inline">|</span>
+          <h1 className="text-lg font-bold text-white">{name}</h1>
+          <span className="text-sm text-gray-500 hidden sm:inline">|</span>
           <span className="text-sm text-gray-400 hidden sm:inline">{tagline}</span>
         </div>
         <div className="flex items-center gap-2">
@@ -157,14 +158,11 @@ export default function Header({
 
   return (
     <header className="relative overflow-hidden">
-      {/* Background gradient effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-violet-400/5 via-transparent to-purple-500/5" />
-
       <div className="relative px-6 py-8 md:py-12">
         <div className="max-w-4xl mx-auto text-center">
-          {/* Name with gradient */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-            <span className="text-gradient">{name}</span>
+          {/* Name - bold white with subtle purple underline */}
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-white">
+            {name}
           </h1>
 
           {/* Tagline */}
@@ -184,10 +182,10 @@ export default function Header({
                 onMouseLeave={() => setIsHovered(null)}
                 className={`
                   flex items-center gap-2 px-4 py-2.5 rounded-sm
-                  transition-all duration-300 transform
+                  transition-all duration-200 transform border
                   ${isHovered === link.id
-                    ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white scale-105 shadow-[0_0_20px_rgba(167,139,250,0.4)]'
-                    : 'glass text-gray-300 hover:text-white'
+                    ? 'bg-violet-500 text-white scale-105 shadow-[0_0_20px_rgba(167,139,250,0.3)] border-violet-400/20'
+                    : 'glass text-gray-300 hover:text-white border-white/10'
                   }
                 `}
                 aria-label={link.label}
@@ -201,8 +199,8 @@ export default function Header({
         </div>
       </div>
 
-      {/* Bottom gradient line */}
-      <div className="h-px bg-gradient-to-r from-transparent via-violet-500/50 to-transparent" />
+      {/* Bottom line - solid purple */}
+      <div className="h-px bg-violet-500/30" />
     </header>
   );
 }

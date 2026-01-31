@@ -1,7 +1,7 @@
 // Dimension.tsx - Custom Hooks
 
-import React, { useRef, useState, useEffect } from 'react';
-import * as THREE from 'three';
+import { useRef, useState, useEffect, useMemo } from 'react';
+import type { ModelInfo } from './Dimension.types';
 
 // Keyboard shortcuts callbacks interface
 interface KeyboardCallbacks {
@@ -85,8 +85,13 @@ export const usePerformanceMonitor = () => {
 
 /**
  * Hook for keyboard shortcuts
+ * Uses individual callback refs to avoid re-registering listeners
  */
 export const useKeyboardShortcuts = (callbacks: KeyboardCallbacks) => {
+  // Store callbacks in refs to avoid effect re-runs
+  const callbacksRef = useRef(callbacks);
+  callbacksRef.current = callbacks;
+
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       // Don't trigger shortcuts when typing in input fields
@@ -95,32 +100,33 @@ export const useKeyboardShortcuts = (callbacks: KeyboardCallbacks) => {
       }
 
       const { key } = event;
-      
+      const cbs = callbacksRef.current;
+
       switch (key.toLowerCase()) {
         case 'r':
-          callbacks.onResetView?.();
+          cbs.onResetView?.();
           break;
         case ' ':
           event.preventDefault(); // Prevent page scroll
-          callbacks.onToggleAutoRotate?.();
+          cbs.onToggleAutoRotate?.();
           break;
         case 'w':
-          callbacks.onToggleWireframe?.();
+          cbs.onToggleWireframe?.();
           break;
         case 's':
-          callbacks.onScreenshot?.();
+          cbs.onScreenshot?.();
           break;
         case 'f':
-          callbacks.onToggleFullscreen?.();
+          cbs.onToggleFullscreen?.();
           break;
         case 'c':
-          callbacks.onCameraPresets?.();
+          cbs.onCameraPresets?.();
           break;
         case 'e':
-          callbacks.on360Export?.();
+          cbs.on360Export?.();
           break;
         case 'z':
-          callbacks.onZoomFit?.();
+          cbs.onZoomFit?.();
           break;
         default:
           break;
@@ -129,26 +135,25 @@ export const useKeyboardShortcuts = (callbacks: KeyboardCallbacks) => {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [callbacks]);
+  }, []); // Empty deps - callbacks accessed via ref
 };
 
 /**
  * Hook for touch gestures (pinch zoom)
+ * Returns a ref to attach to the container element
  */
 export const useTouchGestures = (onPinchZoom?: (delta: number) => void) => {
-  const touchStartRef = useRef<{ [key: number]: { x: number; y: number } }>({});
+  const containerRef = useRef<HTMLDivElement>(null);
   const lastDistanceRef = useRef<number | null>(null);
+  const onPinchZoomRef = useRef(onPinchZoom);
+  onPinchZoomRef.current = onPinchZoom;
 
   useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
     const handleTouchStart = (event: TouchEvent) => {
-      event.preventDefault();
-      
-      // Store initial touch positions
-      Array.from(event.touches).forEach((touch) => {
-        touchStartRef.current[touch.identifier] = { x: touch.clientX, y: touch.clientY };
-      });
-      
-      // Calculate initial distance for pinch zoom
+      // Only handle multi-touch for pinch zoom
       if (event.touches.length === 2) {
         const touch1 = event.touches[0];
         const touch2 = event.touches[1];
@@ -158,39 +163,41 @@ export const useTouchGestures = (onPinchZoom?: (delta: number) => void) => {
     };
 
     const handleTouchMove = (event: TouchEvent) => {
-      event.preventDefault();
-      
-      // Handle pinch zoom
-      if (event.touches.length === 2 && lastDistanceRef.current && onPinchZoom) {
+      // Handle pinch zoom with minimum threshold to reduce jitter
+      if (event.touches.length === 2 && lastDistanceRef.current && onPinchZoomRef.current) {
         const touch1 = event.touches[0];
         const touch2 = event.touches[1];
         const currentDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
         const delta = currentDistance - lastDistanceRef.current;
-        onPinchZoom(delta * 0.01); // Scale the zoom factor
-        lastDistanceRef.current = currentDistance;
+
+        // Only trigger zoom if delta exceeds minimum threshold (reduces jitter)
+        if (Math.abs(delta) > 2) {
+          onPinchZoomRef.current(delta * 0.01);
+          lastDistanceRef.current = currentDistance;
+        }
       }
     };
 
     const handleTouchEnd = (event: TouchEvent) => {
-      event.preventDefault();
-      
       // Reset pinch zoom tracking
       if (event.touches.length < 2) {
         lastDistanceRef.current = null;
       }
     };
 
-    // Add touch event listeners with passive: false to allow preventDefault
-    document.addEventListener('touchstart', handleTouchStart, { passive: false });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd, { passive: false });
+    // Add touch event listeners to the container only
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchmove', handleTouchMove, { passive: true });
+    container.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     return () => {
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [onPinchZoom]);
+  }, []); // Empty deps - callback accessed via ref
+
+  return containerRef;
 };
 
 /**
@@ -236,20 +243,26 @@ export const usePerformanceHUD = () => {
 /**
  * Hook for model search and filtering
  */
-export const useModelSearch = (models: any[]) => {
+export const useModelSearch = (models: ModelInfo[]) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  
-  // Get unique categories
-  const categories = ['All', ...Array.from(new Set(models.map((model: any) => model.category)))];
-  
-  // Filter models based on search and category
-  const filteredModels = models.filter((model: any) => {
-    const matchesSearch = model.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         model.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || model.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+
+  // Memoize categories to avoid recalculating on every render
+  const categories = useMemo(() => {
+    const uniqueCategories = new Set(models.map((model) => model.category));
+    return ['All', ...Array.from(uniqueCategories)];
+  }, [models]);
+
+  // Memoize filtered models
+  const filteredModels = useMemo(() => {
+    const searchLower = searchTerm.toLowerCase();
+    return models.filter((model) => {
+      const matchesSearch = model.name.toLowerCase().includes(searchLower) ||
+                           model.description.toLowerCase().includes(searchLower);
+      const matchesCategory = selectedCategory === 'All' || model.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [models, searchTerm, selectedCategory]);
 
   return {
     searchTerm,

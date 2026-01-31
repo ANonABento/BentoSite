@@ -3,7 +3,7 @@
 
 export const siteConfig = {
   // Personal info
-  name: 'Your Name',
+  name: 'Bob',
   title: 'Hardware & Software Engineer',
   description:
     'Interactive portfolio showcasing hardware and software projects with 3D visualization and AI-powered chat.',
