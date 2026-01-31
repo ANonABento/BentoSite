@@ -267,10 +267,19 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="py-12 border-t border-white/5">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 text-center">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 text-center space-y-4">
           <p className="text-gray-500">
             &copy; {new Date().getFullYear()} {PORTFOLIO_DATA.personal.name}. Built with Next.js, Three.js, and passion.
           </p>
+          <a
+            href="/classic"
+            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-violet-400 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+            Try Classic Bento Layout
+          </a>
         </div>
       </footer>
 
