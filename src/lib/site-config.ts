@@ -1,35 +1,41 @@
 // Site configuration - centralized metadata for SEO and social sharing
-// Update these values with your actual information before launch
+// Kevin Jiang's portfolio configuration
 
 export const siteConfig = {
   // Personal info
-  name: 'Bob',
-  title: 'Hardware & Software Engineer',
+  name: 'Kevin Jiang',
+  title: 'Robotics & Embedded Systems Engineer',
   description:
-    'Interactive portfolio showcasing hardware and software projects with 3D visualization and AI-powered chat.',
+    'Interactive portfolio showcasing robotics, embedded systems, and AI projects. UWaterloo Computer Engineering student building robots that think.',
 
-  // URLs - update with your actual domain
-  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://yourportfolio.com',
+  // URLs
+  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://kevinjiang.dev',
   ogImage: '/og-image.png',
 
   // Social links
   links: {
-    github: 'https://github.com/yourusername',
-    linkedin: 'https://linkedin.com/in/yourprofile',
-    email: 'your@email.com',
+    github: 'https://github.com/ANonABento',
+    linkedin: 'https://linkedin.com/in/ANonABento',
+    email: 'k69jiang@uwaterloo.ca',
   },
 
   // SEO keywords
   keywords: [
-    'hardware engineer',
-    'software engineer',
-    'portfolio',
-    '3D visualization',
-    'robotics',
+    'robotics engineer',
     'embedded systems',
-    'React',
-    'Next.js',
+    'ROS2',
+    'computer engineering',
+    'UWaterloo',
+    'hardware engineer',
+    'AI robotics',
+    'Python',
+    'C++',
+    'STM32',
+    'ESP32',
+    'PCB design',
+    '3D printing',
     'Three.js',
+    'portfolio',
   ],
 } as const;
 
