@@ -1,10 +1,21 @@
 // Portfolio context for AI assistant
 // Kevin Jiang's portfolio data
 
+// Type for simplified project data used in featured sections
+export interface PortfolioProject {
+  id: string;
+  name: string;
+  description: string;
+  technologies: string[];
+  category: string;
+  github?: string;
+  featured: boolean;
+}
+
 export const PORTFOLIO_DATA = {
   personal: {
     name: 'Kevin Jiang',
-    title: 'Robotics & Embedded Systems Engineer',
+    title: 'The Everything Engineer',
     location: 'Waterloo, Ontario, Canada',
     email: 'k69jiang@uwaterloo.ca',
     github: 'https://github.com/ANonABento',
@@ -232,10 +243,32 @@ ${PORTFOLIO_DATA.education.map(e => `
 
 Remember: You're representing Kevin's work in robotics and embedded systems. Be genuine, technical, and helpful!`;
 
+// Generate dynamic suggested questions from portfolio data
+function generateSuggestedQuestions(): string[] {
+  const questions: string[] = [];
+
+  // Add questions about featured projects
+  const featured = PORTFOLIO_DATA.projects.filter(p => p.featured);
+  if (featured.length > 0) {
+    const project = featured[0];
+    questions.push(`Tell me about ${project.name}`);
+  }
+  if (featured.length > 1) {
+    const project = featured[1];
+    questions.push(`How does ${project.name} work?`);
+  }
+
+  // Add a general experience question
+  questions.push("What's your robotics experience?");
+
+  // Add a technology question based on top skills
+  const topTech = PORTFOLIO_DATA.skills.hardware[0];
+  if (topTech) {
+    questions.push(`Tell me about your ${topTech} projects`);
+  }
+
+  return questions.slice(0, 4); // Limit to 4 questions
+}
+
 // Suggested questions for the chat interface
-export const SUGGESTED_QUESTIONS = [
-  "Tell me about the AI robot head",
-  "What's your robotics experience?",
-  "How does the AR gesture control work?",
-  "What technologies do you use most?",
-];
+export const SUGGESTED_QUESTIONS = generateSuggestedQuestions();

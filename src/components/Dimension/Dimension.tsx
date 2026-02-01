@@ -17,14 +17,10 @@ import {
   MOBILE_PIXEL_RATIO_MAX 
 } from './Dimension.config';
 
-// Import utilities
-import { isMobileDevice } from './Dimension.utils';
-
 // Import hooks
 import {
   useIsMobile,
   useScreenSize,
-  usePerformanceMonitor,
   useKeyboardShortcuts
 } from './Dimension.hooks';
 
@@ -93,6 +89,7 @@ export default function DimensionViewer() {
   // Hooks
   const isMobile = useIsMobile();
   const screenSize = useScreenSize();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const controlsRef = useRef<any>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 

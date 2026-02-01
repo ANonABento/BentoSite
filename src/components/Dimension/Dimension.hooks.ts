@@ -67,19 +67,23 @@ export const useScreenSize = () => {
 export const usePerformanceMonitor = () => {
   const [fps, setFps] = useState(60);
   const frameCountRef = useRef(0);
-  const lastTimeRef = useRef(performance.now());
-  
+  const lastTimeRef = useRef(0);
+
+  // Initialize lastTimeRef in first updateFps call instead of during render
   const updateFps = () => {
-    frameCountRef.current++;
     const currentTime = performance.now();
-    
+    if (lastTimeRef.current === 0) {
+      lastTimeRef.current = currentTime;
+    }
+    frameCountRef.current++;
+
     if (currentTime >= lastTimeRef.current + 1000) {
       setFps(Math.round((frameCountRef.current * 1000) / (currentTime - lastTimeRef.current)));
       frameCountRef.current = 0;
       lastTimeRef.current = currentTime;
     }
   };
-  
+
   return { fps, updateFps };
 };
 
@@ -90,7 +94,11 @@ export const usePerformanceMonitor = () => {
 export const useKeyboardShortcuts = (callbacks: KeyboardCallbacks) => {
   // Store callbacks in refs to avoid effect re-runs
   const callbacksRef = useRef(callbacks);
-  callbacksRef.current = callbacks;
+
+  // Update ref in effect to avoid setting during render
+  useEffect(() => {
+    callbacksRef.current = callbacks;
+  });
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -146,7 +154,11 @@ export const useTouchGestures = (onPinchZoom?: (delta: number) => void) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const lastDistanceRef = useRef<number | null>(null);
   const onPinchZoomRef = useRef(onPinchZoom);
-  onPinchZoomRef.current = onPinchZoom;
+
+  // Update ref in effect to avoid setting during render
+  useEffect(() => {
+    onPinchZoomRef.current = onPinchZoom;
+  });
 
   useEffect(() => {
     const container = containerRef.current;

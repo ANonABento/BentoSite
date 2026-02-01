@@ -1,7 +1,7 @@
 // CollapsibleWidget - Base draggable, collapsible widget component
 // Extracted from Dimension.ui.tsx for reusability
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 
 import type { CollapsibleWidgetProps } from '../../Dimension.types';
 
@@ -11,22 +11,18 @@ export function CollapsibleWidget({
   defaultPosition,
   isCollapsed,
   onToggleCollapse,
-  onClose,
   children,
   className = '',
   isMobile,
   autoPosition = false
-}: CollapsibleWidgetProps & { onClose?: () => void }) {
-  const [position, setPosition] = useState(defaultPosition);
+}: CollapsibleWidgetProps) {
+  const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [hasMoved, setHasMoved] = useState(false);
   const [isKeyboardFocused, setIsKeyboardFocused] = useState(false);
   const [containerBounds, setContainerBounds] = useState({ width: 0, height: 0 });
   const widgetRef = useRef<HTMLDivElement>(null);
-
-  // No initial animation - widgets spawn in place immediately
-  // Removed useEffect that was setting isInitialRender
 
   // Track container bounds for auto-positioning
   useEffect(() => {
@@ -41,7 +37,7 @@ export function CollapsibleWidget({
     // Update on mount and resize
     updateContainerBounds();
     window.addEventListener('resize', updateContainerBounds);
-    
+
     // Use ResizeObserver for more precise tracking
     const container = widgetRef.current?.parentElement;
     if (container && 'ResizeObserver' in window) {
@@ -56,15 +52,19 @@ export function CollapsibleWidget({
     return () => window.removeEventListener('resize', updateContainerBounds);
   }, []);
 
-  // Auto-position widget in top-right corner of container when autoPosition is enabled
-  useEffect(() => {
+  // Compute position: use drag position if dragged, otherwise auto-position or default
+  const position = useMemo(() => {
+    if (dragPosition) return dragPosition;
+
     if (autoPosition && containerBounds.width > 0) {
       const widgetWidth = isMobile ? 192 : 288; // w-48 or w-72
       const margin = isMobile ? 16 : 20;
-      const newX = Math.max(0, containerBounds.width - widgetWidth - margin);
-      setPosition(prev => ({ ...prev, x: newX, y: margin }));
+      const x = Math.max(0, containerBounds.width - widgetWidth - margin);
+      return { x, y: margin };
     }
-  }, [autoPosition, containerBounds.width, containerBounds.height, isMobile]);
+
+    return defaultPosition;
+  }, [dragPosition, autoPosition, containerBounds.width, isMobile, defaultPosition]);
 
   // Enhanced mouse event handlers with better accessibility
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -105,7 +105,7 @@ export function CollapsibleWidget({
       containerRect.height - (widgetRef.current.offsetHeight || 200)
     ));
 
-    setPosition({ x: newX, y: newY });
+    setDragPosition({ x: newX, y: newY });
   }, [isDragging, dragOffset]);
 
   const handleMouseUp = useCallback((e: MouseEvent) => {

@@ -25,7 +25,8 @@ export {
   formatPercentage 
 } from './shared';
 
-// PerformanceHUD component (simplified)
-export function PerformanceHUD({ isMobile }: { isMobile: boolean }) {
+// PerformanceHUD component (simplified - placeholder for future implementation)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function PerformanceHUD({ isMobile: _isMobile }: { isMobile: boolean }) {
   return null;
 }

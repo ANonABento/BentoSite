@@ -1,7 +1,7 @@
 // CameraPresetsWidget - Draggable widget for camera preset selection
 // Extracted from Dimension.ui.tsx for better maintainability
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 
 import type { CameraPresetsWidgetProps } from '../../Dimension.types';
 
@@ -13,14 +13,11 @@ export function CameraPresetsWidget({
   isMobile,
   autoPosition = true
 }: CameraPresetsWidgetProps) {
-  const [position, setPosition] = useState(defaultPosition || { x: 0, y: 0 });
+  const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [containerBounds, setContainerBounds] = useState({ width: 0, height: 0 });
   const widgetRef = useRef<HTMLDivElement>(null);
-
-  // No initial animation - widget spawns in place immediately
-  // Removed useEffect that was setting isInitialRender
 
   // Track container bounds for auto-positioning (similar to collapsible-widget)
   useEffect(() => {
@@ -35,7 +32,7 @@ export function CameraPresetsWidget({
     // Update on mount and resize
     updateContainerBounds();
     window.addEventListener('resize', updateContainerBounds);
-    
+
     // Use ResizeObserver for more precise tracking
     const container = widgetRef.current?.parentElement;
     if (container && 'ResizeObserver' in window) {
@@ -50,23 +47,27 @@ export function CameraPresetsWidget({
     return () => window.removeEventListener('resize', updateContainerBounds);
   }, []);
 
-  // Auto-position widget directly under the controls widget when autoPosition is enabled
-  useEffect(() => {
+  // Compute position: use drag position if dragged, otherwise auto-position or default
+  const position = useMemo(() => {
+    if (dragPosition) return dragPosition;
+
     if (autoPosition && containerBounds.width > 0) {
       const widgetWidth = isMobile ? 192 : 288; // w-48 or w-72
       const margin = isMobile ? 16 : 20;
       const controlsY = margin; // Controls widget y position
       const controlsHeight = 48; // Controls widget height when collapsed (h-12)
       const gap = 180; // Gap between widgets
-      
+
       // Position to the right side, same as controls widget
-      const newX = Math.max(0, containerBounds.width - widgetWidth - margin);
+      const x = Math.max(0, containerBounds.width - widgetWidth - margin);
       // Position directly under controls widget
-      const newY = controlsY + controlsHeight + gap;
-      
-      setPosition(prev => ({ ...prev, x: newX, y: newY }));
+      const y = controlsY + controlsHeight + gap;
+
+      return { x, y };
     }
-  }, [autoPosition, containerBounds.width, containerBounds.height, isMobile]);
+
+    return defaultPosition || { x: 0, y: 0 };
+  }, [dragPosition, autoPosition, containerBounds.width, isMobile, defaultPosition]);
 
   const cameraIcon = (
     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -108,7 +109,7 @@ export function CameraPresetsWidget({
       containerRect.height - (widgetRef.current.offsetHeight || 200)
     ));
 
-    setPosition({ x: newX, y: newY });
+    setDragPosition({ x: newX, y: newY });
   }, [isDragging, dragOffset]);
 
   const handleMouseUp = useCallback(() => {
@@ -172,7 +173,7 @@ export function CameraPresetsWidget({
         <div className={`p-3 text-white`}>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              {Object.entries(presets).map(([name, position]) => (
+              {Object.entries(presets).map(([name]) => (
                 <button
                   key={name}
                   onClick={() => onPresetSelect(name as keyof typeof presets)}

@@ -128,6 +128,7 @@ export interface CameraPresetsWidgetProps {
   autoPosition?: boolean; // Add autoPosition prop
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface DimensionViewerProps {
-  // Add any props if needed in the future
+  // Placeholder - add props as needed
 }

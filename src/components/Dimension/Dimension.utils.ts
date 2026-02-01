@@ -98,7 +98,7 @@ export const getLODScale = (baseScale: number, lodLevel: number): number => {
 /**
  * Debounce function for performance optimization
  */
-export const debounce = <T extends (...args: any[]) => void>(
+export const debounce = <T extends (...args: unknown[]) => void>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {

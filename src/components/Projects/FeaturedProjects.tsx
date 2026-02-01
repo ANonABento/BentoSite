@@ -1,10 +1,16 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { sectionItem, staggerContainer, staggerItem } from '@/lib/animations';
-import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
+import { PORTFOLIO_DATA, type PortfolioProject } from '@/lib/portfolio-context';
 
-const featuredProjects = PORTFOLIO_DATA.projects.filter(p => p.featured);
+const allFeaturedProjects = PORTFOLIO_DATA.projects.filter(p => p.featured);
+
+// Get unique technologies from all featured projects
+const allTechnologies = Array.from(
+  new Set(allFeaturedProjects.flatMap(p => p.technologies))
+).sort();
 
 // Category-based gradient colors
 const categoryGradients: Record<string, string> = {
@@ -26,23 +32,18 @@ const categoryIcons: Record<string, string> = {
   'Games': '🎮',
 };
 
-interface Project {
-  id: string;
-  name: string;
-  description: string;
-  technologies: string[];
-  category: string;
-  github?: string;
-  featured: boolean;
-}
-
-function ProjectCard({ project, index }: { project: Project; index: number }) {
+function ProjectCard({ project }: { project: PortfolioProject }) {
   const gradient = categoryGradients[project.category] || 'from-gray-600/40 to-gray-900/40';
   const icon = categoryIcons[project.category] || '📦';
 
   return (
     <motion.div
+      layout
       variants={staggerItem}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.3 }}
       className="group"
     >
       <motion.div
@@ -88,23 +89,23 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
 
         {/* Content */}
         <div className="p-6 flex-1 flex flex-col">
-          <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-violet-400 transition-colors">
+          <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-2 group-hover:text-[var(--interactive)] transition-colors">
             {project.name}
           </h3>
-          <p className="text-gray-400 text-sm mb-4 flex-1 line-clamp-3">
+          <p className="text-[var(--text-secondary)] text-sm mb-4 flex-1 line-clamp-3">
             {project.description}
           </p>
           <div className="flex flex-wrap gap-2">
             {project.technologies.slice(0, 4).map((tech) => (
               <span
                 key={tech}
-                className="px-2 py-1 text-xs bg-violet-500/10 text-violet-300 rounded-md"
+                className="px-2 py-1 text-xs bg-violet-500/10 text-violet-500 rounded-md"
               >
                 {tech}
               </span>
             ))}
             {project.technologies.length > 4 && (
-              <span className="px-2 py-1 text-xs bg-white/5 text-gray-500 rounded-md">
+              <span className="px-2 py-1 text-xs bg-[var(--glass-bg)] text-[var(--text-muted)] rounded-md">
                 +{project.technologies.length - 4}
               </span>
             )}
@@ -116,6 +117,27 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
 }
 
 export function FeaturedProjects({ onViewAll }: { onViewAll?: () => void }) {
+  const [selectedTech, setSelectedTech] = useState<string | null>(null);
+
+  // Filter projects based on selected technology
+  const filteredProjects = useMemo(() => {
+    if (!selectedTech) return allFeaturedProjects;
+    return allFeaturedProjects.filter(p => p.technologies.includes(selectedTech));
+  }, [selectedTech]);
+
+  // Get popular technologies (used in 2+ projects) for filter buttons
+  const popularTechnologies = useMemo(() => {
+    const techCounts = new Map<string, number>();
+    allFeaturedProjects.forEach(p => {
+      p.technologies.forEach(tech => {
+        techCounts.set(tech, (techCounts.get(tech) || 0) + 1);
+      });
+    });
+    return allTechnologies
+      .filter(tech => (techCounts.get(tech) || 0) >= 1)
+      .slice(0, 8); // Show up to 8 popular techs
+  }, []);
+
   return (
     <section id="projects" className="py-16 md:py-24">
       <motion.div
@@ -126,9 +148,9 @@ export function FeaturedProjects({ onViewAll }: { onViewAll?: () => void }) {
         variants={staggerContainer}
       >
         {/* Section Header */}
-        <motion.div variants={sectionItem} className="mb-12 flex items-end justify-between">
+        <motion.div variants={sectionItem} className="mb-8 flex items-end justify-between">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
               Featured Projects
             </h2>
             <div className="w-20 h-1 bg-gradient-to-r from-violet-500 to-orange-500 rounded-full" />
@@ -136,7 +158,7 @@ export function FeaturedProjects({ onViewAll }: { onViewAll?: () => void }) {
           {onViewAll && (
             <button
               onClick={onViewAll}
-              className="hidden md:flex items-center gap-2 text-violet-400 hover:text-violet-300 transition-colors"
+              className="hidden md:flex items-center gap-2 text-[var(--interactive)] hover:text-[var(--interactive-hover)] transition-colors"
             >
               View All Projects
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,14 +168,50 @@ export function FeaturedProjects({ onViewAll }: { onViewAll?: () => void }) {
           )}
         </motion.div>
 
+        {/* Technology Filter */}
+        <motion.div variants={sectionItem} className="mb-8">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedTech(null)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                selectedTech === null
+                  ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/25'
+                  : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--interactive)]/10 hover:text-[var(--text-primary)]'
+              }`}
+            >
+              All
+            </button>
+            {popularTechnologies.map((tech) => (
+              <button
+                key={tech}
+                onClick={() => setSelectedTech(selectedTech === tech ? null : tech)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  selectedTech === tech
+                    ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/25'
+                    : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--interactive)]/10 hover:text-[var(--text-primary)]'
+                }`}
+              >
+                {tech}
+              </button>
+            ))}
+          </div>
+          {selectedTech && (
+            <p className="mt-3 text-sm text-[var(--text-muted)]">
+              Showing {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''} with {selectedTech}
+            </p>
+          )}
+        </motion.div>
+
         {/* Projects Grid */}
         <motion.div
           className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
           variants={staggerContainer}
         >
-          {featuredProjects.map((project, index) => (
-            <ProjectCard key={project.id} project={project} index={index} />
-          ))}
+          <AnimatePresence mode="popLayout">
+            {filteredProjects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </AnimatePresence>
         </motion.div>
 
         {/* Mobile View All */}
@@ -161,7 +219,7 @@ export function FeaturedProjects({ onViewAll }: { onViewAll?: () => void }) {
           <motion.div variants={sectionItem} className="mt-8 text-center md:hidden">
             <button
               onClick={onViewAll}
-              className="px-6 py-3 bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 rounded-xl transition-colors"
+              className="px-6 py-3 bg-violet-500/20 hover:bg-violet-500/30 text-violet-500 rounded-xl transition-colors"
             >
               View All Projects
             </button>

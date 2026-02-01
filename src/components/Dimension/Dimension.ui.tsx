@@ -1,21 +1,7 @@
 // Dimension.tsx - Enhanced UI Components with Improved Accessibility and Visual Design
 // REFACTORED: Now uses modular component structure for better maintainability
 
-// Import all types from types file
-import type {
-  ControlPanelProps,
-  ModelSelectorProps,
-  ModelInfoDisplayProps,
-  LoadingProgressProps,
-  ErrorMessageProps,
-  KeyboardShortcutsHelpProps,
-  PerformanceHUDProps,
-  CollapsibleWidgetProps,
-  CameraPresetsWidgetProps
-} from './Dimension.types';
-
-// Import utilities
-import { formatFileSize, formatVertexCount, formatPercentage } from './Dimension.utils';
+import type { PerformanceHUDProps } from './Dimension.types';
 
 // ============================================================================
 // LEGACY EXPORTS - Maintains backward compatibility
@@ -64,7 +50,8 @@ export {
   formatPercentage 
 } from './Dimension.utils';
 
-// PerformanceHUD Component (Simplified - as requested)
-export function PerformanceHUD({ isMobile }: PerformanceHUDProps) {
+// PerformanceHUD Component (Simplified - placeholder for future implementation)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function PerformanceHUD({ isMobile: _isMobile }: PerformanceHUDProps) {
   return null;
 }

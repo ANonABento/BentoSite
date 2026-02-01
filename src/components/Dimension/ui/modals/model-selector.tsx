@@ -3,7 +3,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 
-import type { ModelSelectorProps } from '../../Dimension.types';
+import type { ModelSelectorProps, ModelInfo } from '../../Dimension.types';
 import { formatFileSize } from '../shared';
 
 export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, onClose }: ModelSelectorProps) {
@@ -21,16 +21,16 @@ export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, 
     searchInputRef.current?.focus();
   }, []);
 
-  const categories = ['All', ...Array.from(new Set(models.map((model: any) => model.category)))];
-  
-  const filteredModels = models.filter((model: any) => {
+  const categories = ['All', ...Array.from(new Set(models.map((model: ModelInfo) => model.category)))];
+
+  const filteredModels = models.filter((model: ModelInfo) => {
     const matchesSearch = model.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           model.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || model.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const handleModelClick = (model: any) => {
+  const handleModelClick = (model: ModelInfo) => {
     onModelSelect(model);
     onClose();
   };
@@ -103,7 +103,7 @@ export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, 
             </div>
           ) : (
             <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
-              {filteredModels.map((model: any) => (
+              {filteredModels.map((model: ModelInfo) => (
                 <div
                   key={model.id}
                   onClick={() => handleModelClick(model)}

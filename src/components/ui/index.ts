@@ -1,4 +1,3 @@
-export { useRipple, RippleButton } from './Ripple';
 export { ToastProvider, useToast } from './Toast';
 export {
   Skeleton,

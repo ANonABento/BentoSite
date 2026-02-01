@@ -10,7 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${siteConfig.url}/classic`,
+      url: `${siteConfig.url}/scrollable`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,

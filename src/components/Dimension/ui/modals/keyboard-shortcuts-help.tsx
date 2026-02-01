@@ -38,12 +38,9 @@ export function KeyboardShortcutsHelp({ isVisible }: KeyboardShortcutsHelpProps)
         ))}
       </div>
       <div className="mt-4 text-center">
-        <button 
-          onClick={() => {}} 
-          className="text-blue-400 hover:text-blue-300 text-xs underline focus:outline-none focus:ring-2 focus:ring-blue-500/50 rounded px-2 py-1"
-        >
-          Press '?' to hide
-        </button>
+        <p className="text-blue-400 text-xs">
+          Press <kbd className="bg-gray-700 px-1 py-0.5 rounded font-mono border border-gray-600">?</kbd> to hide
+        </p>
       </div>
     </div>
   );

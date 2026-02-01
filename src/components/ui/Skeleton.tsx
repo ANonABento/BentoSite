@@ -124,3 +124,116 @@ export function SkillsSkeleton() {
     </div>
   );
 }
+
+// Section-level skeletons for lazy-loaded sections
+export function AboutSectionSkeleton() {
+  return (
+    <section className="py-16 md:py-24">
+      <div className="max-w-6xl mx-auto px-4 md:px-6">
+        {/* Section Header */}
+        <div className="mb-12">
+          <Skeleton variant="text" className="w-40 h-10 mb-4" />
+          <Skeleton variant="rounded" className="w-20 h-1" />
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          {/* Bio Content */}
+          <div className="space-y-6">
+            <Skeleton variant="text" className="w-full h-6" />
+            <Skeleton variant="text" className="w-4/5 h-6" />
+            <Skeleton variant="text" className="w-full h-5" />
+            <Skeleton variant="text" className="w-3/4 h-5" />
+            <div className="grid grid-cols-3 gap-4 pt-6">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} variant="rounded" className="h-20" />
+              ))}
+            </div>
+          </div>
+
+          {/* Visual Element */}
+          <Skeleton variant="rounded" className="h-72" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function TimelineSectionSkeleton() {
+  return (
+    <section className="py-16 md:py-24">
+      <div className="max-w-6xl mx-auto px-4 md:px-6">
+        {/* Section Header */}
+        <div className="mb-12">
+          <Skeleton variant="text" className="w-48 h-10 mb-4" />
+          <Skeleton variant="rounded" className="w-20 h-1" />
+        </div>
+
+        {/* Timeline Items */}
+        <div className="space-y-8">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex gap-6">
+              <div className="flex flex-col items-center">
+                <Skeleton variant="circular" width={12} height={12} />
+                <Skeleton variant="rectangular" className="w-0.5 h-full mt-2" />
+              </div>
+              <div className="flex-1 glass rounded-xl p-6 space-y-3">
+                <Skeleton variant="text" className="w-32 h-5" />
+                <Skeleton variant="text" className="w-48 h-6" />
+                <Skeleton variant="text" className="w-full h-4" />
+                <Skeleton variant="text" className="w-3/4 h-4" />
+                <div className="flex gap-2 pt-2">
+                  {Array.from({ length: 4 }).map((_, j) => (
+                    <Skeleton key={j} variant="rounded" className="h-6 w-14" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function ProjectsSectionSkeleton() {
+  return (
+    <section className="py-16 md:py-24">
+      <div className="max-w-6xl mx-auto px-4 md:px-6">
+        {/* Section Header */}
+        <div className="mb-12 flex items-end justify-between">
+          <div>
+            <Skeleton variant="text" className="w-52 h-10 mb-4" />
+            <Skeleton variant="rounded" className="w-20 h-1" />
+          </div>
+          <Skeleton variant="rounded" className="w-32 h-8 hidden md:block" />
+        </div>
+
+        {/* Filter buttons */}
+        <div className="mb-8 flex flex-wrap gap-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} variant="rounded" className="h-10 w-20" />
+          ))}
+        </div>
+
+        {/* Projects Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="glass rounded-2xl overflow-hidden">
+              <Skeleton variant="rectangular" className="h-40" />
+              <div className="p-6 space-y-3">
+                <Skeleton variant="text" className="w-3/4 h-6" />
+                <Skeleton variant="text" className="w-full h-4" />
+                <Skeleton variant="text" className="w-2/3 h-4" />
+                <div className="flex gap-2 pt-2">
+                  {Array.from({ length: 3 }).map((_, j) => (
+                    <Skeleton key={j} variant="rounded" className="h-6 w-14" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
