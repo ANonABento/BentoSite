@@ -107,32 +107,36 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
 
   // Screenshot functionality
   const handleScreenshot = useCallback(() => {
-    try {
-      const canvas = canvasRef.current;
-      if (!canvas) {
-        console.error('Canvas not available for screenshot');
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      console.error('Canvas not available for screenshot');
+      return;
+    }
+
+    // Create download link
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        console.error('Failed to create blob from canvas');
         return;
       }
 
-      // Create download link
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          console.error('Failed to create blob from canvas');
-          return;
-        }
-
-        const url = URL.createObjectURL(blob);
+      let url: string | null = null;
+      try {
+        url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
         link.download = `${selectedModel.name.replace(/[^a-z0-9]/gi, '_')}_screenshot.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }, 'image/png');
-    } catch (error) {
-      console.error('Screenshot failed:', error);
-    }
+      } catch (error) {
+        console.error('Screenshot failed:', error);
+      } finally {
+        if (url) {
+          URL.revokeObjectURL(url);
+        }
+      }
+    }, 'image/png');
   }, [selectedModel.name]);
 
   // Fullscreen functionality
@@ -246,10 +250,9 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
             
             <StationaryBackground />
             
-            <ResponsiveOrbitControls 
+            <ResponsiveOrbitControls
               ref={controlsRef}
-              autoRotate={autoRotate} 
-              onResetView={handleResetView}
+              autoRotate={autoRotate}
               isMobile={isMobile}
             />
           </Canvas>
@@ -258,15 +261,16 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
       ) : (
         // Normal loading and success state
         <React.Suspense fallback={
-          <div className="w-full h-full bg-zinc-700">
-            <Canvas 
+          <div className="w-full h-full bg-zinc-700" aria-busy="true" role="status">
+            <span className="sr-only">Loading 3D model...</span>
+            <Canvas
               camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
               performance={{ min: MIN_PERFORMANCE_SCALE }}
               gl={{ preserveDrawingBuffer: true }}
             >
               {/* Skeleton loader is handled in ModelWrapper */}
             </Canvas>
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none" 
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none"
                  style={{ zIndex: 1000 }}>
               <LoadingSpinner />
             </div>
@@ -308,10 +312,9 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
               isWireframe={isWireframe}
             />
             
-            <ResponsiveOrbitControls 
+            <ResponsiveOrbitControls
               ref={controlsRef}
-              autoRotate={autoRotate} 
-              onResetView={handleResetView}
+              autoRotate={autoRotate}
               isMobile={isMobile}
             />
           </Canvas>

@@ -25,7 +25,7 @@ export function AboutSection() {
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
             About Me
           </h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-violet-500 to-orange-500 rounded-full" />
+          <div className="w-20 h-1 rounded-full" style={{ background: 'linear-gradient(to right, var(--purple), var(--orange))' }} />
         </motion.div>
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -70,13 +70,13 @@ export function AboutSection() {
           >
             <div className="glass rounded-2xl p-8 relative overflow-hidden">
               {/* Decorative gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 via-transparent to-orange-500/10" />
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom right, var(--purple-muted), transparent, var(--orange-muted))' }} />
 
               {/* Code block aesthetic */}
               <div className="relative space-y-4 font-mono text-sm">
                 <div className="flex items-center gap-2 text-[var(--text-muted)]">
                   <span className="text-violet-500">const</span>
-                  <span className="text-orange-500">engineer</span>
+                  <span className="text-[var(--orange)]">engineer</span>
                   <span>=</span>
                   <span className="text-[var(--text-secondary)]">{'{'}</span>
                 </div>
@@ -125,7 +125,7 @@ export function AboutSection() {
               transition={{ duration: 4, repeat: Infinity }}
             />
             <motion.div
-              className="absolute -bottom-4 -left-4 w-16 h-16 bg-orange-500/20 rounded-full blur-2xl"
+              className="absolute -bottom-4 -left-4 w-16 h-16 bg-[var(--orange-muted)] rounded-full blur-2xl"
               animate={{ scale: [1.2, 1, 1.2], opacity: [0.5, 0.8, 0.5] }}
               transition={{ duration: 4, repeat: Infinity, delay: 2 }}
             />

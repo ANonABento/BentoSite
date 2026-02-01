@@ -12,7 +12,6 @@ interface KeyboardCallbacks {
   onToggleFullscreen?: () => void;
   onZoomFit?: () => void;
   onCameraPresets?: () => void;
-  on360Export?: () => void;
 }
 
 /**
@@ -62,32 +61,6 @@ export const useScreenSize = () => {
 };
 
 /**
- * Hook to monitor performance (FPS)
- */
-export const usePerformanceMonitor = () => {
-  const [fps, setFps] = useState(60);
-  const frameCountRef = useRef(0);
-  const lastTimeRef = useRef(0);
-
-  // Initialize lastTimeRef in first updateFps call instead of during render
-  const updateFps = () => {
-    const currentTime = performance.now();
-    if (lastTimeRef.current === 0) {
-      lastTimeRef.current = currentTime;
-    }
-    frameCountRef.current++;
-
-    if (currentTime >= lastTimeRef.current + 1000) {
-      setFps(Math.round((frameCountRef.current * 1000) / (currentTime - lastTimeRef.current)));
-      frameCountRef.current = 0;
-      lastTimeRef.current = currentTime;
-    }
-  };
-
-  return { fps, updateFps };
-};
-
-/**
  * Hook for keyboard shortcuts
  * Uses individual callback refs to avoid re-registering listeners
  */
@@ -129,9 +102,6 @@ export const useKeyboardShortcuts = (callbacks: KeyboardCallbacks) => {
           break;
         case 'c':
           cbs.onCameraPresets?.();
-          break;
-        case 'e':
-          cbs.on360Export?.();
           break;
         case 'z':
           cbs.onZoomFit?.();

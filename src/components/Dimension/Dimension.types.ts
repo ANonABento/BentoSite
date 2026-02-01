@@ -59,7 +59,6 @@ export interface ModelInfoDisplayProps {
 
 export interface ResponsiveOrbitControlsProps {
   autoRotate: boolean;
-  onResetView: () => void;
   isMobile: boolean;
 }
 

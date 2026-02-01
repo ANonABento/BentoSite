@@ -1,7 +1,7 @@
 // ControlPanel - Main control interface for 3D viewer operations
 // Extracted from Dimension.ui.tsx for better maintainability
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 
 import type { ControlPanelProps } from '../../Dimension.types';
@@ -28,8 +28,8 @@ export function ControlPanel({
     setIsCollapsed(isMobile);
   }, [isMobile]);
 
-  // Control button definitions
-  const allControls = [
+  // Control button definitions - memoized to prevent recreation on every render
+  const allControls = useMemo(() => [
     {
       icon: autoRotate ? (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -135,7 +135,7 @@ export function ControlPanel({
       shortcut: 'M',
       description: 'Open model manager'
     }
-  ];
+  ], [autoRotate, isWireframe, showCameraPresets, onToggleAutoRotate, onResetView, onZoomFit, onFullscreen, onToggleWireframe, onCameraPresets, onScreenshot, onModelManager]);
 
   const controlsIcon = (
     <svg className="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -166,8 +166,8 @@ export function ControlPanel({
                   focus:outline-none focus:ring-2 focus:ring-violet-500/50
                   min-h-[60px] transition-all duration-200
                   ${button.active
-                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20 ring-1 ring-orange-400/30'
-                    : 'bg-white/5 backdrop-blur border border-white/10 hover:bg-white/10 hover:border-violet-500/30 text-gray-300 hover:text-white'
+                    ? 'bg-[var(--orange)] text-white shadow-lg shadow-[var(--orange-muted)] ring-1 ring-[var(--orange)]/30'
+                    : 'bg-white/5 backdrop-blur border border-white/10 hover:bg-white/10 hover:border-[var(--purple)]/30 text-gray-300 hover:text-white'
                   }
                 `}
                 title={`${button.label} (${button.shortcut}) - ${button.description}`}

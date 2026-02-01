@@ -144,7 +144,7 @@ export function SkeletonLoader() {
         <meshStandardMaterial color={COLORS.skeleton} wireframe />
       </Box>
 
-      <ResponsiveOrbitControls ref={controlsRef} autoRotate={true} onResetView={() => {}} isMobile={isMobile} />
+      <ResponsiveOrbitControls ref={controlsRef} autoRotate={true} isMobile={isMobile} />
     </>
   );
 }
@@ -313,43 +313,25 @@ export const ResponsiveOrbitControls = forwardRef<any, ResponsiveOrbitControlsPr
 }, ref) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const controlsRef = useRef<any>(null);
-  
+
   useImperativeHandle(ref, () => controlsRef.current);
-  
-  React.useEffect(() => {
-    // Auto-disable auto-rotation on mobile to prevent battery drain
-    if (isMobile && autoRotate) {
-      // Optional: Add a small delay before disabling
-      const timer = setTimeout(() => {
-        // Could implement a notification that rotation is disabled on mobile
-      }, 3000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [autoRotate, isMobile]);
 
   return (
     <OrbitControls
       ref={controlsRef}
+      autoRotate={autoRotate}
       enableZoom={true}
       enablePan={true}
       enableRotate={true}
-      minDistance={isMobile ? 4 : 3} // Slightly more zoomed out on mobile
-      maxDistance={isMobile ? 40 : 30} // Allow more zoom range on mobile
+      minDistance={isMobile ? 4 : 3}
+      maxDistance={isMobile ? 40 : 30}
       enableDamping={true}
-      dampingFactor={isMobile ? 0.1 : 0.05} // More responsive damping on mobile
-      screenSpacePanning={isMobile} // Enable screen space panning on mobile
+      dampingFactor={isMobile ? 0.1 : 0.05}
+      screenSpacePanning={isMobile}
       maxPolarAngle={Math.PI / 2}
-      // Touch gestures for mobile
       touches={{
         ONE: THREE.TOUCH.ROTATE,
         TWO: isMobile ? THREE.TOUCH.DOLLY_PAN : THREE.TOUCH.DOLLY_ROTATE
-      }}
-      onEnd={(event) => {
-        // Reset view on double tap for mobile
-        if (isMobile && event?.target) {
-          // Handle double tap reset if needed
-        }
       }}
     />
   );
@@ -419,17 +401,6 @@ export function ModelWrapper({ modelPath = '/models/placeholder.stl', onError, a
   );
 }
 
-// STL Model wrapper with comprehensive error handling (kept for backwards compatibility)
-export function STLModelWrapper({ modelPath = '/models/placeholder.stl', onError, autoRotate, onClick, isWireframe }: STLModelWrapperProps) {
-  return (
-    <React.Suspense fallback={<SkeletonLoader />}>
-      <ErrorBoundary onError={onError}>
-        <LODModel modelPath={modelPath} autoRotate={autoRotate} onClick={onClick} isWireframe={isWireframe} />
-      </ErrorBoundary>
-    </React.Suspense>
-  );
-}
-
 // Custom Error Boundary Component
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -448,43 +419,100 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    // Determine error type and create appropriate error object
-    let modelError: ModelError;
-    const message = error?.message || '';
+    // Determine error type using structured checks before falling back to message parsing
+    const modelError = ErrorBoundary.classifyError(error);
+    return { hasError: true, error: modelError };
+  }
 
-    if (message.includes('404') || message.includes('Not Found')) {
-      modelError = {
+  private static classifyError(error: Error): ModelError {
+    // Check for structured error properties first (more reliable than message parsing)
+    const errorWithStatus = error as Error & { status?: number; statusCode?: number };
+    const status = errorWithStatus.status ?? errorWithStatus.statusCode;
+
+    // HTTP status code based classification
+    if (status === 404) {
+      return {
         message: 'Model file not found. Please check the file path or select a different model.',
         code: 'FILE_NOT_FOUND',
         retryable: true
       };
-    } else if (message.includes('format') || message.includes('parse')) {
-      modelError = {
-        message: 'Invalid STL format. Please ensure the file is a valid STL model.',
-        code: 'INVALID_FORMAT',
-        retryable: true
-      };
-    } else if (message.includes('CORS') || message.includes('cross-origin')) {
-      modelError = {
-        message: 'Cross-origin request blocked. Please check server configuration.',
-        code: 'CORS_ERROR',
+    }
+    if (status === 403) {
+      return {
+        message: 'Access denied. Please check file permissions.',
+        code: 'ACCESS_DENIED',
         retryable: false
       };
-    } else if (message.includes('timeout') || message.includes('Timeout')) {
-      modelError = {
-        message: 'Request timed out. Please check your connection and try again.',
-        code: 'TIMEOUT',
-        retryable: true
-      };
-    } else {
-      modelError = {
-        message: 'Failed to load model. Please try again or contact support.',
-        code: 'UNKNOWN_ERROR',
+    }
+    if (status && status >= 500) {
+      return {
+        message: 'Server error. Please try again later.',
+        code: 'SERVER_ERROR',
         retryable: true
       };
     }
 
-    return { hasError: true, error: modelError };
+    // Error name/type based classification
+    if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+      return {
+        message: 'Request timed out. Please check your connection and try again.',
+        code: 'TIMEOUT',
+        retryable: true
+      };
+    }
+    if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+      return {
+        message: 'Network error. Please check your connection.',
+        code: 'NETWORK_ERROR',
+        retryable: true
+      };
+    }
+    if (error.name === 'SyntaxError') {
+      return {
+        message: 'Invalid model format. Please ensure the file is a valid 3D model.',
+        code: 'INVALID_FORMAT',
+        retryable: false
+      };
+    }
+
+    // Fall back to message-based classification (less reliable but necessary for some errors)
+    const message = (error?.message || '').toLowerCase();
+
+    if (message.includes('404') || message.includes('not found')) {
+      return {
+        message: 'Model file not found. Please check the file path or select a different model.',
+        code: 'FILE_NOT_FOUND',
+        retryable: true
+      };
+    }
+    if (message.includes('cors') || message.includes('cross-origin')) {
+      return {
+        message: 'Cross-origin request blocked. Please check server configuration.',
+        code: 'CORS_ERROR',
+        retryable: false
+      };
+    }
+    if (message.includes('format') || message.includes('parse') || message.includes('invalid')) {
+      return {
+        message: 'Invalid model format. Please ensure the file is a valid 3D model.',
+        code: 'INVALID_FORMAT',
+        retryable: false
+      };
+    }
+    if (message.includes('timeout')) {
+      return {
+        message: 'Request timed out. Please check your connection and try again.',
+        code: 'TIMEOUT',
+        retryable: true
+      };
+    }
+
+    // Default fallback
+    return {
+      message: 'Failed to load model. Please try again or contact support.',
+      code: 'UNKNOWN_ERROR',
+      retryable: true
+    };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {

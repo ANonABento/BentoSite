@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, useCallback, Component, ReactNode } from 'react';
+import { useState, useCallback, useRef, useEffect, Component, ReactNode } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import Header from '@/components/Header';
 import { tabContent, buttonTap } from '@/lib/animations';
@@ -10,6 +10,7 @@ import {
   KeyboardShortcutsModal,
   useKeyboardShortcutsHelp,
 } from '@/components/ui/KeyboardShortcutsHelp';
+import type { Project } from '@/lib/projects-data';
 
 // Error Boundary for graceful error handling
 interface ErrorBoundaryProps {
@@ -65,17 +66,20 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 }
 
-const ThreeViewer = dynamic(() => import('@/components/Dimension/Dimension'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" />
-        <span className="text-[var(--text-secondary)] text-sm">Loading 3D Viewer...</span>
+const Viewfinder = dynamic(
+  () => import('@/components/Viewfinder').then((mod) => ({ default: mod.Viewfinder })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" />
+          <span className="text-[var(--text-secondary)] text-sm">Loading Viewfinder...</span>
+        </div>
       </div>
-    </div>
-  ),
-});
+    ),
+  }
+);
 
 const Chatbot = dynamic(() => import('@/components/Chat'), {
   ssr: false,
@@ -146,8 +150,25 @@ export default function Home() {
   const [isLanding, setIsLanding] = useState(true);
   const [activeSection, setActiveSection] = useState<'3d' | 'chat'>('3d');
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [chatFns, setChatFns] = useState<{ send: (content: string) => void; clear: () => void } | null>(null);
   const { isOpen: isShortcutsOpen, close: closeShortcuts } = useKeyboardShortcutsHelp();
+
+  // Track mounted state to prevent state updates on unmounted components
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const handleSelectProject = useCallback((project: Project) => {
+    setSelectedProject(project);
+    setIsProjectsOpen(false);
+    // On mobile, switch to viewfinder tab
+    setActiveSection('3d');
+  }, []);
 
   const handleEnterSite = useCallback(() => {
     setIsLanding(false);
@@ -159,7 +180,9 @@ export default function Home() {
     if (activeSection !== 'chat') {
       setActiveSection('chat');
       setTimeout(() => {
-        chatFns?.send(message);
+        if (isMountedRef.current) {
+          chatFns?.send(message);
+        }
       }, 150);
     } else {
       chatFns?.send(message);
@@ -168,7 +191,7 @@ export default function Home() {
 
   return (
     <LayoutGroup>
-      <div className="relative h-screen bg-[var(--background)] overflow-hidden">
+      <main className="relative h-screen bg-[var(--background)] overflow-hidden">
         {/* Vignette overlay for landing */}
         <AnimatePresence>
           {isLanding && (
@@ -286,20 +309,22 @@ export default function Home() {
                   layout: { duration: 0.7, ease: [0.4, 0, 0.2, 1] }
                 }}
               >
-                {/* 3D Viewer Header - fades in after landing */}
-                <motion.div
-                  className="flex-shrink-0 px-5 py-4 border-b border-[var(--border)] flex items-center gap-2"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={isLanding ? { opacity: 0, height: 0 } : { opacity: 1, height: 'auto' }}
-                  transition={{ delay: 0.5, duration: 0.3 }}
-                >
-                  <div className="w-2 h-2 rounded-full bg-[var(--orange)] animate-pulse" />
-                  <span className="text-sm font-medium text-[var(--text-secondary)]">Interactive 3D Viewer</span>
-                </motion.div>
-                {/* 3D Canvas */}
+                {/* Viewfinder Header - fades in after landing (only when no project selected) */}
+                {!selectedProject && (
+                  <motion.div
+                    className="flex-shrink-0 px-5 py-4 border-b border-[var(--border)] flex items-center gap-2"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={isLanding ? { opacity: 0, height: 0 } : { opacity: 1, height: 'auto' }}
+                    transition={{ delay: 0.5, duration: 0.3 }}
+                  >
+                    <div className="w-2 h-2 rounded-full bg-[var(--orange)] animate-pulse" />
+                    <span className="text-sm font-medium text-[var(--text-secondary)]">Viewfinder</span>
+                  </motion.div>
+                )}
+                {/* Viewfinder Content */}
                 <div className="flex-1 min-h-0">
                   <ErrorBoundary>
-                    <ThreeViewer minimal={isLanding} />
+                    <Viewfinder project={selectedProject} minimal={isLanding} />
                   </ErrorBoundary>
                 </div>
               </motion.div>
@@ -326,19 +351,21 @@ export default function Home() {
                   layout: { duration: 0.7, ease: [0.4, 0, 0.2, 1] }
                 }}
               >
-                {/* Mobile 3D Viewer Header */}
-                <motion.div
-                  className="flex-shrink-0 px-4 py-3 border-b border-[var(--border)] flex items-center gap-2"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={isLanding ? { opacity: 0, height: 0 } : { opacity: 1, height: 'auto' }}
-                  transition={{ delay: 0.5, duration: 0.3 }}
-                >
-                  <div className="w-2 h-2 rounded-full bg-[var(--orange)] animate-pulse" />
-                  <span className="text-sm font-medium text-[var(--text-secondary)]">Interactive 3D Viewer</span>
-                </motion.div>
+                {/* Mobile Viewfinder Header */}
+                {!selectedProject && (
+                  <motion.div
+                    className="flex-shrink-0 px-4 py-3 border-b border-[var(--border)] flex items-center gap-2"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={isLanding ? { opacity: 0, height: 0 } : { opacity: 1, height: 'auto' }}
+                    transition={{ delay: 0.5, duration: 0.3 }}
+                  >
+                    <div className="w-2 h-2 rounded-full bg-[var(--orange)] animate-pulse" />
+                    <span className="text-sm font-medium text-[var(--text-secondary)]">Viewfinder</span>
+                  </motion.div>
+                )}
                 <div className="flex-1 min-h-0">
                   <ErrorBoundary>
-                    <ThreeViewer minimal={isLanding} />
+                    <Viewfinder project={selectedProject} minimal={isLanding} />
                   </ErrorBoundary>
                 </div>
               </motion.div>
@@ -433,14 +460,12 @@ export default function Home() {
         <ProjectsModal
           isOpen={isProjectsOpen}
           onClose={() => setIsProjectsOpen(false)}
-          onLoad3DModel={() => {
-            setIsProjectsOpen(false);
-          }}
+          onSelectProject={handleSelectProject}
         />
 
         {/* Keyboard Shortcuts Help Modal */}
         <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={closeShortcuts} />
-      </div>
+      </main>
     </LayoutGroup>
   );
 }

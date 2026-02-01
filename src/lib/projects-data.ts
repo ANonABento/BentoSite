@@ -1,6 +1,8 @@
 // Projects Data - Kevin Jiang's portfolio projects
 // Used by ProjectsModal for the portfolio showcase
 
+import type { ProjectMedia } from '@/components/MediaViewer/MediaViewer.types';
+
 export type ProjectCategory = 'Robotics' | 'AI & ML' | 'Hardware' | 'Software' | 'VR/AR' | 'Competition';
 export type ProjectStatus = 'Completed' | 'In Progress' | 'Archived';
 
@@ -18,6 +20,7 @@ export interface Project {
     modelPath?: string;
     docs?: string;
   };
+  media?: ProjectMedia;
   featured?: boolean;
   dateCompleted?: string;
 }
@@ -34,6 +37,14 @@ export const PROJECTS: Project[] = [
       github: 'https://github.com/ANonABento',
       modelPath: '/models/placeholder.stl',
     },
+    media: {
+      images: [
+        'https://picsum.photos/seed/robot1/800/600',
+        'https://picsum.photos/seed/robot2/800/600',
+        'https://picsum.photos/seed/robot3/800/600',
+      ],
+      website: 'https://ros.org',
+    },
     featured: true,
     dateCompleted: '2025-08',
   },
@@ -47,6 +58,15 @@ export const PROJECTS: Project[] = [
     links: {
       github: 'https://github.com/ANonABento',
     },
+    media: {
+      images: [
+        'https://picsum.photos/seed/aihead1/800/600',
+        'https://picsum.photos/seed/aihead2/800/600',
+        'https://picsum.photos/seed/aihead3/800/600',
+        'https://picsum.photos/seed/aihead4/800/600',
+      ],
+      video: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    },
     featured: true,
     dateCompleted: '2025-06',
   },
@@ -59,6 +79,13 @@ export const PROJECTS: Project[] = [
     technologies: ['JavaScript', 'Python', 'Jetson Nano', 'Docker', 'MQTT', 'ROS2', 'Flask'],
     links: {
       github: 'https://github.com/ANonABento',
+    },
+    media: {
+      images: [
+        'https://picsum.photos/seed/arbot1/800/600',
+        'https://picsum.photos/seed/arbot2/800/600',
+      ],
+      website: 'https://www.spectacles.com',
     },
     featured: true,
     dateCompleted: '2025-04',
@@ -88,6 +115,13 @@ export const PROJECTS: Project[] = [
       github: 'https://github.com/ANonABento',
       docs: 'https://docs.google.com/document/d/example',
     },
+    media: {
+      images: [
+        'https://picsum.photos/seed/vrglove1/800/600',
+        'https://picsum.photos/seed/vrglove2/800/600',
+        'https://picsum.photos/seed/vrglove3/800/600',
+      ],
+    },
     featured: false,
     dateCompleted: '2024-10',
   },
@@ -100,6 +134,16 @@ export const PROJECTS: Project[] = [
     technologies: ['Java', 'OpenCV', 'OnShape', '3D-Printing', 'Motor Control', 'Mecanum Drive'],
     links: {
       github: 'https://github.com/ANonABento',
+    },
+    media: {
+      images: [
+        'https://picsum.photos/seed/ftc1/800/600',
+        'https://picsum.photos/seed/ftc2/800/600',
+        'https://picsum.photos/seed/ftc3/800/600',
+        'https://picsum.photos/seed/ftc4/800/600',
+        'https://picsum.photos/seed/ftc5/800/600',
+      ],
+      video: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     },
     featured: false,
     dateCompleted: '2024-04',
@@ -114,6 +158,13 @@ export const PROJECTS: Project[] = [
     links: {
       github: 'https://github.com/ANonABento',
     },
+    media: {
+      images: [
+        'https://picsum.photos/seed/pcb1/800/600',
+        'https://picsum.photos/seed/pcb2/800/600',
+        'https://picsum.photos/seed/pcb3/800/600',
+      ],
+    },
     featured: false,
     dateCompleted: '2025-04',
   },
@@ -127,6 +178,12 @@ export const PROJECTS: Project[] = [
     links: {
       github: 'https://github.com/ANonABento',
     },
+    media: {
+      game: {
+        type: 'itch',
+        url: 'https://bakudas.itch.io/roguelike-deckbuilder',
+      },
+    },
     featured: false,
     dateCompleted: '2024-11',
   },
@@ -139,6 +196,12 @@ export const PROJECTS: Project[] = [
     technologies: ['Java', 'Android Studio', 'OpenCV', 'AIML', 'TTS', 'CameraX'],
     links: {
       github: 'https://github.com/ANonABento',
+    },
+    media: {
+      images: [
+        'https://picsum.photos/seed/android1/800/600',
+        'https://picsum.photos/seed/android2/800/600',
+      ],
     },
     featured: false,
     dateCompleted: '2024-06',

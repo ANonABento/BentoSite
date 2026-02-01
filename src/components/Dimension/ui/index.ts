@@ -1,32 +1,26 @@
 // Main UI library exports
-export { 
+export {
   CollapsibleWidget,
   ModelInfoDisplay,
   ControlPanel,
-  CameraPresetsWidget 
+  CameraPresetsWidget
 } from './widgets';
 
-export { 
+export {
   ModelSelector,
-  KeyboardShortcutsHelp 
+  KeyboardShortcutsHelp
 } from './modals';
 
-export { 
+export {
   LoadingSpinner,
   LoadingProgress,
-  ErrorMessage 
+  ErrorMessage
 } from './feedback';
 
-export { 
+export {
   DESIGN_SYSTEM,
   COMMON_CLASSES,
   formatFileSize,
   formatVertexCount,
-  formatPercentage 
+  formatPercentage
 } from './shared';
-
-// PerformanceHUD component (simplified - placeholder for future implementation)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function PerformanceHUD({ isMobile: _isMobile }: { isMobile: boolean }) {
-  return null;
-}

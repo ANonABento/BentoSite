@@ -153,7 +153,7 @@ export function FeaturedProjects({ onViewAll }: { onViewAll?: () => void }) {
             <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
               Featured Projects
             </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-violet-500 to-orange-500 rounded-full" />
+            <div className="w-20 h-1 rounded-full" style={{ background: 'linear-gradient(to right, var(--purple), var(--orange))' }} />
           </div>
           {onViewAll && (
             <button
