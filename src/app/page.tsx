@@ -11,6 +11,10 @@ import {
   useKeyboardShortcutsHelp,
 } from '@/components/ui/KeyboardShortcutsHelp';
 
+const LandingScene = dynamic(() => import('@/components/Landing/LandingScene'), {
+  ssr: false,
+});
+
 // Error Boundary for graceful error handling
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -100,10 +104,15 @@ const SkillsSection = dynamic(
 );
 
 export default function Home() {
+  const [showLanding, setShowLanding] = useState(true);
   const [activeSection, setActiveSection] = useState<'3d' | 'chat'>('3d');
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
   const [chatFns, setChatFns] = useState<{ send: (content: string) => void; clear: () => void } | null>(null);
   const { isOpen: isShortcutsOpen, close: closeShortcuts } = useKeyboardShortcutsHelp();
+
+  const handleEnterSite = useCallback(() => {
+    setShowLanding(false);
+  }, []);
 
   const handleAskAboutSkill = useCallback((skill: string) => {
     const message = `Tell me about your experience with ${skill}`;
@@ -119,7 +128,22 @@ export default function Home() {
   }, [chatFns, activeSection]);
 
   return (
-    <div id="main-content" className="flex flex-col h-screen bg-[var(--background)] bg-grid overflow-hidden transition-colors duration-300">
+    <>
+      {/* Landing Page Overlay */}
+      <AnimatePresence>
+        {showLanding && (
+          <LandingScene onEnter={handleEnterSite} />
+        )}
+      </AnimatePresence>
+
+      {/* Main Content - Bento Layout */}
+      <motion.div
+        id="main-content"
+        className="flex flex-col h-screen bg-[var(--background)] bg-grid overflow-hidden transition-colors duration-300"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: showLanding ? 0 : 1 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
       {/* Header */}
       <motion.div
         className="flex-shrink-0 p-4 md:p-6"
@@ -321,6 +345,7 @@ export default function Home() {
 
       {/* Keyboard Shortcuts Help Modal */}
       <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={closeShortcuts} />
-    </div>
+      </motion.div>
+    </>
   );
 }
