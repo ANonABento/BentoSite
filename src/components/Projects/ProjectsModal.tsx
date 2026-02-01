@@ -6,7 +6,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PROJECTS, getAllCategories, searchProjects } from '@/lib/projects-data';
-import type { ProjectCategory } from '@/lib/projects-data';
+import type { ProjectCategory, Project } from '@/lib/projects-data';
 import { ProjectCard } from './ProjectCard';
 import { staggerContainer, staggerItem, buttonTap } from '@/lib/animations';
 import { useFocusTrap } from '@/lib/use-focus-trap';
@@ -14,11 +14,11 @@ import { useFocusTrap } from '@/lib/use-focus-trap';
 interface ProjectsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLoad3DModel?: (modelPath: string) => void;
+  onSelectProject?: (project: Project) => void;
   isMobile?: boolean;
 }
 
-export function ProjectsModal({ isOpen, onClose, onLoad3DModel, isMobile = false }: ProjectsModalProps) {
+export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = false }: ProjectsModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ProjectCategory | 'All'>('All');
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -136,7 +136,7 @@ export function ProjectsModal({ isOpen, onClose, onLoad3DModel, isMobile = false
                         transition-all duration-150 transform hover:scale-105
                         focus:outline-none focus:ring-2 focus:ring-violet-500/50
                         ${selectedCategory === category
-                          ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg'
+                          ? 'bg-[var(--interactive)] text-white shadow-lg hover:bg-[var(--interactive-hover)]'
                           : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)] border border-[var(--border)]'
                         }
                       `}
@@ -184,7 +184,7 @@ export function ProjectsModal({ isOpen, onClose, onLoad3DModel, isMobile = false
                     <motion.div key={project.id} variants={staggerItem}>
                       <ProjectCard
                         project={project}
-                        onLoad3DModel={onLoad3DModel}
+                        onSelectProject={onSelectProject}
                       />
                     </motion.div>
                   ))}

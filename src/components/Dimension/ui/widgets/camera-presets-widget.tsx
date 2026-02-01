@@ -158,7 +158,8 @@ export function CameraPresetsWidget({
             <h3 className="font-semibold text-sm text-white">Camera Presets</h3>
           </div>
           <button
-            className="text-gray-400 hover:text-red-400 p-1 rounded-sm hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-red-500/50 active:scale-95 transform transition-colors"
+            type="button"
+            className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded-sm hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-violet-500/50 active:scale-95 transform transition-colors"
             title="Close presets"
             aria-label="Close camera presets"
             onClick={onClose}
