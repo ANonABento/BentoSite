@@ -6,13 +6,6 @@ import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 
 const ThreeViewer = dynamic(() => import('@/components/Dimension/Dimension'), {
   ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-16 h-16 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" />
-      </div>
-    </div>
-  ),
 });
 
 interface LandingSceneProps {
@@ -27,9 +20,9 @@ export default function LandingScene({ onEnter }: LandingSceneProps) {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Full-screen 3D Viewer */}
+      {/* Full-screen 3D Viewer (minimal mode - no UI controls) */}
       <div className="absolute inset-0">
-        <ThreeViewer />
+        <ThreeViewer minimal />
       </div>
 
       {/* Vignette overlay */}
@@ -78,15 +71,6 @@ export default function LandingScene({ onEnter }: LandingSceneProps) {
           </span>
         </motion.button>
 
-        {/* Hint text */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.5 }}
-          transition={{ delay: 2 }}
-          className="mt-8 text-sm text-gray-500"
-        >
-          Click to explore
-        </motion.p>
       </div>
     </motion.div>
   );
