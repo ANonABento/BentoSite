@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import { SUGGESTED_QUESTIONS, PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { buttonTap } from '@/lib/animations';
 import { useToast } from '@/components/ui/Toast';
+import { useClipboard } from '@/lib/clipboard';
 
 // === TYPES & CONSTANTS ===
 
@@ -87,34 +88,19 @@ function clearStoredMessages(): void {
 // === SUB-COMPONENTS ===
 
 function CopyButton({ text, onCopied }: { text: string; onCopied?: () => void }) {
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useClipboard();
 
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
+    const success = await copy(text);
+    if (success) {
       onCopied?.();
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = text;
-      textArea.style.position = 'fixed';
-      textArea.style.opacity = '0';
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      setCopied(true);
-      onCopied?.();
-      setTimeout(() => setCopied(false), 2000);
     }
   };
 
   return (
     <button
       onClick={handleCopy}
-      className="p-1.5 rounded-sm bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all duration-200"
+      className="p-1.5 rounded-sm bg-[var(--glass-bg)] hover:bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200"
       aria-label={copied ? 'Copied!' : 'Copy message'}
       title={copied ? 'Copied!' : 'Copy message'}
     >
@@ -141,14 +127,14 @@ function FeedbackButtons({
   onFeedback: (messageId: string, feedback: 'positive' | 'negative') => void;
 }) {
   return (
-    <div className="flex items-center gap-1 mt-2 pt-2 border-t border-white/5">
-      <span className="text-[10px] text-gray-500 mr-1">Was this helpful?</span>
+    <div className="flex items-center gap-1 mt-2 pt-2 border-t border-[var(--border)]">
+      <span className="text-[10px] text-[var(--text-muted)] mr-1">Was this helpful?</span>
       <button
         onClick={() => onFeedback(messageId, 'positive')}
         className={`p-1 rounded transition-colors ${
           currentFeedback === 'positive'
             ? 'text-green-400 bg-green-400/10'
-            : 'text-gray-500 hover:text-green-400 hover:bg-green-400/10'
+            : 'text-[var(--text-muted)] hover:text-green-400 hover:bg-green-400/10'
         }`}
         aria-label="Helpful response"
         aria-pressed={currentFeedback === 'positive'}
@@ -162,7 +148,7 @@ function FeedbackButtons({
         className={`p-1 rounded transition-colors ${
           currentFeedback === 'negative'
             ? 'text-red-400 bg-red-400/10'
-            : 'text-gray-500 hover:text-red-400 hover:bg-red-400/10'
+            : 'text-[var(--text-muted)] hover:text-red-400 hover:bg-red-400/10'
         }`}
         aria-label="Not helpful response"
         aria-pressed={currentFeedback === 'negative'}
@@ -375,9 +361,9 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" role="region" aria-label="Chat conversation">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4" aria-live="polite" aria-atomic="false">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -388,7 +374,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
                 className={`px-4 py-3 ${
                   message.role === 'user'
                     ? 'bg-violet-500 text-white rounded-sm'
-                    : 'glass text-gray-200 rounded-sm'
+                    : 'glass text-[var(--text-primary)] rounded-sm'
                 }`}
               >
                 {message.role === 'assistant' ? (
@@ -456,7 +442,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
                 onClick={() => handleSuggestedQuestion(question)}
                 disabled={isLoading}
                 whileTap={!isLoading ? buttonTap : undefined}
-                className="text-xs px-3 py-1.5 rounded-sm glass text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200 disabled:opacity-50"
+                className="text-xs px-3 py-1.5 rounded-sm glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all duration-200 disabled:opacity-50"
               >
                 {question}
               </motion.button>
@@ -473,7 +459,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
       />
 
       {/* Input Area */}
-      <div className="flex-shrink-0 p-4 border-t border-white/5">
+      <div className="flex-shrink-0 p-4 border-t border-[var(--border)]">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <input
             ref={inputRef}
@@ -482,15 +468,17 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask me anything..."
             disabled={isLoading}
-            className="flex-1 bg-white/5 backdrop-blur-xl border border-white/10 rounded-sm px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all duration-200 disabled:opacity-50"
+            aria-label="Type your message"
+            className="flex-1 bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border)] rounded-sm px-4 py-3 text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all duration-200 disabled:opacity-50"
           />
           <motion.button
             type="submit"
             disabled={isLoading || !input.trim()}
             whileTap={!(isLoading || !input.trim()) ? buttonTap : undefined}
             className="px-4 py-3 bg-violet-500 hover:bg-violet-400 active:bg-violet-600 text-white rounded-sm font-medium transition-all duration-200 hover:shadow-[0_0_20px_rgba(167,139,250,0.3)] disabled:opacity-50 disabled:hover:shadow-none"
+            aria-label="Send message"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

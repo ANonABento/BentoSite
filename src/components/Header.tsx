@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useTheme } from '@/lib/theme-context';
+import { useToast } from '@/components/ui/Toast';
+import { useClipboard } from '@/lib/clipboard';
 
 interface HeaderProps {
   name?: string;
@@ -21,11 +23,10 @@ function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-all duration-200"
+      className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg transition-all duration-200"
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >
       {theme === 'dark' ? (
-        // Sun icon for switching to light mode
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
@@ -35,7 +36,6 @@ function ThemeToggle() {
           />
         </svg>
       ) : (
-        // Moon icon for switching to dark mode
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
@@ -49,16 +49,16 @@ function ThemeToggle() {
   );
 }
 
-// Resume download button component - Orange CTA (highlight/attention)
+// Resume download button component
 function ResumeButton({ resumeUrl, className = '' }: { resumeUrl: string; className?: string }) {
   return (
     <a
       href={resumeUrl}
       download
-      className={`flex items-center gap-2 px-4 py-2.5 rounded-sm font-medium text-sm
-        bg-orange-500 hover:bg-orange-400 active:bg-orange-600 text-white
-        hover:shadow-[0_0_20px_rgba(251,146,60,0.3)] hover:scale-105
-        border border-orange-400/20
+      className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm
+        bg-[var(--orange)] hover:bg-[var(--orange-hover)] active:bg-[var(--orange-active)] text-white
+        hover:shadow-[0_0_20px_var(--orange-muted)] hover:scale-105
+        border border-[var(--orange-hover)]/20
         transition-all duration-300 ${className}`}
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,6 +80,19 @@ export default function Header({
   onProjectsClick,
 }: HeaderProps) {
   const [isHovered, setIsHovered] = useState<string | null>(null);
+  const toast = useToast();
+  const { copied: copiedEmail, copy: copyEmail } = useClipboard();
+
+  const handleEmailClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    const success = await copyEmail(email);
+    if (success) {
+      toast.success('Email copied to clipboard!');
+    } else {
+      // Fallback to mailto if clipboard fails
+      window.location.href = `mailto:${email}`;
+    }
+  };
 
   const socialLinks = [
     {
@@ -105,8 +118,12 @@ export default function Header({
     {
       id: 'email',
       href: `mailto:${email}`,
-      label: 'Email',
-      icon: (
+      label: copiedEmail ? 'Copied!' : 'Email',
+      icon: copiedEmail ? (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      ) : (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
@@ -118,39 +135,54 @@ export default function Header({
     return (
       <header className="flex items-center justify-between px-4 py-3 glass rounded-xl">
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-bold text-white">{name}</h1>
-          <span className="text-sm text-gray-500 hidden sm:inline">|</span>
-          <span className="text-sm text-gray-400 hidden sm:inline">{tagline}</span>
+          <h1 className="text-lg font-bold text-[var(--text-primary)]">{name}</h1>
+          <span className="text-sm text-[var(--text-muted)] hidden sm:inline">|</span>
+          <span className="text-sm text-[var(--text-secondary)] hidden sm:inline">{tagline}</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <ThemeToggle />
           {socialLinks.map((link) => (
-            <a
-              key={link.id}
-              href={link.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-all duration-200"
-              aria-label={link.label}
-            >
-              {link.icon}
-            </a>
+            link.id === 'email' ? (
+              <button
+                key={link.id}
+                onClick={handleEmailClick}
+                className={`p-2 rounded-lg transition-all duration-200 ${
+                  copiedEmail
+                    ? 'text-emerald-500 bg-emerald-500/10'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]'
+                }`}
+                aria-label={copiedEmail ? 'Email copied!' : 'Copy email'}
+              >
+                {link.icon}
+              </button>
+            ) : (
+              <a
+                key={link.id}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg transition-all duration-200"
+                aria-label={link.label}
+              >
+                {link.icon}
+              </a>
+            )
           ))}
           {onProjectsClick && (
             <button
               onClick={onProjectsClick}
-              className="flex items-center gap-2 px-3 py-2 rounded-sm text-sm font-medium
-                glass text-gray-300 hover:text-white hover:bg-white/10
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
+                glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]
                 transition-all duration-200"
               aria-label="View projects"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
               </svg>
               <span className="hidden sm:inline">Projects</span>
             </button>
           )}
-          <ResumeButton resumeUrl={resumeUrl} className="ml-2" />
+          <ResumeButton resumeUrl={resumeUrl} className="ml-1" />
         </div>
       </header>
     );
@@ -160,46 +192,69 @@ export default function Header({
     <header className="relative overflow-hidden">
       <div className="relative px-6 py-8 md:py-12">
         <div className="max-w-4xl mx-auto text-center">
-          {/* Name - bold white with subtle purple underline */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-white">
+          {/* Name */}
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-[var(--text-primary)]">
             {name}
           </h1>
 
           {/* Tagline */}
-          <p className="text-lg md:text-xl text-gray-400 mb-8">
+          <p className="text-lg md:text-xl text-[var(--text-secondary)] mb-8">
             {tagline}
           </p>
 
           {/* Social links + Resume */}
           <div className="flex items-center justify-center gap-4 flex-wrap">
             {socialLinks.map((link) => (
-              <a
-                key={link.id}
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                onMouseEnter={() => setIsHovered(link.id)}
-                onMouseLeave={() => setIsHovered(null)}
-                className={`
-                  flex items-center gap-2 px-4 py-2.5 rounded-sm
-                  transition-all duration-200 transform border
-                  ${isHovered === link.id
-                    ? 'bg-violet-500 text-white scale-105 shadow-[0_0_20px_rgba(167,139,250,0.3)] border-violet-400/20'
-                    : 'glass text-gray-300 hover:text-white border-white/10'
-                  }
-                `}
-                aria-label={link.label}
-              >
-                {link.icon}
-                <span className="text-sm font-medium hidden sm:inline">{link.label}</span>
-              </a>
+              link.id === 'email' ? (
+                <button
+                  key={link.id}
+                  onClick={handleEmailClick}
+                  onMouseEnter={() => setIsHovered(link.id)}
+                  onMouseLeave={() => setIsHovered(null)}
+                  className={`
+                    flex items-center gap-2 px-4 py-2.5 rounded-lg
+                    transition-all duration-200 transform border
+                    ${copiedEmail
+                      ? 'bg-emerald-500 text-white scale-105 shadow-[0_0_20px_rgba(16,185,129,0.3)] border-emerald-400/20'
+                      : isHovered === link.id
+                        ? 'bg-violet-500 text-white scale-105 shadow-[0_0_20px_rgba(167,139,250,0.3)] border-violet-400/20'
+                        : 'glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border)]'
+                    }
+                  `}
+                  aria-label={copiedEmail ? 'Email copied!' : 'Copy email'}
+                >
+                  {link.icon}
+                  <span className="text-sm font-medium hidden sm:inline">{link.label}</span>
+                </button>
+              ) : (
+                <a
+                  key={link.id}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onMouseEnter={() => setIsHovered(link.id)}
+                  onMouseLeave={() => setIsHovered(null)}
+                  className={`
+                    flex items-center gap-2 px-4 py-2.5 rounded-lg
+                    transition-all duration-200 transform border
+                    ${isHovered === link.id
+                      ? 'bg-violet-500 text-white scale-105 shadow-[0_0_20px_rgba(167,139,250,0.3)] border-violet-400/20'
+                      : 'glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border)]'
+                    }
+                  `}
+                  aria-label={link.label}
+                >
+                  {link.icon}
+                  <span className="text-sm font-medium hidden sm:inline">{link.label}</span>
+                </a>
+              )
             ))}
             <ResumeButton resumeUrl={resumeUrl} />
           </div>
         </div>
       </div>
 
-      {/* Bottom line - solid purple */}
+      {/* Bottom line */}
       <div className="h-px bg-violet-500/30" />
     </header>
   );

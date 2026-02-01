@@ -2,54 +2,41 @@
 
 import { motion } from 'framer-motion';
 import { sectionItem, staggerContainer, staggerItem } from '@/lib/animations';
+import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 
 interface TimelineItem {
   id: string;
   title: string;
   company: string;
+  location: string;
   period: string;
   description: string;
   technologies: string[];
   type: 'work' | 'education';
 }
 
+// Transform experience data into timeline items
 const timelineData: TimelineItem[] = [
-  {
-    id: '1',
-    title: 'Senior Developer',
-    company: 'Tech Company',
-    period: '2022 - Present',
-    description: 'Leading development of interactive 3D web applications and mentoring junior developers.',
-    technologies: ['React', 'Three.js', 'TypeScript', 'Node.js'],
-    type: 'work',
-  },
-  {
-    id: '2',
-    title: 'Full Stack Developer',
-    company: 'Startup Inc',
-    period: '2020 - 2022',
-    description: 'Built and maintained multiple web applications with modern tech stack.',
-    technologies: ['Next.js', 'PostgreSQL', 'AWS', 'Docker'],
-    type: 'work',
-  },
-  {
-    id: '3',
-    title: 'Hardware Engineer',
-    company: 'Robotics Lab',
-    period: '2018 - 2020',
-    description: 'Designed embedded systems and IoT solutions for industrial applications.',
-    technologies: ['C++', 'Python', 'Arduino', 'ROS'],
-    type: 'work',
-  },
-  {
-    id: '4',
-    title: 'Computer Science Degree',
-    company: 'University',
-    period: '2014 - 2018',
-    description: 'Bachelor of Science in Computer Science with focus on graphics and AI.',
-    technologies: ['Algorithms', 'Machine Learning', 'Computer Graphics'],
-    type: 'education',
-  },
+  ...PORTFOLIO_DATA.experience.map((exp) => ({
+    id: exp.id,
+    title: exp.role,
+    company: exp.company,
+    location: exp.location,
+    period: exp.period,
+    description: exp.description,
+    technologies: exp.technologies,
+    type: 'work' as const,
+  })),
+  ...PORTFOLIO_DATA.education.map((edu) => ({
+    id: edu.id,
+    title: edu.degree,
+    company: edu.institution,
+    location: edu.location,
+    period: edu.period,
+    description: '',
+    technologies: [],
+    type: 'education' as const,
+  })),
 ];
 
 function TimelineCard({ item, index }: { item: TimelineItem; index: number }) {
@@ -67,36 +54,43 @@ function TimelineCard({ item, index }: { item: TimelineItem; index: number }) {
         transition={{ type: 'spring', stiffness: 300 }}
       >
         <div className="glass rounded-xl p-6 card-hover">
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <div className={`flex items-center gap-2 mb-2 flex-wrap ${isLeft ? 'md:justify-end' : ''}`}>
             <span className={`px-2 py-0.5 text-xs rounded-full ${
               item.type === 'work'
-                ? 'bg-violet-500/20 text-violet-300'
-                : 'bg-orange-500/20 text-orange-300'
+                ? 'bg-violet-500/20 text-violet-500'
+                : 'bg-orange-500/20 text-orange-500'
             }`}>
               {item.type === 'work' ? 'Work' : 'Education'}
             </span>
-            <span className="text-sm text-gray-500">{item.period}</span>
+            <span className="text-sm text-[var(--text-muted)]">{item.period}</span>
           </div>
-          <h3 className="text-lg font-semibold text-white mb-1">{item.title}</h3>
-          <p className="text-violet-400 text-sm mb-3">{item.company}</p>
-          <p className="text-gray-400 text-sm mb-4">{item.description}</p>
-          <div className="flex flex-wrap gap-2">
-            {item.technologies.map((tech) => (
-              <span
-                key={tech}
-                className="px-2 py-1 text-xs bg-white/5 text-gray-400 rounded-md"
-              >
-                {tech}
-              </span>
-            ))}
-          </div>
+          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">{item.title}</h3>
+          <p className="text-[var(--interactive)] text-sm mb-1">{item.company}</p>
+          <p className="text-[var(--text-muted)] text-xs mb-3">{item.location}</p>
+          {item.description && (
+            <p className="text-[var(--text-secondary)] text-sm mb-4">{item.description}</p>
+          )}
+          {item.technologies.length > 0 && (
+            <div className={`flex flex-wrap gap-2 ${isLeft ? 'md:justify-end' : ''}`}>
+              {item.technologies.map((tech) => (
+                <span
+                  key={tech}
+                  className="px-2 py-1 text-xs bg-[var(--glass-bg)] text-[var(--text-secondary)] rounded-md border border-[var(--border)]"
+                >
+                  {tech}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </motion.div>
 
       {/* Center line and dot */}
       <div className="hidden md:flex flex-col items-center">
         <motion.div
-          className="w-4 h-4 rounded-full bg-violet-500 border-4 border-[var(--background)] z-10"
+          className={`w-4 h-4 rounded-full border-4 border-[var(--background)] z-10 ${
+            item.type === 'work' ? 'bg-violet-500' : 'bg-orange-500'
+          }`}
           whileHover={{ scale: 1.5 }}
           transition={{ type: 'spring', stiffness: 300 }}
         />
@@ -120,8 +114,8 @@ export function TimelineSection() {
       >
         {/* Section Header */}
         <motion.div variants={sectionItem} className="mb-12 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Experience
+          <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
+            Experience & Education
           </h2>
           <div className="w-20 h-1 bg-gradient-to-r from-violet-500 to-orange-500 rounded-full mx-auto" />
         </motion.div>
@@ -129,7 +123,7 @@ export function TimelineSection() {
         {/* Timeline */}
         <div className="relative">
           {/* Center line */}
-          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2" />
+          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-violet-500/50 via-[var(--border)] to-orange-500/50 -translate-x-1/2" />
 
           <motion.div
             className="space-y-8 md:space-y-12"

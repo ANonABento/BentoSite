@@ -5,7 +5,7 @@ import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 
 // Import all types
-import type { ModelInfo, ModelError } from './Dimension.types';
+import type { ModelInfo, ModelError, DimensionViewerProps } from './Dimension.types';
 
 // Import configuration and data
 import { 
@@ -17,14 +17,10 @@ import {
   MOBILE_PIXEL_RATIO_MAX 
 } from './Dimension.config';
 
-// Import utilities
-import { isMobileDevice } from './Dimension.utils';
-
 // Import hooks
 import {
   useIsMobile,
   useScreenSize,
-  usePerformanceMonitor,
   useKeyboardShortcuts
 } from './Dimension.hooks';
 
@@ -77,7 +73,7 @@ function getInitialModel(): ModelInfo {
   return AVAILABLE_MODELS[0];
 }
 
-export default function DimensionViewer() {
+export default function DimensionViewer({ minimal = false }: DimensionViewerProps) {
   // Component state
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<ModelError | null>(null);
@@ -93,6 +89,7 @@ export default function DimensionViewer() {
   // Hooks
   const isMobile = useIsMobile();
   const screenSize = useScreenSize();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const controlsRef = useRef<any>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -322,12 +319,12 @@ export default function DimensionViewer() {
       )}
       
       {/* Model Info Display */}
-      {showModelInfo && !error && (
+      {!minimal && showModelInfo && !error && (
         <ModelInfoDisplay model={selectedModel} isMobile={isMobile} />
       )}
 
       {/* Model Info Toggle Button (Mobile) */}
-      {isMobile && !error && (
+      {!minimal && isMobile && !error && (
         <button
           onClick={() => setShowModelInfo(!showModelInfo)}
           className="absolute top-4 left-4 bg-gray-900 bg-opacity-80 hover:bg-opacity-100 text-white rounded-full p-3 backdrop-blur-sm transition-all duration-200 shadow-lg z-50"
@@ -346,7 +343,7 @@ export default function DimensionViewer() {
       )}
 
       {/* Camera Presets Widget - Auto-positioned directly under the control widget */}
-      {showCameraPresets && (
+      {!minimal && showCameraPresets && (
         <CameraPresetsWidget
           presets={CAMERA_PRESETS}
           onPresetSelect={handleCameraPreset}
@@ -358,25 +355,27 @@ export default function DimensionViewer() {
       )}
       
       {/* Control Panel Overlay */}
-      <ControlPanel
-        autoRotate={autoRotate}
-        isWireframe={isWireframe}
-        onToggleAutoRotate={() => setAutoRotate(!autoRotate)}
-        onToggleWireframe={() => setIsWireframe(!isWireframe)}
-        onResetView={handleResetView}
-        onZoomFit={handleZoomFit}
-        onScreenshot={handleScreenshot}
-        onFullscreen={handleFullscreen}
-        onCameraPresets={() => setShowCameraPresets(!showCameraPresets)}
-        onModelManager={handleModelManager}
-        selectedModelName={selectedModel.name}
-        isMobile={isMobile}
-        screenSize={screenSize}
-        showCameraPresets={showCameraPresets}
-      />
-      
+      {!minimal && (
+        <ControlPanel
+          autoRotate={autoRotate}
+          isWireframe={isWireframe}
+          onToggleAutoRotate={() => setAutoRotate(!autoRotate)}
+          onToggleWireframe={() => setIsWireframe(!isWireframe)}
+          onResetView={handleResetView}
+          onZoomFit={handleZoomFit}
+          onScreenshot={handleScreenshot}
+          onFullscreen={handleFullscreen}
+          onCameraPresets={() => setShowCameraPresets(!showCameraPresets)}
+          onModelManager={handleModelManager}
+          selectedModelName={selectedModel.name}
+          isMobile={isMobile}
+          screenSize={screenSize}
+          showCameraPresets={showCameraPresets}
+        />
+      )}
+
       {/* Auto-rotate notification for mobile */}
-      {isMobile && !autoRotate && (
+      {!minimal && isMobile && !autoRotate && (
         <div className="absolute top-20 right-4 bg-blue-600 bg-opacity-90 text-white px-3 py-2 rounded text-sm pointer-events-none"
              style={{ zIndex: 1000 }}>
           Auto-rotation disabled (tap model to enable)

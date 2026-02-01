@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[var(--background)] bg-grid flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[var(--bg-base)] bg-grid flex items-center justify-center p-4">
       {/* Ambient glow effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-[100px]" />
@@ -17,10 +17,10 @@ export default function NotFound() {
         </h1>
 
         {/* Message */}
-        <h2 className="text-xl md:text-2xl font-semibold text-gray-200 mb-2">
+        <h2 className="text-xl md:text-2xl font-semibold text-[var(--text-primary)] mb-2">
           Page Not Found
         </h2>
-        <p className="text-gray-400 mb-8">
+        <p className="text-[var(--text-secondary)] mb-8">
           The page you&apos;re looking for doesn&apos;t exist or has been moved.
         </p>
 
@@ -56,7 +56,7 @@ export default function NotFound() {
             style={{ animationDelay: '0.2s' }}
           />
           <div
-            className="w-2 h-2 rounded-full bg-orange-500/50 animate-pulse"
+            className="w-2 h-2 rounded-full bg-cyan-500/50 animate-pulse"
             style={{ animationDelay: '0.4s' }}
           />
         </div>

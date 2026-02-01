@@ -1,15 +1,15 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, useCallback, Component, ReactNode, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Header from '../components/Header';
-import { AboutSection } from '../components/About/AboutSection';
-import { TimelineSection } from '../components/Timeline/TimelineSection';
-import { FeaturedProjects } from '../components/Projects/FeaturedProjects';
-import { TestimonialsSection } from '../components/Testimonials/TestimonialsSection';
-import { smoothReveal, sectionStagger, sectionItem, buttonTap } from '@/lib/animations';
+import { useState, useCallback, Component, ReactNode } from 'react';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
+import Header from '@/components/Header';
+import { tabContent, buttonTap } from '@/lib/animations';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
+import {
+  KeyboardShortcutsModal,
+  useKeyboardShortcutsHelp,
+} from '@/components/ui/KeyboardShortcutsHelp';
 
 // Error Boundary for graceful error handling
 interface ErrorBoundaryProps {
@@ -41,15 +41,15 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   render() {
     if (this.state.hasError) {
       return this.props.fallback || (
-        <div className="w-full h-full flex items-center justify-center bg-zinc-900/50 backdrop-blur-sm rounded-2xl">
+        <div className="w-full h-full flex items-center justify-center glass backdrop-blur-sm rounded-2xl">
           <div className="text-center p-8">
             <div className="w-16 h-16 mx-auto mb-4 text-red-400">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-white mb-2">Something went wrong</h3>
-            <p className="text-gray-400 text-sm mb-4">This component failed to load.</p>
+            <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">Something went wrong</h3>
+            <p className="text-[var(--text-secondary)] text-sm mb-4">This component failed to load.</p>
             <button
               onClick={() => this.setState({ hasError: false })}
               className="px-4 py-2 bg-violet-500 hover:bg-violet-400 active:bg-violet-600 text-white rounded-lg text-sm transition-colors"
@@ -65,286 +65,382 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 }
 
-const ThreeViewer = dynamic(() => import('../components/Dimension/Dimension'), {
+const ThreeViewer = dynamic(() => import('@/components/Dimension/Dimension'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <div className="w-12 h-12 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" />
-        <span className="text-gray-400 text-sm">Loading 3D Viewer...</span>
+        <span className="text-[var(--text-secondary)] text-sm">Loading 3D Viewer...</span>
       </div>
     </div>
   ),
 });
 
-const Chatbot = dynamic(() => import('../components/Chat'), {
+const Chatbot = dynamic(() => import('@/components/Chat'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+        <div className="w-12 h-12 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+        <span className="text-[var(--text-secondary)] text-sm">Loading...</span>
       </div>
     </div>
   ),
 });
 
 const ProjectsModal = dynamic(
-  () => import('../components/Projects/ProjectsModal').then((mod) => mod.ProjectsModal),
+  () => import('@/components/Projects/ProjectsModal').then((mod) => mod.ProjectsModal),
   { ssr: false }
 );
 
 const SkillsSection = dynamic(
-  () => import('../components/Skills/SkillsSection'),
+  () => import('@/components/Skills/SkillsSection'),
   { ssr: false }
 );
 
+// Landing overlay component (name/title/button only - no 3D viewer)
+function LandingOverlay({ onEnter }: { onEnter: () => void }) {
+  return (
+    <div className="relative z-10 text-center px-4">
+      {/* Name/Title */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.8 }}
+        className="mb-8"
+      >
+        <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 drop-shadow-2xl">
+          {PORTFOLIO_DATA.personal.name}
+        </h1>
+        <p className="text-xl md:text-2xl text-gray-300 drop-shadow-lg">
+          {PORTFOLIO_DATA.personal.title}
+        </p>
+      </motion.div>
+
+      {/* CTA Button */}
+      <motion.button
+        onClick={onEnter}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1, duration: 0.5, type: 'spring' }}
+        whileHover={{
+          scale: 1.05,
+          boxShadow: '0 0 40px rgba(167, 139, 250, 0.5)'
+        }}
+        whileTap={{ scale: 0.95 }}
+        className="px-8 py-4 bg-violet-500/90 backdrop-blur-sm text-white rounded-2xl text-lg font-medium
+          border border-violet-400/30 shadow-lg shadow-violet-500/30
+          hover:bg-violet-400/90 transition-colors duration-300"
+      >
+        <span className="flex items-center gap-3">
+          <span className="text-2xl">👋</span>
+          Say Hi
+        </span>
+      </motion.button>
+    </div>
+  );
+}
+
 export default function Home() {
+  const [isLanding, setIsLanding] = useState(true);
+  const [activeSection, setActiveSection] = useState<'3d' | 'chat'>('3d');
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatFns, setChatFns] = useState<{ send: (content: string) => void; clear: () => void } | null>(null);
-  const chatRef = useRef<HTMLDivElement>(null);
+  const { isOpen: isShortcutsOpen, close: closeShortcuts } = useKeyboardShortcutsHelp();
+
+  const handleEnterSite = useCallback(() => {
+    setIsLanding(false);
+  }, []);
 
   const handleAskAboutSkill = useCallback((skill: string) => {
     const message = `Tell me about your experience with ${skill}`;
-    setIsChatOpen(true);
-    setTimeout(() => {
-      chatFns?.send(message);
-    }, 300);
-  }, [chatFns]);
 
-  const scrollToSection = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  };
+    if (activeSection !== 'chat') {
+      setActiveSection('chat');
+      setTimeout(() => {
+        chatFns?.send(message);
+      }, 150);
+    } else {
+      chatFns?.send(message);
+    }
+  }, [chatFns, activeSection]);
 
   return (
-    <div id="main-content" className="min-h-screen bg-[var(--background)] bg-grid transition-colors duration-300">
-      {/* Fixed Header */}
-      <motion.header
-        className="fixed top-0 left-0 right-0 z-50 bg-[var(--background)]/80 backdrop-blur-xl border-b border-white/5"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-      >
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4">
-          <Header
-            name={PORTFOLIO_DATA.personal.name}
-            tagline={PORTFOLIO_DATA.personal.title}
-            githubUrl={PORTFOLIO_DATA.personal.github}
-            linkedinUrl={PORTFOLIO_DATA.personal.linkedin}
-            email={PORTFOLIO_DATA.personal.email}
-            resumeUrl="/resume.pdf"
-            compact
-            onProjectsClick={() => setIsProjectsOpen(true)}
-          />
-        </div>
-      </motion.header>
+    <LayoutGroup>
+      <div className="relative h-screen bg-[var(--background)] overflow-hidden">
+        {/* Vignette overlay for landing */}
+        <AnimatePresence>
+          {isLanding && (
+            <motion.div
+              className="fixed inset-0 pointer-events-none z-40"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              style={{
+                background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.4) 100%)',
+              }}
+            />
+          )}
+        </AnimatePresence>
 
-      {/* Hero Section with 3D Viewer */}
-      <section className="pt-24 pb-16 md:pt-32 md:pb-24 min-h-[80vh] flex items-center">
-        <motion.div
-          className="max-w-7xl mx-auto px-4 md:px-6 w-full"
-          initial="hidden"
-          animate="visible"
-          variants={sectionStagger}
-        >
-          <div className="grid lg:grid-cols-2 gap-8 items-center">
-            {/* Hero Text */}
-            <motion.div variants={sectionItem} className="space-y-6">
-              <div className="space-y-2">
-                <motion.p
-                  className="text-violet-400 font-medium"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  Welcome to my portfolio
-                </motion.p>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
-                  I build
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-orange-400">
-                    {' '}interactive{' '}
-                  </span>
-                  experiences
-                </h1>
-              </div>
-              <p className="text-lg text-gray-400 max-w-lg">
-                Creative developer specializing in 3D web applications, modern interfaces,
-                and bringing ideas to life with code.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <motion.button
-                  onClick={() => scrollToSection('projects')}
-                  className="px-6 py-3 bg-violet-500 hover:bg-violet-400 text-white rounded-xl font-medium transition-colors"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  View My Work
-                </motion.button>
-                <motion.button
-                  onClick={() => setIsChatOpen(true)}
-                  className="px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-medium transition-colors border border-white/10"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  Chat with AI
-                </motion.button>
+        {/* Landing overlay - name/title/button */}
+        <AnimatePresence>
+          {isLanding && (
+            <motion.div
+              className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="pointer-events-auto">
+                <LandingOverlay onEnter={handleEnterSite} />
               </div>
             </motion.div>
+          )}
+        </AnimatePresence>
 
-            {/* 3D Viewer */}
+        {/* Main layout container */}
+        <div className="flex flex-col h-screen">
+          {/* Header - slides down */}
+          <motion.div
+            className="flex-shrink-0 p-4 md:p-6"
+            initial={{ y: -100, opacity: 0 }}
+            animate={isLanding ? { y: -100, opacity: 0 } : { y: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+          >
+            <Header
+              name={PORTFOLIO_DATA.personal.name}
+              tagline={PORTFOLIO_DATA.personal.title}
+              githubUrl={PORTFOLIO_DATA.personal.github}
+              linkedinUrl={PORTFOLIO_DATA.personal.linkedin}
+              email={PORTFOLIO_DATA.personal.email}
+              resumeUrl="/resume.pdf"
+              compact
+              onProjectsClick={() => setIsProjectsOpen(true)}
+            />
+          </motion.div>
+
+          {/* Mobile Toggle Tabs - slides down */}
+          <motion.div
+            className="md:hidden flex-shrink-0 px-4 pb-4"
+            initial={{ y: -50, opacity: 0 }}
+            animate={isLanding ? { y: -50, opacity: 0 } : { y: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+          >
+            <div className="glass rounded-2xl p-1.5 flex gap-1">
+              <motion.button
+                onClick={() => setActiveSection('3d')}
+                whileTap={buttonTap}
+                className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  activeSection === '3d'
+                    ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/20'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]'
+                }`}
+              >
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+                  </svg>
+                  3D Viewer
+                </span>
+              </motion.button>
+              <motion.button
+                onClick={() => setActiveSection('chat')}
+                whileTap={buttonTap}
+                className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  activeSection === 'chat'
+                    ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/20'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]'
+                }`}
+              >
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  Servant
+                </span>
+              </motion.button>
+            </div>
+          </motion.div>
+
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col md:flex-row gap-5 px-4 pb-4 md:px-6 md:pb-6 min-h-0">
+            {/* 3D Viewer Section - Desktop: shrinks from fullscreen to 50% */}
             <motion.div
-              variants={sectionItem}
-              className="h-[400px] md:h-[500px] glass rounded-2xl overflow-hidden"
+              layout
+              className={`hidden md:flex flex-col min-h-0 ${
+                isLanding
+                  ? 'fixed inset-0 z-30'
+                  : 'md:w-1/2'
+              }`}
+              transition={{
+                layout: { duration: 0.7, ease: [0.4, 0, 0.2, 1] }
+              }}
             >
-              <div className="h-full flex flex-col">
-                <div className="flex-shrink-0 px-4 py-3 border-b border-white/5 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
-                  <span className="text-sm text-gray-400">Interactive 3D Viewer</span>
-                </div>
-                <div className="flex-1">
+              <motion.div
+                layout
+                className={`flex-1 flex flex-col min-h-0 overflow-hidden ${
+                  isLanding ? '' : 'glass rounded-2xl'
+                }`}
+                transition={{
+                  layout: { duration: 0.7, ease: [0.4, 0, 0.2, 1] }
+                }}
+              >
+                {/* 3D Viewer Header - fades in after landing */}
+                <motion.div
+                  className="flex-shrink-0 px-5 py-4 border-b border-[var(--border)] flex items-center gap-2"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={isLanding ? { opacity: 0, height: 0 } : { opacity: 1, height: 'auto' }}
+                  transition={{ delay: 0.5, duration: 0.3 }}
+                >
+                  <div className="w-2 h-2 rounded-full bg-[var(--orange)] animate-pulse" />
+                  <span className="text-sm font-medium text-[var(--text-secondary)]">Interactive 3D Viewer</span>
+                </motion.div>
+                {/* 3D Canvas */}
+                <div className="flex-1 min-h-0">
                   <ErrorBoundary>
-                    <ThreeViewer />
+                    <ThreeViewer minimal={isLanding} />
+                  </ErrorBoundary>
+                </div>
+              </motion.div>
+            </motion.div>
+
+            {/* Mobile: 3D Viewer goes fullscreen in landing, then into tab */}
+            <motion.div
+              layout
+              className={`md:hidden ${
+                isLanding
+                  ? 'fixed inset-0 z-30'
+                  : activeSection === '3d' ? 'flex flex-col min-h-0 flex-1' : 'hidden'
+              }`}
+              transition={{
+                layout: { duration: 0.7, ease: [0.4, 0, 0.2, 1] }
+              }}
+            >
+              <motion.div
+                layout
+                className={`flex-1 flex flex-col min-h-0 overflow-hidden ${
+                  isLanding ? '' : 'glass rounded-2xl'
+                }`}
+                transition={{
+                  layout: { duration: 0.7, ease: [0.4, 0, 0.2, 1] }
+                }}
+              >
+                {/* Mobile 3D Viewer Header */}
+                <motion.div
+                  className="flex-shrink-0 px-4 py-3 border-b border-[var(--border)] flex items-center gap-2"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={isLanding ? { opacity: 0, height: 0 } : { opacity: 1, height: 'auto' }}
+                  transition={{ delay: 0.5, duration: 0.3 }}
+                >
+                  <div className="w-2 h-2 rounded-full bg-[var(--orange)] animate-pulse" />
+                  <span className="text-sm font-medium text-[var(--text-secondary)]">Interactive 3D Viewer</span>
+                </motion.div>
+                <div className="flex-1 min-h-0">
+                  <ErrorBoundary>
+                    <ThreeViewer minimal={isLanding} />
+                  </ErrorBoundary>
+                </div>
+              </motion.div>
+            </motion.div>
+
+            {/* Mobile Chat Tab Content */}
+            <AnimatePresence mode="wait">
+              {!isLanding && activeSection === 'chat' && (
+                <motion.div
+                  key="chat-mobile"
+                  className="md:hidden flex flex-col gap-4 min-h-0 flex-1"
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  variants={tabContent}
+                >
+                  {/* Skills Section */}
+                  <div className="glass rounded-2xl overflow-hidden flex-shrink-0">
+                    <SkillsSection onAskAI={handleAskAboutSkill} />
+                  </div>
+                  {/* Servant */}
+                  <div className="glass rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0">
+                    <div className="flex-shrink-0 px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+                        <span className="text-sm font-medium text-[var(--text-secondary)]">Servant</span>
+                      </div>
+                      <button
+                        onClick={() => chatFns?.clear()}
+                        className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors px-2 py-1 rounded hover:bg-[var(--glass-bg)]"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                    <div className="flex-1 min-h-0">
+                      <ErrorBoundary>
+                        <Chatbot
+                          onReady={(fns) => setChatFns(fns)}
+                          onViewResume={() => window.open('/resume.pdf', '_blank')}
+                          onSeeProjects={() => setIsProjectsOpen(true)}
+                        />
+                      </ErrorBoundary>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Right Column: Skills + Chat - Desktop: slides in from right */}
+            <motion.div
+              className="hidden md:flex md:w-1/2 flex-col gap-5 min-h-0"
+              initial={{ x: 100, opacity: 0 }}
+              animate={isLanding ? { x: 100, opacity: 0 } : { x: 0, opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+            >
+              {/* Skills Section */}
+              <div className="glass rounded-2xl overflow-hidden flex-shrink-0">
+                <SkillsSection onAskAI={handleAskAboutSkill} />
+              </div>
+
+              {/* Servant */}
+              <div className="glass rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0">
+                {/* Chat Header */}
+                <div className="flex-shrink-0 px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+                    <span className="text-sm font-medium text-[var(--text-secondary)]">Servant</span>
+                  </div>
+                  <button
+                    onClick={() => chatFns?.clear()}
+                    className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors px-2 py-1 rounded hover:bg-[var(--glass-bg)]"
+                  >
+                    Clear
+                  </button>
+                </div>
+                {/* Chat Content */}
+                <div className="flex-1 min-h-0">
+                  <ErrorBoundary>
+                    <Chatbot
+                      onReady={(fns) => setChatFns(fns)}
+                      onViewResume={() => window.open('/resume.pdf', '_blank')}
+                      onSeeProjects={() => setIsProjectsOpen(true)}
+                    />
                   </ErrorBoundary>
                 </div>
               </div>
             </motion.div>
           </div>
-
-          {/* Scroll indicator */}
-          <motion.div
-            className="hidden md:flex justify-center mt-12"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-          >
-            <motion.button
-              onClick={() => scrollToSection('about')}
-              className="flex flex-col items-center gap-2 text-gray-500 hover:text-gray-300 transition-colors"
-              animate={{ y: [0, 8, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <span className="text-sm">Scroll to explore</span>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
-            </motion.button>
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* About Section */}
-      <AboutSection />
-
-      {/* Featured Projects */}
-      <FeaturedProjects onViewAll={() => setIsProjectsOpen(true)} />
-
-      {/* Experience Timeline */}
-      <TimelineSection />
-
-      {/* Skills Section */}
-      <section id="skills" className="py-16 md:py-24">
-        <motion.div
-          className="max-w-6xl mx-auto px-4 md:px-6"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-100px' }}
-          variants={sectionStagger}
-        >
-          <motion.div variants={sectionItem} className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Skills & Technologies
-            </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-violet-500 to-orange-500 rounded-full" />
-          </motion.div>
-          <motion.div variants={sectionItem} className="glass rounded-2xl overflow-hidden">
-            <SkillsSection onAskAI={handleAskAboutSkill} />
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* Testimonials */}
-      <TestimonialsSection />
-
-      {/* Footer */}
-      <footer className="py-12 border-t border-white/5">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 text-center">
-          <p className="text-gray-500">
-            &copy; {new Date().getFullYear()} {PORTFOLIO_DATA.personal.name}. Built with Next.js, Three.js, and passion.
-          </p>
         </div>
-      </footer>
 
-      {/* Floating Chat Button */}
-      <motion.button
-        onClick={() => setIsChatOpen(!isChatOpen)}
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-violet-500 hover:bg-violet-400 rounded-full shadow-lg shadow-violet-500/30 flex items-center justify-center text-white transition-colors"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.5, type: 'spring' }}
-      >
-        {isChatOpen ? (
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-        )}
-      </motion.button>
+        {/* Projects Modal */}
+        <ProjectsModal
+          isOpen={isProjectsOpen}
+          onClose={() => setIsProjectsOpen(false)}
+          onLoad3DModel={() => {
+            setIsProjectsOpen(false);
+          }}
+        />
 
-      {/* Chat Panel */}
-      <AnimatePresence>
-        {isChatOpen && (
-          <motion.div
-            ref={chatRef}
-            className="fixed bottom-24 right-6 z-40 w-[380px] max-w-[calc(100vw-3rem)] h-[500px] max-h-[calc(100vh-8rem)] glass rounded-2xl overflow-hidden shadow-2xl"
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-          >
-            <div className="h-full flex flex-col">
-              <div className="flex-shrink-0 px-4 py-3 border-b border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
-                  <span className="text-sm font-medium text-white">AI Assistant</span>
-                </div>
-                <button
-                  onClick={() => chatFns?.clear()}
-                  className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
-                >
-                  Clear
-                </button>
-              </div>
-              <div className="flex-1 min-h-0">
-                <ErrorBoundary>
-                  <Chatbot
-                    onReady={(fns) => setChatFns(fns)}
-                    onViewResume={() => window.open('/resume.pdf', '_blank')}
-                    onSeeProjects={() => {
-                      setIsProjectsOpen(true);
-                      setIsChatOpen(false);
-                    }}
-                  />
-                </ErrorBoundary>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Projects Modal */}
-      <ProjectsModal
-        isOpen={isProjectsOpen}
-        onClose={() => setIsProjectsOpen(false)}
-        onLoad3DModel={(modelPath) => {
-          setIsProjectsOpen(false);
-          console.log('Load 3D model:', modelPath);
-        }}
-      />
-    </div>
+        {/* Keyboard Shortcuts Help Modal */}
+        <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={closeShortcuts} />
+      </div>
+    </LayoutGroup>
   );
 }

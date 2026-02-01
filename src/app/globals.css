@@ -11,10 +11,10 @@
   --purple-active: #8B5CF6;
   --purple-muted: rgba(167, 139, 250, 0.2);
 
-  --orange: #FB923C;
-  --orange-hover: #FDBA74;
-  --orange-active: #F97316;
-  --orange-muted: rgba(251, 146, 60, 0.2);
+  --orange: #E07B3C;
+  --orange-hover: #D4722F;
+  --orange-active: #C46526;
+  --orange-muted: rgba(224, 123, 60, 0.2);
 
   /* Semantic color roles */
   --interactive: var(--purple);           /* buttons, links, focus states */
@@ -62,10 +62,10 @@
   --purple-active: #6D28D9;
   --purple-muted: rgba(139, 92, 246, 0.15);
 
-  --orange: #EA580C;
-  --orange-hover: #C2410C;
-  --orange-active: #9A3412;
-  --orange-muted: rgba(234, 88, 12, 0.15);
+  --orange: #C45A1C;
+  --orange-hover: #A84E18;
+  --orange-active: #8F4214;
+  --orange-muted: rgba(196, 90, 28, 0.15);
 
   /* Semantic color roles */
   --interactive: var(--purple);
@@ -331,6 +331,11 @@ body {
   border-color: rgba(255, 255, 255, 0.15);
 }
 
+.light .card-hover:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 /* Interactive button shine effect */
 .btn-shine {
   position: relative;
@@ -386,6 +391,43 @@ body {
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+}
+
+.light .skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.05) 25%,
+    rgba(0, 0, 0, 0.1) 50%,
+    rgba(0, 0, 0, 0.05) 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* Theme-aware text colors */
+.text-theme-primary {
+  color: var(--text-primary);
+}
+
+.text-theme-secondary {
+  color: var(--text-secondary);
+}
+
+.text-theme-muted {
+  color: var(--text-muted);
+}
+
+/* Theme-aware borders */
+.border-theme {
+  border-color: var(--border);
+}
+
+/* Theme-aware backgrounds with opacity */
+.bg-theme-subtle {
+  background-color: var(--glass-bg);
+}
+
+.bg-theme-elevated {
+  background-color: var(--glass-bg-strong);
 }
 
 /* Markdown content styles for chat */

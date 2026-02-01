@@ -129,5 +129,6 @@ export interface CameraPresetsWidgetProps {
 }
 
 export interface DimensionViewerProps {
-  // Add any props if needed in the future
+  /** Hide all UI controls for minimal/landing page view */
+  minimal?: boolean;
 }

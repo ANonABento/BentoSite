@@ -1,5 +1,7 @@
 // ProjectCard - Individual project card for the projects modal
+'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import type { Project } from '@/lib/projects-data';
 import { TechBadge } from './TechBadge';
@@ -10,6 +12,7 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, onLoad3DModel }: ProjectCardProps) {
+  const [imageLoading, setImageLoading] = useState(true);
   const MAX_VISIBLE_TECHS = 4;
   const visibleTechs = project.technologies.slice(0, MAX_VISIBLE_TECHS);
   const remainingCount = project.technologies.length - MAX_VISIBLE_TECHS;
@@ -19,25 +22,32 @@ export function ProjectCard({ project, onLoad3DModel }: ProjectCardProps) {
   return (
     <div
       className={`
-        backdrop-blur-xl rounded-2xl border border-white/10 bg-white/5 p-4
+        backdrop-blur-xl rounded-2xl border border-[var(--border)] bg-[var(--glass-bg)] p-4
         transition-all duration-200 ease-out
-        hover:scale-[1.02] hover:border-white/20
+        hover:scale-[1.02] hover:border-[var(--interactive)]
         hover:shadow-[0_0_30px_rgba(167,139,250,0.2)]
         focus:outline-none focus:ring-2 focus:ring-violet-500/50
       `}
     >
       {/* Thumbnail - bento compartment (sharp inner corners) */}
-      <div className="relative w-full h-36 bg-gradient-to-br from-gray-800 to-gray-900 rounded-sm mb-4 flex items-center justify-center border border-white/10 overflow-hidden">
+      <div className="relative w-full h-36 bg-gradient-to-br from-[var(--glass-bg)] to-[var(--background)] rounded-sm mb-4 flex items-center justify-center border border-[var(--border)] overflow-hidden">
         {project.thumbnail ? (
-          <Image
-            src={project.thumbnail}
-            alt={project.name}
-            fill
-            className="object-cover"
-          />
+          <>
+            {imageLoading && (
+              <div className="absolute inset-0 skeleton-shimmer" aria-hidden="true" />
+            )}
+            <Image
+              src={project.thumbnail}
+              alt={project.name}
+              fill
+              className={`object-cover transition-opacity duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
+              onLoad={() => setImageLoading(false)}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          </>
         ) : (
           <svg
-            className="w-12 h-12 text-gray-600"
+            className="w-12 h-12 text-[var(--text-muted)]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -68,14 +78,14 @@ export function ProjectCard({ project, onLoad3DModel }: ProjectCardProps) {
         >
           {project.status}
         </span>
-        <span className="text-xs text-gray-500">{project.category}</span>
+        <span className="text-xs text-[var(--text-muted)]">{project.category}</span>
       </div>
 
       {/* Title */}
-      <h3 className="font-bold text-white mb-2 leading-tight">{project.name}</h3>
+      <h3 className="font-bold text-[var(--text-primary)] mb-2 leading-tight">{project.name}</h3>
 
       {/* Description */}
-      <p className="text-sm text-gray-400 mb-3 line-clamp-2 leading-relaxed">
+      <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-2 leading-relaxed">
         {project.shortDescription}
       </p>
 
@@ -85,7 +95,7 @@ export function ProjectCard({ project, onLoad3DModel }: ProjectCardProps) {
           <TechBadge key={tech} tech={tech} />
         ))}
         {remainingCount > 0 && (
-          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-white/5 text-gray-500">
+          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--glass-bg)] text-[var(--text-muted)]">
             +{remainingCount}
           </span>
         )}
@@ -93,7 +103,7 @@ export function ProjectCard({ project, onLoad3DModel }: ProjectCardProps) {
 
       {/* Action buttons */}
       {hasLinks && (
-        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-white/10">
+        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-[var(--border)]">
           {project.links.liveDemo && (
             <a
               href={project.links.liveDemo}
@@ -116,8 +126,8 @@ export function ProjectCard({ project, onLoad3DModel }: ProjectCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
-                bg-white/5 text-gray-300 border border-white/10
-                hover:bg-white/10 hover:text-white
+                bg-[var(--glass-bg)] text-[var(--text-secondary)] border border-[var(--border)]
+                hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)]
                 transition-all duration-200"
             >
               <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">

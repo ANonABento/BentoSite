@@ -83,15 +83,15 @@ export function ProjectsModal({ isOpen, onClose, onLoad3DModel, isMobile = false
             transition={{ duration: 0.2, ease: 'easeOut' }}
           >
             {/* Header */}
-            <div className="flex-shrink-0 px-6 py-4 border-b border-white/10">
+            <div className="flex-shrink-0 px-6 py-4 border-b border-[var(--border)]">
               <div className="flex items-center justify-between mb-4">
-                <h2 id="projects-modal-title" className="text-xl font-bold text-white">
+                <h2 id="projects-modal-title" className="text-xl font-bold text-[var(--text-primary)]">
                   Projects
                 </h2>
                 <motion.button
                   onClick={onClose}
                   whileTap={buttonTap}
-                  className="text-gray-400 hover:text-white transition-colors duration-150 p-2 rounded-lg hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                  className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-150 p-2 rounded-lg hover:bg-[var(--glass-bg)] focus:outline-none focus:ring-2 focus:ring-violet-500/50"
                   aria-label="Close projects modal"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -110,11 +110,11 @@ export function ProjectsModal({ isOpen, onClose, onLoad3DModel, isMobile = false
                     placeholder="Search projects..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all duration-150"
+                    className="w-full pl-10 pr-4 py-3 bg-[var(--glass-bg)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all duration-150"
                     aria-label="Search projects by name, description, or technology"
                   />
                   <svg
-                    className="absolute left-3 top-3.5 w-5 h-5 text-gray-500"
+                    className="absolute left-3 top-3.5 w-5 h-5 text-[var(--text-muted)]"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -137,7 +137,7 @@ export function ProjectsModal({ isOpen, onClose, onLoad3DModel, isMobile = false
                         focus:outline-none focus:ring-2 focus:ring-violet-500/50
                         ${selectedCategory === category
                           ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg'
-                          : 'bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10'
+                          : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)] border border-[var(--border)]'
                         }
                       `}
                       aria-pressed={selectedCategory === category}
@@ -152,9 +152,9 @@ export function ProjectsModal({ isOpen, onClose, onLoad3DModel, isMobile = false
             {/* Projects grid */}
             <div className="flex-1 overflow-y-auto p-6">
               {filteredProjects.length === 0 ? (
-                <div className="text-center py-12 text-gray-400">
+                <div className="text-center py-12 text-[var(--text-secondary)]">
                   <svg
-                    className="w-16 h-16 mx-auto mb-4 text-gray-600"
+                    className="w-16 h-16 mx-auto mb-4 text-[var(--text-muted)]"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -168,7 +168,7 @@ export function ProjectsModal({ isOpen, onClose, onLoad3DModel, isMobile = false
                     />
                   </svg>
                   <p className="text-lg font-medium mb-2">No projects found</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-[var(--text-muted)]">
                     Try adjusting your search or category filter.
                   </p>
                 </div>
@@ -193,8 +193,8 @@ export function ProjectsModal({ isOpen, onClose, onLoad3DModel, isMobile = false
             </div>
 
             {/* Footer with count */}
-            <div className="flex-shrink-0 px-6 py-3 border-t border-white/10 bg-white/[0.02]">
-              <p className="text-sm text-gray-500">
+            <div className="flex-shrink-0 px-6 py-3 border-t border-[var(--border)] bg-[var(--glass-bg)]">
+              <p className="text-sm text-[var(--text-muted)]">
                 Showing {filteredProjects.length} of {PROJECTS.length} projects
               </p>
             </div>

@@ -16,7 +16,7 @@ const categoryConfig: Record<SkillCategory, { label: string; color: string; icon
     label: 'Hardware',
     color: 'orange',
     icon: (
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
       </svg>
     ),
@@ -25,7 +25,7 @@ const categoryConfig: Record<SkillCategory, { label: string; color: string; icon
     label: 'Software',
     color: 'violet',
     icon: (
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
       </svg>
     ),
@@ -34,7 +34,7 @@ const categoryConfig: Record<SkillCategory, { label: string; color: string; icon
     label: 'Tools',
     color: 'gray',
     icon: (
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
@@ -63,9 +63,9 @@ function SkillPill({
       whileTap={buttonTap}
       className={`
         px-3 py-1.5 rounded-sm text-xs font-medium
-        bg-white/5 border border-white/10 text-gray-300
+        bg-[var(--glass-bg)] border border-[var(--border)] text-[var(--text-secondary)]
         transition-all duration-200 transform
-        hover:scale-105 hover:bg-white/10 hover:text-white
+        hover:scale-105 hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)]
         focus:outline-none focus:ring-2 focus:ring-violet-500/50
         active:scale-95
         ${colorClasses[category]}
@@ -127,22 +127,25 @@ export function SkillsSection({ onAskAI }: SkillsSectionProps) {
       <motion.button
         onClick={() => setIsExpanded(!isExpanded)}
         whileTap={buttonTap}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors border-b border-white/5"
+        className="w-full px-4 py-3 flex items-center justify-between hover:bg-[var(--glass-bg)] transition-colors border-b border-[var(--border)]"
+        aria-expanded={isExpanded}
+        aria-controls="skills-content"
       >
         <div className="flex items-center gap-2">
-          <svg className="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
-          <span className="text-sm font-medium text-white">My Skills</span>
-          <span className="text-xs text-gray-500">click to ask AI</span>
+          <span className="text-sm font-medium text-[var(--text-primary)]">My Skills</span>
+          <span className="text-xs text-[var(--text-muted)]">click to ask AI</span>
         </div>
         <motion.svg
-          className="w-4 h-4 text-gray-400"
+          className="w-4 h-4 text-[var(--text-secondary)]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
           animate={{ rotate: isExpanded ? 180 : 0 }}
           transition={{ duration: 0.2 }}
+          aria-hidden="true"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </motion.svg>
@@ -152,11 +155,14 @@ export function SkillsSection({ onAskAI }: SkillsSectionProps) {
       <AnimatePresence>
         {isExpanded && (
           <motion.div
+            id="skills-content"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="overflow-hidden"
+            role="region"
+            aria-label="Skills categories"
           >
             <div className="px-4 pb-4 space-y-4">
               <CategorySection category="hardware" skills={skills.hardware} onAskAI={onAskAI} isExpanded={isExpanded} />

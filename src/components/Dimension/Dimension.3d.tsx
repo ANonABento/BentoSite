@@ -1,6 +1,6 @@
 // Dimension.tsx - 3D and Three.js Components
 
-import React, { useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
+import React, { useRef, useState, forwardRef, useImperativeHandle, useMemo } from 'react';
 import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import { OrbitControls, Box, Grid, Text, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -237,8 +237,9 @@ export function LODModel({ modelPath = '/models/placeholder.stl', autoRotate, on
   const { camera } = useThree();
   const fpsRef = useRef(60);
   const frameCountRef = useRef(0);
-  const lastTimeRef = useRef(0); // Initialized in first useFrame call
+  const lastTimeRef = useRef(0);
   const isMobile = useMemo(() => detectMobile(), []);
+  const [lodLevel, setLodLevel] = useState(0);
 
   // Use useLoader with error handling
   const geometry = useLoader(STLLoader, modelPath);
@@ -251,7 +252,6 @@ export function LODModel({ modelPath = '/models/placeholder.stl', autoRotate, on
 
     // Throttled FPS monitoring (only update once per second)
     const currentTime = performance.now();
-    // Initialize lastTimeRef on first frame
     if (lastTimeRef.current === 0) {
       lastTimeRef.current = currentTime;
     }
@@ -260,26 +260,24 @@ export function LODModel({ modelPath = '/models/placeholder.stl', autoRotate, on
       fpsRef.current = Math.round((frameCountRef.current * 1000) / (currentTime - lastTimeRef.current));
       frameCountRef.current = 0;
       lastTimeRef.current = currentTime;
+
+      // Calculate LOD inside useFrame to avoid ref access during render
+      const meshPosition = meshRef.current?.position || ORIGIN;
+      const distanceFromCamera = camera.position.distanceTo(meshPosition);
+      const fps = fpsRef.current;
+
+      let newLodLevel = 0;
+      if (isMobile || fps < 30) {
+        if (distanceFromCamera > 10) newLodLevel = 2;
+        else if (distanceFromCamera > 5) newLodLevel = 1;
+      } else {
+        if (distanceFromCamera > 20) newLodLevel = 2;
+        else if (distanceFromCamera > 10) newLodLevel = 1;
+      }
+
+      setLodLevel(prev => prev !== newLodLevel ? newLodLevel : prev);
     }
   });
-
-  // Calculate distance from camera using reusable vector
-  const meshPosition = meshRef.current?.position || ORIGIN;
-  const distanceFromCamera = camera.position.distanceTo(meshPosition);
-  const fps = fpsRef.current;
-
-  // Determine LOD level based on distance and device performance
-  const lodLevel = useMemo(() => {
-    if (isMobile || fps < 30) {
-      if (distanceFromCamera > 10) return 2;
-      if (distanceFromCamera > 5) return 1;
-      return 0;
-    } else {
-      if (distanceFromCamera > 20) return 2;
-      if (distanceFromCamera > 10) return 1;
-      return 0;
-    }
-  }, [isMobile, fps, distanceFromCamera]);
 
   // Calculate scale based on LOD level
   const baseScale = 0.01;

@@ -1,7 +1,7 @@
-// Projects Data - Type definitions and sample project data
+// Projects Data - Kevin Jiang's portfolio projects
 // Used by ProjectsModal for the portfolio showcase
 
-export type ProjectCategory = 'Hardware' | 'Software' | 'Full-Stack' | 'Robotics';
+export type ProjectCategory = 'Robotics' | 'AI & ML' | 'Hardware' | 'Software' | 'VR/AR' | 'Competition';
 export type ProjectStatus = 'Completed' | 'In Progress' | 'Archived';
 
 export interface Project {
@@ -16,92 +16,132 @@ export interface Project {
     liveDemo?: string;
     github?: string;
     modelPath?: string;
+    docs?: string;
   };
   featured?: boolean;
   dateCompleted?: string;
 }
 
-// Sample projects - replace with real data
 export const PROJECTS: Project[] = [
   {
-    id: 'robot-arm',
-    name: 'Robot Arm Controller',
-    shortDescription: 'Automated picking system with Arduino and precision servo control for industrial automation.',
+    id: 'robotic-arm-puppeteer',
+    name: 'Robotic Arm Puppeteer',
+    shortDescription: 'Python + ROS2 control and calibration toolkit for the OpenArm robotic platform with multi-camera AprilTag perception and 20% improved accuracy.',
     category: 'Robotics',
     status: 'Completed',
-    technologies: ['Arduino', 'C++', 'SolidWorks', 'Python'],
+    technologies: ['Python', 'ROS2', 'OpenCV', 'Fusion 360', 'Dynamixel', 'AprilTag', 'Three.js'],
     links: {
-      github: 'https://github.com/example/robot-arm',
+      github: 'https://github.com/ANonABento',
       modelPath: '/models/placeholder.stl',
     },
     featured: true,
-    dateCompleted: '2024-06-15',
+    dateCompleted: '2025-08',
   },
   {
-    id: 'iot-dashboard',
-    name: 'IoT Sensor Dashboard',
-    shortDescription: 'Real-time monitoring dashboard for industrial sensors with data visualization and alerts.',
-    category: 'Full-Stack',
+    id: 'expressive-ai-robot-head',
+    name: 'Expressive AI Robot Head',
+    shortDescription: 'ROS2-based robotic head with LLM integration, speech recognition, and 12-servo organic mesh design for human-like interactions.',
+    category: 'AI & ML',
     status: 'Completed',
-    technologies: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'MQTT'],
+    technologies: ['Python', 'PyTorch', 'llama.cpp', 'Whisper', 'ESP32', 'FreeRTOS', 'Blender', 'ROS2'],
     links: {
-      liveDemo: 'https://example.com/demo',
-      github: 'https://github.com/example/iot-dashboard',
+      github: 'https://github.com/ANonABento',
     },
     featured: true,
-    dateCompleted: '2024-03-20',
+    dateCompleted: '2025-06',
   },
   {
-    id: 'pcb-power-supply',
-    name: 'Custom PCB Power Supply',
-    shortDescription: 'High-efficiency switching power supply with custom PCB design for embedded systems.',
+    id: 'ar-gesture-robot',
+    name: 'AR Gesture Controlled Robot',
+    shortDescription: 'Modular robot platform controlled through Snap Spectacles AR glasses with sub-100ms latency gesture-to-motion pipeline.',
+    category: 'VR/AR',
+    status: 'Completed',
+    technologies: ['JavaScript', 'Python', 'Jetson Nano', 'Docker', 'MQTT', 'ROS2', 'Flask'],
+    links: {
+      github: 'https://github.com/ANonABento',
+    },
+    featured: true,
+    dateCompleted: '2025-04',
+  },
+  {
+    id: 'one-handed-keyboard',
+    name: 'One Handed Keyboard',
+    shortDescription: 'AAC wrist-mounted keyboard device with only 5 GPIO buttons, trie-based predictive text, and fuzzy search. Received 99% grade.',
     category: 'Hardware',
     status: 'Completed',
-    technologies: ['KiCad', 'LTSpice', 'Embedded C'],
+    technologies: ['C', 'STM32', 'FSM', 'OnShape', '3D-Printing', 'UART'],
     links: {
-      github: 'https://github.com/example/power-supply',
+      github: 'https://github.com/ANonABento',
+      docs: 'https://docs.google.com/document/d/example',
     },
     featured: false,
-    dateCompleted: '2024-01-10',
+    dateCompleted: '2024-12',
   },
   {
-    id: 'ml-vision-system',
-    name: 'ML Vision System',
-    shortDescription: 'Computer vision system for quality control using machine learning and edge computing.',
+    id: 'vr-haptic-gloves',
+    name: 'VR Haptic Gloves',
+    shortDescription: 'ESP32-based haptic feedback gloves for VR with spring-loaded potentiometers and servo-assisted haptics for precise finger tracking.',
+    category: 'VR/AR',
+    status: 'Completed',
+    technologies: ['C++', 'ESP32', 'Arduino', '3D-Printing', 'Cura', 'Soldering'],
+    links: {
+      github: 'https://github.com/ANonABento',
+      docs: 'https://docs.google.com/document/d/example',
+    },
+    featured: false,
+    dateCompleted: '2024-10',
+  },
+  {
+    id: 'ftc-robotics',
+    name: 'FIRST Tech Challenge Robot',
+    shortDescription: 'Lead builder and programmer for team Devolotics at World Championship. Built drone launcher, autonomous program, and CAD mechanisms.',
+    category: 'Competition',
+    status: 'Completed',
+    technologies: ['Java', 'OpenCV', 'OnShape', '3D-Printing', 'Motor Control', 'Mecanum Drive'],
+    links: {
+      github: 'https://github.com/ANonABento',
+    },
+    featured: false,
+    dateCompleted: '2024-04',
+  },
+  {
+    id: 'pcb-design',
+    name: 'PCB Design & Assembly',
+    shortDescription: 'Double-layer PCBs for controller subsystems with 0 ERC/DRC violations. Soldered SMD boards including IMU and power control circuits.',
+    category: 'Hardware',
+    status: 'Completed',
+    technologies: ['Altium Designer', 'Oscilloscope', 'Soldering', 'SMD Assembly'],
+    links: {
+      github: 'https://github.com/ANonABento',
+    },
+    featured: false,
+    dateCompleted: '2025-04',
+  },
+  {
+    id: 'unity-game-dev',
+    name: 'Unity Game Development',
+    shortDescription: 'Best Overall winner at UWGDC Game Jam Fall 2024. Complex game logic with physics, colliders, AI, and finite state machines.',
     category: 'Software',
     status: 'Completed',
-    technologies: ['Python', 'TensorFlow', 'OpenCV', 'Raspberry Pi'],
+    technologies: ['C#', 'Unity', 'Blender', 'OpenCV', 'FSM'],
     links: {
-      github: 'https://github.com/example/ml-vision',
-    },
-    featured: true,
-    dateCompleted: '2024-04-05',
-  },
-  {
-    id: 'drone-controller',
-    name: 'Drone Flight Controller',
-    shortDescription: 'Custom flight controller firmware with GPS waypoint navigation and telemetry.',
-    category: 'Robotics',
-    status: 'In Progress',
-    technologies: ['STM32', 'C', 'FreeRTOS', 'Fusion 360'],
-    links: {
-      github: 'https://github.com/example/drone-fc',
-      modelPath: '/models/placeholder.stl',
+      github: 'https://github.com/ANonABento',
     },
     featured: false,
+    dateCompleted: '2024-11',
   },
   {
-    id: 'smart-home-hub',
-    name: 'Smart Home Hub',
-    shortDescription: 'Centralized home automation controller with voice control and mobile app integration.',
-    category: 'Full-Stack',
+    id: 'java-android-apps',
+    name: 'Java & Android Applications',
+    shortDescription: 'Android apps with CameraX object detection, AIML chatbot integration, and MBROLA text-to-speech synthesis.',
+    category: 'Software',
     status: 'Completed',
-    technologies: ['React Native', 'Node.js', 'MQTT', 'ESP32'],
+    technologies: ['Java', 'Android Studio', 'OpenCV', 'AIML', 'TTS', 'CameraX'],
     links: {
-      github: 'https://github.com/example/smart-home',
+      github: 'https://github.com/ANonABento',
     },
     featured: false,
-    dateCompleted: '2023-11-15',
+    dateCompleted: '2024-06',
   },
 ];
 
