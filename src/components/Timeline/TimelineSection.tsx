@@ -57,8 +57,8 @@ function TimelineCard({ item, index }: { item: TimelineItem; index: number }) {
           <div className={`flex items-center gap-2 mb-2 flex-wrap ${isLeft ? 'md:justify-end' : ''}`}>
             <span className={`px-2 py-0.5 text-xs rounded-full ${
               item.type === 'work'
-                ? 'bg-violet-500/20 text-violet-500'
-                : 'bg-orange-500/20 text-orange-500'
+                ? 'bg-[var(--purple-muted)] text-[var(--purple)]'
+                : 'bg-[var(--orange-muted)] text-[var(--orange)]'
             }`}>
               {item.type === 'work' ? 'Work' : 'Education'}
             </span>
@@ -89,7 +89,7 @@ function TimelineCard({ item, index }: { item: TimelineItem; index: number }) {
       <div className="hidden md:flex flex-col items-center">
         <motion.div
           className={`w-4 h-4 rounded-full border-4 border-[var(--background)] z-10 ${
-            item.type === 'work' ? 'bg-violet-500' : 'bg-orange-500'
+            item.type === 'work' ? 'bg-[var(--purple)]' : 'bg-[var(--orange)]'
           }`}
           whileHover={{ scale: 1.5 }}
           transition={{ type: 'spring', stiffness: 300 }}
@@ -117,13 +117,13 @@ export function TimelineSection() {
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
             Experience & Education
           </h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-violet-500 to-orange-500 rounded-full mx-auto" />
+          <div className="w-20 h-1 rounded-full mx-auto" style={{ background: 'linear-gradient(to right, var(--purple), var(--orange))' }} />
         </motion.div>
 
         {/* Timeline */}
         <div className="relative">
           {/* Center line */}
-          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-violet-500/50 via-[var(--border)] to-orange-500/50 -translate-x-1/2" />
+          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2" style={{ background: 'linear-gradient(to bottom, var(--purple-muted), var(--border), var(--orange-muted))' }} />
 
           <motion.div
             className="space-y-8 md:space-y-12"

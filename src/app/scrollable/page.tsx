@@ -128,6 +128,15 @@ export default function ScrollableLayout() {
   const chatRef = useRef<HTMLDivElement>(null);
   const { isOpen: isShortcutsOpen, close: closeShortcuts } = useKeyboardShortcutsHelp();
 
+  // Track mounted state to prevent state updates on unmounted components
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   // Track scroll position for scroll-to-top button
   useEffect(() => {
     const handleScroll = () => {
@@ -145,7 +154,9 @@ export default function ScrollableLayout() {
     const message = `Tell me about your experience with ${skill}`;
     setIsChatOpen(true);
     setTimeout(() => {
-      chatFns?.send(message);
+      if (isMountedRef.current) {
+        chatFns?.send(message);
+      }
     }, 300);
   }, [chatFns]);
 
@@ -154,7 +165,7 @@ export default function ScrollableLayout() {
   };
 
   return (
-    <div id="main-content" className="min-h-screen bg-[var(--background)] bg-grid transition-colors duration-300">
+    <main id="main-content" className="min-h-screen bg-[var(--background)] bg-grid transition-colors duration-300">
       {/* Fixed Header */}
       <motion.header
         className="fixed top-0 left-0 right-0 z-50 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]"
@@ -199,7 +210,7 @@ export default function ScrollableLayout() {
                 </motion.p>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--text-primary)] leading-tight">
                   I build
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-orange-400">
+                  <span className="text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(to right, var(--purple), var(--orange))' }}>
                     {' '}robots{' '}
                   </span>
                   that think
@@ -236,7 +247,7 @@ export default function ScrollableLayout() {
             >
               <div className="h-full flex flex-col">
                 <div className="flex-shrink-0 px-4 py-3 border-b border-[var(--border)] flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
+                  <div className="w-2 h-2 rounded-full bg-[var(--orange)] animate-pulse" />
                   <span className="text-sm text-[var(--text-secondary)]">Interactive 3D Viewer</span>
                 </div>
                 <div className="flex-1">
@@ -293,7 +304,7 @@ export default function ScrollableLayout() {
             <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
               Skills & Technologies
             </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-violet-500 to-orange-500 rounded-full" />
+            <div className="w-20 h-1 rounded-full" style={{ background: 'linear-gradient(to right, var(--purple), var(--orange))' }} />
           </motion.div>
           <motion.div variants={sectionItem} className="glass rounded-2xl overflow-hidden">
             <SkillsSection onAskAI={handleAskAboutSkill} />
@@ -438,13 +449,10 @@ export default function ScrollableLayout() {
       <ProjectsModal
         isOpen={isProjectsOpen}
         onClose={() => setIsProjectsOpen(false)}
-        onLoad3DModel={() => {
-          setIsProjectsOpen(false);
-        }}
       />
 
       {/* Keyboard Shortcuts Help Modal */}
       <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={closeShortcuts} />
-    </div>
+    </main>
   );
 }
