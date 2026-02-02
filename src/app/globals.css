@@ -637,3 +637,58 @@ body {
     color: #666;
   }
 }
+
+/* Mobile touch optimization styles */
+
+/* Base touch optimization - remove tap highlight, enable manipulation */
+@media (hover: none) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+}
+
+/* Touch device specific styles */
+.touch-device * {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Ensure tap targets are at least 44x44px on mobile */
+@media (max-width: 768px) {
+  button, 
+  a, 
+  [role="button"],
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Touch feedback - active state for touch devices */
+.touch-device .touch-active:active,
+.touch-active:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+/* Prevent text selection on interactive elements during touch */
+.touch-device .no-select-touch {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Enhanced focus states for touch */
+.touch-device button:focus-visible,
+.touch-device a:focus-visible {
+  outline: 2px solid var(--interactive);
+  outline-offset: 2px;
+}
+
+/* Smooth scrolling for touch devices */
+@media (hover: none) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
