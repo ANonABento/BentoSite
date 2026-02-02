@@ -6,4 +6,7 @@ export {
   ViewerSkeleton,
   CardSkeleton,
   SkillsSkeleton,
+  AboutSectionSkeleton,
+  TimelineSectionSkeleton,
+  ProjectsSectionSkeleton,
 } from './Skeleton';
