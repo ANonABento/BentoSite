@@ -93,7 +93,6 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
   const visibleTechs = project.technologies.slice(0, MAX_VISIBLE_TECHS);
   const remainingCount = project.technologies.length - MAX_VISIBLE_TECHS;
 
-  const hasExternalLinks = project.links.liveDemo || project.links.github;
   const canView = hasViewableMedia(project);
   const mediaIcons = getMediaIcons(project);
 
