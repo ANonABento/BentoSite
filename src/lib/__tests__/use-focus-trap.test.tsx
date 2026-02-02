@@ -27,9 +27,7 @@ describe('useFocusTrap', () => {
   });
 
   it('should not trap focus when inactive', () => {
-    const { result } = renderHook(() =>
-      useFocusTrap({ isActive: false })
-    );
+    renderHook(() => useFocusTrap({ isActive: false }));
 
     // Focus should not be affected when inactive
     const outsideButton = document.getElementById('outside-button');

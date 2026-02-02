@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { useTheme } from '@/lib/theme-context';
 import { useToast } from '@/components/ui/Toast';
 import { useClipboard } from '@/lib/clipboard';
@@ -17,14 +17,20 @@ interface HeaderProps {
   onProjectsClick?: () => void;
 }
 
+// SSR-safe mounted check using useSyncExternalStore
+const emptySubscribe = () => () => {};
+function useHasMounted() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+}
+
 // Theme toggle button component
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHasMounted();
 
   // Render a placeholder with consistent dimensions during SSR
   if (!mounted) {
