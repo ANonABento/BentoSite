@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Total JS (First Load)",
+    "path": ".next/static/chunks/**/*.js",
+    "limit": "500 KB",
+    "gzip": true
+  },
+  {
+    "name": "Main Bundle",
+    "path": ".next/static/chunks/main-*.js",
+    "limit": "100 KB",
+    "gzip": true
+  },
+  {
+    "name": "Framework Bundle",
+    "path": ".next/static/chunks/framework-*.js",
+    "limit": "150 KB",
+    "gzip": true
+  }
+]

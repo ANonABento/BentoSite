@@ -1,0 +1,42 @@
+module.exports = {
+  ci: {
+    collect: {
+      url: [
+        'http://localhost:3000/',
+        'http://localhost:3000/scrollable',
+      ],
+      numberOfRuns: 3,
+      settings: {
+        preset: 'desktop',
+        // Extend timeout for 3D content
+        maxWaitForLoad: 45000,
+        // Skip network throttling for portfolio (3D assets)
+        throttlingMethod: 'provided',
+      },
+    },
+    assert: {
+      assertions: {
+        // Performance (relaxed for 3D portfolio)
+        'categories:performance': ['warn', { minScore: 0.6 }],
+        'categories:accessibility': ['error', { minScore: 0.9 }],
+        'categories:best-practices': ['warn', { minScore: 0.8 }],
+        'categories:seo': ['warn', { minScore: 0.9 }],
+
+        // Critical Web Vitals (relaxed for 3D)
+        'first-contentful-paint': ['warn', { maxNumericValue: 3000 }],
+        'largest-contentful-paint': ['warn', { maxNumericValue: 4500 }],
+        'cumulative-layout-shift': ['error', { maxNumericValue: 0.1 }],
+        'total-blocking-time': ['warn', { maxNumericValue: 600 }],
+
+        // Accessibility must-haves
+        'color-contrast': 'error',
+        'document-title': 'error',
+        'html-has-lang': 'error',
+        'meta-description': 'error',
+      },
+    },
+    upload: {
+      target: 'temporary-public-storage',
+    },
+  },
+};

@@ -11,13 +11,23 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
         'node_modules/',
         'src/**/*.d.ts',
         'src/**/*.stories.{ts,tsx}',
         '**/*.config.{ts,js}',
+        'src/app/layout.tsx', // Root layout
+        'src/app/**/page.tsx', // Page components (covered by E2E)
+        'src/components/**/*.3d.tsx', // Three.js components (hard to unit test)
       ],
+      // Thresholds - reasonable for a portfolio
+      thresholds: {
+        statements: 50,
+        branches: 45,
+        functions: 50,
+        lines: 50,
+      },
     },
   },
   resolve: {
