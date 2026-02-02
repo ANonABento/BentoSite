@@ -4,6 +4,9 @@ import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import type { ImageViewerProps } from '../Viewfinder.types';
 
+// Simple gray blur placeholder for better perceived loading
+const BLUR_DATA_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMWExYTJlIi8+PC9zdmc+';
+
 export function ImageViewer({ images }: ImageViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,6 +49,8 @@ export function ImageViewer({ images }: ImageViewerProps) {
           onLoad={() => setIsLoading(false)}
           sizes="(max-width: 768px) 100vw, 50vw"
           priority
+          placeholder="blur"
+          blurDataURL={BLUR_DATA_URL}
         />
 
         {/* Navigation arrows */}
@@ -106,6 +111,8 @@ export function ImageViewer({ images }: ImageViewerProps) {
                   fill
                   className="object-cover"
                   sizes="64px"
+                  placeholder="blur"
+                  blurDataURL={BLUR_DATA_URL}
                 />
               </button>
             ))}
