@@ -1,0 +1,1 @@
+export { SortingVisualizer } from './SortingVisualizer';
