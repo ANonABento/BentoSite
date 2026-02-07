@@ -59,6 +59,42 @@
   --status-error-muted: rgba(239, 68, 68, 0.2);
   --status-info: #3b82f6;
   --status-info-muted: rgba(59, 130, 246, 0.2);
+
+  /* Playground Design System - Modern minimalist gaming */
+  --pg-bg-deep: #050612;
+  --pg-bg-surface: #0c0c14;
+  --pg-bg-elevated: #141420;
+  --pg-bg-hover: #1a1a28;
+
+  --pg-text-primary: #e8e6e3;
+  --pg-text-secondary: #a1a1aa;
+  --pg-text-muted: #71717a;
+
+  --pg-accent-gold: #fbbf24;
+  --pg-accent-gold-hover: #f59e0b;
+  --pg-accent-cyan: #22d3ee;
+  --pg-accent-cyan-hover: #06b6d4;
+  --pg-accent-rose: #fb7185;
+
+  --pg-game-success: #4ade80;
+  --pg-game-success-bg: rgba(74, 222, 128, 0.15);
+  --pg-game-error: #f87171;
+  --pg-game-error-bg: rgba(248, 113, 113, 0.15);
+  --pg-game-warning: #fbbf24;
+  --pg-game-warning-bg: rgba(251, 191, 36, 0.15);
+  --pg-game-perfect: #22d3ee;
+  --pg-game-perfect-bg: rgba(34, 211, 238, 0.15);
+
+  --pg-glow-gold: 0 0 20px rgba(251, 191, 36, 0.4);
+  --pg-glow-cyan: 0 0 20px rgba(34, 211, 238, 0.4);
+  --pg-glow-purple: 0 0 20px rgba(167, 139, 250, 0.4);
+
+  /* Void/Black hole effect colors */
+  --pg-void-core: #000000;
+  --pg-void-glow: rgba(139, 92, 246, 0.6);
+  --pg-void-particle: rgba(167, 139, 250, 0.8);
+  --pg-void-accretion: rgba(251, 191, 36, 0.4);
+  --pg-void-horizon: rgba(139, 92, 246, 0.3);
 }
 
 /* Light theme */
@@ -636,4 +672,247 @@ body {
     font-size: 0.8em;
     color: #666;
   }
+}
+
+/* ============================================
+   PLAYGROUND DESIGN SYSTEM UTILITIES
+   ============================================ */
+
+/* Playground backgrounds */
+.pg-bg-deep {
+  background-color: var(--pg-bg-deep);
+}
+
+.pg-bg-surface {
+  background-color: var(--pg-bg-surface);
+}
+
+.pg-bg-elevated {
+  background-color: var(--pg-bg-elevated);
+}
+
+/* Playground gradients */
+.pg-gradient-radial {
+  background: radial-gradient(ellipse at center, rgba(167, 139, 250, 0.08) 0%, transparent 70%);
+}
+
+.pg-gradient-gold {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.pg-gradient-cyan {
+  background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+}
+
+/* Playground text colors */
+.pg-text-gold {
+  color: var(--pg-accent-gold);
+}
+
+.pg-text-cyan {
+  color: var(--pg-accent-cyan);
+}
+
+.pg-text-success {
+  color: var(--pg-game-success);
+}
+
+.pg-text-error {
+  color: var(--pg-game-error);
+}
+
+/* Playground glow effects */
+.pg-glow-gold {
+  box-shadow: var(--pg-glow-gold);
+}
+
+.pg-glow-cyan {
+  box-shadow: var(--pg-glow-cyan);
+}
+
+.pg-glow-purple {
+  box-shadow: var(--pg-glow-purple);
+}
+
+/* Score display typography */
+.pg-score-hero {
+  font-size: clamp(4rem, 12vw, 8rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.pg-score-large {
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.pg-score-medium {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Playground label */
+.pg-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--pg-text-muted);
+}
+
+/* Playground card */
+.pg-card {
+  background: var(--pg-bg-elevated);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.pg-card:hover {
+  background: var(--pg-bg-hover);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Playground button */
+.pg-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.pg-button-primary {
+  background: var(--pg-accent-gold);
+  color: #000;
+}
+
+.pg-button-primary:hover {
+  background: var(--pg-accent-gold-hover);
+  box-shadow: var(--pg-glow-gold);
+}
+
+.pg-button-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--pg-text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pg-button-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Countdown animation */
+@keyframes pg-countdown-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes pg-countdown-ring {
+  0% { stroke-dashoffset: 283; }
+  100% { stroke-dashoffset: 0; }
+}
+
+/* Score counter animation */
+@keyframes pg-score-pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.pg-score-pop {
+  animation: pg-score-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Reaction game phase colors */
+.pg-phase-waiting {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.pg-phase-ready {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+}
+
+.pg-phase-early {
+  background: linear-gradient(135deg, #ca8a04 0%, #a16207 100%);
+}
+
+.pg-phase-clicked {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+/* Perfect/Good/Miss badges */
+.pg-badge-perfect {
+  background: var(--pg-game-perfect-bg);
+  color: var(--pg-game-perfect);
+  border: 1px solid rgba(34, 211, 238, 0.3);
+}
+
+.pg-badge-good {
+  background: var(--pg-game-success-bg);
+  color: var(--pg-game-success);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.pg-badge-miss {
+  background: var(--pg-game-error-bg);
+  color: var(--pg-game-error);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+/* Typing game caret */
+.pg-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.2em;
+  background: var(--pg-accent-gold);
+  animation: pg-caret-blink 1s step-end infinite;
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+}
+
+@keyframes pg-caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Rhythm game hit circle glow */
+.pg-hit-glow {
+  box-shadow:
+    0 0 20px rgba(167, 139, 250, 0.4),
+    0 0 40px rgba(167, 139, 250, 0.2),
+    inset 0 0 20px rgba(167, 139, 250, 0.1);
+}
+
+/* Progress ring */
+.pg-progress-ring {
+  transform: rotate(-90deg);
+  transform-origin: center;
+}
+
+.pg-progress-ring circle {
+  fill: none;
+  stroke-linecap: round;
+}
+
+/* Subtle noise texture overlay */
+.pg-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  pointer-events: none;
+  mix-blend-mode: overlay;
 }
