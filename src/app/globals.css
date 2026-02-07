@@ -59,6 +59,42 @@
   --status-error-muted: rgba(239, 68, 68, 0.2);
   --status-info: #3b82f6;
   --status-info-muted: rgba(59, 130, 246, 0.2);
+
+  /* Playground Design System - Modern minimalist gaming */
+  --pg-bg-deep: #050612;
+  --pg-bg-surface: #0c0c14;
+  --pg-bg-elevated: #141420;
+  --pg-bg-hover: #1a1a28;
+
+  --pg-text-primary: #e8e6e3;
+  --pg-text-secondary: #a1a1aa;
+  --pg-text-muted: #71717a;
+
+  --pg-accent-gold: #fbbf24;
+  --pg-accent-gold-hover: #f59e0b;
+  --pg-accent-cyan: #22d3ee;
+  --pg-accent-cyan-hover: #06b6d4;
+  --pg-accent-rose: #fb7185;
+
+  --pg-game-success: #4ade80;
+  --pg-game-success-bg: rgba(74, 222, 128, 0.15);
+  --pg-game-error: #f87171;
+  --pg-game-error-bg: rgba(248, 113, 113, 0.15);
+  --pg-game-warning: #fbbf24;
+  --pg-game-warning-bg: rgba(251, 191, 36, 0.15);
+  --pg-game-perfect: #22d3ee;
+  --pg-game-perfect-bg: rgba(34, 211, 238, 0.15);
+
+  --pg-glow-gold: 0 0 20px rgba(251, 191, 36, 0.4);
+  --pg-glow-cyan: 0 0 20px rgba(34, 211, 238, 0.4);
+  --pg-glow-purple: 0 0 20px rgba(167, 139, 250, 0.4);
+
+  /* Void/Black hole effect colors */
+  --pg-void-core: #000000;
+  --pg-void-glow: rgba(139, 92, 246, 0.6);
+  --pg-void-particle: rgba(167, 139, 250, 0.8);
+  --pg-void-accretion: rgba(251, 191, 36, 0.4);
+  --pg-void-horizon: rgba(139, 92, 246, 0.3);
 }
 
 /* Light theme */
