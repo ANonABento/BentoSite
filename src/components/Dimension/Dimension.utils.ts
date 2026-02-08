@@ -18,13 +18,13 @@ export const formatFileSize = (bytes: number): string => {
  */
 export const getCategoryColor = (category: string): string => {
   const colors: Record<string, string> = {
-    'Basic': 'bg-blue-100 text-blue-800',
-    'Furniture': 'bg-green-100 text-green-800',
-    'Decorative': 'bg-purple-100 text-purple-800',
-    'Architecture': 'bg-yellow-100 text-yellow-800',
-    'Art': 'bg-pink-100 text-pink-800'
+    'Basic': 'bg-[var(--status-info-muted)] text-[var(--status-info)]',
+    'Furniture': 'bg-[var(--status-success-muted)] text-[var(--status-success)]',
+    'Decorative': 'bg-[var(--purple-muted)] text-[var(--purple)]',
+    'Architecture': 'bg-[var(--status-warning-muted)] text-[var(--status-warning)]',
+    'Art': 'bg-[var(--status-error-muted)] text-[var(--status-error)]'
   };
-  return colors[category] || 'bg-gray-100 text-gray-800';
+  return colors[category] || 'bg-[var(--glass-bg)] text-[var(--text-secondary)]';
 };
 
 /**

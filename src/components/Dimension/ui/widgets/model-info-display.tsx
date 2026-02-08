@@ -31,7 +31,7 @@ export function ModelInfoDisplay({ model, isMobile }: ModelInfoDisplayProps) {
         {/* Model header */}
         <div className="space-y-1">
           <h4 className="font-bold text-lg text-[var(--interactive)] leading-tight">{model.name}</h4>
-          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${isMobile ? 'text-xs' : 'text-sm'} bg-[var(--purple-muted)] text-[var(--interactive)] border border-[var(--interactive)]/30`}>
+          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${isMobile ? 'text-xs' : 'text-sm'} bg-[var(--purple-muted)] text-[var(--interactive)] border border-[var(--interactive)] border-opacity-30`}>
             {model.category}
           </span>
         </div>
@@ -45,10 +45,10 @@ export function ModelInfoDisplay({ model, isMobile }: ModelInfoDisplayProps) {
 
             {/* File Details section with collapsible toggle and divider */}
             <div className="space-y-2 text-xs">
-              <div className="border-t border-gray-600/50 mb-2"></div>
+              <div className="border-t border-[var(--border)] mb-2"></div>
               <button
                 onClick={() => setShowFileDetails(!showFileDetails)}
-                className="w-full flex items-center justify-between text-xs font-medium transition-colors duration-150 ease-out text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded-lg hover:bg-gray-800/30 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                className="w-full flex items-center justify-between text-xs font-medium transition-colors duration-150 ease-out text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded-lg hover:bg-[var(--glass-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50"
                 aria-expanded={showFileDetails}
                 aria-label="Toggle file details"
               >
@@ -59,7 +59,7 @@ export function ModelInfoDisplay({ model, isMobile }: ModelInfoDisplayProps) {
               </button>
 
               {showFileDetails && (
-                <div className="bg-gray-800/50 rounded-lg p-2 space-y-2">
+                <div className="bg-[var(--glass-bg)] rounded-lg p-2 space-y-2">
                   <div className="flex justify-between items-center">
                     <span className={`${DESIGN_SYSTEM.colors.text.tertiary} font-medium`}>File Size:</span>
                     <span className={`${DESIGN_SYSTEM.colors.text.primary} font-mono text-xs`}>{formatFileSize(model.fileSize)}</span>

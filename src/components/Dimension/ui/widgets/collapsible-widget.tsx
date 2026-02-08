@@ -164,17 +164,17 @@ export function CollapsibleWidget({
           glass rounded-xl
           ${isMobile ? 'w-48' : 'w-72'} 
           ${isCollapsed ? 'h-12' : ''}
-          ${isDragging ? 'ring-2 ring-violet-400/50' : ''}
+          ${isDragging ? 'ring-2 ring-[var(--interactive)] ring-opacity-50' : ''}
         `}
         onMouseDown={handleMouseDown}
       >
         {/* Header with toggle button only */}
         <div
           className={`
-            widget-header flex items-center justify-between px-4 py-3 border-b border-white/10
+            widget-header flex items-center justify-between px-4 py-3 border-b border-[var(--border)]
             cursor-pointer
-            hover:bg-white/5
-            ${isKeyboardFocused ? 'ring-2 ring-violet-500/50 ring-inset' : ''}
+            hover:bg-[var(--glass-bg)]
+            ${isKeyboardFocused ? 'ring-2 ring-[var(--interactive)] ring-opacity-50 ring-inset' : ''}
           `}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsKeyboardFocused(true)}
@@ -185,16 +185,16 @@ export function CollapsibleWidget({
           aria-label={`Toggle ${title} panel`}
         >
           <div className="flex items-center space-x-2">
-            <div className={`text-violet-400 hover:text-violet-300`}>
+            <div className="text-[var(--interactive)] hover:text-[var(--interactive-hover)]">
               {icon}
             </div>
-            <h3 className={`font-semibold text-sm text-white hover:text-violet-300`}>
+            <h3 className="font-semibold text-sm text-[var(--text-primary)] hover:text-[var(--interactive-hover)]">
               {title}
             </h3>
           </div>
 
           <button
-            className="text-gray-400 hover:text-white p-1 rounded hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-violet-500/50 active:scale-95 transform"
+            className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded hover:bg-[var(--glass-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50 active:scale-95 transform"
             title={isCollapsed ? 'Expand panel' : 'Collapse panel'}
             aria-label={isCollapsed ? `Expand ${title} panel` : `Collapse ${title} panel`}
             onClick={(e) => {
@@ -210,7 +210,7 @@ export function CollapsibleWidget({
 
         {/* Content */}
         {!isCollapsed && (
-          <div className={`p-3 text-white`}>
+          <div className="p-3 text-[var(--text-primary)]">
             {children}
           </div>
         )}

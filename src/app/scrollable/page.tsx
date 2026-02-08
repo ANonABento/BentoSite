@@ -65,7 +65,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       return this.props.fallback || (
         <div className="w-full h-full flex items-center justify-center glass backdrop-blur-sm rounded-2xl">
           <div className="text-center p-8">
-            <div className="w-16 h-16 mx-auto mb-4 text-red-400">
+            <div className="w-16 h-16 mx-auto mb-4 text-[var(--status-error)]">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
@@ -74,7 +74,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             <p className="text-[var(--text-secondary)] text-sm mb-4">This component failed to load.</p>
             <button
               onClick={() => this.setState({ hasError: false })}
-              className="px-4 py-2 bg-violet-500 hover:bg-violet-400 active:bg-violet-600 text-white rounded-lg text-sm transition-colors"
+              className="px-4 py-2 bg-[var(--interactive)] hover:bg-[var(--interactive-hover)] active:bg-[var(--interactive-active)] text-[var(--text-on-accent)] rounded-lg text-sm transition-colors"
             >
               Try again
             </button>
@@ -92,7 +92,7 @@ const ThreeViewer = dynamic(() => import('../../components/Dimension/Dimension')
   loading: () => (
     <div className="w-full h-full flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" />
+        <div className="w-12 h-12 border-2 border-[var(--purple-muted)] border-t-[var(--interactive)] rounded-full animate-spin" />
         <span className="text-[var(--text-secondary)] text-sm">Loading 3D Viewer...</span>
       </div>
     </div>
@@ -104,7 +104,7 @@ const Chatbot = dynamic(() => import('../../components/Chat'), {
   loading: () => (
     <div className="w-full h-full flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[var(--purple-muted)] border-t-[var(--interactive)] rounded-full animate-spin" />
       </div>
     </div>
   ),
@@ -205,12 +205,12 @@ export default function ScrollableLayout() {
             <m.div variants={sectionItem} className="space-y-6">
               <div className="space-y-2">
                 <m.p
-                  className="text-violet-400 font-medium flex items-center gap-2"
+                  className="text-[var(--interactive)] font-medium flex items-center gap-2"
                   initial={prefersReducedMotion ? false : { opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={prefersReducedMotion ? instantTransition : { delay: 0.2 }}
                 >
-                  <span className="inline-block w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                  <span className="inline-block w-2 h-2 bg-[var(--status-success)] rounded-full animate-pulse" />
                   UWaterloo Computer Engineering
                 </m.p>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--text-primary)] leading-tight">
@@ -228,7 +228,7 @@ export default function ScrollableLayout() {
               <div className="flex flex-wrap gap-4">
                 <m.button
                   onClick={() => scrollToSection('projects')}
-                  className="px-6 py-3 bg-violet-500 hover:bg-violet-400 text-white rounded-xl font-medium transition-colors"
+                  className="px-6 py-3 bg-[var(--interactive)] hover:bg-[var(--interactive-hover)] text-[var(--text-on-accent)] rounded-xl font-medium transition-colors"
                   whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
                   whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
                 >
@@ -389,7 +389,7 @@ export default function ScrollableLayout() {
       {/* Floating Chat Button */}
       <m.button
         onClick={() => setIsChatOpen(!isChatOpen)}
-        className="fixed bottom-6 right-4 sm:right-6 z-40 w-14 h-14 bg-violet-500 hover:bg-violet-400 rounded-full shadow-lg shadow-violet-500/30 flex items-center justify-center text-white transition-colors"
+        className="fixed bottom-6 right-4 sm:right-6 z-40 w-14 h-14 bg-[var(--interactive)] hover:bg-[var(--interactive-hover)] rounded-full shadow-lg shadow-[0_0_20px_var(--purple-muted)] flex items-center justify-center text-[var(--text-on-accent)] transition-colors"
         whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
         whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }}
         initial={prefersReducedMotion ? false : { scale: 0 }}
@@ -423,7 +423,7 @@ export default function ScrollableLayout() {
             <div className="h-full flex flex-col">
               <div className="flex-shrink-0 px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+                  <div className="w-2 h-2 rounded-full bg-[var(--interactive)] animate-pulse" />
                   <span className="text-sm font-medium text-[var(--text-primary)]">Servant</span>
                 </div>
                 <button

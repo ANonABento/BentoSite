@@ -27,7 +27,7 @@ export function WebsiteViewer({ url }: WebsiteViewerProps) {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="p-1.5 rounded hover:bg-white/10 transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          className="p-1.5 rounded hover:bg-[var(--glass-bg)] transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
           aria-label="Open in new tab"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,7 +41,7 @@ export function WebsiteViewer({ url }: WebsiteViewerProps) {
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-[var(--background)] z-10">
             <div className="flex flex-col items-center gap-3">
-              <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-[var(--interactive)] border-t-transparent rounded-full animate-spin" />
               <span className="text-sm text-[var(--text-muted)]">Loading website...</span>
             </div>
           </div>
@@ -57,7 +57,7 @@ export function WebsiteViewer({ url }: WebsiteViewerProps) {
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors"
+              className="px-4 py-2 bg-[var(--interactive)] text-[var(--text-on-accent)] rounded-lg hover:bg-[var(--interactive-hover)] transition-colors"
             >
               Open in new tab
             </a>

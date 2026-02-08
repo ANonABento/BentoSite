@@ -89,7 +89,7 @@ function ResumeButton({ resumeUrl, className = '' }: { resumeUrl: string; classN
       download
       onClick={() => analytics.resumeDownloaded()}
       className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm
-        bg-[var(--orange)] hover:bg-[var(--orange-hover)] active:bg-[var(--orange-active)] text-white
+        bg-[var(--orange)] hover:bg-[var(--orange-hover)] active:bg-[var(--orange-active)] text-[var(--text-on-accent)]
         hover:shadow-[0_0_20px_var(--orange-muted)] hover:scale-105
         border border-[var(--orange-hover)]/20
         transition-all duration-300 focus-ring ${className}`}
@@ -182,7 +182,7 @@ export default function Header({
                 onClick={handleEmailClick}
                 className={`p-2 rounded-lg transition-all duration-200 focus-ring ${
                   copiedEmail
-                    ? 'text-emerald-500 bg-emerald-500/10'
+                    ? 'text-[var(--status-success)] bg-[var(--status-success-muted)]'
                     : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]'
                 }`}
                 aria-label={copiedEmail ? 'Email copied!' : 'Copy email'}
@@ -262,9 +262,9 @@ export default function Header({
                     flex items-center gap-2 px-4 py-2.5 rounded-lg
                     transition-all duration-200 transform border focus-ring
                     ${copiedEmail
-                      ? 'bg-emerald-500 text-white scale-105 shadow-[0_0_20px_rgba(16,185,129,0.3)] border-emerald-400/20'
+                      ? 'bg-[var(--status-success)] text-[var(--text-on-accent)] scale-105 shadow-[0_0_20px_var(--status-success-muted)] border-[var(--status-success)]'
                       : isHovered === link.id
-                        ? 'bg-violet-500 text-white scale-105 shadow-[0_0_20px_rgba(167,139,250,0.3)] border-violet-400/20'
+                        ? 'bg-[var(--interactive)] text-[var(--text-on-accent)] scale-105 shadow-[0_0_20px_var(--purple-muted)] border-[var(--purple-muted)]'
                         : 'glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border)]'
                     }
                   `}
@@ -285,7 +285,7 @@ export default function Header({
                     flex items-center gap-2 px-4 py-2.5 rounded-lg
                     transition-all duration-200 transform border focus-ring
                     ${isHovered === link.id
-                      ? 'bg-violet-500 text-white scale-105 shadow-[0_0_20px_rgba(167,139,250,0.3)] border-violet-400/20'
+                      ? 'bg-[var(--interactive)] text-[var(--text-on-accent)] scale-105 shadow-[0_0_20px_var(--purple-muted)] border-[var(--purple-muted)]'
                       : 'glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border)]'
                     }
                   `}
@@ -302,7 +302,7 @@ export default function Header({
       </div>
 
       {/* Bottom line */}
-      <div className="h-px bg-violet-500/30" />
+      <div className="h-px bg-[var(--purple-muted)]" />
     </header>
   );
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
+import os from 'os';
 import path from 'path';
 
 interface FeedbackEntry {
@@ -14,7 +15,7 @@ interface FeedbackStore {
   entries: FeedbackEntry[];
 }
 
-const FEEDBACK_FILE = path.join(process.cwd(), 'feedback.json');
+const FEEDBACK_FILE = process.env.FEEDBACK_FILE || path.join(os.tmpdir(), 'portfolio-feedback.json');
 
 async function loadFeedback(): Promise<FeedbackStore> {
   try {
@@ -27,6 +28,7 @@ async function loadFeedback(): Promise<FeedbackStore> {
 }
 
 async function saveFeedback(store: FeedbackStore): Promise<void> {
+  await fs.mkdir(path.dirname(FEEDBACK_FILE), { recursive: true });
   await fs.writeFile(FEEDBACK_FILE, JSON.stringify(store, null, 2));
 }
 

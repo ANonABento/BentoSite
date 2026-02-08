@@ -1,0 +1,286 @@
+{
+  "personal": {
+    "name": "Kevin Jiang",
+    "title": "The Everything Engineer",
+    "location": "Waterloo, Ontario, Canada",
+    "email": "k69jiang@uwaterloo.ca",
+    "github": "https://github.com/ANonABento",
+    "linkedin": "https://linkedin.com/in/ANonABento",
+    "university": "University of Waterloo",
+    "degree": "BASc in Computer Engineering"
+  },
+  "about": "I'm a Computer Engineering student at the University of Waterloo with a passion for building robots that interact naturally with humans. My work spans the full stack of robotics—from designing custom PCBs and 3D-printed mechanisms to implementing GPU-accelerated AI pipelines with LLMs and computer vision.\n\nI've built everything from gesture-controlled robot arms using AR glasses to expressive robot heads that can hold conversations. When I'm not soldering or debugging ROS2 nodes, you'll find me competing at hackathons or tinkering with new sensor technologies.",
+  "skills": {
+    "hardware": [
+      "STM32 & ESP32",
+      "PCB Design (Altium)",
+      "Arduino & Microcontrollers",
+      "3D Printing & CAD",
+      "Soldering & Assembly",
+      "Servo & Motor Control",
+      "Sensor Integration"
+    ],
+    "software": [
+      "Python",
+      "C / C++",
+      "JavaScript / TypeScript",
+      "ROS2",
+      "PyTorch",
+      "OpenCV",
+      "React & Next.js",
+      "Three.js / WebGL"
+    ],
+    "tools": [
+      "Fusion 360",
+      "OnShape",
+      "Blender",
+      "Docker",
+      "Git & GitHub",
+      "Linux",
+      "Jetson Nano",
+      "llama.cpp / Whisper"
+    ]
+  },
+  "projects": [
+    {
+      "id": "robotic-arm-puppeteer",
+      "name": "Robotic Arm Puppeteer",
+      "shortDescription": "Python + ROS2 control and calibration toolkit for the OpenArm robotic platform with multi-camera AprilTag perception and 20% improved accuracy.",
+      "description": "Python + ROS2 control and calibration toolkit for the OpenArm robotic platform. Supports reading wrist joint positions, calibrating motion ranges, and integrates seamlessly with ROS2 for robotic simulation and control. Features multi-camera AprilTag perception with covariance-based accuracy filtering.",
+      "category": "Robotics",
+      "status": "Completed",
+      "technologies": ["Python", "ROS2", "OpenCV", "Fusion 360", "Dynamixel", "AprilTag", "Three.js"],
+      "links": {
+        "github": "https://github.com/ANonABento",
+        "modelPath": "/models/placeholder.stl"
+      },
+      "media": {
+        "images": [
+          "https://picsum.photos/seed/robot1/800/600",
+          "https://picsum.photos/seed/robot2/800/600",
+          "https://picsum.photos/seed/robot3/800/600"
+        ],
+        "website": "https://ros.org"
+      },
+      "featured": true,
+      "dateCompleted": "2025-08"
+    },
+    {
+      "id": "expressive-ai-robot-head",
+      "name": "Expressive AI Robot Head",
+      "shortDescription": "ROS2-based robotic head with LLM integration, speech recognition, and 12-servo organic mesh design for human-like interactions.",
+      "description": "ROS2-based robotic head integrating LLMs, speech recognition, vision, and servo control for human-like interactions. Features GPU-accelerated CUDA pipeline, 12-servo organic mesh design, and real-time speech workflow using Whisper and llama.cpp.",
+      "category": "AI & Robotics",
+      "status": "Completed",
+      "technologies": ["Python", "PyTorch", "llama.cpp", "Whisper", "ESP32", "FreeRTOS", "Blender", "ROS2"],
+      "links": {
+        "github": "https://github.com/ANonABento"
+      },
+      "media": {
+        "images": [
+          "https://picsum.photos/seed/aihead1/800/600",
+          "https://picsum.photos/seed/aihead2/800/600",
+          "https://picsum.photos/seed/aihead3/800/600",
+          "https://picsum.photos/seed/aihead4/800/600"
+        ],
+        "video": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      },
+      "featured": true,
+      "dateCompleted": "2025-06"
+    },
+    {
+      "id": "ar-gesture-robot",
+      "name": "AR Gesture Controlled Robot",
+      "shortDescription": "Modular robot platform controlled through Snap Spectacles AR glasses with sub-100ms latency gesture-to-motion pipeline.",
+      "description": "Modular robot platform controlled through Snap Spectacles AR glasses. End-to-end gesture-to-motion pipeline using Snap API, Flask, HiveMQ MQTT, and ROS2. Sub-100ms latency with NVIDIA Jetson Nano for on-device AI inference.",
+      "category": "VR/AR",
+      "status": "Completed",
+      "technologies": ["JavaScript", "Python", "Jetson Nano", "Docker", "MQTT", "ROS2", "Flask"],
+      "links": {
+        "github": "https://github.com/ANonABento"
+      },
+      "media": {
+        "images": [
+          "https://picsum.photos/seed/arbot1/800/600",
+          "https://picsum.photos/seed/arbot2/800/600"
+        ],
+        "website": "https://www.spectacles.com"
+      },
+      "featured": true,
+      "dateCompleted": "2025-04"
+    },
+    {
+      "id": "one-handed-keyboard",
+      "name": "One Handed Keyboard",
+      "shortDescription": "AAC wrist-mounted keyboard device with only 5 GPIO buttons, trie-based predictive text, and fuzzy search. Received 99% grade.",
+      "description": "AAC device featuring a wrist-mounted keyboard with only 5 GPIO buttons. Uses trie and fuzzy search algorithms for predictive text. 3D-printed housing with STM32 microcontroller. Received 99% grade with comprehensive documentation.",
+      "category": "Accessibility",
+      "status": "Completed",
+      "technologies": ["C", "STM32", "FSM", "OnShape", "3D-Printing", "UART"],
+      "links": {
+        "github": "https://github.com/ANonABento",
+        "docs": "https://docs.google.com/document/d/example"
+      },
+      "featured": false,
+      "dateCompleted": "2024-12"
+    },
+    {
+      "id": "vr-haptic-gloves",
+      "name": "VR Haptic Gloves",
+      "shortDescription": "ESP32-based haptic feedback gloves for VR with spring-loaded potentiometers and servo-assisted haptics for precise finger tracking.",
+      "description": "ESP32-based haptic feedback gloves for VR with spring-loaded potentiometers and servo-assisted haptics. 3D-printed custom mounts for precise finger tracking. Designed for sub-100ms sensory resistance in VR applications.",
+      "category": "VR/AR",
+      "status": "Completed",
+      "technologies": ["C++", "ESP32", "Arduino", "3D-Printing", "Cura", "Soldering"],
+      "links": {
+        "github": "https://github.com/ANonABento",
+        "docs": "https://docs.google.com/document/d/example"
+      },
+      "media": {
+        "images": [
+          "https://picsum.photos/seed/vrglove1/800/600",
+          "https://picsum.photos/seed/vrglove2/800/600",
+          "https://picsum.photos/seed/vrglove3/800/600"
+        ]
+      },
+      "featured": false,
+      "dateCompleted": "2024-10"
+    },
+    {
+      "id": "ftc-robotics",
+      "name": "FIRST Tech Challenge Robot",
+      "shortDescription": "Lead builder and programmer for team Devolotics at World Championship. Built drone launcher, autonomous program, and CAD mechanisms.",
+      "description": "Lead builder and programmer for team Devolotics at FIRST Tech Challenge World Championship. Built rubber band tensioned drone launcher, autonomous program using splines, and multiple CAD-designed mechanisms with machined aluminum and 3D-printed components.",
+      "category": "Competition",
+      "status": "Completed",
+      "technologies": ["Java", "OpenCV", "OnShape", "3D-Printing", "Motor Control", "Mecanum Drive"],
+      "links": {
+        "github": "https://github.com/ANonABento"
+      },
+      "media": {
+        "images": [
+          "https://picsum.photos/seed/ftc1/800/600",
+          "https://picsum.photos/seed/ftc2/800/600",
+          "https://picsum.photos/seed/ftc3/800/600",
+          "https://picsum.photos/seed/ftc4/800/600",
+          "https://picsum.photos/seed/ftc5/800/600"
+        ],
+        "video": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      },
+      "featured": false,
+      "dateCompleted": "2024-04"
+    },
+    {
+      "id": "pcb-design",
+      "name": "PCB Design & Assembly",
+      "shortDescription": "Double-layer PCBs for controller subsystems with 0 ERC/DRC violations. Soldered SMD boards including IMU and power control circuits.",
+      "description": "Double-layer PCBs for controller subsystems with 0 ERC/DRC violations. Soldered SMD boards including IMU and power control circuits.",
+      "category": "Hardware",
+      "status": "Completed",
+      "technologies": ["Altium Designer", "Oscilloscope", "Soldering", "SMD Assembly"],
+      "links": {
+        "github": "https://github.com/ANonABento"
+      },
+      "media": {
+        "images": [
+          "https://picsum.photos/seed/pcb1/800/600",
+          "https://picsum.photos/seed/pcb2/800/600",
+          "https://picsum.photos/seed/pcb3/800/600"
+        ]
+      },
+      "featured": false,
+      "dateCompleted": "2025-04"
+    },
+    {
+      "id": "unity-game-dev",
+      "name": "Unity Game Development",
+      "shortDescription": "Best Overall winner at UWGDC Game Jam Fall 2024. Complex game logic with physics, colliders, AI, and finite state machines.",
+      "description": "Best Overall winner at UWGDC Game Jam Fall 2024. Developed complex game logic using C# scripting in Unity with physics, colliders, and AI. Utilized finite state machines for smooth animation transitions.",
+      "category": "Games",
+      "status": "Completed",
+      "technologies": ["C#", "Unity", "Blender", "OpenCV", "FSM"],
+      "links": {
+        "github": "https://github.com/ANonABento"
+      },
+      "media": {
+        "game": {
+          "type": "itch",
+          "url": "https://bakudas.itch.io/roguelike-deckbuilder"
+        }
+      },
+      "featured": false,
+      "dateCompleted": "2024-11"
+    },
+    {
+      "id": "java-android-apps",
+      "name": "Java & Android Applications",
+      "shortDescription": "Android apps with CameraX object detection, AIML chatbot integration, and MBROLA text-to-speech synthesis.",
+      "description": "Android apps with CameraX object detection, AIML chatbot integration, and MBROLA text-to-speech synthesis.",
+      "category": "Software",
+      "status": "Completed",
+      "technologies": ["Java", "Android Studio", "OpenCV", "AIML", "TTS", "CameraX"],
+      "links": {
+        "github": "https://github.com/ANonABento"
+      },
+      "media": {
+        "images": [
+          "https://picsum.photos/seed/android1/800/600",
+          "https://picsum.photos/seed/android2/800/600"
+        ]
+      },
+      "featured": false,
+      "dateCompleted": "2024-06"
+    }
+  ],
+  "experience": [
+    {
+      "id": "hamming",
+      "company": "Hamming AI",
+      "role": "Software Engineer",
+      "location": "Austin, Texas, United States",
+      "period": "Dec 2025 - Present",
+      "description": "YC S24 startup building AI-powered developer tools.",
+      "type": "work",
+      "technologies": ["Python", "AI/ML", "Full Stack"]
+    },
+    {
+      "id": "reazon",
+      "company": "Reazon Human Interaction Lab",
+      "role": "Robotics Engineer",
+      "location": "Akihabara, Tokyo, Japan",
+      "period": "Jun 2025 - Aug 2025",
+      "description": "Designed lightweight exoskeleton wrist controller with Dynamixel actuators. Built multi-camera AprilTag tracking system with 20% accuracy improvement. Developed interactive Three.js web interface for remote calibration.",
+      "type": "work",
+      "technologies": ["Python", "ROS2", "Fusion 360", "Three.js", "OpenCV"]
+    },
+    {
+      "id": "midnight-sun",
+      "company": "Midnight Sun",
+      "role": "Hardware Developer",
+      "location": "Waterloo, Ontario, Canada",
+      "period": "Sep 2024 - Apr 2025",
+      "description": "Designed and routed double-layer PCBs for controller subsystem. Maintained 0 ERC/DRC violations across all layers. Soldered and tested multiple SMD boards including IMU and power control circuits.",
+      "type": "work",
+      "technologies": ["Altium Designer", "PCB Design", "Soldering", "Oscilloscope"]
+    },
+    {
+      "id": "zenith",
+      "company": "Zenith Energy Corporation",
+      "role": "Front-End Developer",
+      "location": "Toronto, Ontario, Canada",
+      "period": "Sep 2022 - Jan 2023",
+      "description": "Developed and deployed client-facing e-commerce sites on Wix and Shopify. Reduced handover time with modular templates and simplified CMS workflows. Created cohesive brand identity with custom graphics.",
+      "type": "work",
+      "technologies": ["JavaScript", "Shopify", "Wix", "Adobe Photoshop"]
+    }
+  ],
+  "education": [
+    {
+      "id": "uwaterloo",
+      "institution": "University of Waterloo",
+      "degree": "BASc in Computer Engineering",
+      "period": "Sept 2024 - Present",
+      "location": "Waterloo, Ontario, Canada"
+    }
+  ]
+}

@@ -103,8 +103,8 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
         backdrop-blur-xl rounded-2xl border border-[var(--border)] bg-[var(--glass-bg)] p-4
         transition-all duration-200 ease-out
         hover:scale-[1.02] hover:border-[var(--interactive)]
-        hover:shadow-[0_0_30px_rgba(167,139,250,0.2)]
-        focus:outline-none focus:ring-2 focus:ring-violet-500/50
+        hover:shadow-[0_0_30px_var(--purple-muted)]
+        focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50
       `}
     >
       {/* Thumbnail - bento compartment (sharp inner corners) */}
@@ -148,7 +148,7 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
             {mediaIcons.map(({ icon, label }) => (
               <span
                 key={label}
-                className="p-1.5 rounded bg-black/60 text-white/80"
+                className="p-1.5 rounded bg-[var(--overlay)] text-[var(--text-on-accent)] opacity-80"
                 title={label}
               >
                 {icon}
@@ -164,9 +164,9 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
           className={`
             px-2.5 py-1 rounded-sm text-xs font-medium uppercase tracking-wide
             ${project.status === 'Completed'
-              ? 'bg-[var(--status-success-muted)] text-[var(--status-success)] border border-[var(--status-success)]/30'
+              ? 'bg-[var(--status-success-muted)] text-[var(--status-success)] border border-[var(--status-success)] border-opacity-30'
               : project.status === 'In Progress'
-                ? 'bg-[var(--status-warning-muted)] text-[var(--status-warning)] border border-[var(--status-warning)]/30'
+                ? 'bg-[var(--status-warning-muted)] text-[var(--status-warning)] border border-[var(--status-warning)] border-opacity-30'
                 : 'bg-[var(--glass-bg)] text-[var(--text-muted)] border border-[var(--border)]'
             }
           `}
@@ -208,8 +208,8 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
               onClick={() => onSelectProject(project)}
               aria-label={`View ${project.name} in viewer`}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
-                bg-[var(--interactive)] text-white
-                hover:bg-[var(--interactive-hover)] hover:shadow-[0_0_15px_rgba(167,139,250,0.4)]
+                bg-[var(--interactive)] text-[var(--text-on-accent)]
+                hover:bg-[var(--interactive-hover)] hover:shadow-[0_0_15px_var(--purple-muted)]
                 transition-all duration-200"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -228,8 +228,8 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
               rel="noopener noreferrer"
               aria-label={`Open ${project.name} live demo in new window`}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
-                bg-[var(--highlight)] text-white
-                hover:bg-[var(--highlight-hover)] hover:shadow-[0_0_15px_rgba(224,123,60,0.4)]
+                bg-[var(--highlight)] text-[var(--text-on-accent)]
+                hover:bg-[var(--highlight-hover)] hover:shadow-[0_0_15px_var(--orange-muted)]
                 transition-all duration-200"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

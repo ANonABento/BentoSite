@@ -22,7 +22,7 @@ export function LoadingProgress({ progress }: LoadingProgressProps) {
       </div>
       <div className="w-64 bg-[var(--glass-bg)] rounded-full h-3 overflow-hidden border border-[var(--border)]">
         <div className={`bg-[var(--interactive)] h-3 rounded-full ${isInitialRender ? '' : 'transition-all duration-300 ease-out'} relative`} style={{ width: `${progress}%` }}>
-          <div className="absolute inset-0 bg-white/10 animate-pulse"></div>
+          <div className="absolute inset-0 bg-[var(--glass-bg-strong)] animate-pulse"></div>
         </div>
       </div>
       <div className="mt-2 text-xs text-center text-[var(--text-muted)]">

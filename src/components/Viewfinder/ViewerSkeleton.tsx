@@ -8,7 +8,7 @@ export function ViewerSkeleton() {
   return (
     <div className="h-full flex flex-col items-center justify-center bg-[var(--glass-bg)]">
       {/* Spinner */}
-      <div className="w-10 h-10 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin mb-4" />
+      <div className="w-10 h-10 border-2 border-[var(--purple-muted)] border-t-[var(--interactive)] rounded-full animate-spin mb-4" />
 
       {/* Loading text */}
       <span className="text-sm text-[var(--text-muted)]">Loading viewer...</span>

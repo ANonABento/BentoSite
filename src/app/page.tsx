@@ -46,7 +46,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       return this.props.fallback || (
         <div className="w-full h-full flex items-center justify-center glass backdrop-blur-sm rounded-2xl">
           <div className="text-center p-8">
-            <div className="w-16 h-16 mx-auto mb-4 text-red-400">
+            <div className="w-16 h-16 mx-auto mb-4 text-[var(--status-error)]">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
@@ -55,7 +55,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             <p className="text-[var(--text-secondary)] text-sm mb-4">This component failed to load.</p>
             <button
               onClick={() => this.setState({ hasError: false })}
-              className="px-4 py-2 bg-violet-500 hover:bg-violet-400 active:bg-violet-600 text-white rounded-lg text-sm transition-colors"
+              className="px-4 py-2 bg-[var(--interactive)] hover:bg-[var(--interactive-hover)] active:bg-[var(--interactive-active)] text-[var(--text-on-accent)] rounded-lg text-sm transition-colors"
             >
               Try again
             </button>
@@ -75,7 +75,7 @@ const Viewfinder = dynamic(
     loading: () => (
       <div className="w-full h-full flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" />
+          <div className="w-12 h-12 border-2 border-[var(--purple-muted)] border-t-[var(--interactive)] rounded-full animate-spin" />
           <span className="text-[var(--text-secondary)] text-sm">Loading Viewfinder...</span>
         </div>
       </div>
@@ -88,7 +88,7 @@ const Chatbot = dynamic(() => import('@/components/Chat'), {
   loading: () => (
     <div className="w-full h-full flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+        <div className="w-12 h-12 border-2 border-[var(--purple-muted)] border-t-[var(--interactive)] rounded-full animate-spin" />
         <span className="text-[var(--text-secondary)] text-sm">Loading...</span>
       </div>
     </div>
@@ -116,10 +116,10 @@ function LandingOverlay({ onEnter }: { onEnter: () => void }) {
         transition={{ delay: 0.5, duration: 0.8 }}
         className="mb-8"
       >
-        <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 drop-shadow-2xl">
+        <h1 className="text-5xl md:text-7xl font-bold text-[var(--text-primary)] mb-4 drop-shadow-2xl">
           {PORTFOLIO_DATA.personal.name}
         </h1>
-        <p className="text-xl md:text-2xl text-gray-300 drop-shadow-lg">
+        <p className="text-xl md:text-2xl text-[var(--text-secondary)] drop-shadow-lg">
           {PORTFOLIO_DATA.personal.title}
         </p>
       </motion.div>
@@ -135,9 +135,9 @@ function LandingOverlay({ onEnter }: { onEnter: () => void }) {
           boxShadow: '0 0 40px rgba(167, 139, 250, 0.5)'
         }}
         whileTap={{ scale: 0.95 }}
-        className="px-8 py-4 bg-violet-500/90 backdrop-blur-sm text-white rounded-2xl text-lg font-medium
-          border border-violet-400/30 shadow-lg shadow-violet-500/30
-          hover:bg-violet-400/90 transition-colors duration-300"
+        className="px-8 py-4 bg-[var(--interactive)] backdrop-blur-sm text-[var(--text-on-accent)] rounded-2xl text-lg font-medium
+          border border-[var(--purple-muted)] shadow-lg shadow-[0_0_20px_var(--purple-muted)]
+          hover:bg-[var(--interactive-hover)] transition-colors duration-300"
       >
         <span className="flex items-center gap-3">
           <span className="text-2xl">👋</span>
@@ -277,7 +277,7 @@ function HomeContent() {
                 whileTap={buttonTap}
                 className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
                   activeSection === '3d'
-                    ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/20'
+                    ? 'bg-[var(--interactive)] text-[var(--text-on-accent)] shadow-lg shadow-[0_0_20px_var(--purple-muted)]'
                     : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]'
                 }`}
               >
@@ -293,7 +293,7 @@ function HomeContent() {
                 whileTap={buttonTap}
                 className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
                   activeSection === 'chat'
-                    ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/20'
+                    ? 'bg-[var(--interactive)] text-[var(--text-on-accent)] shadow-lg shadow-[0_0_20px_var(--purple-muted)]'
                     : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]'
                 }`}
               >
@@ -521,7 +521,7 @@ function HomeLoading() {
   return (
     <main className="relative h-screen bg-[var(--background)] overflow-hidden flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" />
+        <div className="w-12 h-12 border-2 border-[var(--purple-muted)] border-t-[var(--interactive)] rounded-full animate-spin" />
         <span className="text-[var(--text-secondary)] text-sm">Loading...</span>
       </div>
     </main>

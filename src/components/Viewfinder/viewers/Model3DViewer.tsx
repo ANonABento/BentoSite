@@ -9,7 +9,7 @@ const Dimension = dynamic(() => import('@/components/Dimension/Dimension'), {
   loading: () => (
     <div className="h-full flex items-center justify-center bg-[var(--background)]">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[var(--interactive)] border-t-transparent rounded-full animate-spin" />
         <span className="text-sm text-[var(--text-muted)]">Loading 3D viewer...</span>
       </div>
     </div>

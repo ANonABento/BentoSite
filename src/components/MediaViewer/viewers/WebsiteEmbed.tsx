@@ -32,7 +32,7 @@ export function WebsiteEmbed({ url, title, onClose }: WebsiteEmbedProps) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col"
+      className="fixed inset-0 z-50 bg-[var(--overlay-strong)] backdrop-blur-md flex flex-col"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -79,7 +79,7 @@ export function WebsiteEmbed({ url, title, onClose }: WebsiteEmbedProps) {
       <div className="flex-1 relative">
         {loading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-            <div className="w-12 h-12 border-2 border-[var(--interactive)]/30 border-t-[var(--interactive)] rounded-full animate-spin" />
+            <div className="w-12 h-12 border-2 border-[var(--interactive)] border-opacity-30 border-t-[var(--interactive)] rounded-full animate-spin" />
             <span className="text-[var(--text-muted)]">Loading website...</span>
           </div>
         )}
@@ -96,7 +96,7 @@ export function WebsiteEmbed({ url, title, onClose }: WebsiteEmbedProps) {
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2 bg-[var(--interactive)] hover:bg-[var(--interactive-hover)] text-white rounded-lg transition-colors"
+              className="px-4 py-2 bg-[var(--interactive)] hover:bg-[var(--interactive-hover)] text-[var(--text-on-accent)] rounded-lg transition-colors"
             >
               Open in new tab instead
             </a>

@@ -75,7 +75,7 @@ export function AboutSection() {
               {/* Code block aesthetic */}
               <div className="relative space-y-4 font-mono text-sm">
                 <div className="flex items-center gap-2 text-[var(--text-muted)]">
-                  <span className="text-violet-500">const</span>
+                  <span className="text-[var(--interactive)]">const</span>
                   <span className="text-[var(--orange)]">engineer</span>
                   <span>=</span>
                   <span className="text-[var(--text-secondary)]">{'{'}</span>
@@ -83,35 +83,35 @@ export function AboutSection() {
                 <div className="pl-4 space-y-2">
                   <div>
                     <span className="text-[var(--text-muted)]">name:</span>
-                    <span className="text-emerald-500"> &quot;{PORTFOLIO_DATA.personal.name}&quot;</span>,
+                    <span className="text-[var(--status-success)]"> &quot;{PORTFOLIO_DATA.personal.name}&quot;</span>,
                   </div>
                   <div>
                     <span className="text-[var(--text-muted)]">school:</span>
-                    <span className="text-emerald-500"> &quot;UWaterloo&quot;</span>,
+                    <span className="text-[var(--status-success)]"> &quot;UWaterloo&quot;</span>,
                   </div>
                   <div>
                     <span className="text-[var(--text-muted)]">focus:</span>
                     <span className="text-[var(--text-secondary)]"> [</span>
                   </div>
                   <div className="pl-4">
-                    <span className="text-amber-500">&quot;Robotics&quot;</span>,
+                    <span className="text-[var(--status-warning)]">&quot;Robotics&quot;</span>,
                   </div>
                   <div className="pl-4">
-                    <span className="text-amber-500">&quot;Embedded Systems&quot;</span>,
+                    <span className="text-[var(--status-warning)]">&quot;Embedded Systems&quot;</span>,
                   </div>
                   <div className="pl-4">
-                    <span className="text-amber-500">&quot;AI/ML&quot;</span>
+                    <span className="text-[var(--status-warning)]">&quot;AI/ML&quot;</span>
                   </div>
                   <div>
                     <span className="text-[var(--text-secondary)]">]</span>,
                   </div>
                   <div>
                     <span className="text-[var(--text-muted)]">currentlyBuilding:</span>
-                    <span className="text-emerald-500"> &quot;expressive robots&quot;</span>,
+                    <span className="text-[var(--status-success)]"> &quot;expressive robots&quot;</span>,
                   </div>
                   <div>
                     <span className="text-[var(--text-muted)]">openToWork:</span>
-                    <span className="text-violet-500"> true</span>
+                    <span className="text-[var(--interactive)]"> true</span>
                   </div>
                 </div>
                 <div className="text-[var(--text-secondary)]">{'}'}</div>
@@ -120,7 +120,7 @@ export function AboutSection() {
 
             {/* Floating decorative elements */}
             <motion.div
-              className="absolute -top-4 -right-4 w-20 h-20 bg-violet-500/20 rounded-full blur-2xl"
+              className="absolute -top-4 -right-4 w-20 h-20 bg-[var(--purple-muted)] rounded-full blur-2xl"
               animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
               transition={{ duration: 4, repeat: Infinity }}
             />

@@ -53,7 +53,7 @@ export function VideoViewer({ url }: VideoViewerProps) {
   // Direct video file
   if (videoInfo.type === 'direct') {
     return (
-      <div className="h-full flex items-center justify-center bg-black">
+      <div className="h-full flex items-center justify-center bg-[var(--surface-deep)]">
         <video
           src={videoInfo.embedUrl}
           controls
@@ -68,7 +68,7 @@ export function VideoViewer({ url }: VideoViewerProps) {
 
   // YouTube or Vimeo embed
   return (
-    <div className="h-full flex items-center justify-center bg-black">
+    <div className="h-full flex items-center justify-center bg-[var(--surface-deep)]">
       <iframe
         src={videoInfo.embedUrl}
         className="w-full h-full"

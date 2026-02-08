@@ -53,9 +53,9 @@ function SkillPill({
   onAskAI?: (skill: string) => void;
 }) {
   const colorClasses: Record<SkillCategory, string> = {
-    hardware: 'hover:border-[var(--orange)]/40 hover:shadow-[0_0_12px_var(--orange-muted)]',
-    software: 'hover:border-[var(--purple)]/40 hover:shadow-[0_0_12px_var(--purple-muted)]',
-    tools: 'hover:border-gray-400/40 hover:shadow-[0_0_12px_rgba(156,163,175,0.15)]',
+    hardware: 'hover:border-[var(--orange)] hover:border-opacity-40 hover:shadow-[0_0_12px_var(--orange-muted)]',
+    software: 'hover:border-[var(--purple)] hover:border-opacity-40 hover:shadow-[0_0_12px_var(--purple-muted)]',
+    tools: 'hover:border-[var(--text-muted)] hover:shadow-[0_0_12px_var(--shadow-color)]',
   };
 
   return (
@@ -67,7 +67,7 @@ function SkillPill({
         bg-[var(--glass-bg)] border border-[var(--border)] text-[var(--text-secondary)]
         transition-all duration-200 transform
         hover:scale-105 hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)]
-        focus:outline-none focus:ring-2 focus:ring-violet-500/50
+        focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50
         active:scale-95
         ${colorClasses[category]}
       `}
@@ -93,7 +93,7 @@ function CategorySection({
   const textColorClass: Record<SkillCategory, string> = {
     hardware: 'text-[var(--orange)]',
     software: 'text-[var(--purple)]',
-    tools: 'text-gray-400',
+    tools: 'text-[var(--text-muted)]',
   };
 
   return (

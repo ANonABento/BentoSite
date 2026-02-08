@@ -80,7 +80,7 @@ export function ViewfinderHeader({
         </span>
       </div>
       {/* Segmented control - absolutely positioned to avoid affecting height */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center rounded border border-[var(--border)] bg-black/20">
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center rounded border border-[var(--border)] bg-[var(--overlay-weak)]">
         {availableTabs.map((tab) => (
           <button
             key={tab}
@@ -89,7 +89,7 @@ export function ViewfinderHeader({
               flex items-center gap-1.5 px-3 py-1.5 rounded-sm transition-colors duration-150
               text-xs font-medium
               ${activeTab === tab
-                ? 'bg-violet-500/25 text-violet-400'
+                ? 'bg-[var(--purple-muted)] text-[var(--interactive)]'
                 : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }
             `}
