@@ -20,7 +20,11 @@ export function ControlPanel({
   onCameraPresets,
   onModelManager,
   isMobile,
-  showCameraPresets
+  showCameraPresets,
+  zoomLevel,
+  rotationSpeed,
+  onZoomChange,
+  onRotationSpeedChange
 }: ControlPanelProps & { showCameraPresets?: boolean }) {
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
 
@@ -107,7 +111,7 @@ export function ControlPanel({
       label: 'Presets',
       onClick: onCameraPresets,
       active: showCameraPresets || false, // This ensures the button shows as blue when camera presets are open
-      shortcut: 'P',
+      shortcut: 'C',
       description: 'Open camera presets'
     },
     {
@@ -155,31 +159,72 @@ export function ControlPanel({
     >
       <div className="space-y-4">
         {!isCollapsed && (
-          <div className="grid grid-cols-4 gap-2">
-            {allControls.map((button, index) => (
-              <motion.button
-                key={index}
-                onClick={button.onClick}
-                whileTap={buttonTap}
-                className={`
-                  p-2 rounded-sm flex flex-col items-center justify-center
-                  focus:outline-none focus:ring-2 focus:ring-violet-500/50
-                  min-h-[60px] transition-all duration-200
-                  ${button.active
-                    ? 'bg-[var(--orange)] text-white shadow-lg shadow-[var(--orange-muted)] ring-1 ring-[var(--orange)]/30'
-                    : 'bg-white/5 backdrop-blur border border-white/10 hover:bg-white/10 hover:border-[var(--purple)]/30 text-gray-300 hover:text-white'
-                  }
-                `}
-                title={`${button.label} (${button.shortcut}) - ${button.description}`}
-                aria-label={`${button.label}: ${button.description}`}
-                aria-pressed={button.active}
-              >
-                <div className="mb-1">{button.icon}</div>
-                <div className="text-xs font-medium text-center leading-tight">{button.label}</div>
-                <div className="text-xs opacity-70 mt-1">{button.shortcut}</div>
-              </motion.button>
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-4 gap-2">
+              {allControls.map((button, index) => (
+                <motion.button
+                  key={index}
+                  onClick={button.onClick}
+                  whileTap={buttonTap}
+                  className={`
+                    p-2 rounded-sm flex flex-col items-center justify-center
+                    focus:outline-none focus:ring-2 focus:ring-violet-500/50
+                    min-h-[60px] transition-all duration-200
+                    ${button.active
+                      ? 'bg-[var(--orange)] text-white shadow-lg shadow-[var(--orange-muted)] ring-1 ring-[var(--orange)]/30'
+                      : 'bg-white/5 backdrop-blur border border-white/10 hover:bg-white/10 hover:border-[var(--purple)]/30 text-gray-300 hover:text-white'
+                    }
+                  `}
+                  title={`${button.label} (${button.shortcut}) - ${button.description}`}
+                  aria-label={`${button.label}: ${button.description}`}
+                  aria-pressed={button.active}
+                >
+                  <div className="mb-1">{button.icon}</div>
+                  <div className="text-xs font-medium text-center leading-tight">{button.label}</div>
+                  <div className="text-xs opacity-70 mt-1">{button.shortcut}</div>
+                </motion.button>
+              ))}
+            </div>
+
+            {/* Sliders Section */}
+            <div className="border-t border-white/10 pt-3 space-y-3">
+              {/* Zoom Slider */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-gray-400">Zoom</span>
+                  <span className="text-gray-300 font-mono">{Math.round(zoomLevel)}</span>
+                </div>
+                <input
+                  type="range"
+                  min="3"
+                  max="40"
+                  step="1"
+                  value={zoomLevel}
+                  onChange={(e) => onZoomChange(Number(e.target.value))}
+                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[var(--purple)]"
+                  aria-label="Zoom level"
+                />
+              </div>
+
+              {/* Rotation Speed Slider */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-gray-400">Speed</span>
+                  <span className="text-gray-300 font-mono">{rotationSpeed.toFixed(1)}x</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="2"
+                  step="0.1"
+                  value={rotationSpeed}
+                  onChange={(e) => onRotationSpeedChange(Number(e.target.value))}
+                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[var(--purple)]"
+                  aria-label="Rotation speed"
+                />
+              </div>
+            </div>
+          </>
         )}
       </div>
     </CollapsibleWidget>

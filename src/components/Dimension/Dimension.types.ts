@@ -42,6 +42,11 @@ export interface ControlPanelProps {
   isMobile: boolean;
   screenSize: { width: number; height: number };
   showCameraPresets?: boolean;
+  // Slider controls
+  zoomLevel: number;
+  rotationSpeed: number;
+  onZoomChange: (zoom: number) => void;
+  onRotationSpeedChange: (speed: number) => void;
 }
 
 export interface ModelSelectorProps {
@@ -60,6 +65,9 @@ export interface ModelInfoDisplayProps {
 export interface ResponsiveOrbitControlsProps {
   autoRotate: boolean;
   isMobile: boolean;
+  rotationSpeed?: number;
+  zoomLevel?: number;
+  onZoomChange?: (zoom: number) => void;
 }
 
 export interface STLModelWrapperProps {
@@ -68,6 +76,7 @@ export interface STLModelWrapperProps {
   autoRotate: boolean;
   onClick: () => void;
   isWireframe: boolean;
+  rotationSpeed?: number;
 }
 
 export interface LODModelProps {
@@ -75,6 +84,7 @@ export interface LODModelProps {
   autoRotate: boolean;
   onClick: () => void;
   isWireframe: boolean;
+  rotationSpeed?: number;
 }
 
 export interface BillboardTextProps {

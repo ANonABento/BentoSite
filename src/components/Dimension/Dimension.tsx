@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 // Import all types
 import type { ModelInfo, ModelError, DimensionViewerProps } from './Dimension.types';
@@ -85,12 +86,13 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
   const [showModelInfo, setShowModelInfo] = useState(!useIsMobile());
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showCameraPresets, setShowCameraPresets] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(14);
+  const [rotationSpeed, setRotationSpeed] = useState(1);
   
   // Hooks
   const isMobile = useIsMobile();
   const screenSize = useScreenSize();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const controlsRef = useRef<any>(null);
+  const controlsRef = useRef<OrbitControlsImpl | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Error handling
@@ -170,7 +172,8 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
     if (controlsRef.current && controlsRef.current.object) {
       const position = CAMERA_PRESETS[preset as keyof typeof CAMERA_PRESETS];
       if (position) {
-        controlsRef.current.object.position.set(...position);
+        const [x, y, z] = position;
+        controlsRef.current.object.position.set(x, y, z);
         controlsRef.current.update();
       }
     }
@@ -190,11 +193,31 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
   };
 
   const handleZoomFit = () => {
-    if (controlsRef.current) {
-      controlsRef.current.fitToBox(true);
+    if (controlsRef.current && controlsRef.current.object) {
+      // Reset camera to default position for "zoom to fit"
+      const [x, y, z] = CAMERA_POSITION;
+      controlsRef.current.object.position.set(x, y, z);
+      controlsRef.current.target.set(0, 0, 0);
       controlsRef.current.update();
+      setZoomLevel(14);
     }
   };
+
+  // Zoom slider handler
+  const handleZoomChange = useCallback((zoom: number) => {
+    setZoomLevel(zoom);
+    if (controlsRef.current && controlsRef.current.object) {
+      const camera = controlsRef.current.object;
+      const direction = camera.position.clone().normalize();
+      camera.position.copy(direction.multiplyScalar(zoom));
+      controlsRef.current.update();
+    }
+  }, []);
+
+  // Rotation speed handler
+  const handleRotationSpeedChange = useCallback((speed: number) => {
+    setRotationSpeed(speed);
+  }, []);
 
   const handleModelManager = () => {
     setShowModelSelector(true);
@@ -310,12 +333,16 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
               autoRotate={autoRotate}
               onClick={handleModelClick}
               isWireframe={isWireframe}
+              rotationSpeed={rotationSpeed}
             />
-            
+
             <ResponsiveOrbitControls
               ref={controlsRef}
               autoRotate={autoRotate}
               isMobile={isMobile}
+              rotationSpeed={rotationSpeed}
+              zoomLevel={zoomLevel}
+              onZoomChange={setZoomLevel}
             />
           </Canvas>
         </React.Suspense>
@@ -374,6 +401,10 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
           isMobile={isMobile}
           screenSize={screenSize}
           showCameraPresets={showCameraPresets}
+          zoomLevel={zoomLevel}
+          rotationSpeed={rotationSpeed}
+          onZoomChange={handleZoomChange}
+          onRotationSpeedChange={handleRotationSpeedChange}
         />
       )}
 

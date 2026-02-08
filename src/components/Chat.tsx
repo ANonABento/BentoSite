@@ -242,15 +242,41 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  const handleFeedback = useCallback((messageId: string, feedback: 'positive' | 'negative') => {
+  const handleFeedback = useCallback(async (messageId: string, feedback: 'positive' | 'negative') => {
+    // Find the message to get its content
+    const message = messages.find(m => m.id === messageId);
+    if (!message) return;
+
+    // Toggle feedback - if clicking same button, clear it
+    const newFeedback = message.feedback === feedback ? null : feedback;
+
+    // Update local state
     setMessages((prev) =>
       prev.map((msg) =>
         msg.id === messageId
-          ? { ...msg, feedback: msg.feedback === feedback ? null : feedback }
+          ? { ...msg, feedback: newFeedback }
           : msg
       )
     );
-  }, []);
+
+    // Only send to API if setting feedback (not clearing)
+    if (newFeedback) {
+      try {
+        await fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messageId,
+            feedback: newFeedback,
+            messageContent: message.content,
+            timestamp: Date.now(),
+          }),
+        });
+      } catch {
+        // Fail silently - feedback is not critical
+      }
+    }
+  }, [messages]);
 
   const sendMessage = useCallback(
     async (content: string) => {

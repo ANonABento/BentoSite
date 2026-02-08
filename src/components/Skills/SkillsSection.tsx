@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { staggerFast, scaleIn, buttonTap } from '@/lib/animations';
+import { SectionHeader } from '@/components/ui/SectionHeader';
 
 type SkillCategory = 'hardware' | 'software' | 'tools';
 
@@ -121,35 +122,25 @@ export function SkillsSection({ onAskAI }: SkillsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const { skills } = PORTFOLIO_DATA;
 
+  // Lightning bolt icon for skills
+  const skillsIcon = (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+    </svg>
+  );
+
   return (
     <div>
       {/* Header */}
-      <motion.button
-        onClick={() => setIsExpanded(!isExpanded)}
-        whileTap={buttonTap}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-[var(--glass-bg)] transition-colors border-b border-[var(--border)]"
-        aria-expanded={isExpanded}
-        aria-controls="skills-content"
-      >
-        <div className="flex items-center gap-2">
-          <svg className="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-          <span className="text-sm font-medium text-[var(--text-primary)]">My Skills</span>
-          <span className="text-xs text-[var(--text-muted)]">click to ask AI</span>
-        </div>
-        <motion.svg
-          className="w-4 h-4 text-[var(--text-secondary)]"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          animate={{ rotate: isExpanded ? 180 : 0 }}
-          transition={{ duration: 0.2 }}
-          aria-hidden="true"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </motion.svg>
-      </motion.button>
+      <SectionHeader
+        title="My Skills"
+        icon={skillsIcon}
+        iconColor="violet"
+        subtitle="click to ask AI"
+        collapsible
+        isExpanded={isExpanded}
+        onToggle={() => setIsExpanded(!isExpanded)}
+      />
 
       {/* Content */}
       <AnimatePresence>

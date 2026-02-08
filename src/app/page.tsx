@@ -1,7 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, useCallback, useRef, useEffect, Component, ReactNode } from 'react';
+import { Suspense, useState, useCallback, useRef, useEffect, Component, ReactNode } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import Header from '@/components/Header';
 import { tabContent, buttonTap } from '@/lib/animations';
@@ -10,6 +11,7 @@ import {
   KeyboardShortcutsModal,
   useKeyboardShortcutsHelp,
 } from '@/components/ui/KeyboardShortcutsHelp';
+import { SectionHeader } from '@/components/ui/SectionHeader';
 import type { Project } from '@/lib/projects-data';
 
 // Error Boundary for graceful error handling
@@ -146,8 +148,16 @@ function LandingOverlay({ onEnter }: { onEnter: () => void }) {
   );
 }
 
-export default function Home() {
-  const [isLanding, setIsLanding] = useState(true);
+function HomeContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // URL-based landing state - check both URL param and local override
+  const urlView = searchParams.get('view');
+  const [hasClickedEnter, setHasClickedEnter] = useState(false);
+  // Landing = URL is NOT dashboard AND user has NOT clicked enter
+  const isLanding = urlView !== 'dashboard' && !hasClickedEnter;
+
   const [activeSection, setActiveSection] = useState<'3d' | 'chat'>('3d');
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -171,8 +181,11 @@ export default function Home() {
   }, []);
 
   const handleEnterSite = useCallback(() => {
-    setIsLanding(false);
-  }, []);
+    // Update local state immediately for smooth transition
+    setHasClickedEnter(true);
+    // Update URL for persistence (using replace to avoid history bloat)
+    router.replace('/?view=dashboard', { scroll: false });
+  }, [router]);
 
   const handleAskAboutSkill = useCallback((skill: string) => {
     const message = `Tell me about your experience with ${skill}`;
@@ -224,32 +237,40 @@ export default function Home() {
 
         {/* Main layout container */}
         <div className="flex flex-col h-screen">
-          {/* Header - slides down */}
-          <motion.div
-            className="flex-shrink-0 p-4 md:p-6"
-            initial={{ y: -100, opacity: 0 }}
-            animate={isLanding ? { y: -100, opacity: 0 } : { y: 0, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-          >
-            <Header
-              name={PORTFOLIO_DATA.personal.name}
-              tagline={PORTFOLIO_DATA.personal.title}
-              githubUrl={PORTFOLIO_DATA.personal.github}
-              linkedinUrl={PORTFOLIO_DATA.personal.linkedin}
-              email={PORTFOLIO_DATA.personal.email}
-              resumeUrl="/resume.pdf"
-              compact
-              onProjectsClick={() => setIsProjectsOpen(true)}
-            />
-          </motion.div>
+          {/* Header - only rendered when not landing */}
+          <AnimatePresence>
+            {!isLanding && (
+              <motion.div
+                className="flex-shrink-0 p-4 md:p-6"
+                initial={{ y: -100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -100, opacity: 0 }}
+                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+              >
+                <Header
+                  name={PORTFOLIO_DATA.personal.name}
+                  tagline={PORTFOLIO_DATA.personal.title}
+                  githubUrl={PORTFOLIO_DATA.personal.github}
+                  linkedinUrl={PORTFOLIO_DATA.personal.linkedin}
+                  email={PORTFOLIO_DATA.personal.email}
+                  resumeUrl="/resume.pdf"
+                  compact
+                  onProjectsClick={() => setIsProjectsOpen(true)}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* Mobile Toggle Tabs - slides down */}
-          <motion.div
-            className="md:hidden flex-shrink-0 px-4 pb-4"
-            initial={{ y: -50, opacity: 0 }}
-            animate={isLanding ? { y: -50, opacity: 0 } : { y: 0, opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-          >
+          {/* Mobile Toggle Tabs - only rendered when not landing */}
+          <AnimatePresence>
+            {!isLanding && (
+              <motion.div
+                className="md:hidden flex-shrink-0 px-4 pb-4"
+                initial={{ y: -50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -50, opacity: 0 }}
+                transition={{ delay: 0.1, duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              >
             <div className="glass rounded-2xl p-1.5 flex gap-1">
               <motion.button
                 onClick={() => setActiveSection('3d')}
@@ -285,6 +306,8 @@ export default function Home() {
               </motion.button>
             </div>
           </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Main Content Area */}
           <div className="flex-1 flex flex-col md:flex-row gap-5 px-4 pb-4 md:px-6 md:pb-6 min-h-0">
@@ -292,9 +315,7 @@ export default function Home() {
             <motion.div
               layout
               className={`hidden md:flex flex-col min-h-0 ${
-                isLanding
-                  ? 'fixed inset-0 z-30'
-                  : 'md:w-1/2'
+                isLanding ? 'fixed inset-0 z-30' : 'md:w-1/2'
               }`}
               transition={{
                 layout: { duration: 0.7, ease: [0.4, 0, 0.2, 1] }
@@ -312,13 +333,21 @@ export default function Home() {
                 {/* Viewfinder Header - fades in after landing (only when no project selected) */}
                 {!selectedProject && (
                   <motion.div
-                    className="flex-shrink-0 px-5 py-4 border-b border-[var(--border)] flex items-center gap-2"
                     initial={{ opacity: 0, height: 0 }}
                     animate={isLanding ? { opacity: 0, height: 0 } : { opacity: 1, height: 'auto' }}
                     transition={{ delay: 0.5, duration: 0.3 }}
                   >
-                    <div className="w-2 h-2 rounded-full bg-[var(--orange)] animate-pulse" />
-                    <span className="text-sm font-medium text-[var(--text-secondary)]">Viewfinder</span>
+                    <SectionHeader
+                      title="Viewfinder"
+                      icon={
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      }
+                      iconColor="orange"
+                      subtitle="view images, videos, 3D models, websites"
+                    />
                   </motion.div>
                 )}
                 {/* Viewfinder Content */}
@@ -354,13 +383,21 @@ export default function Home() {
                 {/* Mobile Viewfinder Header */}
                 {!selectedProject && (
                   <motion.div
-                    className="flex-shrink-0 px-4 py-3 border-b border-[var(--border)] flex items-center gap-2"
                     initial={{ opacity: 0, height: 0 }}
                     animate={isLanding ? { opacity: 0, height: 0 } : { opacity: 1, height: 'auto' }}
                     transition={{ delay: 0.5, duration: 0.3 }}
                   >
-                    <div className="w-2 h-2 rounded-full bg-[var(--orange)] animate-pulse" />
-                    <span className="text-sm font-medium text-[var(--text-secondary)]">Viewfinder</span>
+                    <SectionHeader
+                      title="Viewfinder"
+                      icon={
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      }
+                      iconColor="orange"
+                      subtitle="view images, videos, 3D models, websites"
+                    />
                   </motion.div>
                 )}
                 <div className="flex-1 min-h-0">
@@ -388,18 +425,23 @@ export default function Home() {
                   </div>
                   {/* Servant */}
                   <div className="glass rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0">
-                    <div className="flex-shrink-0 px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
-                        <span className="text-sm font-medium text-[var(--text-secondary)]">Servant</span>
-                      </div>
-                      <button
-                        onClick={() => chatFns?.clear()}
-                        className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors px-2 py-1 rounded hover:bg-[var(--glass-bg)]"
-                      >
-                        Clear
-                      </button>
-                    </div>
+                    <SectionHeader
+                      title="Servant"
+                      icon={
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                      }
+                      iconColor="violet"
+                      action={
+                        <button
+                          onClick={() => chatFns?.clear()}
+                          className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors px-2 py-1 rounded hover:bg-[var(--glass-bg)]"
+                        >
+                          Clear
+                        </button>
+                      }
+                    />
                     <div className="flex-1 min-h-0">
                       <ErrorBoundary>
                         <Chatbot
@@ -428,19 +470,23 @@ export default function Home() {
 
               {/* Servant */}
               <div className="glass rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0">
-                {/* Chat Header */}
-                <div className="flex-shrink-0 px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
-                    <span className="text-sm font-medium text-[var(--text-secondary)]">Servant</span>
-                  </div>
-                  <button
-                    onClick={() => chatFns?.clear()}
-                    className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors px-2 py-1 rounded hover:bg-[var(--glass-bg)]"
-                  >
-                    Clear
-                  </button>
-                </div>
+                <SectionHeader
+                  title="Servant"
+                  icon={
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  }
+                  iconColor="violet"
+                  action={
+                    <button
+                      onClick={() => chatFns?.clear()}
+                      className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors px-2 py-1 rounded hover:bg-[var(--glass-bg)]"
+                    >
+                      Clear
+                    </button>
+                  }
+                />
                 {/* Chat Content */}
                 <div className="flex-1 min-h-0">
                   <ErrorBoundary>
@@ -467,5 +513,26 @@ export default function Home() {
         <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={closeShortcuts} />
       </main>
     </LayoutGroup>
+  );
+}
+
+// Loading fallback for Suspense
+function HomeLoading() {
+  return (
+    <main className="relative h-screen bg-[var(--background)] overflow-hidden flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" />
+        <span className="text-[var(--text-secondary)] text-sm">Loading...</span>
+      </div>
+    </main>
+  );
+}
+
+// Wrapper component with Suspense for useSearchParams
+export default function Home() {
+  return (
+    <Suspense fallback={<HomeLoading />}>
+      <HomeContent />
+    </Suspense>
   );
 }

@@ -5,6 +5,7 @@ import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import { OrbitControls, Box, Grid, Text, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 import type {
   ResponsiveOrbitControlsProps,
@@ -15,14 +16,8 @@ import type {
   ModelFormat,
   ModelError
 } from './Dimension.types';
-
-// Centralized mobile detection helper
-function detectMobile(): boolean {
-  if (typeof window === 'undefined') return false;
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-         window.innerWidth < 768 ||
-         ('ontouchstart' in window);
-}
+import { isMobileDevice } from './Dimension.utils';
+import { GRID_POSITIONS, GRID_ROTATIONS, GRID_SIZE } from './Dimension.config';
 
 // Design system colors for 3D components
 const COLORS = {
@@ -74,7 +69,7 @@ export function FallbackModel({ error }: FallbackModelProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const [clicked, setClicked] = React.useState(false);
   const [autoRotate] = React.useState(true);
-  const isMobile = useMemo(() => detectMobile(), []);
+  const isMobile = useMemo(() => isMobileDevice(), []);
 
   useFrame((_, delta) => {
     if (meshRef.current && autoRotate) {
@@ -124,7 +119,7 @@ export function FallbackModel({ error }: FallbackModelProps) {
 }
 
 export function SkeletonLoader() {
-  const isMobile = useMemo(() => detectMobile(), []);
+  const isMobile = useMemo(() => isMobileDevice(), []);
   const controlsRef = useRef(null);
 
   return (
@@ -149,82 +144,64 @@ export function SkeletonLoader() {
   );
 }
 
+// Grid styling constants
+const GRID_STYLE = {
+  cellSize: 1,
+  cellThickness: 0.5,
+  cellColor: 'rgba(148, 148, 148, 1)',
+  sectionSize: 5,
+  sectionThickness: 1,
+  sectionColor: 'rgba(138, 138, 138, 1)',
+  fadeStrength: 3,
+} as const;
+
 // Stationary background components
 export function StationaryBackground() {
-  const isMobile = useMemo(() => detectMobile(), []);
-  
+  const isMobile = useMemo(() => isMobileDevice(), []);
+  const fadeDistance = isMobile ? 20 : 30;
+
   return (
     <>
       {/* Floor grid */}
       <Grid
-        args={[20, 20]}
-        position={[0, -3, 0]}
-        cellSize={1}
-        cellThickness={0.5}
-        cellColor="rgba(148, 148, 148, 1)"
-        sectionSize={5}
-        sectionThickness={1}
-        sectionColor="rgba(138, 138, 138, 1)"
-        fadeDistance={isMobile ? 20 : 30}
-        fadeStrength={3}
+        args={[GRID_SIZE, GRID_SIZE]}
+        position={GRID_POSITIONS.floor}
+        {...GRID_STYLE}
+        fadeDistance={fadeDistance}
         followCamera={false}
       />
-      
-      {/* Grid cube/room*/}
+
+      {/* Wall grids */}
       <Grid
-        args={[20, 20]}
-        position={[0, 7, -10]}
-        rotation={[Math.PI / 2, 0, 0]}
-        cellSize={1}
-        cellThickness={0.5}
-        cellColor="rgba(148, 148, 148, 1)"
-        sectionSize={5}
-        sectionThickness={1}
-        sectionColor="rgba(138, 138, 138, 1)"
-        fadeDistance={isMobile ? 20 : 30}
-        fadeStrength={3}
+        args={[GRID_SIZE, GRID_SIZE]}
+        position={GRID_POSITIONS.frontWall}
+        rotation={GRID_ROTATIONS.frontWall}
+        {...GRID_STYLE}
+        fadeDistance={fadeDistance}
         followCamera={false}
       />
       <Grid
-        args={[20, 20]}
-        position={[0, 7, 10]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        cellSize={1}
-        cellThickness={0.5}
-        cellColor="rgba(148, 148, 148, 1)"
-        sectionSize={5}
-        sectionThickness={1}
-        sectionColor="rgba(138, 138, 138, 1)"
-        fadeDistance={isMobile ? 20 : 30}
-        fadeStrength={3}
+        args={[GRID_SIZE, GRID_SIZE]}
+        position={GRID_POSITIONS.backWall}
+        rotation={GRID_ROTATIONS.backWall}
+        {...GRID_STYLE}
+        fadeDistance={fadeDistance}
         followCamera={false}
       />
       <Grid
-        args={[20, 20]}
-        position={[10, 7, 0]}
-        rotation={[Math.PI / 2, 0, Math.PI / 2]}
-        cellSize={1}
-        cellThickness={0.5}
-        cellColor="rgba(148, 148, 148, 1)"
-        sectionSize={5}
-        sectionThickness={1}
-        sectionColor="rgba(138, 138, 138, 1)"
-        fadeDistance={isMobile ? 20 : 30}
-        fadeStrength={3}
+        args={[GRID_SIZE, GRID_SIZE]}
+        position={GRID_POSITIONS.rightWall}
+        rotation={GRID_ROTATIONS.rightWall}
+        {...GRID_STYLE}
+        fadeDistance={fadeDistance}
         followCamera={false}
       />
       <Grid
-        args={[20, 20]}
-        position={[-10, 7, 0]}
-        rotation={[Math.PI / 2, 0, -Math.PI / 2]}
-        cellSize={1}
-        cellThickness={0.5}
-        cellColor="rgba(148, 148, 148, 1)"
-        sectionSize={5}
-        sectionThickness={1}
-        sectionColor="rgba(138, 138, 138, 1)"
-        fadeDistance={isMobile ? 20 : 30}
-        fadeStrength={3}
+        args={[GRID_SIZE, GRID_SIZE]}
+        position={GRID_POSITIONS.leftWall}
+        rotation={GRID_ROTATIONS.leftWall}
+        {...GRID_STYLE}
+        fadeDistance={fadeDistance}
         followCamera={false}
       />
     </>
@@ -232,13 +209,13 @@ export function StationaryBackground() {
 }
 
 // Level of Detail Component
-export function LODModel({ modelPath = '/models/placeholder.stl', autoRotate, onClick, isWireframe }: LODModelProps) {
+export function LODModel({ modelPath = '/models/placeholder.stl', autoRotate, onClick, isWireframe, rotationSpeed = 1 }: LODModelProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const { camera } = useThree();
   const fpsRef = useRef(60);
   const frameCountRef = useRef(0);
   const lastTimeRef = useRef(0);
-  const isMobile = useMemo(() => detectMobile(), []);
+  const isMobile = useMemo(() => isMobileDevice(), []);
   const [lodLevel, setLodLevel] = useState(0);
 
   // Use useLoader with error handling
@@ -246,8 +223,8 @@ export function LODModel({ modelPath = '/models/placeholder.stl', autoRotate, on
 
   useFrame((_, delta) => {
     if (meshRef.current && autoRotate) {
-      meshRef.current.rotation.x += delta * 0.2;
-      meshRef.current.rotation.y += delta * 0.3;
+      meshRef.current.rotation.x += delta * 0.2 * rotationSpeed;
+      meshRef.current.rotation.y += delta * 0.3 * rotationSpeed;
     }
 
     // Throttled FPS monitoring (only update once per second)
@@ -306,20 +283,29 @@ export function LODModel({ modelPath = '/models/placeholder.stl', autoRotate, on
 }
 
 // Responsive Orbit Controls with Ref
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const ResponsiveOrbitControls = forwardRef<any, ResponsiveOrbitControlsProps>(({
+export const ResponsiveOrbitControls = forwardRef<OrbitControlsImpl | null, ResponsiveOrbitControlsProps>(({
   autoRotate,
-  isMobile
+  isMobile,
+  rotationSpeed = 1,
+  onZoomChange
 }, ref) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const controlsRef = useRef<any>(null);
+  const controlsRef = useRef<OrbitControlsImpl>(null!);
 
   useImperativeHandle(ref, () => controlsRef.current);
+
+  // Sync zoom level when user zooms with mouse/touch
+  useFrame(() => {
+    if (controlsRef.current && onZoomChange) {
+      const distance = controlsRef.current.object.position.length();
+      onZoomChange(Math.round(distance));
+    }
+  });
 
   return (
     <OrbitControls
       ref={controlsRef}
       autoRotate={autoRotate}
+      autoRotateSpeed={2 * rotationSpeed}
       enableZoom={true}
       enablePan={true}
       enableRotate={true}
@@ -345,16 +331,17 @@ interface GLTFModelProps {
   autoRotate: boolean;
   onClick: () => void;
   isWireframe: boolean;
+  rotationSpeed?: number;
 }
 
-export function GLTFModel({ modelPath, autoRotate, onClick, isWireframe }: GLTFModelProps) {
+export function GLTFModel({ modelPath, autoRotate, onClick, isWireframe, rotationSpeed = 1 }: GLTFModelProps) {
   const groupRef = useRef<THREE.Group>(null);
   const { scene } = useGLTF(modelPath);
-  const isMobile = useMemo(() => detectMobile(), []);
+  const isMobile = useMemo(() => isMobileDevice(), []);
 
   useFrame((_, delta) => {
     if (groupRef.current && autoRotate) {
-      groupRef.current.rotation.y += delta * 0.3;
+      groupRef.current.rotation.y += delta * 0.3 * rotationSpeed;
     }
   });
 
@@ -385,16 +372,16 @@ export function GLTFModel({ modelPath, autoRotate, onClick, isWireframe }: GLTFM
 }
 
 // Universal Model wrapper - handles both STL and GLTF/GLB formats
-export function ModelWrapper({ modelPath = '/models/placeholder.stl', onError, autoRotate, onClick, isWireframe }: STLModelWrapperProps) {
+export function ModelWrapper({ modelPath = '/models/placeholder.stl', onError, autoRotate, onClick, isWireframe, rotationSpeed = 1 }: STLModelWrapperProps) {
   const format = getModelFormat(modelPath);
-  
+
   return (
     <React.Suspense fallback={<SkeletonLoader />}>
       <ErrorBoundary onError={onError}>
         {format === 'gltf' ? (
-          <GLTFModel modelPath={modelPath} autoRotate={autoRotate} onClick={onClick} isWireframe={isWireframe} />
+          <GLTFModel modelPath={modelPath} autoRotate={autoRotate} onClick={onClick} isWireframe={isWireframe} rotationSpeed={rotationSpeed} />
         ) : (
-          <LODModel modelPath={modelPath} autoRotate={autoRotate} onClick={onClick} isWireframe={isWireframe} />
+          <LODModel modelPath={modelPath} autoRotate={autoRotate} onClick={onClick} isWireframe={isWireframe} rotationSpeed={rotationSpeed} />
         )}
       </ErrorBoundary>
     </React.Suspense>
