@@ -3,37 +3,39 @@
 import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { ViewfinderHeader } from './ViewfinderHeader';
+import { ViewerSkeleton } from './ViewerSkeleton';
 import type { ViewfinderProps, MediaTab } from './Viewfinder.types';
 
 // Dynamic imports for code splitting - only load viewers when needed
+// Each viewer shows a skeleton while its chunk is being loaded
 const Model3DViewer = dynamic(
   () => import('./viewers/Model3DViewer').then((mod) => ({ default: mod.Model3DViewer })),
-  { ssr: false }
+  { ssr: false, loading: () => <ViewerSkeleton /> }
 );
 
 const ImageViewer = dynamic(
   () => import('./viewers/ImageViewer').then((mod) => ({ default: mod.ImageViewer })),
-  { ssr: false }
+  { ssr: false, loading: () => <ViewerSkeleton /> }
 );
 
 const PDFViewer = dynamic(
   () => import('./viewers/PDFViewer').then((mod) => ({ default: mod.PDFViewer })),
-  { ssr: false }
+  { ssr: false, loading: () => <ViewerSkeleton /> }
 );
 
 const WebsiteViewer = dynamic(
   () => import('./viewers/WebsiteViewer').then((mod) => ({ default: mod.WebsiteViewer })),
-  { ssr: false }
+  { ssr: false, loading: () => <ViewerSkeleton /> }
 );
 
 const VideoViewer = dynamic(
   () => import('./viewers/VideoViewer').then((mod) => ({ default: mod.VideoViewer })),
-  { ssr: false }
+  { ssr: false, loading: () => <ViewerSkeleton /> }
 );
 
 const GameViewer = dynamic(
   () => import('./viewers/GameViewer').then((mod) => ({ default: mod.GameViewer })),
-  { ssr: false }
+  { ssr: false, loading: () => <ViewerSkeleton /> }
 );
 
 export function Viewfinder({ project, minimal = false }: ViewfinderProps) {

@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useState, useCallback, useEffect, Component, ReactNode, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence, LazyMotion, domAnimation, useReducedMotion } from 'framer-motion';
 import Header from '../../components/Header';
 import { sectionStagger, sectionItem } from '@/lib/animations';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
@@ -127,6 +127,10 @@ export default function ScrollableLayout() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
   const { isOpen: isShortcutsOpen, close: closeShortcuts } = useKeyboardShortcutsHelp();
+  const prefersReducedMotion = useReducedMotion();
+
+  // Instant transition for reduced motion preference
+  const instantTransition = { duration: 0 };
 
   // Track mounted state to prevent state updates on unmounted components
   const isMountedRef = useRef(true);
@@ -165,13 +169,14 @@ export default function ScrollableLayout() {
   };
 
   return (
+    <LazyMotion features={domAnimation} strict>
     <main id="main-content" className="min-h-screen bg-[var(--background)] bg-grid transition-colors duration-300">
       {/* Fixed Header */}
-      <motion.header
+      <m.header
         className="fixed top-0 left-0 right-0 z-50 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]"
-        initial={{ y: -100 }}
+        initial={prefersReducedMotion ? false : { y: -100 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={prefersReducedMotion ? instantTransition : { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4">
           <Header
@@ -185,11 +190,11 @@ export default function ScrollableLayout() {
             onProjectsClick={() => setIsProjectsOpen(true)}
           />
         </div>
-      </motion.header>
+      </m.header>
 
       {/* Hero Section with 3D Viewer */}
       <section className="pt-24 pb-16 md:pt-32 md:pb-24 min-h-[80vh] flex items-center">
-        <motion.div
+        <m.div
           className="max-w-7xl mx-auto px-4 md:px-6 w-full"
           initial="hidden"
           animate="visible"
@@ -197,17 +202,17 @@ export default function ScrollableLayout() {
         >
           <div className="grid lg:grid-cols-2 gap-8 items-center">
             {/* Hero Text */}
-            <motion.div variants={sectionItem} className="space-y-6">
+            <m.div variants={sectionItem} className="space-y-6">
               <div className="space-y-2">
-                <motion.p
+                <m.p
                   className="text-violet-400 font-medium flex items-center gap-2"
-                  initial={{ opacity: 0, x: -20 }}
+                  initial={prefersReducedMotion ? false : { opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 }}
+                  transition={prefersReducedMotion ? instantTransition : { delay: 0.2 }}
                 >
                   <span className="inline-block w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
                   UWaterloo Computer Engineering
-                </motion.p>
+                </m.p>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--text-primary)] leading-tight">
                   I build
                   <span className="text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(to right, var(--purple), var(--orange))' }}>
@@ -221,27 +226,27 @@ export default function ScrollableLayout() {
                 human-robot interaction. From PCB design to GPU-accelerated pipelines.
               </p>
               <div className="flex flex-wrap gap-4">
-                <motion.button
+                <m.button
                   onClick={() => scrollToSection('projects')}
                   className="px-6 py-3 bg-violet-500 hover:bg-violet-400 text-white rounded-xl font-medium transition-colors"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
+                  whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
                 >
                   View My Robots
-                </motion.button>
-                <motion.button
+                </m.button>
+                <m.button
                   onClick={() => setIsChatOpen(true)}
                   className="px-6 py-3 bg-[var(--glass-bg)] hover:bg-[var(--glass-bg-strong)] text-[var(--text-primary)] rounded-xl font-medium transition-colors border border-[var(--border)]"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
+                  whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
                 >
                   Ask Me Anything
-                </motion.button>
+                </m.button>
               </div>
-            </motion.div>
+            </m.div>
 
             {/* 3D Viewer */}
-            <motion.div
+            <m.div
               variants={sectionItem}
               className="min-h-[300px] h-[50vh] max-h-[500px] glass rounded-2xl overflow-hidden"
             >
@@ -256,30 +261,30 @@ export default function ScrollableLayout() {
                   </ErrorBoundary>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           </div>
 
           {/* Scroll indicator */}
-          <motion.div
+          <m.div
             className="hidden md:flex justify-center mt-12"
-            initial={{ opacity: 0 }}
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
+            transition={prefersReducedMotion ? instantTransition : { delay: 1 }}
           >
-            <motion.button
+            <m.button
               onClick={() => scrollToSection('about')}
               className="flex flex-col items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
-              animate={{ y: [0, 8, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              animate={prefersReducedMotion ? undefined : { y: [0, 8, 0] }}
+              transition={prefersReducedMotion ? instantTransition : { duration: 2, repeat: Infinity }}
               aria-label="Scroll down to about section"
             >
               <span className="text-sm">Scroll to explore</span>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
               </svg>
-            </motion.button>
-          </motion.div>
-        </motion.div>
+            </m.button>
+          </m.div>
+        </m.div>
       </section>
 
       {/* About Section */}
@@ -293,23 +298,23 @@ export default function ScrollableLayout() {
 
       {/* Skills Section */}
       <section id="skills" className="py-16 md:py-24">
-        <motion.div
+        <m.div
           className="max-w-6xl mx-auto px-4 md:px-6"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-100px' }}
           variants={sectionStagger}
         >
-          <motion.div variants={sectionItem} className="mb-12">
+          <m.div variants={sectionItem} className="mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
               Skills & Technologies
             </h2>
             <div className="w-20 h-1 rounded-full" style={{ background: 'linear-gradient(to right, var(--purple), var(--orange))' }} />
-          </motion.div>
-          <motion.div variants={sectionItem} className="glass rounded-2xl overflow-hidden">
+          </m.div>
+          <m.div variants={sectionItem} className="glass rounded-2xl overflow-hidden">
             <SkillsSection onAskAI={handleAskAboutSkill} />
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       </section>
 
       {/* Footer */}
@@ -364,32 +369,32 @@ export default function ScrollableLayout() {
       {/* Scroll to Top Button */}
       <AnimatePresence>
         {showScrollTop && !isChatOpen && (
-          <motion.button
+          <m.button
             onClick={scrollToTop}
             className="fixed bottom-6 left-4 sm:left-6 z-40 w-12 h-12 bg-[var(--glass-bg-strong)] hover:bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border)] rounded-full shadow-lg flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-            initial={{ opacity: 0, y: 20 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+            whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
+            whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }}
             aria-label="Scroll to top"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
             </svg>
-          </motion.button>
+          </m.button>
         )}
       </AnimatePresence>
 
       {/* Floating Chat Button */}
-      <motion.button
+      <m.button
         onClick={() => setIsChatOpen(!isChatOpen)}
         className="fixed bottom-6 right-4 sm:right-6 z-40 w-14 h-14 bg-violet-500 hover:bg-violet-400 rounded-full shadow-lg shadow-violet-500/30 flex items-center justify-center text-white transition-colors"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        initial={{ scale: 0 }}
+        whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
+        whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }}
+        initial={prefersReducedMotion ? false : { scale: 0 }}
         animate={{ scale: 1 }}
-        transition={{ delay: 0.5, type: 'spring' }}
+        transition={prefersReducedMotion ? instantTransition : { delay: 0.5, type: 'spring' }}
         aria-label={isChatOpen ? 'Close chat' : 'Open AI chat assistant'}
         aria-expanded={isChatOpen}
       >
@@ -402,18 +407,18 @@ export default function ScrollableLayout() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
         )}
-      </motion.button>
+      </m.button>
 
       {/* Chat Panel */}
       <AnimatePresence>
         {isChatOpen && (
-          <motion.div
+          <m.div
             ref={chatRef}
             className="fixed bottom-24 right-4 sm:right-6 z-40 w-[calc(100vw-2rem)] sm:w-[380px] h-[60vh] sm:h-[500px] max-h-[calc(100vh-8rem)] glass rounded-2xl overflow-hidden shadow-2xl"
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 20, scale: 0.95 }}
+            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 20, scale: 0.95 }}
+            transition={prefersReducedMotion ? instantTransition : { type: 'spring', stiffness: 300, damping: 25 }}
           >
             <div className="h-full flex flex-col">
               <div className="flex-shrink-0 px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
@@ -441,7 +446,7 @@ export default function ScrollableLayout() {
                 </ErrorBoundary>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
@@ -454,5 +459,6 @@ export default function ScrollableLayout() {
       {/* Keyboard Shortcuts Help Modal */}
       <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={closeShortcuts} />
     </main>
+    </LazyMotion>
   );
 }
