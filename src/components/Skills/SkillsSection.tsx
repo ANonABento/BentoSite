@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { staggerFast, scaleIn, buttonTap } from '@/lib/animations';
+import { analytics } from '@/lib/analytics';
 
 type SkillCategory = 'hardware' | 'software' | 'tools';
 
@@ -58,8 +59,11 @@ function SkillPill({
   };
 
   return (
-    <motion.button
-      onClick={() => onAskAI?.(skill)}
+    <m.button
+      onClick={() => {
+        analytics.skillClicked(skill);
+        onAskAI?.(skill);
+      }}
       whileTap={buttonTap}
       className={`
         px-3 py-1.5 rounded-sm text-xs font-medium
@@ -73,7 +77,7 @@ function SkillPill({
       aria-label={`Ask AI about ${skill}`}
     >
       {skill}
-    </motion.button>
+    </m.button>
   );
 }
 
@@ -101,18 +105,18 @@ function CategorySection({
         {config.icon}
         <span className="text-xs font-semibold uppercase tracking-wider">{config.label}</span>
       </div>
-      <motion.div
+      <m.div
         className="flex flex-wrap gap-2"
         variants={staggerFast}
         initial="hidden"
         animate={isExpanded ? 'visible' : 'hidden'}
       >
         {skills.map((skill) => (
-          <motion.div key={skill} variants={scaleIn}>
+          <m.div key={skill} variants={scaleIn}>
             <SkillPill skill={skill} category={category} onAskAI={onAskAI} />
-          </motion.div>
+          </m.div>
         ))}
-      </motion.div>
+      </m.div>
     </div>
   );
 }
@@ -124,7 +128,7 @@ export function SkillsSection({ onAskAI }: SkillsSectionProps) {
   return (
     <div>
       {/* Header */}
-      <motion.button
+      <m.button
         onClick={() => setIsExpanded(!isExpanded)}
         whileTap={buttonTap}
         className="w-full px-4 py-3 flex items-center justify-between hover:bg-[var(--glass-bg)] transition-colors border-b border-[var(--border)]"
@@ -138,7 +142,7 @@ export function SkillsSection({ onAskAI }: SkillsSectionProps) {
           <span className="text-sm font-medium text-[var(--text-primary)]">My Skills</span>
           <span className="text-xs text-[var(--text-muted)]">click to ask AI</span>
         </div>
-        <motion.svg
+        <m.svg
           className="w-4 h-4 text-[var(--text-secondary)]"
           fill="none"
           stroke="currentColor"
@@ -148,13 +152,13 @@ export function SkillsSection({ onAskAI }: SkillsSectionProps) {
           aria-hidden="true"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </motion.svg>
-      </motion.button>
+        </m.svg>
+      </m.button>
 
       {/* Content */}
       <AnimatePresence>
         {isExpanded && (
-          <motion.div
+          <m.div
             id="skills-content"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -169,7 +173,7 @@ export function SkillsSection({ onAskAI }: SkillsSectionProps) {
               <CategorySection category="software" skills={skills.software} onAskAI={onAskAI} isExpanded={isExpanded} />
               <CategorySection category="tools" skills={skills.tools} onAskAI={onAskAI} isExpanded={isExpanded} />
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

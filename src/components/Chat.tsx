@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { SUGGESTED_QUESTIONS, PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { buttonTap } from '@/lib/animations';
 import { useToast } from '@/components/ui/Toast';
 import { useClipboard } from '@/lib/clipboard';
+import { analytics } from '@/lib/analytics';
 
 // === TYPES & CONSTANTS ===
 
@@ -175,7 +176,7 @@ function QuickActions({
   return (
     <div className="flex flex-wrap gap-2 px-4 pb-2">
       {onViewResume && (
-        <motion.button
+        <m.button
           type="button"
           onClick={onViewResume}
           disabled={disabled}
@@ -186,10 +187,10 @@ function QuickActions({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           View Resume
-        </motion.button>
+        </m.button>
       )}
       {onSeeProjects && (
-        <motion.button
+        <m.button
           type="button"
           onClick={onSeeProjects}
           disabled={disabled}
@@ -200,7 +201,7 @@ function QuickActions({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
           </svg>
           See Projects
-        </motion.button>
+        </m.button>
       )}
     </div>
   );
@@ -255,6 +256,8 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
   const sendMessage = useCallback(
     async (content: string) => {
       if (!content.trim() || isLoading) return;
+
+      analytics.chatMessageSent();
 
       const messageId = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
       const userMessage: Message = {
@@ -439,7 +442,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
         <div className="px-4 pb-2">
           <div className="flex flex-wrap gap-2">
             {SUGGESTED_QUESTIONS.map((question, index) => (
-              <motion.button
+              <m.button
                 key={index}
                 onClick={() => handleSuggestedQuestion(question)}
                 disabled={isLoading}
@@ -447,7 +450,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
                 className="text-xs px-3 py-1.5 rounded-sm glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all duration-200 disabled:opacity-50"
               >
                 {question}
-              </motion.button>
+              </m.button>
             ))}
           </div>
         </div>
@@ -473,7 +476,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
             aria-label="Type your message"
             className="flex-1 bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border)] rounded-sm px-4 py-3 text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all duration-200 disabled:opacity-50"
           />
-          <motion.button
+          <m.button
             type="submit"
             disabled={isLoading || !input.trim()}
             whileTap={!(isLoading || !input.trim()) ? buttonTap : undefined}
@@ -488,7 +491,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
                 d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
               />
             </svg>
-          </motion.button>
+          </m.button>
         </form>
 
       </div>

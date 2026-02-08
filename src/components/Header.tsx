@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme-context';
 import { useToast } from '@/components/ui/Toast';
 import { useClipboard } from '@/lib/clipboard';
+import { analytics } from '@/lib/analytics';
 
 interface HeaderProps {
   name?: string;
@@ -17,14 +18,44 @@ interface HeaderProps {
   onProjectsClick?: () => void;
 }
 
+// SSR-safe mounted check using useSyncExternalStore
+const emptySubscribe = () => () => {};
+function useHasMounted() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+}
+
 // Theme toggle button component
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
+  const mounted = useHasMounted();
+
+  // Render a placeholder with consistent dimensions during SSR
+  if (!mounted) {
+    return (
+      <button
+        className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg transition-all duration-200 focus-ring"
+        aria-label="Toggle theme"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+          />
+        </svg>
+      </button>
+    );
+  }
 
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg transition-all duration-200"
+      className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg transition-all duration-200 focus-ring"
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >
       {theme === 'dark' ? (
@@ -56,11 +87,12 @@ function ResumeButton({ resumeUrl, className = '' }: { resumeUrl: string; classN
     <a
       href={resumeUrl}
       download
+      onClick={() => analytics.resumeDownloaded()}
       className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm
         bg-[var(--orange)] hover:bg-[var(--orange-hover)] active:bg-[var(--orange-active)] text-white
         hover:shadow-[0_0_20px_var(--orange-muted)] hover:scale-105
         border border-[var(--orange-hover)]/20
-        transition-all duration-300 ${className}`}
+        transition-all duration-300 focus-ring ${className}`}
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -89,6 +121,7 @@ export default function Header({
     const success = await copyEmail(email);
     if (success) {
       toast.success('Email copied to clipboard!');
+      analytics.emailCopied();
     } else {
       // Fallback to mailto if clipboard fails
       window.location.href = `mailto:${email}`;
@@ -140,14 +173,14 @@ export default function Header({
           <span className="text-sm text-[var(--text-muted)] hidden sm:inline">|</span>
           <span className="text-sm text-[var(--text-secondary)] hidden sm:inline">{tagline}</span>
         </div>
-        <div className="flex items-center gap-1">
+        <nav aria-label="Main navigation" className="flex items-center gap-1">
           <ThemeToggle />
           {socialLinks.map((link) => (
             link.id === 'email' ? (
               <button
                 key={link.id}
                 onClick={handleEmailClick}
-                className={`p-2 rounded-lg transition-all duration-200 ${
+                className={`p-2 rounded-lg transition-all duration-200 focus-ring ${
                   copiedEmail
                     ? 'text-emerald-500 bg-emerald-500/10'
                     : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]'
@@ -162,7 +195,7 @@ export default function Header({
                 href={link.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg transition-all duration-200"
+                className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg transition-all duration-200 focus-ring"
                 aria-label={link.label}
               >
                 {link.icon}
@@ -186,8 +219,8 @@ export default function Header({
             <button
               onClick={onProjectsClick}
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
-                text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]
-                transition-all duration-200"
+                glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]
+                transition-all duration-200 focus-ring"
               aria-label="View projects"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,7 +230,7 @@ export default function Header({
             </button>
           )}
           <ResumeButton resumeUrl={resumeUrl} className="ml-1" />
-        </div>
+        </nav>
       </header>
     );
   }
@@ -217,7 +250,7 @@ export default function Header({
           </p>
 
           {/* Social links + Resume */}
-          <div className="flex items-center justify-center gap-4 flex-wrap">
+          <nav aria-label="Social links" className="flex items-center justify-center gap-4 flex-wrap">
             {socialLinks.map((link) => (
               link.id === 'email' ? (
                 <button
@@ -227,7 +260,7 @@ export default function Header({
                   onMouseLeave={() => setIsHovered(null)}
                   className={`
                     flex items-center gap-2 px-4 py-2.5 rounded-lg
-                    transition-all duration-200 transform border
+                    transition-all duration-200 transform border focus-ring
                     ${copiedEmail
                       ? 'bg-emerald-500 text-white scale-105 shadow-[0_0_20px_rgba(16,185,129,0.3)] border-emerald-400/20'
                       : isHovered === link.id
@@ -250,7 +283,7 @@ export default function Header({
                   onMouseLeave={() => setIsHovered(null)}
                   className={`
                     flex items-center gap-2 px-4 py-2.5 rounded-lg
-                    transition-all duration-200 transform border
+                    transition-all duration-200 transform border focus-ring
                     ${isHovered === link.id
                       ? 'bg-violet-500 text-white scale-105 shadow-[0_0_20px_rgba(167,139,250,0.3)] border-violet-400/20'
                       : 'glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border)]'
@@ -264,7 +297,7 @@ export default function Header({
               )
             ))}
             <ResumeButton resumeUrl={resumeUrl} />
-          </div>
+          </nav>
         </div>
       </div>
 

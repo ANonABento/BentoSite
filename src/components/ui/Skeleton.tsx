@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { skeletonPulse } from '@/lib/animations';
 
 interface SkeletonProps {
@@ -24,7 +24,7 @@ export function Skeleton({
   };
 
   return (
-    <motion.div
+    <m.div
       className={`bg-white/10 ${variantStyles[variant]} ${className}`}
       style={{ width, height }}
       variants={skeletonPulse}
@@ -65,7 +65,7 @@ export function ChatSkeleton() {
 export function ViewerSkeleton() {
   return (
     <div className="w-full h-full flex flex-col items-center justify-center gap-4 p-8">
-      <motion.div
+      <m.div
         className="w-32 h-32 rounded-2xl bg-white/5 flex items-center justify-center"
         variants={skeletonPulse}
         initial="initial"
@@ -84,7 +84,7 @@ export function ViewerSkeleton() {
             d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"
           />
         </svg>
-      </motion.div>
+      </m.div>
       <div className="text-center space-y-2">
         <Skeleton variant="text" className="w-32 mx-auto" />
         <Skeleton variant="text" className="w-48 mx-auto h-3" />

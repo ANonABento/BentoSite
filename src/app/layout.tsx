@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { siteConfig } from '@/lib/site-config';
 import { ThemeProvider } from '@/lib/theme-context';
 import { ToastProvider } from '@/components/ui/Toast';
@@ -124,6 +126,8 @@ export default function RootLayout({
             {children}
           </ToastProvider>
         </ThemeProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

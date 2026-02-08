@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import type { Project } from '@/lib/projects-data';
 import { TechBadge } from './TechBadge';
+import { analytics } from '@/lib/analytics';
 import { BLUR_PLACEHOLDERS } from '@/lib/image-utils';
 
 interface ProjectCardProps {
@@ -199,7 +200,10 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
       <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-[var(--border)]">
         {canView && (
           <button
-            onClick={() => onSelectProject?.(project)}
+            onClick={() => {
+              analytics.projectViewed(project.id, project.name);
+              onSelectProject?.(project);
+            }}
             className="px-3 py-1.5 text-sm font-medium bg-[var(--interactive)] text-white rounded-lg hover:bg-[var(--interactive-hover)] active:bg-[var(--interactive-active)] transition-colors"
           >
             View
