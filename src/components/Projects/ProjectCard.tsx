@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import type { Project } from '@/lib/projects-data';
 import { TechBadge } from './TechBadge';
+import { BLUR_PLACEHOLDERS } from '@/lib/image-utils';
 
 interface ProjectCardProps {
   project: Project;
@@ -120,6 +121,8 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
               className={`object-cover transition-opacity duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
               onLoad={() => setImageLoading(false)}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              placeholder="blur"
+              blurDataURL={BLUR_PLACEHOLDERS['4:3']}
             />
           </>
         ) : (
@@ -174,10 +177,12 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
       </div>
 
       {/* Title */}
-      <h3 className="font-bold text-[var(--text-primary)] mb-2 leading-tight">{project.name}</h3>
+      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2 line-clamp-1">
+        {project.name}
+      </h3>
 
       {/* Description */}
-      <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-2 leading-relaxed">
+      <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-2">
         {project.shortDescription}
       </p>
 
@@ -187,7 +192,7 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
           <TechBadge key={tech} tech={tech} />
         ))}
         {remainingCount > 0 && (
-          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--glass-bg)] text-[var(--text-muted)]">
+          <span className="text-xs text-[var(--text-muted)] self-center">
             +{remainingCount}
           </span>
         )}
