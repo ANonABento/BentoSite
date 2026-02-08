@@ -144,22 +144,22 @@ export function CameraPresetsWidget({
       <div className={`
         glass rounded-2xl
         ${isMobile ? 'w-48' : 'w-72'}
-        shadow-lg border border-violet-500/20
+        shadow-lg border border-[var(--purple-muted)]
       `}>
         {/* Header with drag hint and close button */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
           <div className="flex items-center space-x-2">
             {/* Drag handle hint */}
             <div className="flex flex-col gap-0.5 mr-1 opacity-40">
-              <div className="w-4 h-0.5 bg-gray-400 rounded" />
-              <div className="w-4 h-0.5 bg-gray-400 rounded" />
+              <div className="w-4 h-0.5 bg-[var(--text-muted)] rounded" />
+              <div className="w-4 h-0.5 bg-[var(--text-muted)] rounded" />
             </div>
-            <div className="text-violet-400">{cameraIcon}</div>
-            <h3 className="font-semibold text-sm text-white">Camera Presets</h3>
+            <div className="text-[var(--interactive)]">{cameraIcon}</div>
+            <h3 className="font-semibold text-sm text-[var(--text-primary)]">Camera Presets</h3>
           </div>
           <button
             type="button"
-            className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded-sm hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-violet-500/50 active:scale-95 transform transition-colors"
+            className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded-sm hover:bg-[var(--glass-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50 active:scale-95 transform transition-colors"
             title="Close presets"
             aria-label="Close camera presets"
             onClick={onClose}
@@ -171,14 +171,14 @@ export function CameraPresetsWidget({
         </div>
 
         {/* Preset buttons grid */}
-        <div className={`p-3 text-white`}>
+        <div className="p-3">
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
               {Object.entries(presets).map(([name]) => (
                 <button
                   key={name}
                   onClick={() => onPresetSelect(name as keyof typeof presets)}
-                  className="px-3 py-2 text-xs rounded-sm transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-violet-500/50 bg-white/5 border border-white/10 hover:bg-violet-500/20 hover:border-violet-500/30 text-gray-300 hover:text-white"
+                  className="px-3 py-2 text-xs rounded-sm transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50 bg-[var(--glass-bg)] border border-[var(--border)] hover:bg-[var(--purple-muted)] hover:border-[var(--purple)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 >
                   <div className="capitalize font-medium">{name}</div>
                 </button>

@@ -60,7 +60,7 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-[60]"
+          className="fixed inset-0 bg-[var(--overlay-strong)] backdrop-blur-md flex items-center justify-center p-4 z-[60]"
           role="dialog"
           aria-modal="true"
           aria-labelledby="projects-modal-title"
@@ -91,7 +91,7 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
                 <motion.button
                   onClick={onClose}
                   whileTap={buttonTap}
-                  className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-150 p-2 rounded-lg hover:bg-[var(--glass-bg)] focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                  className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-150 p-2 rounded-lg hover:bg-[var(--glass-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50"
                   aria-label="Close projects modal"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -110,7 +110,7 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
                     placeholder="Search projects..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-[var(--glass-bg)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all duration-150"
+                    className="w-full pl-10 pr-4 py-3 bg-[var(--glass-bg)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50 focus:border-[var(--interactive)] transition-all duration-150"
                     aria-label="Search projects by name, description, or technology"
                   />
                   <svg
@@ -134,9 +134,9 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
                       className={`
                         px-4 py-2 rounded-full text-sm font-medium
                         transition-all duration-150 transform hover:scale-105
-                        focus:outline-none focus:ring-2 focus:ring-violet-500/50
+                        focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50
                         ${selectedCategory === category
-                          ? 'bg-[var(--interactive)] text-white shadow-lg hover:bg-[var(--interactive-hover)]'
+                          ? 'bg-[var(--interactive)] text-[var(--text-on-accent)] shadow-lg hover:bg-[var(--interactive-hover)]'
                           : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)] border border-[var(--border)]'
                         }
                       `}

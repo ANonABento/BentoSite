@@ -29,7 +29,7 @@ export function SectionHeader({
 }: SectionHeaderProps) {
   const iconColorClass = iconColor === 'orange'
     ? 'text-[var(--orange)]'
-    : 'text-violet-400';
+    : 'text-[var(--interactive)]';
 
   const content = (
     <>

@@ -36,6 +36,7 @@
   --text-primary: #ffffff;
   --text-secondary: #a1a1aa;
   --text-muted: #71717a;
+  --text-on-accent: #ffffff;
   --shadow-color: rgba(0, 0, 0, 0.5);
   --code-bg: rgba(167, 139, 250, 0.15);
   --code-text: #c4b5fd;
@@ -44,6 +45,10 @@
   --scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
   --selection-bg: rgba(167, 139, 250, 0.3);
   --grid-line: rgba(167, 139, 250, 0.03);
+  --overlay-weak: rgba(0, 0, 0, 0.3);
+  --overlay: rgba(0, 0, 0, 0.6);
+  --overlay-strong: rgba(0, 0, 0, 0.8);
+  --surface-deep: #0f1016;
 
   /* Bento corner tokens - like a Japanese bento box */
   --radius-bento-outer: 1rem;      /* 16px - soft exterior (bento box edge) */
@@ -97,6 +102,7 @@
   --text-primary: #18181b;
   --text-secondary: #52525b;
   --text-muted: #a1a1aa;
+  --text-on-accent: #ffffff;
   --shadow-color: rgba(0, 0, 0, 0.1);
   --code-bg: rgba(139, 92, 246, 0.1);
   --code-text: #7C3AED;
@@ -105,6 +111,10 @@
   --scrollbar-thumb-hover: rgba(0, 0, 0, 0.2);
   --selection-bg: rgba(139, 92, 246, 0.2);
   --grid-line: rgba(139, 92, 246, 0.05);
+  --overlay-weak: rgba(0, 0, 0, 0.2);
+  --overlay: rgba(0, 0, 0, 0.5);
+  --overlay-strong: rgba(0, 0, 0, 0.7);
+  --surface-deep: #f0f1f5;
 
   /* Status colors - adjusted for light mode */
   --status-success: #16a34a;
@@ -213,6 +223,60 @@ body {
 
 .bg-orange-muted {
   background-color: var(--orange-muted);
+}
+
+/* Overlay utilities */
+.bg-overlay-weak {
+  background-color: var(--overlay-weak);
+}
+
+.bg-overlay {
+  background-color: var(--overlay);
+}
+
+.bg-overlay-strong {
+  background-color: var(--overlay-strong);
+}
+
+.bg-surface-deep {
+  background-color: var(--surface-deep);
+}
+
+.text-on-accent {
+  color: var(--text-on-accent);
+}
+
+/* Status utilities */
+.text-success {
+  color: var(--status-success);
+}
+
+.text-warning {
+  color: var(--status-warning);
+}
+
+.text-error {
+  color: var(--status-error);
+}
+
+.text-info {
+  color: var(--status-info);
+}
+
+.bg-success-muted {
+  background-color: var(--status-success-muted);
+}
+
+.bg-warning-muted {
+  background-color: var(--status-warning-muted);
+}
+
+.bg-error-muted {
+  background-color: var(--status-error-muted);
+}
+
+.bg-info-muted {
+  background-color: var(--status-info-muted);
 }
 
 /* Background grid pattern */

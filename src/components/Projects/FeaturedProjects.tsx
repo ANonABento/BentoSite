@@ -14,12 +14,12 @@ const allTechnologies = Array.from(
 
 // Category-based gradient colors
 const categoryGradients: Record<string, string> = {
-  'Robotics': 'from-violet-600/40 to-purple-900/40',
-  'AI & Robotics': 'from-orange-600/40 to-red-900/40',
-  'VR/AR': 'from-emerald-600/40 to-teal-900/40',
-  'Accessibility': 'from-blue-600/40 to-indigo-900/40',
-  'Competition': 'from-amber-600/40 to-yellow-900/40',
-  'Games': 'from-pink-600/40 to-rose-900/40',
+  'Robotics': 'linear-gradient(135deg, var(--purple-muted), var(--overlay-weak))',
+  'AI & Robotics': 'linear-gradient(135deg, var(--orange-muted), var(--purple-muted))',
+  'VR/AR': 'linear-gradient(135deg, var(--status-info-muted), var(--purple-muted))',
+  'Accessibility': 'linear-gradient(135deg, var(--status-info-muted), var(--overlay-weak))',
+  'Competition': 'linear-gradient(135deg, var(--status-warning-muted), var(--orange-muted))',
+  'Games': 'linear-gradient(135deg, var(--status-error-muted), var(--purple-muted))',
 };
 
 // Category icons
@@ -33,7 +33,7 @@ const categoryIcons: Record<string, string> = {
 };
 
 function ProjectCard({ project }: { project: PortfolioProject }) {
-  const gradient = categoryGradients[project.category] || 'from-gray-600/40 to-gray-900/40';
+  const gradient = categoryGradients[project.category] || 'linear-gradient(135deg, var(--glass-bg), var(--overlay-weak))';
   const icon = categoryIcons[project.category] || '📦';
 
   return (
@@ -53,7 +53,7 @@ function ProjectCard({ project }: { project: PortfolioProject }) {
       >
         {/* Project Header/Gradient */}
         <div className="h-40 relative overflow-hidden">
-          <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
+          <div className="absolute inset-0" style={{ backgroundImage: gradient }} />
           <div className="absolute inset-0 flex items-center justify-center">
             <motion.div
               className="text-5xl opacity-30"
@@ -65,18 +65,18 @@ function ProjectCard({ project }: { project: PortfolioProject }) {
           </div>
           {/* Category badge */}
           <div className="absolute top-4 left-4">
-            <span className="px-3 py-1 text-xs font-medium bg-black/30 backdrop-blur-sm text-white rounded-full">
+            <span className="px-3 py-1 text-xs font-medium bg-[var(--overlay-weak)] backdrop-blur-sm text-[var(--text-on-accent)] rounded-full">
               {project.category}
             </span>
           </div>
           {/* Hover overlay with GitHub link */}
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <div className="absolute inset-0 bg-[var(--overlay)] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             {project.github && (
               <a
                 href={project.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white text-sm transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-[var(--glass-bg)] hover:bg-[var(--glass-bg-strong)] backdrop-blur-sm rounded-lg text-[var(--text-on-accent)] text-sm transition-colors flex items-center gap-2"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
@@ -99,7 +99,7 @@ function ProjectCard({ project }: { project: PortfolioProject }) {
             {project.technologies.slice(0, 4).map((tech) => (
               <span
                 key={tech}
-                className="px-2 py-1 text-xs bg-violet-500/10 text-violet-500 rounded-md"
+                className="px-2 py-1 text-xs bg-[var(--purple-muted)] text-[var(--purple)] rounded-md"
               >
                 {tech}
               </span>
@@ -175,8 +175,8 @@ export function FeaturedProjects({ onViewAll }: { onViewAll?: () => void }) {
               onClick={() => setSelectedTech(null)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 selectedTech === null
-                  ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/25'
-                  : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--interactive)]/10 hover:text-[var(--text-primary)]'
+                  ? 'bg-[var(--interactive)] text-[var(--text-on-accent)] shadow-lg shadow-[0_0_20px_var(--purple-muted)]'
+                  : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--purple-muted)] hover:text-[var(--text-primary)]'
               }`}
             >
               All
@@ -187,8 +187,8 @@ export function FeaturedProjects({ onViewAll }: { onViewAll?: () => void }) {
                 onClick={() => setSelectedTech(selectedTech === tech ? null : tech)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                   selectedTech === tech
-                    ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/25'
-                    : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--interactive)]/10 hover:text-[var(--text-primary)]'
+                  ? 'bg-[var(--interactive)] text-[var(--text-on-accent)] shadow-lg shadow-[0_0_20px_var(--purple-muted)]'
+                  : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--purple-muted)] hover:text-[var(--text-primary)]'
                 }`}
               >
                 {tech}
@@ -219,7 +219,7 @@ export function FeaturedProjects({ onViewAll }: { onViewAll?: () => void }) {
           <motion.div variants={sectionItem} className="mt-8 text-center md:hidden">
             <button
               onClick={onViewAll}
-              className="px-6 py-3 bg-violet-500/20 hover:bg-violet-500/30 text-violet-500 rounded-xl transition-colors"
+              className="px-6 py-3 bg-[var(--purple-muted)] hover:bg-[var(--purple)] hover:text-[var(--text-on-accent)] text-[var(--purple)] rounded-xl transition-colors"
             >
               View All Projects
             </button>

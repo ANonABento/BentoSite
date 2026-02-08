@@ -50,7 +50,7 @@ export function PDFViewer({ src }: PDFViewerProps) {
           <button
             onClick={goToPrevPage}
             disabled={pageNumber <= 1}
-            className="p-1.5 rounded hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="p-1.5 rounded hover:bg-[var(--glass-bg)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             aria-label="Previous page"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,7 +63,7 @@ export function PDFViewer({ src }: PDFViewerProps) {
           <button
             onClick={goToNextPage}
             disabled={pageNumber >= numPages}
-            className="p-1.5 rounded hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="p-1.5 rounded hover:bg-[var(--glass-bg)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             aria-label="Next page"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,7 +77,7 @@ export function PDFViewer({ src }: PDFViewerProps) {
           <button
             onClick={zoomOut}
             disabled={scale <= 0.5}
-            className="p-1.5 rounded hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="p-1.5 rounded hover:bg-[var(--glass-bg)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             aria-label="Zoom out"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +90,7 @@ export function PDFViewer({ src }: PDFViewerProps) {
           <button
             onClick={zoomIn}
             disabled={scale >= 2.5}
-            className="p-1.5 rounded hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="p-1.5 rounded hover:bg-[var(--glass-bg)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             aria-label="Zoom in"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,7 +103,7 @@ export function PDFViewer({ src }: PDFViewerProps) {
         <a
           href={src}
           download
-          className="p-1.5 rounded hover:bg-white/10 transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          className="p-1.5 rounded hover:bg-[var(--glass-bg)] transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
           aria-label="Download PDF"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,12 +116,12 @@ export function PDFViewer({ src }: PDFViewerProps) {
       <div className="flex-1 overflow-auto flex justify-center p-4">
         {isLoading && (
           <div className="flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-[var(--interactive)] border-t-transparent rounded-full animate-spin" />
           </div>
         )}
 
         {error && (
-          <div className="flex flex-col items-center justify-center text-red-400">
+          <div className="flex flex-col items-center justify-center text-[var(--status-error)]">
             <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>

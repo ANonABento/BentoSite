@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { ViewfinderHeader } from './ViewfinderHeader';
 import { ViewerSkeleton } from './ViewerSkeleton';
@@ -39,9 +39,6 @@ const GameViewer = dynamic(
 );
 
 export function Viewfinder({ project, minimal = false }: ViewfinderProps) {
-  // Track project ID to detect changes
-  const [lastProjectId, setLastProjectId] = useState<string | null>(null);
-
   // Determine available tabs based on project media
   const availableTabs = useMemo<MediaTab[]>(() => {
     const tabs: MediaTab[] = [];
@@ -75,19 +72,14 @@ export function Viewfinder({ project, minimal = false }: ViewfinderProps) {
     return tabs.length ? tabs : ['3d'];
   }, [project]);
 
-  // Compute initial tab - reset when project changes
-  const currentProjectId = project?.id ?? null;
-  const shouldResetTab = currentProjectId !== lastProjectId;
-
   const [activeTab, setActiveTab] = useState<MediaTab>(availableTabs[0]);
 
-  // Handle project change - update lastProjectId and reset tab if needed
-  if (shouldResetTab) {
-    setLastProjectId(currentProjectId);
+  // Ensure the active tab is valid when available tabs change
+  useEffect(() => {
     if (!availableTabs.includes(activeTab)) {
       setActiveTab(availableTabs[0]);
     }
-  }
+  }, [availableTabs, activeTab]);
 
   // Render the active viewer
   const renderViewer = () => {

@@ -64,7 +64,7 @@ export function MediaViewer({ type, src, title, onClose }: MediaViewerProps) {
       );
     case '3d':
       return (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col">
+        <div className="fixed inset-0 z-50 bg-[var(--overlay-strong)] backdrop-blur-md flex flex-col">
           {/* Header */}
           <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
             <h2 className="text-[var(--text-primary)] font-medium">{title || '3D Model'}</h2>

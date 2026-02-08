@@ -42,7 +42,7 @@ export function GameEmbed({ type, url, title, onClose }: GameEmbedProps) {
 
   return (
     <motion.div
-      className={`fixed inset-0 z-50 bg-black flex flex-col ${fullscreen ? '' : 'p-4 md:p-8'}`}
+      className={`fixed inset-0 z-50 bg-[var(--surface-deep)] flex flex-col ${fullscreen ? '' : 'p-4 md:p-8'}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -102,7 +102,7 @@ export function GameEmbed({ type, url, title, onClose }: GameEmbedProps) {
       {fullscreen && (
         <button
           onClick={() => setFullscreen(false)}
-          className="absolute top-4 right-4 z-10 p-2 bg-black/50 text-white hover:bg-black/70 rounded-lg transition-colors"
+          className="absolute top-4 right-4 z-10 p-2 bg-[var(--overlay)] text-[var(--text-on-accent)] hover:bg-[var(--overlay-strong)] rounded-lg transition-colors"
           title="Exit fullscreen (Esc)"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +115,7 @@ export function GameEmbed({ type, url, title, onClose }: GameEmbedProps) {
       <div className={`flex-1 relative ${fullscreen ? '' : 'rounded-b-lg overflow-hidden'}`}>
         {loading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[var(--background)]">
-            <div className="w-12 h-12 border-2 border-[var(--interactive)]/30 border-t-[var(--interactive)] rounded-full animate-spin" />
+            <div className="w-12 h-12 border-2 border-[var(--interactive)] border-opacity-30 border-t-[var(--interactive)] rounded-full animate-spin" />
             <span className="text-[var(--text-muted)]">Loading game...</span>
             <p className="text-[var(--text-muted)] text-sm text-center max-w-md px-4">
               {type === 'unity-webgl'
@@ -137,7 +137,7 @@ export function GameEmbed({ type, url, title, onClose }: GameEmbedProps) {
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2 bg-[var(--interactive)] hover:bg-[var(--interactive-hover)] text-white rounded-lg transition-colors"
+              className="px-4 py-2 bg-[var(--interactive)] hover:bg-[var(--interactive-hover)] text-[var(--text-on-accent)] rounded-lg transition-colors"
             >
               Play on {type === 'unity-webgl' ? 'original site' : 'itch.io'}
             </a>
@@ -146,7 +146,7 @@ export function GameEmbed({ type, url, title, onClose }: GameEmbedProps) {
 
         <iframe
           src={embedUrl}
-          className={`w-full h-full border-0 bg-black ${loading ? 'invisible' : 'visible'}`}
+          className={`w-full h-full border-0 bg-[var(--surface-deep)] ${loading ? 'invisible' : 'visible'}`}
           onLoad={handleLoad}
           onError={handleError}
           allow="autoplay; fullscreen; gamepad"

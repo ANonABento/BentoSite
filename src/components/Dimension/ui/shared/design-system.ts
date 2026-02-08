@@ -12,16 +12,16 @@ export const DESIGN_SYSTEM = {
   },
   colors: {
     bg: {
-      primary: 'bg-gray-900/80',
-      secondary: 'bg-gray-800/60',
-      tertiary: 'bg-gray-700/50',
-      glass: 'bg-white/5',
-      glassStrong: 'bg-white/10'
+      primary: 'bg-[var(--overlay-strong)]',
+      secondary: 'bg-[var(--overlay)]',
+      tertiary: 'bg-[var(--overlay-weak)]',
+      glass: 'bg-[var(--glass-bg)]',
+      glassStrong: 'bg-[var(--glass-bg-strong)]'
     },
     text: {
-      primary: 'text-white',
-      secondary: 'text-gray-300',
-      tertiary: 'text-gray-400',
+      primary: 'text-[var(--text-primary)]',
+      secondary: 'text-[var(--text-secondary)]',
+      tertiary: 'text-[var(--text-muted)]',
       purple: 'text-[var(--purple)]',
       orange: 'text-[var(--orange)]'
     },
@@ -49,15 +49,15 @@ export const DESIGN_SYSTEM = {
       glow: 'shadow-[0_0_20px_var(--orange-muted)]'
     },
     border: {
-      primary: 'border-white/10',
-      secondary: 'border-white/5',
-      purple: 'border-[var(--purple)]/50',
-      orange: 'border-[var(--orange)]/50'
+      primary: 'border-[var(--border)]',
+      secondary: 'border-[var(--border)]',
+      purple: 'border-[var(--purple)]',
+      orange: 'border-[var(--orange)]'
     }
   },
   effects: {
-    glass: 'backdrop-blur-xl bg-white/5 border border-white/10',
-    glassStrong: 'backdrop-blur-2xl bg-white/10 border border-white/20',
+    glass: 'backdrop-blur-xl bg-[var(--glass-bg)] border border-[var(--border)]',
+    glassStrong: 'backdrop-blur-2xl bg-[var(--glass-bg-strong)] border border-[var(--border)]',
     glowPurple: 'shadow-[0_0_20px_var(--purple-muted)]',
     glowOrange: 'shadow-[0_0_20px_var(--orange-muted)]',
     glowSubtle: 'shadow-[0_0_12px_var(--purple-muted)]'
@@ -79,41 +79,41 @@ export const DESIGN_SYSTEM = {
 // All colors use CSS variables for theme support
 export const COMMON_CLASSES = {
   // Button variants - solid colors, no gradients
-  button: 'px-4 py-2.5 rounded-sm text-sm font-medium transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--purple)]/50',
+  button: 'px-4 py-2.5 rounded-sm text-sm font-medium transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50',
 
   // Primary button - solid purple (interactive)
-  buttonPrimary: 'bg-[var(--purple)] hover:bg-[var(--purple-hover)] active:bg-[var(--purple-active)] text-white shadow-lg hover:shadow-[0_0_20px_var(--purple-muted)] border border-[var(--purple-hover)]/20',
+  buttonPrimary: 'bg-[var(--purple)] hover:bg-[var(--purple-hover)] active:bg-[var(--purple-active)] text-[var(--text-on-accent)] shadow-lg hover:shadow-[0_0_20px_var(--purple-muted)] border border-[var(--purple-hover)]/20',
 
   // CTA button - solid orange (highlight/attention)
-  buttonCTA: 'bg-[var(--orange)] hover:bg-[var(--orange-hover)] active:bg-[var(--orange-active)] text-white shadow-lg hover:shadow-[0_0_20px_var(--orange-muted)] border border-[var(--orange-hover)]/20',
+  buttonCTA: 'bg-[var(--orange)] hover:bg-[var(--orange-hover)] active:bg-[var(--orange-active)] text-[var(--text-on-accent)] shadow-lg hover:shadow-[0_0_20px_var(--orange-muted)] border border-[var(--orange-hover)]/20',
 
   // Secondary button - glass effect
-  buttonSecondary: 'backdrop-blur-xl bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white border border-white/10',
+  buttonSecondary: 'backdrop-blur-xl bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-strong)] hover:text-[var(--text-primary)] border border-[var(--border)]',
 
   // Danger button - solid red
-  buttonDanger: 'bg-[var(--status-error)] hover:bg-red-500 active:bg-red-700 text-white shadow-lg hover:shadow-[0_0_20px_var(--status-error-muted)]',
+  buttonDanger: 'bg-[var(--status-error)] hover:opacity-90 active:opacity-80 text-[var(--text-on-accent)] shadow-lg hover:shadow-[0_0_20px_var(--status-error-muted)]',
 
   // Ghost button - minimal
-  buttonGhost: 'text-gray-400 hover:text-white hover:bg-white/5',
+  buttonGhost: 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]',
 
   // Card/container variants - glassmorphism
-  card: 'backdrop-blur-xl rounded-2xl border border-white/10 transition-all duration-200 ease-out bg-white/5',
-  cardPurple: 'backdrop-blur-xl rounded-2xl border border-[var(--purple)]/20 bg-[var(--purple)]/5 shadow-[0_0_20px_var(--purple-muted)]',
-  cardOrange: 'backdrop-blur-xl rounded-2xl border border-[var(--orange)]/20 bg-[var(--orange)]/5 shadow-[0_0_20px_var(--orange-muted)]',
+  card: 'backdrop-blur-xl rounded-2xl border border-[var(--border)] transition-all duration-200 ease-out bg-[var(--glass-bg)]',
+  cardPurple: 'backdrop-blur-xl rounded-2xl border border-[var(--purple)] border-opacity-20 bg-[var(--purple-muted)] shadow-[0_0_20px_var(--purple-muted)]',
+  cardOrange: 'backdrop-blur-xl rounded-2xl border border-[var(--orange)] border-opacity-20 bg-[var(--orange-muted)] shadow-[0_0_20px_var(--orange-muted)]',
   cardCollapsed: 'h-12',
   cardExpanded: 'h-auto',
 
   // Interactive states
-  interactive: 'hover:bg-white/10 focus-within:bg-white/10',
+  interactive: 'hover:bg-[var(--glass-bg-strong)] focus-within:bg-[var(--glass-bg-strong)]',
   draggable: 'cursor-grab active:cursor-grabbing',
-  dragActive: 'scale-105 shadow-2xl ring-2 ring-[var(--purple)]/50',
+  dragActive: 'scale-105 shadow-2xl ring-2 ring-[var(--interactive)] ring-opacity-50',
 
   // Text styles - solid colors using CSS variables
   textPurple: 'text-[var(--purple)]',
   textOrange: 'text-[var(--orange)]',
 
   // Input styles
-  input: 'backdrop-blur-xl bg-white/5 border border-white/10 rounded-sm px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--purple)]/50 focus:border-[var(--purple)]/50 transition-all duration-200',
+  input: 'backdrop-blur-xl bg-[var(--glass-bg)] border border-[var(--border)] rounded-sm px-4 py-3 text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50 focus:border-[var(--interactive)] transition-all duration-200',
 
   // Z-index layers
   zIndex: {

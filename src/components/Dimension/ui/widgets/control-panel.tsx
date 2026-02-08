@@ -142,7 +142,7 @@ export function ControlPanel({
   ], [autoRotate, isWireframe, showCameraPresets, onToggleAutoRotate, onResetView, onZoomFit, onFullscreen, onToggleWireframe, onCameraPresets, onScreenshot, onModelManager]);
 
   const controlsIcon = (
-    <svg className="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <svg className="w-4 h-4 text-[var(--interactive)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
     </svg>
   );
@@ -168,11 +168,11 @@ export function ControlPanel({
                   whileTap={buttonTap}
                   className={`
                     p-2 rounded-sm flex flex-col items-center justify-center
-                    focus:outline-none focus:ring-2 focus:ring-violet-500/50
+                    focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50
                     min-h-[60px] transition-all duration-200
                     ${button.active
-                      ? 'bg-[var(--orange)] text-white shadow-lg shadow-[var(--orange-muted)] ring-1 ring-[var(--orange)]/30'
-                      : 'bg-white/5 backdrop-blur border border-white/10 hover:bg-white/10 hover:border-[var(--purple)]/30 text-gray-300 hover:text-white'
+                      ? 'bg-[var(--orange)] text-[var(--text-on-accent)] shadow-lg shadow-[var(--orange-muted)] ring-1 ring-[var(--orange)] ring-opacity-30'
+                      : 'bg-[var(--glass-bg)] backdrop-blur border border-[var(--border)] hover:bg-[var(--glass-bg-strong)] hover:border-[var(--purple)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                     }
                   `}
                   title={`${button.label} (${button.shortcut}) - ${button.description}`}
@@ -187,12 +187,12 @@ export function ControlPanel({
             </div>
 
             {/* Sliders Section */}
-            <div className="border-t border-white/10 pt-3 space-y-3">
+            <div className="border-t border-[var(--border)] pt-3 space-y-3">
               {/* Zoom Slider */}
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-gray-400">Zoom</span>
-                  <span className="text-gray-300 font-mono">{Math.round(zoomLevel)}</span>
+                  <span className="text-[var(--text-muted)]">Zoom</span>
+                  <span className="text-[var(--text-secondary)] font-mono">{Math.round(zoomLevel)}</span>
                 </div>
                 <input
                   type="range"
@@ -201,7 +201,7 @@ export function ControlPanel({
                   step="1"
                   value={zoomLevel}
                   onChange={(e) => onZoomChange(Number(e.target.value))}
-                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[var(--purple)]"
+                  className="w-full h-2 bg-[var(--glass-bg-strong)] rounded-lg appearance-none cursor-pointer accent-[var(--purple)]"
                   aria-label="Zoom level"
                 />
               </div>
@@ -209,8 +209,8 @@ export function ControlPanel({
               {/* Rotation Speed Slider */}
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-gray-400">Speed</span>
-                  <span className="text-gray-300 font-mono">{rotationSpeed.toFixed(1)}x</span>
+                  <span className="text-[var(--text-muted)]">Speed</span>
+                  <span className="text-[var(--text-secondary)] font-mono">{rotationSpeed.toFixed(1)}x</span>
                 </div>
                 <input
                   type="range"
@@ -219,7 +219,7 @@ export function ControlPanel({
                   step="0.1"
                   value={rotationSpeed}
                   onChange={(e) => onRotationSpeedChange(Number(e.target.value))}
-                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[var(--purple)]"
+                  className="w-full h-2 bg-[var(--glass-bg-strong)] rounded-lg appearance-none cursor-pointer accent-[var(--purple)]"
                   aria-label="Rotation speed"
                 />
               </div>

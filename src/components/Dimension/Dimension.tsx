@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
@@ -83,7 +83,7 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
   const [isWireframe, setIsWireframe] = useState(false);
   const [selectedModel, setSelectedModel] = useState<ModelInfo>(getInitialModel);
   const [showModelSelector, setShowModelSelector] = useState(false);
-  const [showModelInfo, setShowModelInfo] = useState(!useIsMobile());
+  const [showModelInfo, setShowModelInfo] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showCameraPresets, setShowCameraPresets] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(14);
@@ -92,6 +92,7 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
   // Hooks
   const isMobile = useIsMobile();
   const screenSize = useScreenSize();
+  const containerRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -143,7 +144,7 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
 
   // Fullscreen functionality
   const handleFullscreen = useCallback(() => {
-    const container = document.querySelector('.dimension-viewer-container') as HTMLElement;
+    const container = containerRef.current;
     if (!container) return;
 
     if (!isFullscreen) {
@@ -158,7 +159,7 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
   }, [isFullscreen]);
 
   // Listen for fullscreen changes
-  React.useEffect(() => {
+  useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
@@ -166,6 +167,10 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
+
+  useEffect(() => {
+    setShowModelInfo(!isMobile);
+  }, [isMobile]);
 
   // Camera preset functionality
   const handleCameraPreset = useCallback((preset: string) => {
@@ -247,7 +252,10 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
   });
 
   return (
-    <div className={`w-full h-full bg-zinc-700 relative ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
+    <div
+      ref={containerRef}
+      className={`w-full h-full bg-[var(--surface-deep)] relative ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}
+    >
       {/* Model Selector Modal */}
       {showModelSelector && (
         <ModelSelector
@@ -261,7 +269,7 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
 
       {error ? (
         // Error state with retry functionality
-        <div className="w-full h-full bg-zinc-700">
+        <div className="w-full h-full bg-[var(--surface-deep)]">
           <Canvas 
             camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
             performance={{ min: MIN_PERFORMANCE_SCALE }}
@@ -284,7 +292,7 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
       ) : (
         // Normal loading and success state
         <React.Suspense fallback={
-          <div className="w-full h-full bg-zinc-700" aria-busy="true" role="status">
+          <div className="w-full h-full bg-[var(--surface-deep)]" aria-busy="true" role="status">
             <span className="sr-only">Loading 3D model...</span>
             <Canvas
               camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
@@ -319,7 +327,6 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
               gl.autoClear = true;
             }}
             ref={canvasRef}
-            className="dimension-viewer-container"
           >
             <ambientLight intensity={0.3} />
             <pointLight position={[15, 15, 15]} intensity={isMobile ? 0.6 : 0.8} castShadow={!isMobile} />
@@ -357,7 +364,7 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
       {!minimal && isMobile && !error && (
         <button
           onClick={() => setShowModelInfo(!showModelInfo)}
-          className="absolute top-4 left-4 bg-gray-900 bg-opacity-80 hover:bg-opacity-100 text-white rounded-full p-3 backdrop-blur-sm transition-all duration-200 shadow-lg z-50"
+          className="absolute top-4 left-4 bg-[var(--overlay-strong)] hover:opacity-100 text-[var(--text-on-accent)] rounded-full p-3 backdrop-blur-sm transition-all duration-200 shadow-lg z-50"
           title={showModelInfo ? 'Hide Model Info' : 'Show Model Info'}
         >
           {showModelInfo ? (
@@ -410,7 +417,7 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
 
       {/* Auto-rotate notification for mobile */}
       {!minimal && isMobile && !autoRotate && (
-        <div className="absolute top-20 right-4 bg-blue-600 bg-opacity-90 text-white px-3 py-2 rounded text-sm pointer-events-none"
+        <div className="absolute top-20 right-4 bg-[var(--status-info)] text-[var(--text-on-accent)] px-3 py-2 rounded text-sm pointer-events-none"
              style={{ zIndex: 1000 }}>
           Auto-rotation disabled (tap model to enable)
         </div>

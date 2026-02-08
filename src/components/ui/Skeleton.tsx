@@ -25,7 +25,7 @@ export function Skeleton({
 
   return (
     <m.div
-      className={`bg-white/10 ${variantStyles[variant]} ${className}`}
+      className={`bg-[var(--glass-bg)] ${variantStyles[variant]} ${className}`}
       style={{ width, height }}
       variants={skeletonPulse}
       initial="initial"
@@ -55,7 +55,7 @@ export function ChatSkeleton() {
         <ChatMessageSkeleton />
         <ChatMessageSkeleton />
       </div>
-      <div className="p-4 border-t border-white/5">
+      <div className="p-4 border-t border-[var(--border)]">
         <Skeleton variant="rounded" className="h-12 w-full" />
       </div>
     </div>
@@ -66,13 +66,13 @@ export function ViewerSkeleton() {
   return (
     <div className="w-full h-full flex flex-col items-center justify-center gap-4 p-8">
       <m.div
-        className="w-32 h-32 rounded-2xl bg-white/5 flex items-center justify-center"
+        className="w-32 h-32 rounded-2xl bg-[var(--glass-bg)] flex items-center justify-center"
         variants={skeletonPulse}
         initial="initial"
         animate="animate"
       >
         <svg
-          className="w-16 h-16 text-white/20"
+          className="w-16 h-16 text-[var(--text-muted)] opacity-30"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

@@ -63,7 +63,7 @@ export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, 
 
   return (
     <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-[60]" 
+      className="fixed inset-0 bg-[var(--overlay-strong)] backdrop-blur-md flex items-center justify-center p-4 z-[60]" 
       role="dialog" 
       aria-modal="true" 
       aria-labelledby="model-selector-title" 
@@ -76,7 +76,7 @@ export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, 
             <h2 id="model-selector-title" className="text-xl font-bold text-[var(--text-primary)]">Select 3D Model</h2>
             <button
               onClick={onClose}
-              className={`text-[var(--text-muted)] hover:text-[var(--text-primary)] ${isInitialRender ? '' : 'transition-colors duration-150'} p-2 rounded-lg hover:bg-[var(--glass-bg)] focus:outline-none focus:ring-2 focus:ring-violet-500/50`}
+              className={`text-[var(--text-muted)] hover:text-[var(--text-primary)] ${isInitialRender ? '' : 'transition-colors duration-150'} p-2 rounded-lg hover:bg-[var(--glass-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50`}
               aria-label="Close model selector"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -94,7 +94,7 @@ export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, 
                 placeholder="Search models..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className={`w-full pl-10 pr-4 py-3 bg-[var(--glass-bg)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 ${isInitialRender ? '' : 'transition-all duration-150'}`}
+                className={`w-full pl-10 pr-4 py-3 bg-[var(--glass-bg)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50 focus:border-[var(--interactive)] ${isInitialRender ? '' : 'transition-all duration-150'}`}
                 aria-label="Search models by name or description"
               />
               <svg className="absolute left-3 top-3.5 w-5 h-5 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -107,7 +107,7 @@ export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, 
                 <button 
                   key={category} 
                   onClick={() => setSelectedCategory(category)} 
-                  className={`px-4 py-2 rounded-full text-sm font-medium ${isInitialRender ? '' : 'transition-all duration-150 transform hover:scale-105'} focus:outline-none focus:ring-2 focus:ring-violet-500/50 ${selectedCategory === category ? 'bg-[var(--interactive)] hover:bg-[var(--interactive-hover)] text-white shadow-lg' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-strong)] border border-[var(--border)]'}`} 
+                  className={`px-4 py-2 rounded-full text-sm font-medium ${isInitialRender ? '' : 'transition-all duration-150 transform hover:scale-105'} focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50 ${selectedCategory === category ? 'bg-[var(--interactive)] hover:bg-[var(--interactive-hover)] text-[var(--text-on-accent)] shadow-lg' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-strong)] border border-[var(--border)]'}`} 
                   aria-pressed={selectedCategory === category}
                 >
                   {category}
@@ -133,7 +133,7 @@ export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, 
                 <div
                   key={model.id}
                   onClick={() => handleModelClick(model)}
-                  className={`border-2 rounded-lg p-4 cursor-pointer ${isInitialRender ? '' : 'transition-all duration-200 transform hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(167,139,250,0.2)]'} ${selectedModel.id === model.id ? 'border-[var(--interactive)] bg-[var(--purple-muted)] shadow-[0_0_20px_rgba(167,139,250,0.3)]' : 'border-[var(--border)] hover:border-[var(--border)] hover:bg-[var(--glass-bg)] bg-[var(--glass-bg)]'} focus:outline-none focus:ring-2 focus:ring-violet-500/50`}
+                  className={`border-2 rounded-lg p-4 cursor-pointer ${isInitialRender ? '' : 'transition-all duration-200 transform hover:scale-[1.02] hover:shadow-[0_0_30px_var(--purple-muted)]'} ${selectedModel.id === model.id ? 'border-[var(--interactive)] bg-[var(--purple-muted)] shadow-[0_0_20px_var(--purple-muted)]' : 'border-[var(--border)] hover:border-[var(--border)] hover:bg-[var(--glass-bg)] bg-[var(--glass-bg)]'} focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50`}
                   tabIndex={0}
                   role="button"
                   aria-label={`Select ${model.name} model`}
@@ -147,7 +147,7 @@ export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, 
                   <h3 className="font-bold text-[var(--text-primary)] mb-2 leading-tight">{model.name}</h3>
                   <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-2 leading-relaxed">{model.description}</p>
                   <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-sm text-xs font-medium bg-[var(--purple-muted)] text-[var(--interactive)] border border-[var(--interactive)]/30">{model.category}</span>
+                    <span className="px-3 py-1 rounded-sm text-xs font-medium bg-[var(--purple-muted)] text-[var(--interactive)] border border-[var(--interactive)] border-opacity-30">{model.category}</span>
                     <span className="text-xs text-[var(--text-muted)] font-mono">{formatFileSize(model.fileSize)}</span>
                   </div>
                 </div>

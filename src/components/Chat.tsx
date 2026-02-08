@@ -106,7 +106,7 @@ function CopyButton({ text, onCopied }: { text: string; onCopied?: () => void })
       title={copied ? 'Copied!' : 'Copy message'}
     >
       {copied ? (
-        <svg className="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-3.5 h-3.5 text-[var(--status-success)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
       ) : (
@@ -134,8 +134,8 @@ function FeedbackButtons({
         onClick={() => onFeedback(messageId, 'positive')}
         className={`p-1 rounded transition-colors ${
           currentFeedback === 'positive'
-            ? 'text-green-400 bg-green-400/10'
-            : 'text-[var(--text-muted)] hover:text-green-400 hover:bg-green-400/10'
+            ? 'text-[var(--status-success)] bg-[var(--status-success-muted)]'
+            : 'text-[var(--text-muted)] hover:text-[var(--status-success)] hover:bg-[var(--status-success-muted)]'
         }`}
         aria-label="Helpful response"
         aria-pressed={currentFeedback === 'positive'}
@@ -148,8 +148,8 @@ function FeedbackButtons({
         onClick={() => onFeedback(messageId, 'negative')}
         className={`p-1 rounded transition-colors ${
           currentFeedback === 'negative'
-            ? 'text-red-400 bg-red-400/10'
-            : 'text-[var(--text-muted)] hover:text-red-400 hover:bg-red-400/10'
+            ? 'text-[var(--status-error)] bg-[var(--status-error-muted)]'
+            : 'text-[var(--text-muted)] hover:text-[var(--status-error)] hover:bg-[var(--status-error-muted)]'
         }`}
         aria-label="Not helpful response"
         aria-pressed={currentFeedback === 'negative'}
@@ -181,7 +181,7 @@ function QuickActions({
           onClick={onViewResume}
           disabled={disabled}
           whileTap={!disabled ? buttonTap : undefined}
-          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-sm bg-[var(--orange-muted)] border border-[var(--orange)]/30 text-[var(--orange)] hover:bg-[var(--orange)]/30 hover:text-white transition-all duration-200 disabled:opacity-50"
+          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-sm bg-[var(--orange-muted)] border border-[var(--orange)] border-opacity-30 text-[var(--orange)] hover:bg-[var(--orange-muted)] hover:text-[var(--text-on-accent)] transition-all duration-200 disabled:opacity-50"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -195,7 +195,7 @@ function QuickActions({
           onClick={onSeeProjects}
           disabled={disabled}
           whileTap={!disabled ? buttonTap : undefined}
-          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-sm bg-violet-500/20 border border-violet-500/30 text-violet-300 hover:bg-violet-500/30 hover:text-white transition-all duration-200 disabled:opacity-50"
+          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-sm bg-[var(--purple-muted)] border border-[var(--purple-muted)] text-[var(--purple)] hover:bg-[var(--purple)] hover:text-[var(--text-on-accent)] transition-all duration-200 disabled:opacity-50"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -404,7 +404,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
               <div
                 className={`px-4 py-3 ${
                   message.role === 'user'
-                    ? 'bg-violet-500 text-white rounded-sm'
+                    ? 'bg-[var(--interactive)] text-[var(--text-on-accent)] rounded-sm'
                     : 'glass text-[var(--text-primary)] rounded-sm'
                 }`}
               >
@@ -445,9 +445,9 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
           <div className="flex justify-start">
             <div className="glass px-4 py-3 rounded-sm">
               <div className="flex items-center gap-1">
-                <span className="typing-dot w-2 h-2 bg-violet-400 rounded-full" />
-                <span className="typing-dot w-2 h-2 bg-violet-400 rounded-full" />
-                <span className="typing-dot w-2 h-2 bg-violet-400 rounded-full" />
+                <span className="typing-dot w-2 h-2 bg-[var(--interactive)] rounded-full" />
+                <span className="typing-dot w-2 h-2 bg-[var(--interactive)] rounded-full" />
+                <span className="typing-dot w-2 h-2 bg-[var(--interactive)] rounded-full" />
               </div>
             </div>
           </div>
@@ -456,7 +456,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
         {/* Error Message */}
         {error && (
           <div className="text-center">
-            <span className="text-xs text-red-400">{error}</span>
+            <span className="text-xs text-[var(--status-error)]">{error}</span>
           </div>
         )}
 
@@ -500,13 +500,13 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
             placeholder="Ask me anything..."
             disabled={isLoading}
             aria-label="Type your message"
-            className="flex-1 bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border)] rounded-sm px-4 py-3 text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all duration-200 disabled:opacity-50"
+            className="flex-1 bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border)] rounded-sm px-4 py-3 text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50 focus:border-[var(--interactive)] transition-all duration-200 disabled:opacity-50"
           />
           <m.button
             type="submit"
             disabled={isLoading || !input.trim()}
             whileTap={!(isLoading || !input.trim()) ? buttonTap : undefined}
-            className="px-4 py-3 bg-violet-500 hover:bg-violet-400 active:bg-violet-600 text-white rounded-sm font-medium transition-all duration-200 hover:shadow-[0_0_20px_rgba(167,139,250,0.3)] disabled:opacity-50 disabled:hover:shadow-none"
+            className="px-4 py-3 bg-[var(--interactive)] hover:bg-[var(--interactive-hover)] active:bg-[var(--interactive-active)] text-[var(--text-on-accent)] rounded-sm font-medium transition-all duration-200 hover:shadow-[0_0_20px_var(--purple-muted)] disabled:opacity-50 disabled:hover:shadow-none"
             aria-label="Send message"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

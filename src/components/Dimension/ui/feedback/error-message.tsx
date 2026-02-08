@@ -45,7 +45,7 @@ export function ErrorMessage({ error, onRetry, isMobile }: ErrorMessageProps) {
   };
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-md pointer-events-none z-50" role="alert" aria-live="assertive">
+    <div className="absolute inset-0 flex items-center justify-center bg-[var(--overlay-strong)] backdrop-blur-md pointer-events-none z-50" role="alert" aria-live="assertive">
       <div className={`glass rounded-xl p-8 text-center pointer-events-auto shadow-2xl ${isInitialRender ? '' : 'transform transition-all duration-200 hover:scale-105'} ${isMobile ? 'mx-6 max-w-sm' : 'max-w-lg mx-4'}`}>
         {getErrorIcon()}
         <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">{getErrorType()}</h3>
@@ -54,7 +54,7 @@ export function ErrorMessage({ error, onRetry, isMobile }: ErrorMessageProps) {
           {error.retryable && (
             <button
               onClick={onRetry}
-              className={`w-full bg-[var(--status-error)] hover:brightness-110 text-white font-medium py-3 px-6 rounded-xl ${isInitialRender ? '' : 'transition-all duration-200 flex items-center justify-center space-x-3 transform hover:scale-105'} focus:outline-none focus:ring-2 focus:ring-[var(--status-error)]/50 shadow-lg hover:shadow-xl`}
+              className={`w-full bg-[var(--status-error)] hover:brightness-110 text-[var(--text-on-accent)] font-medium py-3 px-6 rounded-xl ${isInitialRender ? '' : 'transition-all duration-200 flex items-center justify-center space-x-3 transform hover:scale-105'} focus:outline-none focus:ring-2 focus:ring-[var(--status-error)] focus:ring-opacity-50 shadow-lg hover:shadow-xl`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />

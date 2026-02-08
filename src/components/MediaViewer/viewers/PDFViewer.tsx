@@ -73,7 +73,7 @@ export function PDFViewer({ src, title, onClose }: PDFViewerProps) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col"
+      className="fixed inset-0 z-50 bg-[var(--overlay-strong)] backdrop-blur-md flex flex-col"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -144,7 +144,7 @@ export function PDFViewer({ src, title, onClose }: PDFViewerProps) {
       <div className="flex-1 overflow-auto flex items-start justify-center p-4">
         {loading && (
           <div className="flex flex-col items-center justify-center h-full gap-4">
-            <div className="w-12 h-12 border-2 border-[var(--interactive)]/30 border-t-[var(--interactive)] rounded-full animate-spin" />
+            <div className="w-12 h-12 border-2 border-[var(--interactive)] border-opacity-30 border-t-[var(--interactive)] rounded-full animate-spin" />
             <span className="text-[var(--text-muted)]">Loading PDF...</span>
           </div>
         )}

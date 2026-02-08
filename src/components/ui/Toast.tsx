@@ -54,17 +54,17 @@ const icons: Record<ToastType, ReactNode> = {
 };
 
 const colors: Record<ToastType, string> = {
-  success: 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300',
-  error: 'bg-red-500/20 border-red-500/30 text-red-300',
-  info: 'bg-blue-500/20 border-blue-500/30 text-blue-300',
-  warning: 'bg-amber-500/20 border-amber-500/30 text-amber-300',
+  success: 'bg-[var(--status-success-muted)] border-[var(--status-success)] border-opacity-30 text-[var(--status-success)]',
+  error: 'bg-[var(--status-error-muted)] border-[var(--status-error)] border-opacity-30 text-[var(--status-error)]',
+  info: 'bg-[var(--status-info-muted)] border-[var(--status-info)] border-opacity-30 text-[var(--status-info)]',
+  warning: 'bg-[var(--status-warning-muted)] border-[var(--status-warning)] border-opacity-30 text-[var(--status-warning)]',
 };
 
 const iconColors: Record<ToastType, string> = {
-  success: 'text-emerald-400',
-  error: 'text-red-400',
-  info: 'text-blue-400',
-  warning: 'text-amber-400',
+  success: 'text-[var(--status-success)]',
+  error: 'text-[var(--status-error)]',
+  info: 'text-[var(--status-info)]',
+  warning: 'text-[var(--status-warning)]',
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -116,7 +116,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 px-4 py-3
                 backdrop-blur-xl
                 border rounded-xl
-                shadow-lg shadow-black/20
+                shadow-lg shadow-[0_0_20px_var(--shadow-color)]
                 min-w-[280px] max-w-[400px]
                 ${colors[toast.type]}
               `}
@@ -127,7 +127,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               <span className="text-sm font-medium flex-1">{toast.message}</span>
               <button
                 onClick={() => removeToast(toast.id)}
-                className="text-white/50 hover:text-white/80 transition-colors"
+                className="text-[var(--text-primary)] opacity-60 hover:opacity-90 transition-opacity"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
