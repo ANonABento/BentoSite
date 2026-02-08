@@ -5,7 +5,6 @@ import { useState } from 'react';
 import Image from 'next/image';
 import type { Project } from '@/lib/projects-data';
 import { TechBadge } from './TechBadge';
-import { analytics } from '@/lib/analytics';
 import { BLUR_PLACEHOLDERS } from '@/lib/image-utils';
 
 interface ProjectCardProps {
@@ -94,6 +93,7 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
   const visibleTechs = project.technologies.slice(0, MAX_VISIBLE_TECHS);
   const remainingCount = project.technologies.length - MAX_VISIBLE_TECHS;
 
+  const hasExternalLinks = project.links.liveDemo || project.links.github;
   const canView = hasViewableMedia(project);
   const mediaIcons = getMediaIcons(project);
 
@@ -161,13 +161,15 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
       {/* Status badge */}
       <div className="flex items-center justify-between mb-2">
         <span
-          className={`px-2 py-0.5 text-xs rounded-full font-medium ${
-            project.status === 'Completed'
-              ? 'bg-emerald-500/20 text-emerald-400'
+          className={`
+            px-2.5 py-1 rounded-sm text-xs font-medium uppercase tracking-wide
+            ${project.status === 'Completed'
+              ? 'bg-[var(--status-success-muted)] text-[var(--status-success)] border border-[var(--status-success)]/30'
               : project.status === 'In Progress'
-              ? 'bg-amber-500/20 text-amber-400'
-              : 'bg-gray-500/20 text-gray-400'
-          }`}
+                ? 'bg-[var(--status-warning-muted)] text-[var(--status-warning)] border border-[var(--status-warning)]/30'
+                : 'bg-[var(--glass-bg)] text-[var(--text-muted)] border border-[var(--border)]'
+            }
+          `}
         >
           {project.status}
         </span>
@@ -197,39 +199,66 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
       </div>
 
       {/* Action buttons */}
-      <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-[var(--border)]">
-        {canView && (
-          <button
-            onClick={() => {
-              analytics.projectViewed(project.id, project.name);
-              onSelectProject?.(project);
-            }}
-            className="px-3 py-1.5 text-sm font-medium bg-[var(--interactive)] text-white rounded-lg hover:bg-[var(--interactive-hover)] active:bg-[var(--interactive-active)] transition-colors"
-          >
-            View
-          </button>
-        )}
-        {project.links.github && (
-          <a
-            href={project.links.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3 py-1.5 text-sm font-medium bg-[var(--glass-bg)] text-[var(--text-primary)] rounded-lg hover:bg-[var(--glass-bg-strong)] transition-colors border border-[var(--border)]"
-          >
-            GitHub
-          </a>
-        )}
-        {project.links.liveDemo && (
-          <a
-            href={project.links.liveDemo}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3 py-1.5 text-sm font-medium bg-[var(--glass-bg)] text-[var(--text-primary)] rounded-lg hover:bg-[var(--glass-bg-strong)] transition-colors border border-[var(--border)]"
-          >
-            Demo
-          </a>
-        )}
-      </div>
+      {(hasExternalLinks || canView) && (
+        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-[var(--border)]">
+          {/* View in Viewfinder button */}
+          {canView && onSelectProject && (
+            <button
+              type="button"
+              onClick={() => onSelectProject(project)}
+              aria-label={`View ${project.name} in viewer`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
+                bg-[var(--interactive)] text-white
+                hover:bg-[var(--interactive-hover)] hover:shadow-[0_0_15px_rgba(167,139,250,0.4)]
+                transition-all duration-200"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              View
+            </button>
+          )}
+
+          {/* Live Demo link */}
+          {project.links.liveDemo && (
+            <a
+              href={project.links.liveDemo}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Open ${project.name} live demo in new window`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
+                bg-[var(--highlight)] text-white
+                hover:bg-[var(--highlight-hover)] hover:shadow-[0_0_15px_rgba(224,123,60,0.4)]
+                transition-all duration-200"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              Demo
+            </a>
+          )}
+
+          {/* GitHub link */}
+          {project.links.github && (
+            <a
+              href={project.links.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`View ${project.name} on GitHub`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
+                bg-[var(--glass-bg)] text-[var(--text-secondary)] border border-[var(--border)]
+                hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)]
+                transition-all duration-200"
+            >
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+              </svg>
+              GitHub
+            </a>
+          )}
+        </div>
+      )}
     </div>
   );
 }

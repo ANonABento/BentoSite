@@ -52,6 +52,24 @@ export const GRID_SIZE = 20;
 export const GRID_CELL_SIZE = 1;
 export const GRID_SECTION_SIZE = 5;
 
+// Grid positions for the room environment
+export const GRID_POSITIONS = {
+  floor: [0, -3, 0] as [number, number, number],
+  frontWall: [0, 7, -10] as [number, number, number],
+  backWall: [0, 7, 10] as [number, number, number],
+  rightWall: [10, 7, 0] as [number, number, number],
+  leftWall: [-10, 7, 0] as [number, number, number],
+} as const;
+
+// Grid rotations for walls
+export const GRID_ROTATIONS = {
+  floor: [0, 0, 0] as [number, number, number],
+  frontWall: [Math.PI / 2, 0, 0] as [number, number, number],
+  backWall: [-Math.PI / 2, 0, 0] as [number, number, number],
+  rightWall: [Math.PI / 2, 0, Math.PI / 2] as [number, number, number],
+  leftWall: [Math.PI / 2, 0, -Math.PI / 2] as [number, number, number],
+} as const;
+
 // Lighting settings
 export const AMBIENT_LIGHT_INTENSITY = 0.3;
 export const MAIN_LIGHT_INTENSITY_DESKTOP = 0.8;

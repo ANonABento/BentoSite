@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { m, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { staggerFast, scaleIn, buttonTap } from '@/lib/animations';
-import { analytics } from '@/lib/analytics';
+import { SectionHeader } from '@/components/ui/SectionHeader';
 
 type SkillCategory = 'hardware' | 'software' | 'tools';
 
@@ -59,11 +59,8 @@ function SkillPill({
   };
 
   return (
-    <m.button
-      onClick={() => {
-        analytics.skillClicked(skill);
-        onAskAI?.(skill);
-      }}
+    <motion.button
+      onClick={() => onAskAI?.(skill)}
       whileTap={buttonTap}
       className={`
         px-3 py-1.5 rounded-sm text-xs font-medium
@@ -77,7 +74,7 @@ function SkillPill({
       aria-label={`Ask AI about ${skill}`}
     >
       {skill}
-    </m.button>
+    </motion.button>
   );
 }
 
@@ -105,18 +102,18 @@ function CategorySection({
         {config.icon}
         <span className="text-xs font-semibold uppercase tracking-wider">{config.label}</span>
       </div>
-      <m.div
+      <motion.div
         className="flex flex-wrap gap-2"
         variants={staggerFast}
         initial="hidden"
         animate={isExpanded ? 'visible' : 'hidden'}
       >
         {skills.map((skill) => (
-          <m.div key={skill} variants={scaleIn}>
+          <motion.div key={skill} variants={scaleIn}>
             <SkillPill skill={skill} category={category} onAskAI={onAskAI} />
-          </m.div>
+          </motion.div>
         ))}
-      </m.div>
+      </motion.div>
     </div>
   );
 }
@@ -125,40 +122,30 @@ export function SkillsSection({ onAskAI }: SkillsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const { skills } = PORTFOLIO_DATA;
 
+  // Lightning bolt icon for skills
+  const skillsIcon = (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+    </svg>
+  );
+
   return (
     <div>
       {/* Header */}
-      <m.button
-        onClick={() => setIsExpanded(!isExpanded)}
-        whileTap={buttonTap}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-[var(--glass-bg)] transition-colors border-b border-[var(--border)]"
-        aria-expanded={isExpanded}
-        aria-controls="skills-content"
-      >
-        <div className="flex items-center gap-2">
-          <svg className="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-          <span className="text-sm font-medium text-[var(--text-primary)]">My Skills</span>
-          <span className="text-xs text-[var(--text-muted)]">click to ask AI</span>
-        </div>
-        <m.svg
-          className="w-4 h-4 text-[var(--text-secondary)]"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          animate={{ rotate: isExpanded ? 180 : 0 }}
-          transition={{ duration: 0.2 }}
-          aria-hidden="true"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </m.svg>
-      </m.button>
+      <SectionHeader
+        title="My Skills"
+        icon={skillsIcon}
+        iconColor="violet"
+        subtitle="click to ask AI"
+        collapsible
+        isExpanded={isExpanded}
+        onToggle={() => setIsExpanded(!isExpanded)}
+      />
 
       {/* Content */}
       <AnimatePresence>
         {isExpanded && (
-          <m.div
+          <motion.div
             id="skills-content"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -173,7 +160,7 @@ export function SkillsSection({ onAskAI }: SkillsSectionProps) {
               <CategorySection category="software" skills={skills.software} onAskAI={onAskAI} isExpanded={isExpanded} />
               <CategorySection category="tools" skills={skills.tools} onAskAI={onAskAI} isExpanded={isExpanded} />
             </div>
-          </m.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

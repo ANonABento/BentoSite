@@ -10,7 +10,6 @@ import { DESIGN_SYSTEM, formatFileSize, formatVertexCount } from '../shared';
 export function ModelInfoDisplay({ model, isMobile }: ModelInfoDisplayProps) {
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
   const [showFileDetails, setShowFileDetails] = useState(false);
-  const [showPerformance, setShowPerformance] = useState(false);
 
   const infoIcon = (
     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -74,39 +73,6 @@ export function ModelInfoDisplay({ model, isMobile }: ModelInfoDisplayProps) {
                   <div className="flex justify-between items-center">
                     <span className={`${DESIGN_SYSTEM.colors.text.tertiary} font-medium`}>Vertices:</span>
                     <span className={`${DESIGN_SYSTEM.colors.text.primary} font-mono text-xs`}>{formatVertexCount(model.vertexCount)}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Performance section with visual divider - reduced top padding */}
-            <div>
-              <div className="border-t border-gray-600/50 mb-2"></div>
-              <button
-                onClick={() => setShowPerformance(!showPerformance)}
-                className="w-full flex items-center justify-between text-xs font-medium transition-colors duration-150 ease-out text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded-lg hover:bg-gray-800/30 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
-                aria-expanded={showPerformance}
-                aria-label="Toggle performance metrics"
-              >
-                <span>Performance Metrics</span>
-                <svg className={`w-3 h-3 transition-transform duration-200 ${showPerformance ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {showPerformance && (
-                <div className="mt-2 space-y-2 bg-gray-800/30 rounded-lg p-2">
-                  <div className="flex justify-between items-center">
-                    <span className={`${DESIGN_SYSTEM.colors.text.tertiary} text-xs`}>FPS:</span>
-                    <span className="text-[var(--status-success)] font-mono text-xs">60</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={`${DESIGN_SYSTEM.colors.text.tertiary} text-xs`}>Render Time:</span>
-                    <span className="text-[var(--interactive)] font-mono text-xs">16.7ms</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={`${DESIGN_SYSTEM.colors.text.tertiary} text-xs`}>Memory:</span>
-                    <span className="text-[var(--highlight)] font-mono text-xs">45.2MB</span>
                   </div>
                 </div>
               )}
