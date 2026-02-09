@@ -55,6 +55,12 @@
   --radius-bento-inner: 0.5rem;    /* 8px - compartment edges */
   --radius-bento-element: 0.375rem; /* 6px - elements inside compartments */
 
+  /* Boot screen */
+  --boot-bg: #08080c;
+  --boot-bar-track: rgba(255, 255, 255, 0.06);
+  --boot-bar-fill: var(--orange);
+  --boot-bar-glow: var(--orange-muted);
+
   /* Status colors - semantic for badges and toasts */
   --status-success: #22c55e;
   --status-success-muted: rgba(34, 197, 94, 0.2);
@@ -151,6 +157,35 @@ body {
   border-radius: 0;
 }
 
+/* Background atmosphere — CRT-inspired scanlines + vignette */
+.bg-atmosphere {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(224, 123, 60, 0.03) 0%, transparent 60%),
+    radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.3) 100%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 0, 0, 0.08) 3px,
+      rgba(0, 0, 0, 0.08) 4px
+    ),
+    var(--background);
+}
+
+.light .bg-atmosphere {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(196, 90, 28, 0.02) 0%, transparent 60%),
+    radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.05) 100%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 0, 0, 0.03) 3px,
+      rgba(0, 0, 0, 0.03) 4px
+    ),
+    var(--background);
+}
+
 /* Glassmorphism utilities */
 .glass {
   background: var(--glass-bg);
@@ -168,6 +203,29 @@ body {
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
+/* OS panel with top accent line (SteamOS-style) */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  position: relative;
+}
+
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 12px;
+  right: 12px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--orange), transparent);
+  opacity: 0.4;
+  z-index: 1;
+  border-radius: inherit;
+}
+
 /* Light theme specific glass adjustments */
 .light .glass {
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
@@ -175,6 +233,14 @@ body {
 
 .light .glass-strong {
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+}
+
+.light .glass-panel {
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+.light .glass-panel::before {
+  opacity: 0.25;
 }
 
 /* Accent text utilities - solid colors, no gradients */
@@ -620,6 +686,102 @@ body {
   border: none;
   border-top: 1px solid var(--glass-border);
   margin: 1rem 0;
+}
+
+
+/* CRT effect — subtle retro monitor feel for boot screen */
+.crt-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Scanlines — faint horizontal lines */
+.crt-effect::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 2px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+  pointer-events: none;
+  z-index: 20;
+  opacity: 0.3;
+}
+
+/* Screen vignette — darker edges like a curved CRT */
+.crt-effect::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Subtle flicker — scoped to content, not flash overlays */
+.crt-effect > .crt-content {
+  animation: crt-flicker 4s linear infinite;
+}
+
+@keyframes crt-flicker {
+  0% { opacity: 1; }
+  3% { opacity: 0.97; }
+  6% { opacity: 1; }
+  45% { opacity: 1; }
+  48% { opacity: 0.98; }
+  50% { opacity: 1; }
+  92% { opacity: 1; }
+  95% { opacity: 0.96; }
+  97% { opacity: 1; }
+}
+
+/* Phosphor glow on text inside CRT */
+.crt-effect .crt-glow {
+  text-shadow: 0 0 6px currentColor;
+}
+
+/* Terminal cursor blink */
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* CRT scanline sweep during transition flash */
+@keyframes crt-scanline-sweep {
+  0% { top: 0%; }
+  100% { top: 100%; }
+}
+.animate-crt-scanline {
+  animation: crt-scanline-sweep 0.15s linear forwards;
+}
+
+/* Disable CRT for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .crt-effect::before,
+  .crt-effect::after {
+    display: none;
+  }
+  .crt-effect > * {
+    animation: none;
+  }
+}
+
+/* Panel header monospace utility */
+.panel-header-mono {
+  font-family: var(--font-mono), monospace;
+  text-transform: lowercase;
+  letter-spacing: 0.05em;
 }
 
 /* Skip to content link */
