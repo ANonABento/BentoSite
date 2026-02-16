@@ -162,7 +162,7 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
       <div className="flex items-center justify-between mb-2">
         <span
           className={`
-            px-2.5 py-1 rounded-sm text-xs font-medium uppercase tracking-wide
+            px-2.5 py-1 rounded-sm text-[10px] font-mono font-semibold uppercase tracking-widest
             ${project.status === 'Completed'
               ? 'bg-[var(--status-success-muted)] text-[var(--status-success)] border border-[var(--status-success)] border-opacity-30'
               : project.status === 'In Progress'
@@ -171,9 +171,9 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
             }
           `}
         >
-          {project.status}
+          {project.status === 'Completed' ? 'READY' : project.status === 'In Progress' ? 'BUILDING' : 'PLANNED'}
         </span>
-        <span className="text-xs text-[var(--text-muted)]">{project.category}</span>
+        <span className="text-[10px] font-mono text-[var(--text-muted)]">{project.category}</span>
       </div>
 
       {/* Title */}
