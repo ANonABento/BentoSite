@@ -35,6 +35,12 @@ const TabIcons: Record<MediaTab, React.ReactNode> = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
     </svg>
   ),
+  map: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  ),
 };
 
 const TabLabels: Record<MediaTab, string> = {
@@ -44,6 +50,7 @@ const TabLabels: Record<MediaTab, string> = {
   website: 'Website',
   video: 'Video',
   game: 'Play',
+  map: 'Map',
 };
 
 // Short labels for tab buttons
@@ -54,6 +61,7 @@ const ShortLabels: Record<MediaTab, string> = {
   website: 'Web',
   video: 'Video',
   game: 'Play',
+  map: 'Map',
 };
 
 // Camera icon for header consistency
@@ -64,6 +72,45 @@ const ViewfinderIcon = (
   </svg>
 );
 
+interface ViewfinderTabControlsProps {
+  availableTabs: MediaTab[];
+  activeTab: MediaTab;
+  onTabChange: (tab: MediaTab) => void;
+  compact?: boolean;
+}
+
+export function ViewfinderTabControls({
+  availableTabs,
+  activeTab,
+  onTabChange,
+  compact = false,
+}: ViewfinderTabControlsProps) {
+  return (
+    <div className="flex items-center rounded border border-[var(--border)] bg-[var(--overlay-weak)] backdrop-blur shadow-sm">
+      {availableTabs.map((tab) => (
+        <button
+          key={tab}
+          onClick={() => onTabChange(tab)}
+          className={`
+            flex items-center gap-1.5 ${compact ? 'px-2 py-1.5' : 'px-2.5 py-1.5'} rounded-sm transition-colors duration-150
+            text-xs font-medium
+            ${activeTab === tab
+              ? 'bg-[var(--purple-muted)] text-[var(--interactive)]'
+              : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+            }
+          `}
+          title={TabLabels[tab]}
+          aria-label={TabLabels[tab]}
+          aria-pressed={activeTab === tab}
+        >
+          {TabIcons[tab]}
+          <span>{ShortLabels[tab]}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function ViewfinderHeader({
   availableTabs,
   activeTab,
@@ -71,37 +118,14 @@ export function ViewfinderHeader({
   projectName,
 }: ViewfinderHeaderProps) {
   return (
-    <div className="relative px-4 py-3 border-b border-[var(--border)]">
-      {/* Left side: icon + title */}
-      <div className="flex items-center gap-2 pr-[200px]">
-        <span className="text-[var(--orange)]">{ViewfinderIcon}</span>
+    <div className="relative border-b border-[var(--border)] px-4 py-3 flex items-center justify-between gap-3">
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="text-[var(--orange)] shrink-0">{ViewfinderIcon}</span>
         <span className="text-sm font-medium text-[var(--text-secondary)] truncate">
           {projectName || 'Viewfinder'}
         </span>
       </div>
-      {/* Segmented control - absolutely positioned to avoid affecting height */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center rounded border border-[var(--border)] bg-[var(--overlay-weak)]">
-        {availableTabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => onTabChange(tab)}
-            className={`
-              flex items-center gap-1.5 px-3 py-1.5 rounded-sm transition-colors duration-150
-              text-xs font-medium
-              ${activeTab === tab
-                ? 'bg-[var(--purple-muted)] text-[var(--interactive)]'
-                : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-              }
-            `}
-            title={TabLabels[tab]}
-            aria-label={TabLabels[tab]}
-            aria-pressed={activeTab === tab}
-          >
-            {TabIcons[tab]}
-            <span>{ShortLabels[tab]}</span>
-          </button>
-        ))}
-      </div>
+      <ViewfinderTabControls availableTabs={availableTabs} activeTab={activeTab} onTabChange={onTabChange} />
     </div>
   );
 }

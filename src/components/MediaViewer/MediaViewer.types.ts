@@ -11,6 +11,10 @@ export interface ProjectMedia {
     type: 'unity-webgl' | 'itch';
     url: string;
   };
+  map?: {
+    locations: string[];
+    highlightedIds?: string[];
+  };
 }
 
 export interface MediaViewerProps {

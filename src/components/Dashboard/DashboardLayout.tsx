@@ -18,7 +18,7 @@ import type { Project } from '@/lib/projects-data';
 interface DashboardLayoutProps {
   Viewfinder: ComponentType<{ project: Project | null; minimal?: boolean }>;
   Chatbot: ComponentType<{
-    onReady?: (fns: { send: (content: string) => void; clear: () => void }) => void;
+    onReady?: (fns: { send: (content: string) => void; addAssistant: (content: string) => void; clear: () => void }) => void;
     onViewResume?: () => void;
     onSeeProjects?: () => void;
   }>;
@@ -48,7 +48,11 @@ export function DashboardLayout({
   const [activeSection, setActiveSection] = useState<'3d' | 'chat'>('3d');
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [chatFns, setChatFns] = useState<{ send: (content: string) => void; clear: () => void } | null>(null);
+  const [chatFns, setChatFns] = useState<{
+    send: (content: string) => void;
+    addAssistant: (content: string) => void;
+    clear: () => void;
+  } | null>(null);
   const isMountedRef = useRef(true);
   const mobileChatRef = useRef<HTMLDivElement>(null);
 

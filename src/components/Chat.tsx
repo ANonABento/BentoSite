@@ -21,6 +21,7 @@ interface Message {
 
 interface ChatFunctions {
   send: (content: string) => void;
+  addAssistant: (content: string) => void;
   clear: () => void;
 }
 
@@ -354,7 +355,23 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
     [isLoading]
   );
 
-  // Refs for onReady — see stable-wrapper effect below clearChat
+  const addAssistantMessage = useCallback((content: string) => {
+    const trimmed = content.trim();
+    if (!trimmed) return;
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        role: 'assistant',
+        content: trimmed,
+        timestamp: Date.now(),
+      },
+    ]);
+    setError(null);
+  }, []);
+
+  // Refs for stable onReady wrappers — see effect below clearChat
   const sendMessageRef = useRef(sendMessage);
   sendMessageRef.current = sendMessage;
 
@@ -389,10 +406,11 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
     if (onReady) {
       onReady({
         send: (content: string) => sendMessageRef.current(content),
+        addAssistant: addAssistantMessage,
         clear: () => clearChatRef.current(),
       });
     }
-  }, [onReady]);
+  }, [onReady, addAssistantMessage]);
 
   return (
     <div className="flex flex-col h-full" role="region" aria-label="Chat conversation">
