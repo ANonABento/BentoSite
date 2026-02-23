@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { ViewfinderHeader } from './ViewfinderHeader';
 import { ViewerSkeleton } from './ViewerSkeleton';
 import type { ViewfinderProps, MediaTab } from './Viewfinder.types';
+import { getMapLocations, getAllMapLocations } from '@/lib/map-data';
 
 // Dynamic imports for code splitting - only load viewers when needed
 // Each viewer shows a skeleton while its chunk is being loaded
@@ -38,7 +39,20 @@ const GameViewer = dynamic(
   { ssr: false, loading: () => <ViewerSkeleton /> }
 );
 
-export function Viewfinder({ project, minimal = false }: ViewfinderProps) {
+const MapViewer = dynamic(
+  () => import('./viewers/MapViewer').then((mod) => ({ default: mod.MapViewer })),
+  { ssr: false, loading: () => <ViewerSkeleton /> }
+);
+
+export function Viewfinder({
+  project,
+  minimal = false,
+  onMapLocationClick,
+  activeTab,
+  onTabChange,
+  onAvailableTabsChange,
+  showHeader = true,
+}: ViewfinderProps) {
   // Determine available tabs based on project media
   const availableTabs = useMemo<MediaTab[]>(() => {
     const tabs: MediaTab[] = [];
@@ -68,22 +82,44 @@ export function Viewfinder({ project, minimal = false }: ViewfinderProps) {
       tabs.push('game');
     }
 
+    // Map is always available (shows all experience locations by default)
+    tabs.push('map');
+
     // Default to 3D if no tabs available
     return tabs.length ? tabs : ['3d'];
   }, [project]);
 
-  const [activeTab, setActiveTab] = useState<MediaTab>(availableTabs[0]);
+  const [internalActiveTab, setInternalActiveTab] = useState<MediaTab>(availableTabs[0]);
+  const isControlled = activeTab !== undefined && onTabChange !== undefined;
+  const currentTab = isControlled ? activeTab : internalActiveTab;
+  const resolvedActiveTab = availableTabs.includes(currentTab as MediaTab) ? (currentTab as MediaTab) : availableTabs[0];
+  const setResolvedTab = isControlled ? (onTabChange as (tab: MediaTab) => void) : setInternalActiveTab;
 
-  // Ensure the active tab is valid when available tabs change
+  // Ensure controlled parent receives a valid tab when options change
   useEffect(() => {
-    if (!availableTabs.includes(activeTab)) {
-      setActiveTab(availableTabs[0]);
+    if (isControlled && activeTab !== undefined && !availableTabs.includes(activeTab)) {
+      onTabChange?.(availableTabs[0]);
     }
-  }, [availableTabs, activeTab]);
+  }, [availableTabs, activeTab, isControlled, onTabChange]);
+
+  // Emit available tabs for parent-level tab controls
+  useEffect(() => {
+    onAvailableTabsChange?.(availableTabs);
+  }, [availableTabs, onAvailableTabsChange]);
+
+  // Resolve map locations from portfolio data
+  const mapLocations = useMemo(() => {
+    if (project?.media?.map?.locations) {
+      return getMapLocations(project.media.map.locations);
+    }
+    return getAllMapLocations();
+  }, [project]);
+
+  const mapHighlightedIds = project?.media?.map?.highlightedIds;
 
   // Render the active viewer
   const renderViewer = () => {
-    switch (activeTab) {
+    switch (resolvedActiveTab) {
       case '3d':
         return <Model3DViewer modelPath={project?.links.modelPath} minimal={minimal} />;
       case 'images':
@@ -96,21 +132,31 @@ export function Viewfinder({ project, minimal = false }: ViewfinderProps) {
         return <VideoViewer url={project?.media?.video || ''} />;
       case 'game':
         return <GameViewer game={project?.media?.game} />;
+      case 'map':
+        return (
+          <MapViewer
+            locations={mapLocations}
+            highlightedIds={mapHighlightedIds}
+            onLocationClick={onMapLocationClick}
+          />
+        );
       default:
         return <Model3DViewer minimal={minimal} />;
     }
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col relative">
       {/* Header with tab toggles - hide in minimal mode or when only one tab */}
       {!minimal && availableTabs.length > 1 && (
-        <ViewfinderHeader
-          availableTabs={availableTabs}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          projectName={project?.name}
-        />
+        showHeader ? (
+          <ViewfinderHeader
+            availableTabs={availableTabs}
+            activeTab={resolvedActiveTab}
+            onTabChange={setResolvedTab}
+            projectName={project?.name}
+          />
+        ) : null
       )}
 
       {/* Content area */}

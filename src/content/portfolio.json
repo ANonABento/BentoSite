@@ -238,6 +238,7 @@
       "company": "Hamming AI",
       "role": "Software Engineer",
       "location": "Austin, Texas, United States",
+      "coordinates": { "lat": 30.2672, "lng": -97.7431 },
       "period": "Dec 2025 - Present",
       "description": "YC S24 startup building AI-powered developer tools.",
       "type": "work",
@@ -248,6 +249,7 @@
       "company": "Reazon Human Interaction Lab",
       "role": "Robotics Engineer",
       "location": "Akihabara, Tokyo, Japan",
+      "coordinates": { "lat": 35.6984, "lng": 139.7731 },
       "period": "Jun 2025 - Aug 2025",
       "description": "Designed lightweight exoskeleton wrist controller with Dynamixel actuators. Built multi-camera AprilTag tracking system with 20% accuracy improvement. Developed interactive Three.js web interface for remote calibration.",
       "type": "work",
@@ -258,6 +260,7 @@
       "company": "Midnight Sun",
       "role": "Hardware Developer",
       "location": "Waterloo, Ontario, Canada",
+      "coordinates": { "lat": 43.4643, "lng": -80.5204 },
       "period": "Sep 2024 - Apr 2025",
       "description": "Designed and routed double-layer PCBs for controller subsystem. Maintained 0 ERC/DRC violations across all layers. Soldered and tested multiple SMD boards including IMU and power control circuits.",
       "type": "work",
@@ -268,6 +271,7 @@
       "company": "Zenith Energy Corporation",
       "role": "Front-End Developer",
       "location": "Toronto, Ontario, Canada",
+      "coordinates": { "lat": 43.6532, "lng": -79.3832 },
       "period": "Sep 2022 - Jan 2023",
       "description": "Developed and deployed client-facing e-commerce sites on Wix and Shopify. Reduced handover time with modular templates and simplified CMS workflows. Created cohesive brand identity with custom graphics.",
       "type": "work",
@@ -280,7 +284,8 @@
       "institution": "University of Waterloo",
       "degree": "BASc in Computer Engineering",
       "period": "Sept 2024 - Present",
-      "location": "Waterloo, Ontario, Canada"
+      "location": "Waterloo, Ontario, Canada",
+      "coordinates": { "lat": 43.4723, "lng": -80.5449 }
     }
   ]
 }

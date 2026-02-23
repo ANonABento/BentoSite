@@ -434,6 +434,16 @@ body {
   animation: pulse-glow-purple 2s ease-in-out infinite;
 }
 
+/* Map marker glow animation (SVG drop-shadow instead of box-shadow) */
+@keyframes marker-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(251, 146, 60, 0.3)); opacity: 0.7; }
+  50% { filter: drop-shadow(0 0 10px rgba(251, 146, 60, 0.6)); opacity: 1; }
+}
+
+.animate-marker-glow {
+  animation: marker-glow 2s ease-in-out infinite;
+}
+
 /* Text glow on hover */
 .text-glow-hover {
   transition: text-shadow 0.3s ease;
@@ -820,7 +830,8 @@ body {
 
   .animate-pulse,
   .animate-spin,
-  .animate-pulse-glow {
+  .animate-pulse-glow,
+  .animate-marker-glow {
     animation: none;
   }
 

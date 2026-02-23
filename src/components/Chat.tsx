@@ -21,6 +21,7 @@ interface Message {
 
 interface ChatFunctions {
   send: (content: string) => void;
+  addAssistant: (content: string) => void;
   clear: () => void;
 }
 
@@ -354,12 +355,28 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
     [isLoading]
   );
 
+  const addAssistantMessage = useCallback((content: string) => {
+    const trimmed = content.trim();
+    if (!trimmed) return;
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        role: 'assistant',
+        content: trimmed,
+        timestamp: Date.now(),
+      },
+    ]);
+    setError(null);
+  }, []);
+
   // Expose sendMessage and clearChat to parent component
   useEffect(() => {
     if (onReady) {
-      onReady({ send: sendMessage, clear: clearChat });
+      onReady({ send: sendMessage, addAssistant: addAssistantMessage, clear: clearChat });
     }
-  }, [onReady, sendMessage]);
+  }, [onReady, sendMessage, addAssistantMessage]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

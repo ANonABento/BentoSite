@@ -9,6 +9,7 @@ import { BentoIcon } from '@/components/BentoOS/BentoIcon';
 
 interface ChatFns {
   send: (content: string) => void;
+  addAssistant: (content: string) => void;
   clear: () => void;
 }
 
