@@ -13,6 +13,10 @@ import {
 } from '@/components/ui/KeyboardShortcutsHelp';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import type { Project } from '@/lib/projects-data';
+import type { MapLocation } from '@/components/Viewfinder/Viewfinder.types';
+import { formatLocationAssistantMessage } from '@/lib/map-data';
+import type { MediaTab } from '@/components/Viewfinder/Viewfinder.types';
+import { ViewfinderTabControls } from '@/components/Viewfinder/ViewfinderHeader';
 
 // Error Boundary for graceful error handling
 interface ErrorBoundaryProps {
@@ -159,9 +163,15 @@ function HomeContent() {
   const isLanding = urlView !== 'dashboard' && !hasClickedEnter;
 
   const [activeSection, setActiveSection] = useState<'3d' | 'chat'>('3d');
+  const [viewfinderTabs, setViewfinderTabs] = useState<MediaTab[]>(['3d', 'map']);
+  const [viewfinderTab, setViewfinderTab] = useState<MediaTab>('3d');
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [chatFns, setChatFns] = useState<{ send: (content: string) => void; clear: () => void } | null>(null);
+  const [chatFns, setChatFns] = useState<{
+    send: (content: string) => void;
+    addAssistant: (content: string) => void;
+    clear: () => void;
+  } | null>(null);
   const { isOpen: isShortcutsOpen, close: closeShortcuts } = useKeyboardShortcutsHelp();
 
   // Track mounted state to prevent state updates on unmounted components
@@ -201,6 +211,30 @@ function HomeContent() {
       chatFns?.send(message);
     }
   }, [chatFns, activeSection]);
+
+  const handleMapLocationClick = useCallback((location: MapLocation) => {
+    const message = formatLocationAssistantMessage(location);
+
+    if (activeSection !== 'chat') {
+      setActiveSection('chat');
+      setTimeout(() => {
+        if (isMountedRef.current) {
+          chatFns?.addAssistant(message);
+        }
+      }, 120);
+      return;
+    }
+
+    chatFns?.addAssistant(message);
+  }, [chatFns, activeSection]);
+
+  const handleChatReady = useCallback((fns: {
+    send: (content: string) => void;
+    addAssistant: (content: string) => void;
+    clear: () => void;
+  }) => {
+    setChatFns(fns);
+  }, []);
 
   return (
     <LayoutGroup>
@@ -331,29 +365,45 @@ function HomeContent() {
                 }}
               >
                 {/* Viewfinder Header - fades in after landing (only when no project selected) */}
-                {!selectedProject && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={isLanding ? { opacity: 0, height: 0 } : { opacity: 1, height: 'auto' }}
-                    transition={{ delay: 0.5, duration: 0.3 }}
-                  >
-                    <SectionHeader
-                      title="Viewfinder"
-                      icon={
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                      }
-                      iconColor="orange"
-                      subtitle="view images, videos, 3D models, websites"
-                    />
-                  </motion.div>
-                )}
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={isLanding ? { opacity: 0, height: 0 } : { opacity: 1, height: 'auto' }}
+                  transition={{ delay: 0.5, duration: 0.3 }}
+                >
+                  <SectionHeader
+                    title="Viewfinder"
+                    icon={
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    }
+                    iconColor="orange"
+                    subtitle={selectedProject?.name || 'view images, videos, 3D models, websites'}
+                    action={
+                      viewfinderTabs.length > 1 ? (
+                        <ViewfinderTabControls
+                          availableTabs={viewfinderTabs}
+                          activeTab={viewfinderTab}
+                          onTabChange={setViewfinderTab}
+                          compact
+                        />
+                      ) : null
+                    }
+                  />
+                </motion.div>
                 {/* Viewfinder Content */}
                 <div className="flex-1 min-h-0">
                   <ErrorBoundary>
-                    <Viewfinder project={selectedProject} minimal={isLanding} />
+                    <Viewfinder
+                      project={selectedProject}
+                      minimal={isLanding}
+                      onMapLocationClick={handleMapLocationClick}
+                      activeTab={viewfinderTab}
+                      onTabChange={setViewfinderTab}
+                      onAvailableTabsChange={setViewfinderTabs}
+                      showHeader={false}
+                    />
                   </ErrorBoundary>
                 </div>
               </motion.div>
@@ -381,28 +431,44 @@ function HomeContent() {
                 }}
               >
                 {/* Mobile Viewfinder Header */}
-                {!selectedProject && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={isLanding ? { opacity: 0, height: 0 } : { opacity: 1, height: 'auto' }}
-                    transition={{ delay: 0.5, duration: 0.3 }}
-                  >
-                    <SectionHeader
-                      title="Viewfinder"
-                      icon={
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                      }
-                      iconColor="orange"
-                      subtitle="view images, videos, 3D models, websites"
-                    />
-                  </motion.div>
-                )}
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={isLanding ? { opacity: 0, height: 0 } : { opacity: 1, height: 'auto' }}
+                  transition={{ delay: 0.5, duration: 0.3 }}
+                >
+                  <SectionHeader
+                    title="Viewfinder"
+                    icon={
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    }
+                    iconColor="orange"
+                    subtitle={selectedProject?.name || 'view images, videos, 3D models, websites'}
+                    action={
+                      viewfinderTabs.length > 1 ? (
+                        <ViewfinderTabControls
+                          availableTabs={viewfinderTabs}
+                          activeTab={viewfinderTab}
+                          onTabChange={setViewfinderTab}
+                          compact
+                        />
+                      ) : null
+                    }
+                  />
+                </motion.div>
                 <div className="flex-1 min-h-0">
                   <ErrorBoundary>
-                    <Viewfinder project={selectedProject} minimal={isLanding} />
+                    <Viewfinder
+                      project={selectedProject}
+                      minimal={isLanding}
+                      onMapLocationClick={handleMapLocationClick}
+                      activeTab={viewfinderTab}
+                      onTabChange={setViewfinderTab}
+                      onAvailableTabsChange={setViewfinderTabs}
+                      showHeader={false}
+                    />
                   </ErrorBoundary>
                 </div>
               </motion.div>
@@ -445,7 +511,7 @@ function HomeContent() {
                     <div className="flex-1 min-h-0">
                       <ErrorBoundary>
                         <Chatbot
-                          onReady={(fns) => setChatFns(fns)}
+                          onReady={handleChatReady}
                           onViewResume={() => window.open('/resume.pdf', '_blank')}
                           onSeeProjects={() => setIsProjectsOpen(true)}
                         />
@@ -491,7 +557,7 @@ function HomeContent() {
                 <div className="flex-1 min-h-0">
                   <ErrorBoundary>
                     <Chatbot
-                      onReady={(fns) => setChatFns(fns)}
+                      onReady={handleChatReady}
                       onViewResume={() => window.open('/resume.pdf', '_blank')}
                       onSeeProjects={() => setIsProjectsOpen(true)}
                     />
