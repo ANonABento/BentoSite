@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useSyncExternalStore } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme-context';
 import { useToast } from '@/components/ui/Toast';
 import { useClipboard } from '@/lib/clipboard';
 import { analytics } from '@/lib/analytics';
+import { BentoIcon } from '@/components/BentoOS/BentoIcon';
 
 interface HeaderProps {
   name?: string;
@@ -102,6 +103,31 @@ function ResumeButton({ resumeUrl, className = '' }: { resumeUrl: string; classN
   );
 }
 
+// Clock component for taskbar
+function TaskbarClock() {
+  const [time, setTime] = useState('');
+  const mounted = useHasMounted();
+
+  useEffect(() => {
+    if (!mounted) return;
+    const update = () => {
+      const now = new Date();
+      setTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
+    };
+    update();
+    const interval = setInterval(update, 60000);
+    return () => clearInterval(interval);
+  }, [mounted]);
+
+  if (!mounted || !time) return null;
+
+  return (
+    <span className="text-xs font-mono text-[var(--text-muted)] tabular-nums pl-2 hidden sm:inline">
+      {time}
+    </span>
+  );
+}
+
 export default function Header({
   name = 'Your Name',
   tagline = 'Hardware & Software Engineer',
@@ -168,13 +194,47 @@ export default function Header({
   if (compact) {
     return (
       <header className="flex items-center justify-between px-4 py-3 glass rounded-xl">
+        {/* Left: bentOS branding + nav */}
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-bold text-[var(--text-primary)]">{name}</h1>
-          <span className="text-sm text-[var(--text-muted)] hidden sm:inline">|</span>
-          <span className="text-sm text-[var(--text-secondary)] hidden sm:inline">{tagline}</span>
+          <div className="flex items-center gap-2">
+            <BentoIcon size={20} />
+            <h1 className="text-base font-bold font-mono tracking-tight">
+              <span className="text-[var(--orange)]">bent</span>
+              <span className="text-[var(--purple)]">OS</span>
+            </h1>
+          </div>
+          <div className="hidden sm:block w-px h-5 bg-gradient-to-b from-transparent via-[var(--border)] to-transparent" />
+          <Link
+            href="/playground"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono
+              text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]
+              transition-all duration-200"
+            aria-label="Fidget games"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="hidden sm:inline">Fidget</span>
+          </Link>
+          {onProjectsClick && (
+            <button
+              onClick={onProjectsClick}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono
+                text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]
+                transition-all duration-200 focus-ring"
+              aria-label="View projects"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              <span className="hidden sm:inline">Projects</span>
+            </button>
+          )}
         </div>
+
+        {/* Right: socials + theme + resume + clock */}
         <nav aria-label="Main navigation" className="flex items-center gap-1">
-          <ThemeToggle />
           {socialLinks.map((link) => (
             link.id === 'email' ? (
               <button
@@ -202,34 +262,9 @@ export default function Header({
               </a>
             )
           ))}
-          <Link
-            href="/playground"
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
-              text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]
-              transition-all duration-200"
-            aria-label="Fidget games"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="hidden sm:inline">Fidget</span>
-          </Link>
-          {onProjectsClick && (
-            <button
-              onClick={onProjectsClick}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
-                glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]
-                transition-all duration-200 focus-ring"
-              aria-label="View projects"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
-              <span className="hidden sm:inline">Projects</span>
-            </button>
-          )}
+          <ThemeToggle />
           <ResumeButton resumeUrl={resumeUrl} className="ml-1" />
+          <TaskbarClock />
         </nav>
       </header>
     );

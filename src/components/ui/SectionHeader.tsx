@@ -12,6 +12,8 @@ export interface SectionHeaderProps {
   iconColor?: 'orange' | 'violet';
   subtitle?: string;
   action?: ReactNode;
+  /** Use monospace font for title (bentOS panel style) */
+  mono?: boolean;
   collapsible?: boolean;
   isExpanded?: boolean;
   onToggle?: () => void;
@@ -23,6 +25,7 @@ export function SectionHeader({
   iconColor = 'violet',
   subtitle,
   action,
+  mono = false,
   collapsible = false,
   isExpanded = true,
   onToggle,
@@ -31,13 +34,20 @@ export function SectionHeader({
     ? 'text-[var(--orange)]'
     : 'text-[var(--interactive)]';
 
+  const titleClass = mono
+    ? 'text-sm font-medium text-[var(--text-secondary)] font-mono tracking-wide'
+    : 'text-sm font-medium text-[var(--text-secondary)]';
+
   const content = (
     <>
       <div className="flex items-center gap-2">
         <span className={iconColorClass}>{icon}</span>
-        <span className="text-sm font-medium text-[var(--text-secondary)]">{title}</span>
+        <span className={titleClass}>{title}</span>
+        {mono && (
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--orange)] animate-pulse opacity-60" />
+        )}
         {subtitle && (
-          <span className="text-xs text-[var(--text-muted)]">{subtitle}</span>
+          <span className={`text-xs text-[var(--text-muted)] ${mono ? 'font-mono' : ''}`}>{subtitle}</span>
         )}
       </div>
       <div className="flex items-center gap-2">
@@ -64,7 +74,8 @@ export function SectionHeader({
       <motion.button
         onClick={onToggle}
         whileTap={buttonTap}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-[var(--glass-bg)] transition-colors border-b border-[var(--border)]"
+        className="w-full px-4 py-3 flex items-center justify-between hover:bg-[var(--glass-bg)] transition-colors"
+        style={{ borderBottom: '1px solid transparent', borderImage: 'linear-gradient(90deg, transparent, var(--border), transparent) 1' }}
         aria-expanded={isExpanded}
       >
         {content}
@@ -73,7 +84,10 @@ export function SectionHeader({
   }
 
   return (
-    <div className="flex-shrink-0 px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
+    <div
+      className="flex-shrink-0 px-4 py-3 flex items-center justify-between"
+      style={{ borderBottom: '1px solid transparent', borderImage: 'linear-gradient(90deg, transparent, var(--border), transparent) 1' }}
+    >
       {content}
     </div>
   );

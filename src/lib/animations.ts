@@ -314,6 +314,39 @@ export const sectionStagger: Variants = {
   },
 };
 
+// Panel entrance — OS window appearing (bentOS dashboard)
+export const panelReveal: Variants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.97,
+    filter: 'blur(8px)',
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: {
+      duration: 0.5,
+      ease: easings.easeOutQuart,
+    },
+  },
+};
+
+// Ambient breathing for status indicators
+export const breathe: Variants = {
+  initial: {
+    opacity: 0.4,
+  },
+  animate: {
+    opacity: [0.4, 0.7, 0.4],
+    transition: {
+      duration: 3,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    },
+  },
+};
+
 // Section item with blur reveal
 export const sectionItem: Variants = {
   hidden: {
@@ -328,6 +361,85 @@ export const sectionItem: Variants = {
     transition: {
       duration: 0.6,
       ease: easings.apple,
+    },
+  },
+};
+
+// Dashboard entrance — generic fallback (mobile tabs, etc.)
+// No scale/filter transforms — these break backdrop-filter on glass-panel children
+export const dashboardPanelIn: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 12,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.45,
+      ease: easings.easeOutQuart,
+    },
+  },
+};
+
+// Dashboard header — drops from top
+export const dashboardHeaderIn: Variants = {
+  hidden: {
+    opacity: 0,
+    y: -20,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: easings.easeOutQuart,
+    },
+  },
+};
+
+// Dashboard left panel — slides from left
+export const dashboardLeftIn: Variants = {
+  hidden: {
+    opacity: 0,
+    x: -24,
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.5,
+      ease: easings.easeOutQuart,
+    },
+  },
+};
+
+// Dashboard right column — slides from right
+export const dashboardRightIn: Variants = {
+  hidden: {
+    opacity: 0,
+    x: 24,
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.5,
+      ease: easings.easeOutQuart,
+    },
+  },
+};
+
+// Dashboard entrance orchestrator — staggers children after boot exit
+export const dashboardStagger: Variants = {
+  hidden: {
+    opacity: 1,
+  },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0,
     },
   },
 };

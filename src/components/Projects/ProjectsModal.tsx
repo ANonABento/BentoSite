@@ -10,6 +10,7 @@ import type { ProjectCategory, Project } from '@/lib/projects-data';
 import { ProjectCard } from './ProjectCard';
 import { staggerContainer, staggerItem, buttonTap } from '@/lib/animations';
 import { useFocusTrap } from '@/lib/use-focus-trap';
+import { BentoIcon } from '@/components/BentoOS/BentoIcon';
 
 interface ProjectsModalProps {
   isOpen: boolean;
@@ -84,10 +85,16 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
           >
             {/* Header */}
             <div className="flex-shrink-0 px-6 py-4 border-b border-[var(--border)]">
-              <div className="flex items-center justify-between mb-4">
-                <h2 id="projects-modal-title" className="text-xl font-bold text-[var(--text-primary)]">
-                  Projects
-                </h2>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h2 id="projects-modal-title" className="flex items-center gap-2 text-lg font-bold font-mono text-[var(--text-primary)]">
+                    <BentoIcon size={18} />
+                    <span>file explorer</span>
+                  </h2>
+                  <span className="text-[10px] font-mono text-[var(--text-muted)] pl-7">
+                    bentOS / usr / projects /
+                  </span>
+                </div>
                 <motion.button
                   onClick={onClose}
                   whileTap={buttonTap}
@@ -125,19 +132,19 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
                 </div>
 
                 {/* Category filters */}
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {categories.map((category) => (
                     <motion.button
                       key={category}
                       onClick={() => setSelectedCategory(category)}
                       whileTap={buttonTap}
                       className={`
-                        px-4 py-2 rounded-full text-sm font-medium
-                        transition-all duration-150 transform hover:scale-105
+                        px-3 py-1.5 text-xs font-mono uppercase tracking-wider
+                        transition-all duration-150
                         focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50
                         ${selectedCategory === category
-                          ? 'bg-[var(--interactive)] text-[var(--text-on-accent)] shadow-lg hover:bg-[var(--interactive-hover)]'
-                          : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)] border border-[var(--border)]'
+                          ? 'bg-[var(--interactive)] text-[var(--text-on-accent)] border border-[var(--interactive)]'
+                          : 'bg-transparent text-[var(--text-secondary)] border border-[var(--border)] hover:border-[var(--text-muted)] hover:text-[var(--text-primary)]'
                         }
                       `}
                       aria-pressed={selectedCategory === category}
@@ -194,8 +201,10 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
 
             {/* Footer with count */}
             <div className="flex-shrink-0 px-6 py-3 border-t border-[var(--border)] bg-[var(--glass-bg)]">
-              <p className="text-sm text-[var(--text-muted)]">
-                Showing {filteredProjects.length} of {PROJECTS.length} projects
+              <p className="text-xs font-mono text-[var(--text-muted)]">
+                {filteredProjects.length} entries
+                {selectedCategory !== 'All' && <span> | filtered by: [{selectedCategory}]</span>}
+                {searchTerm && <span> | search: &quot;{searchTerm}&quot;</span>}
               </p>
             </div>
           </motion.div>
