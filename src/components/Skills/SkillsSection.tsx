@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { staggerFast, scaleIn, buttonTap } from '@/lib/animations';
 import { SectionHeader } from '@/components/ui/SectionHeader';
@@ -44,7 +44,7 @@ function SkillTag({
   };
 
   return (
-    <motion.button
+    <m.button
       onClick={() => onAskAI?.(skill)}
       whileTap={buttonTap}
       className={`
@@ -57,7 +57,7 @@ function SkillTag({
       aria-label={`Ask AI about ${skill}`}
     >
       {skill}
-    </motion.button>
+    </m.button>
   );
 }
 
@@ -90,18 +90,18 @@ function CategorySection({
           {skills.length} loaded
         </span>
       </div>
-      <motion.div
+      <m.div
         className="flex flex-wrap gap-1.5"
         variants={staggerFast}
         initial="hidden"
         animate={isExpanded ? 'visible' : 'hidden'}
       >
         {skills.map((skill) => (
-          <motion.div key={skill} variants={scaleIn}>
+          <m.div key={skill} variants={scaleIn}>
             <SkillTag skill={skill} category={category} onAskAI={onAskAI} />
-          </motion.div>
+          </m.div>
         ))}
-      </motion.div>
+      </m.div>
     </div>
   );
 }
@@ -127,7 +127,7 @@ export function SkillsSection({ onAskAI }: SkillsSectionProps) {
       {/* Content */}
       <AnimatePresence>
         {isExpanded && (
-          <motion.div
+          <m.div
             id="skills-content"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -142,7 +142,7 @@ export function SkillsSection({ onAskAI }: SkillsSectionProps) {
               <CategorySection category="software" skills={skills.software} onAskAI={onAskAI} isExpanded={isExpanded} />
               <CategorySection category="tools" skills={skills.tools} onAskAI={onAskAI} isExpanded={isExpanded} />
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

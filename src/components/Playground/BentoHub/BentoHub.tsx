@@ -29,8 +29,8 @@ export function BentoHub() {
       {/* 3D Particle Background */}
       <VoidBackground />
 
-      {/* Subtle overlay */}
-      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02] pointer-events-none mix-blend-overlay z-[1]" />
+      {/* Subtle noise overlay via CSS gradient (no external image needed) */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay z-[1]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%270 0 256 256%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.9%27 numOctaves=%274%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27/%3E%3C/svg%3E")' }} />
 
       {/* Transparent Header */}
       <TransparentHeader />

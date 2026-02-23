@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { sectionItem, staggerContainer, staggerItem } from '@/lib/animations';
 import { PORTFOLIO_DATA, type PortfolioProject } from '@/lib/portfolio-context';
 
@@ -37,7 +37,7 @@ function ProjectCard({ project }: { project: PortfolioProject }) {
   const icon = categoryIcons[project.category] || '📦';
 
   return (
-    <motion.div
+    <m.div
       layout
       variants={staggerItem}
       initial={{ opacity: 0, scale: 0.9 }}
@@ -46,7 +46,7 @@ function ProjectCard({ project }: { project: PortfolioProject }) {
       transition={{ duration: 0.3 }}
       className="group"
     >
-      <motion.div
+      <m.div
         className="glass rounded-2xl overflow-hidden card-hover h-full flex flex-col"
         whileHover={{ y: -8 }}
         transition={{ type: 'spring', stiffness: 300 }}
@@ -55,13 +55,13 @@ function ProjectCard({ project }: { project: PortfolioProject }) {
         <div className="h-40 relative overflow-hidden">
           <div className="absolute inset-0" style={{ backgroundImage: gradient }} />
           <div className="absolute inset-0 flex items-center justify-center">
-            <motion.div
+            <m.div
               className="text-5xl opacity-30"
               animate={{ rotate: [0, 5, -5, 0] }}
               transition={{ duration: 6, repeat: Infinity }}
             >
               {icon}
-            </motion.div>
+            </m.div>
           </div>
           {/* Category badge */}
           <div className="absolute top-4 left-4">
@@ -111,8 +111,8 @@ function ProjectCard({ project }: { project: PortfolioProject }) {
             )}
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   );
 }
 
@@ -140,7 +140,7 @@ export function FeaturedProjects({ onViewAll }: { onViewAll?: () => void }) {
 
   return (
     <section id="projects" className="py-16 md:py-24">
-      <motion.div
+      <m.div
         className="max-w-6xl mx-auto px-4 md:px-6"
         initial="hidden"
         whileInView="visible"
@@ -148,7 +148,7 @@ export function FeaturedProjects({ onViewAll }: { onViewAll?: () => void }) {
         variants={staggerContainer}
       >
         {/* Section Header */}
-        <motion.div variants={sectionItem} className="mb-8 flex items-end justify-between">
+        <m.div variants={sectionItem} className="mb-8 flex items-end justify-between">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
               Featured Projects
@@ -166,10 +166,10 @@ export function FeaturedProjects({ onViewAll }: { onViewAll?: () => void }) {
               </svg>
             </button>
           )}
-        </motion.div>
+        </m.div>
 
         {/* Technology Filter */}
-        <motion.div variants={sectionItem} className="mb-8">
+        <m.div variants={sectionItem} className="mb-8">
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedTech(null)}
@@ -200,10 +200,10 @@ export function FeaturedProjects({ onViewAll }: { onViewAll?: () => void }) {
               Showing {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''} with {selectedTech}
             </p>
           )}
-        </motion.div>
+        </m.div>
 
         {/* Projects Grid */}
-        <motion.div
+        <m.div
           className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
           variants={staggerContainer}
         >
@@ -212,20 +212,20 @@ export function FeaturedProjects({ onViewAll }: { onViewAll?: () => void }) {
               <ProjectCard key={project.id} project={project} />
             ))}
           </AnimatePresence>
-        </motion.div>
+        </m.div>
 
         {/* Mobile View All */}
         {onViewAll && (
-          <motion.div variants={sectionItem} className="mt-8 text-center md:hidden">
+          <m.div variants={sectionItem} className="mt-8 text-center md:hidden">
             <button
               onClick={onViewAll}
               className="px-6 py-3 bg-[var(--purple-muted)] hover:bg-[var(--purple)] hover:text-[var(--text-on-accent)] text-[var(--purple)] rounded-xl transition-colors"
             >
               View All Projects
             </button>
-          </motion.div>
+          </m.div>
         )}
-      </motion.div>
+      </m.div>
     </section>
   );
 }

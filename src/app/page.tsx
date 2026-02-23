@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { Suspense, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { LayoutGroup } from 'framer-motion';
+import { LayoutGroup, LazyMotion, domAnimation } from 'framer-motion';
 import { BootScreen } from '@/components/BentoOS/BootScreen';
 import { BentoIcon } from '@/components/BentoOS/BentoIcon';
 import { DashboardLayout } from '@/components/Dashboard';
@@ -69,8 +69,9 @@ function HomeContent() {
   }, []);
 
   return (
+    <LazyMotion features={domAnimation}>
     <LayoutGroup>
-      <main className="relative h-screen bg-atmosphere overflow-hidden">
+      <main id="main-content" className="relative h-screen bg-atmosphere overflow-hidden">
         {/* Boot screen overlay — manages its own exit animation */}
         {isBooting && (
           <BootScreen onExiting={handleBootExiting} onComplete={handleBootComplete} />
@@ -101,6 +102,7 @@ function HomeContent() {
         )}
       </main>
     </LayoutGroup>
+    </LazyMotion>
   );
 }
 

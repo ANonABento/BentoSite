@@ -1,8 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
-import { buttonTap } from '@/lib/animations';
 
 export interface SectionHeaderProps {
   title: string;
@@ -53,17 +51,16 @@ export function SectionHeader({
       <div className="flex items-center gap-2">
         {action}
         {collapsible && (
-          <motion.svg
-            className="w-4 h-4 text-[var(--text-secondary)]"
+          <svg
+            className="w-4 h-4 text-[var(--text-secondary)] transition-transform duration-200"
+            style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
-            animate={{ rotate: isExpanded ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
             aria-hidden="true"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </motion.svg>
+          </svg>
         )}
       </div>
     </>
@@ -71,15 +68,14 @@ export function SectionHeader({
 
   if (collapsible && onToggle) {
     return (
-      <motion.button
+      <button
         onClick={onToggle}
-        whileTap={buttonTap}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-[var(--glass-bg)] transition-colors"
+        className="w-full px-4 py-3 flex items-center justify-between hover:bg-[var(--glass-bg)] transition-colors active:scale-[0.98]"
         style={{ borderBottom: '1px solid transparent', borderImage: 'linear-gradient(90deg, transparent, var(--border), transparent) 1' }}
         aria-expanded={isExpanded}
       >
         {content}
-      </motion.button>
+      </button>
     );
   }
 
