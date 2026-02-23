@@ -186,7 +186,7 @@ export function usePacman() {
         setState((s) => {
           if (s.status !== 'playing') return s;
 
-          let newState = { ...s };
+          const newState = { ...s };
           const pacman = { ...s.pacman };
           const maze = s.maze.map((row) => [...row]);
 

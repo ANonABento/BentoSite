@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { springs } from '../design';
 
 interface CountdownOverlayProps {
@@ -16,24 +16,34 @@ export function CountdownOverlay({
   from = 3,
 }: CountdownOverlayProps) {
   const [count, setCount] = useState(from);
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  });
 
+  // Reset count when isActive changes
   useEffect(() => {
     if (!isActive) {
-      setCount(from);
-      return;
+      const id = setTimeout(() => setCount(from), 0);
+      return () => clearTimeout(id);
     }
+  }, [isActive, from]);
 
-    if (count <= 0) {
-      onComplete();
-      return;
-    }
+  useEffect(() => {
+    if (!isActive || count <= 0) return;
 
     const timer = setTimeout(() => {
-      setCount(count - 1);
+      setCount((c) => {
+        if (c <= 1) {
+          onCompleteRef.current();
+          return 0;
+        }
+        return c - 1;
+      });
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [isActive, count, from, onComplete]);
+  }, [isActive, count]);
 
   if (!isActive) return null;
 

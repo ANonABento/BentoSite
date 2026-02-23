@@ -71,38 +71,6 @@ export function RhythmGame() {
   const isNewBest = isFinished && result && isNewHighScore(result.score, currentBest);
   const isCustomSong = customBeatmap !== null && selectedMap.id === customBeatmap.id;
 
-  // Initialize audio context
-  useEffect(() => {
-    return () => {
-      // Cleanup audio on unmount
-      if (audioSourceRef.current) {
-        audioSourceRef.current.stop();
-        audioSourceRef.current.disconnect();
-      }
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
-    };
-  }, []);
-
-  // Start audio when game starts playing (for custom songs)
-  useEffect(() => {
-    if (status === 'playing' && isCustomSong && customBeatmap?.audioBuffer) {
-      playAudio(customBeatmap.audioBuffer);
-    }
-
-    if (status === 'finished' || status === 'idle') {
-      stopAudio();
-    }
-  }, [status, isCustomSong, customBeatmap]);
-
-  // Handle mute toggle
-  useEffect(() => {
-    if (gainNodeRef.current) {
-      gainNodeRef.current.gain.value = isMuted ? 0 : 1;
-    }
-  }, [isMuted]);
-
   const playAudio = useCallback((audioBuffer: AudioBuffer) => {
     // Create or resume audio context
     if (!audioContextRef.current) {
@@ -144,6 +112,38 @@ export function RhythmGame() {
       audioSourceRef.current = null;
     }
   }, []);
+
+  // Initialize audio context
+  useEffect(() => {
+    return () => {
+      // Cleanup audio on unmount
+      if (audioSourceRef.current) {
+        audioSourceRef.current.stop();
+        audioSourceRef.current.disconnect();
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
+
+  // Start audio when game starts playing (for custom songs)
+  useEffect(() => {
+    if (status === 'playing' && isCustomSong && customBeatmap?.audioBuffer) {
+      playAudio(customBeatmap.audioBuffer);
+    }
+
+    if (status === 'finished' || status === 'idle') {
+      stopAudio();
+    }
+  }, [status, isCustomSong, customBeatmap, playAudio, stopAudio]);
+
+  // Handle mute toggle
+  useEffect(() => {
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.value = isMuted ? 0 : 1;
+    }
+  }, [isMuted]);
 
   // Handle custom beatmap generation
   const handleBeatmapGenerated = useCallback((beatmap: GeneratedBeatmap) => {

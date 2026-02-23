@@ -267,6 +267,3 @@ export function BentoCard({ config, homePosition, bestScore, registerForceUpdate
     </motion.div>
   );
 }
-
-// Keep old export for backwards compat
-export { BentoCard as FidgetCard };

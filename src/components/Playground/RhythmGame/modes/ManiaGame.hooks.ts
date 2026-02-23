@@ -5,7 +5,6 @@ import { useGameState } from '../../Playground.hooks';
 import {
   ManiaBeatMap,
   ManiaNote,
-  KeyCount,
   TIMING_WINDOWS,
   SCORING,
   MANIA_DIMENSIONS,

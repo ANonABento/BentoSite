@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect, useLayoutEffect, useCallback, createContext, useContext } from 'react';
-import { motion, useAnimationFrame } from 'framer-motion';
+import { useAnimationFrame } from 'framer-motion';
 import { BentoCard } from './BentoCard';
 import { CardPosition } from '../BentoHub.types';
 import {
@@ -38,10 +38,16 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
   const [positions, setPositions] = useState<Map<string, CardPosition>>(new Map());
   const [centerPoint, setCenterPoint] = useState({ x: 0, y: 0 });
   const [isReady, setIsReady] = useState(false);
-  const [scores, setScores] = useState<Partial<StoredScores>>({});
+  const [scores] = useState<Partial<StoredScores>>(() => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.highScores);
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  });
 
-  // Force updates for physics
-  const [, forceUpdate] = useState(0);
   const forceUpdatesRef = useRef<Map<string, (force: { x: number; y: number }) => void>>(new Map());
 
   // Physics engine
@@ -61,18 +67,6 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
     return () => {
       forceUpdatesRef.current.delete(cardId);
     };
-  }, []);
-
-  // Load scores
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEYS.highScores);
-      if (stored) {
-        setScores(JSON.parse(stored));
-      }
-    } catch {
-      // Ignore localStorage errors
-    }
   }, []);
 
   // Calculate card positions from grid layout
@@ -197,7 +191,7 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
           }}
         >
           {isReady &&
-            BENTO_CARDS.filter((card) => card.contentType !== 'void').map((card) => {
+            BENTO_CARDS.map((card) => {
               const position = positions.get(card.id);
               if (!position) return null;
 
@@ -217,7 +211,3 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
     </PhysicsContext.Provider>
   );
 }
-
-
-// Backwards compat
-export { BentoGrid as FidgetGrid };

@@ -123,6 +123,8 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
     }, remaining);
   }, [triggerCRTTransition]);
 
+  const processFillQueueRef = useRef<(() => void) | undefined>(undefined);
+
   const processFillQueue = useCallback(() => {
     if (fillingRef.current || completedRef.current) return;
     const target = fillQueueRef.current[0];
@@ -135,7 +137,7 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
         fillingRef.current = false;
         fillQueueRef.current.shift();
         if (fillQueueRef.current.length > 0) {
-          processFillQueue();
+          processFillQueueRef.current?.();
         } else if (loadedCountRef.current >= PRELOAD_MODULES.length) {
           transitionToReady();
         }
@@ -150,6 +152,10 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
       return prev;
     });
   }, [transitionToReady]);
+
+  useEffect(() => {
+    processFillQueueRef.current = processFillQueue;
+  });
 
   const onModuleLoaded = useCallback(() => {
     loadedCountRef.current++;

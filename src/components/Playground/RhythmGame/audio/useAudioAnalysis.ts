@@ -131,6 +131,17 @@ export function useAudioAnalysis(): UseAudioAnalysisReturn {
     []
   );
 
+  const stop = useCallback(() => {
+    if (sourceRef.current) {
+      sourceRef.current.stop();
+      sourceRef.current.disconnect();
+      sourceRef.current = null;
+    }
+    setIsPlaying(false);
+    setCurrentTime(0);
+    pauseTimeRef.current = 0;
+  }, []);
+
   const clearAnalysis = useCallback(() => {
     stop();
     setAnalysis(null);
@@ -138,7 +149,7 @@ export function useAudioAnalysis(): UseAudioAnalysisReturn {
     setError(null);
     setCurrentTime(0);
     pauseTimeRef.current = 0;
-  }, []);
+  }, [stop]);
 
   const play = useCallback(() => {
     if (!beatmap?.audioBuffer || !analyzerRef.current) return;
@@ -185,17 +196,6 @@ export function useAudioAnalysis(): UseAudioAnalysisReturn {
       setIsPlaying(false);
     }
   }, [isPlaying]);
-
-  const stop = useCallback(() => {
-    if (sourceRef.current) {
-      sourceRef.current.stop();
-      sourceRef.current.disconnect();
-      sourceRef.current = null;
-    }
-    setIsPlaying(false);
-    setCurrentTime(0);
-    pauseTimeRef.current = 0;
-  }, []);
 
   const seek = useCallback(
     (time: number) => {
