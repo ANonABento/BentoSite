@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 interface ShortcutGroup {
   title: string;
@@ -51,7 +51,7 @@ export function KeyboardShortcutsModal({
       {isOpen && (
         <>
           {/* Backdrop */}
-          <motion.div
+          <m.div
             className="fixed inset-0 bg-[var(--overlay)] backdrop-blur-sm z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -60,13 +60,13 @@ export function KeyboardShortcutsModal({
           />
 
           {/* Modal */}
-          <motion.div
+          <m.div
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <motion.div
+            <m.div
               className="glass max-w-lg w-full rounded-2xl overflow-hidden shadow-2xl"
               initial={{ scale: 0.95, y: 10 }}
               animate={{ scale: 1, y: 0 }}
@@ -130,8 +130,8 @@ export function KeyboardShortcutsModal({
                   Press <kbd className="px-1 py-0.5 bg-[var(--glass-bg-strong)] rounded text-[var(--text-secondary)] border border-[var(--border)]">?</kbd> or <kbd className="px-1 py-0.5 bg-[var(--glass-bg-strong)] rounded text-[var(--text-secondary)] border border-[var(--border)]">Esc</kbd> to close
                 </p>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>

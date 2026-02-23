@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { sectionItem, staggerContainer, staggerItem } from '@/lib/animations';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 
@@ -43,12 +43,12 @@ function TimelineCard({ item, index }: { item: TimelineItem; index: number }) {
   const isLeft = index % 2 === 0;
 
   return (
-    <motion.div
+    <m.div
       variants={staggerItem}
       className={`flex items-center gap-4 md:gap-8 ${isLeft ? 'md:flex-row' : 'md:flex-row-reverse'}`}
     >
       {/* Content */}
-      <motion.div
+      <m.div
         className={`flex-1 ${isLeft ? 'md:text-right' : 'md:text-left'}`}
         whileHover={{ scale: 1.02 }}
         transition={{ type: 'spring', stiffness: 300 }}
@@ -83,11 +83,11 @@ function TimelineCard({ item, index }: { item: TimelineItem; index: number }) {
             </div>
           )}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Center line and dot */}
       <div className="hidden md:flex flex-col items-center">
-        <motion.div
+        <m.div
           className={`w-4 h-4 rounded-full border-4 border-[var(--background)] z-10 ${
             item.type === 'work' ? 'bg-[var(--purple)]' : 'bg-[var(--orange)]'
           }`}
@@ -98,14 +98,14 @@ function TimelineCard({ item, index }: { item: TimelineItem; index: number }) {
 
       {/* Spacer for alternating layout */}
       <div className="hidden md:block flex-1" />
-    </motion.div>
+    </m.div>
   );
 }
 
 export function TimelineSection() {
   return (
     <section id="experience" className="py-16 md:py-24">
-      <motion.div
+      <m.div
         className="max-w-6xl mx-auto px-4 md:px-6"
         initial="hidden"
         whileInView="visible"
@@ -113,28 +113,28 @@ export function TimelineSection() {
         variants={staggerContainer}
       >
         {/* Section Header */}
-        <motion.div variants={sectionItem} className="mb-12 text-center">
+        <m.div variants={sectionItem} className="mb-12 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
             Experience & Education
           </h2>
           <div className="w-20 h-1 rounded-full mx-auto" style={{ background: 'linear-gradient(to right, var(--purple), var(--orange))' }} />
-        </motion.div>
+        </m.div>
 
         {/* Timeline */}
         <div className="relative">
           {/* Center line */}
           <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2" style={{ background: 'linear-gradient(to bottom, var(--purple-muted), var(--border), var(--orange-muted))' }} />
 
-          <motion.div
+          <m.div
             className="space-y-8 md:space-y-12"
             variants={staggerContainer}
           >
             {timelineData.map((item, index) => (
               <TimelineCard key={item.id} item={item} index={index} />
             ))}
-          </motion.div>
+          </m.div>
         </div>
-      </motion.div>
+      </m.div>
     </section>
   );
 }

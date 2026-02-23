@@ -354,12 +354,9 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
     [isLoading]
   );
 
-  // Expose sendMessage and clearChat to parent component
-  useEffect(() => {
-    if (onReady) {
-      onReady({ send: sendMessage, clear: clearChat });
-    }
-  }, [onReady, sendMessage]);
+  // Refs for onReady — see stable-wrapper effect below clearChat
+  const sendMessageRef = useRef(sendMessage);
+  sendMessageRef.current = sendMessage;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -382,6 +379,20 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
     ]);
     setError(null);
   };
+
+  // Keep refs to latest functions so the onReady effect fires only once
+  const clearChatRef = useRef(clearChat);
+  clearChatRef.current = clearChat;
+
+  // Expose stable wrappers to parent — fire once on mount
+  useEffect(() => {
+    if (onReady) {
+      onReady({
+        send: (content: string) => sendMessageRef.current(content),
+        clear: () => clearChatRef.current(),
+      });
+    }
+  }, [onReady]);
 
   return (
     <div className="flex flex-col h-full" role="region" aria-label="Chat conversation">

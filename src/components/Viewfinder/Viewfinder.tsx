@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { ViewfinderHeader } from './ViewfinderHeader';
 import { ViewerSkeleton } from './ViewerSkeleton';
@@ -74,16 +74,12 @@ export function Viewfinder({ project, minimal = false }: ViewfinderProps) {
 
   const [activeTab, setActiveTab] = useState<MediaTab>(availableTabs[0]);
 
-  // Ensure the active tab is valid when available tabs change
-  useEffect(() => {
-    if (!availableTabs.includes(activeTab)) {
-      setActiveTab(availableTabs[0]);
-    }
-  }, [availableTabs, activeTab]);
+  // Derive valid tab — if current selection isn't in available tabs, fall back
+  const validTab = availableTabs.includes(activeTab) ? activeTab : availableTabs[0];
 
   // Render the active viewer
   const renderViewer = () => {
-    switch (activeTab) {
+    switch (validTab) {
       case '3d':
         return <Model3DViewer modelPath={project?.links.modelPath} minimal={minimal} />;
       case 'images':
@@ -107,7 +103,7 @@ export function Viewfinder({ project, minimal = false }: ViewfinderProps) {
       {!minimal && availableTabs.length > 1 && (
         <ViewfinderHeader
           availableTabs={availableTabs}
-          activeTab={activeTab}
+          activeTab={validTab}
           onTabChange={setActiveTab}
           projectName={project?.name}
         />
