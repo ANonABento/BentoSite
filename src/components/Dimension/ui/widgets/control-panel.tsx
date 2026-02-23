@@ -2,7 +2,7 @@
 // Extracted from Dimension.ui.tsx for better maintainability
 
 import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 import type { ControlPanelProps } from '../../Dimension.types';
 import { CollapsibleWidget } from './collapsible-widget';
@@ -162,7 +162,7 @@ export function ControlPanel({
           <>
             <div className="grid grid-cols-4 gap-2">
               {allControls.map((button, index) => (
-                <motion.button
+                <m.button
                   key={index}
                   onClick={button.onClick}
                   whileTap={buttonTap}
@@ -182,7 +182,7 @@ export function ControlPanel({
                   <div className="mb-1">{button.icon}</div>
                   <div className="text-xs font-medium text-center leading-tight">{button.label}</div>
                   <div className="text-xs opacity-70 mt-1">{button.shortcut}</div>
-                </motion.button>
+                </m.button>
               ))}
             </div>
 

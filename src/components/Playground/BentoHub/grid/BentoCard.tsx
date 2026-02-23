@@ -13,6 +13,7 @@ import {
   BarChart2,
   BarChart3,
   Crosshair,
+  Hash,
 } from 'lucide-react';
 import { BentoCardConfig, CardPosition } from '../BentoHub.types';
 import { PHYSICS } from '../BentoHub.config';
@@ -33,7 +34,7 @@ const GAME_ICONS: Record<string, React.ReactNode> = {
   stats: <BarChart3 className="w-6 h-6" />,
   minesweeper: <Grid3X3 className="w-6 h-6" />,
   soundboard: <Volume2 className="w-6 h-6" />,
-  game2048: <span className="font-bold text-lg">2048</span>,
+  game2048: <Hash className="w-6 h-6" />,
   sorting: <BarChart2 className="w-6 h-6" />,
   aim: <Crosshair className="w-6 h-6" />,
   pacman: <Ghost className="w-6 h-6" />,

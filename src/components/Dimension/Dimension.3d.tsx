@@ -1,6 +1,6 @@
 // Dimension.tsx - 3D and Three.js Components
 
-import React, { useRef, useState, forwardRef, useImperativeHandle, useMemo } from 'react';
+import React, { useRef, useState, forwardRef, useImperativeHandle, useMemo, useCallback } from 'react';
 import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import { OrbitControls, Box, Grid, Text, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -290,20 +290,25 @@ export const ResponsiveOrbitControls = forwardRef<OrbitControlsImpl | null, Resp
   onZoomChange
 }, ref) => {
   const controlsRef = useRef<OrbitControlsImpl>(null!);
+  const lastZoomRef = useRef<number>(-1);
 
   useImperativeHandle(ref, () => controlsRef.current);
 
-  // Sync zoom level when user zooms with mouse/touch
-  useFrame(() => {
+  // Sync zoom level via onChange event (not useFrame) to avoid rapid state updates
+  const handleChange = useCallback(() => {
     if (controlsRef.current && onZoomChange) {
-      const distance = controlsRef.current.object.position.length();
-      onZoomChange(Math.round(distance));
+      const distance = Math.round(controlsRef.current.object.position.length());
+      if (distance !== lastZoomRef.current) {
+        lastZoomRef.current = distance;
+        onZoomChange(distance);
+      }
     }
-  });
+  }, [onZoomChange]);
 
   return (
     <OrbitControls
       ref={controlsRef}
+      onChange={handleChange}
       autoRotate={autoRotate}
       autoRotateSpeed={2 * rotationSpeed}
       enableZoom={true}

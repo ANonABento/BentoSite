@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { sectionItem, staggerContainer, staggerItem } from '@/lib/animations';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 
@@ -13,7 +13,7 @@ const highlights = [
 export function AboutSection() {
   return (
     <section id="about" className="py-16 md:py-24">
-      <motion.div
+      <m.div
         className="max-w-6xl mx-auto px-4 md:px-6"
         initial="hidden"
         whileInView="visible"
@@ -21,16 +21,16 @@ export function AboutSection() {
         variants={staggerContainer}
       >
         {/* Section Header */}
-        <motion.div variants={sectionItem} className="mb-12">
+        <m.div variants={sectionItem} className="mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
             About Me
           </h2>
           <div className="w-20 h-1 rounded-full" style={{ background: 'linear-gradient(to right, var(--purple), var(--orange))' }} />
-        </motion.div>
+        </m.div>
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Bio Content */}
-          <motion.div variants={sectionItem} className="space-y-6">
+          <m.div variants={sectionItem} className="space-y-6">
             <p className="text-lg text-[var(--text-primary)] leading-relaxed">
               I&apos;m a Computer Engineering student at the <span className="text-[var(--interactive)] font-medium">University of Waterloo</span> with a passion for building robots that interact naturally with humans.
             </p>
@@ -42,12 +42,12 @@ export function AboutSection() {
             </p>
 
             {/* Highlights */}
-            <motion.div
+            <m.div
               className="grid grid-cols-3 gap-4 pt-6"
               variants={staggerContainer}
             >
               {highlights.map((item) => (
-                <motion.div
+                <m.div
                   key={item.label}
                   variants={staggerItem}
                   className="text-center p-4 glass rounded-xl"
@@ -58,13 +58,13 @@ export function AboutSection() {
                   <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider">
                     {item.label}
                   </div>
-                </motion.div>
+                </m.div>
               ))}
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
 
           {/* Visual Element */}
-          <motion.div
+          <m.div
             variants={sectionItem}
             className="relative"
           >
@@ -119,19 +119,19 @@ export function AboutSection() {
             </div>
 
             {/* Floating decorative elements */}
-            <motion.div
+            <m.div
               className="absolute -top-4 -right-4 w-20 h-20 bg-[var(--purple-muted)] rounded-full blur-2xl"
               animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
               transition={{ duration: 4, repeat: Infinity }}
             />
-            <motion.div
+            <m.div
               className="absolute -bottom-4 -left-4 w-16 h-16 bg-[var(--orange-muted)] rounded-full blur-2xl"
               animate={{ scale: [1.2, 1, 1.2], opacity: [0.5, 0.8, 0.5] }}
               transition={{ duration: 4, repeat: Infinity, delay: 2 }}
             />
-          </motion.div>
+          </m.div>
         </div>
-      </motion.div>
+      </m.div>
     </section>
   );
 }

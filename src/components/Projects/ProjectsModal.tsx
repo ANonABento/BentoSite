@@ -4,7 +4,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { PROJECTS, getAllCategories, searchProjects } from '@/lib/projects-data';
 import type { ProjectCategory, Project } from '@/lib/projects-data';
 import { ProjectCard } from './ProjectCard';
@@ -60,7 +60,7 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <m.div
           className="fixed inset-0 bg-[var(--overlay-strong)] backdrop-blur-md flex items-center justify-center p-4 z-[60]"
           role="dialog"
           aria-modal="true"
@@ -71,7 +71,7 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          <motion.div
+          <m.div
             ref={modalRef}
             className={`
               glass-strong rounded-2xl shadow-2xl overflow-hidden
@@ -95,7 +95,7 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
                     bentOS / usr / projects /
                   </span>
                 </div>
-                <motion.button
+                <m.button
                   onClick={onClose}
                   whileTap={buttonTap}
                   className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-150 p-2 rounded-lg hover:bg-[var(--glass-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50"
@@ -104,7 +104,7 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                </motion.button>
+                </m.button>
               </div>
 
               {/* Search and filters */}
@@ -134,7 +134,7 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
                 {/* Category filters */}
                 <div className="flex flex-wrap gap-1.5">
                   {categories.map((category) => (
-                    <motion.button
+                    <m.button
                       key={category}
                       onClick={() => setSelectedCategory(category)}
                       whileTap={buttonTap}
@@ -150,7 +150,7 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
                       aria-pressed={selectedCategory === category}
                     >
                       {category}
-                    </motion.button>
+                    </m.button>
                   ))}
                 </div>
               </div>
@@ -180,7 +180,7 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
                   </p>
                 </div>
               ) : (
-                <motion.div
+                <m.div
                   className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}
                   variants={staggerContainer}
                   initial="hidden"
@@ -188,14 +188,14 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
                   key={`${searchTerm}-${selectedCategory}`}
                 >
                   {filteredProjects.map((project) => (
-                    <motion.div key={project.id} variants={staggerItem}>
+                    <m.div key={project.id} variants={staggerItem}>
                       <ProjectCard
                         project={project}
                         onSelectProject={onSelectProject}
                       />
-                    </motion.div>
+                    </m.div>
                   ))}
-                </motion.div>
+                </m.div>
               )}
             </div>
 
@@ -207,8 +207,8 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
                 {searchTerm && <span> | search: &quot;{searchTerm}&quot;</span>}
               </p>
             </div>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

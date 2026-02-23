@@ -63,6 +63,18 @@ export function DashboardLayout({
     };
   }, []);
 
+  const handleClearChat = useCallback(() => {
+    chatFns?.clear();
+  }, [chatFns]);
+
+  const handleViewResume = useCallback(() => {
+    window.open('/resume.pdf', '_blank');
+  }, []);
+
+  const handleSeeProjects = useCallback(() => {
+    setIsProjectsOpen(true);
+  }, []);
+
   const handleSelectProject = useCallback((project: Project) => {
     setSelectedProject(project);
     setIsProjectsOpen(false);
@@ -145,10 +157,10 @@ export function DashboardLayout({
                 </div>
                 <TerminalPanel
                   Chatbot={Chatbot}
-                  onChatReady={(fns) => setChatFns(fns)}
-                  onClearChat={() => chatFns?.clear()}
-                  onViewResume={() => window.open('/resume.pdf', '_blank')}
-                  onSeeProjects={() => setIsProjectsOpen(true)}
+                  onChatReady={setChatFns}
+                  onClearChat={handleClearChat}
+                  onViewResume={handleViewResume}
+                  onSeeProjects={handleSeeProjects}
                 />
               </motion.div>
             )}
@@ -169,10 +181,10 @@ export function DashboardLayout({
             {/* Terminal */}
             <TerminalPanel
               Chatbot={Chatbot}
-              onChatReady={(fns) => setChatFns(fns)}
-              onClearChat={() => chatFns?.clear()}
-              onViewResume={() => window.open('/resume.pdf', '_blank')}
-              onSeeProjects={() => setIsProjectsOpen(true)}
+              onChatReady={setChatFns}
+              onClearChat={handleClearChat}
+              onViewResume={handleViewResume}
+              onSeeProjects={handleSeeProjects}
             />
           </div>
         </div>
