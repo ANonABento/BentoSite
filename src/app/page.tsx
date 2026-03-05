@@ -11,6 +11,7 @@ import {
   KeyboardShortcutsModal,
   useKeyboardShortcutsHelp,
 } from '@/components/ui/KeyboardShortcutsHelp';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 function ModuleLoader() {
   return (
@@ -109,10 +110,7 @@ function HomeContent() {
 function HomeLoading() {
   return (
     <main className="relative h-screen bg-[var(--background)] overflow-hidden flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-2 border-[var(--purple-muted)] border-t-[var(--interactive)] rounded-full animate-spin" />
-        <span className="text-[var(--text-secondary)] text-sm">Loading...</span>
-      </div>
+      <LoadingSpinner size="lg" variant="purple" message="Loading..." />
     </main>
   );
 }
