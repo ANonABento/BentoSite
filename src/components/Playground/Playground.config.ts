@@ -104,6 +104,13 @@ export const STORAGE_KEYS = {
   preferences: 'playground-preferences',
 } as const;
 
+// Shared difficulty badge colors (used across rhythm games)
+export const DIFFICULTY_COLORS = {
+  easy: 'bg-[var(--pg-game-success)]/15 text-[var(--pg-game-success)] border-[var(--pg-game-success)]/30',
+  medium: 'bg-[var(--pg-accent-gold)]/15 text-[var(--pg-accent-gold)] border-[var(--pg-accent-gold)]/30',
+  hard: 'bg-[var(--pg-game-error)]/15 text-[var(--pg-game-error)] border-[var(--pg-game-error)]/30',
+} as const;
+
 // Generate random text for typing game
 export function generateTypingText(
   difficulty: TypingDifficulty,

@@ -4,6 +4,10 @@
 
 import { BeatNote, BeatMap } from '../Playground.types';
 
+// Timing constants for beat generation
+const LEAD_IN_TIME_MS = 2000; // Delay before first note appears
+const END_BUFFER_MS = 2000; // Buffer before song end (no notes)
+
 // Generate a simple beat pattern
 function generateBeats(
   bpm: number,
@@ -13,9 +17,9 @@ function generateBeats(
   const notes: BeatNote[] = [];
   const beatInterval = 60000 / bpm; // ms per beat
 
-  // Start after 2 seconds
-  let time = 2000;
-  const endTime = durationSeconds * 1000 - 2000;
+  // Start after lead-in time
+  let time = LEAD_IN_TIME_MS;
+  const endTime = durationSeconds * 1000 - END_BUFFER_MS;
   let id = 0;
 
   while (time < endTime) {

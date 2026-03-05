@@ -6,7 +6,9 @@ import { REACTION_RATINGS, RHYTHM_CONFIG } from './Playground.config';
 import { HitRating } from './Playground.types';
 
 /**
- * Format reaction time in ms
+ * Format reaction time in milliseconds to display string
+ * @param ms - Reaction time in milliseconds (negative = too early)
+ * @returns Formatted string (e.g., "250ms" or "Too early!")
  */
 export function formatReactionTime(ms: number): string {
   if (ms < 0) return 'Too early!';
@@ -14,7 +16,9 @@ export function formatReactionTime(ms: number): string {
 }
 
 /**
- * Get rating for reaction time
+ * Get rating category for reaction time based on threshold constants
+ * @param ms - Reaction time in milliseconds
+ * @returns Rating category ('excellent', 'good', 'average', or 'slow')
  */
 export function getReactionRating(ms: number): 'excellent' | 'good' | 'average' | 'slow' {
   if (ms < REACTION_RATINGS.excellent) return 'excellent';
@@ -40,8 +44,11 @@ export function getReactionRatingColor(rating: ReturnType<typeof getReactionRati
 }
 
 /**
- * Calculate WPM (Words Per Minute)
- * Standard: 5 characters = 1 word
+ * Calculate Words Per Minute (WPM) for typing games
+ * Uses standard definition: 5 characters = 1 word
+ * @param correctChars - Number of correctly typed characters
+ * @param elapsedSeconds - Time elapsed in seconds
+ * @returns WPM rounded to nearest integer
  */
 export function calculateWPM(
   correctChars: number,
@@ -65,7 +72,10 @@ export function calculateAccuracy(
 }
 
 /**
- * Get hit rating for rhythm game
+ * Get hit rating for rhythm game based on timing offset
+ * Uses timing windows from RHYTHM_CONFIG
+ * @param timingOffset - Offset from perfect timing in milliseconds
+ * @returns Hit rating ('perfect', 'good', or 'miss')
  */
 export function getHitRating(timingOffset: number): HitRating {
   const absOffset = Math.abs(timingOffset);
@@ -75,7 +85,10 @@ export function getHitRating(timingOffset: number): HitRating {
 }
 
 /**
- * Get score for hit rating
+ * Calculate score for a rhythm game hit with combo multiplier
+ * @param rating - Hit rating ('perfect', 'good', or 'miss')
+ * @param combo - Current combo count for multiplier
+ * @returns Score value (multiplier caps at 4x)
  */
 export function getHitScore(rating: HitRating, combo: number): number {
   const baseScore = RHYTHM_CONFIG.scoring[rating];
