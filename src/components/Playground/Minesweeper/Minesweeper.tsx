@@ -6,14 +6,14 @@ import { Grid3X3, Flag, Clock, RotateCcw, Trophy } from 'lucide-react';
 import { GameLayout, ResultsScreen } from '../shared';
 import { useMinesweeper } from './Minesweeper.hooks';
 import { Cell } from './Cell';
-import { useHighScores } from '../Playground.hooks';
+import { useHighScores, useIsMobile } from '../Playground.hooks';
 import { Difficulty } from './Minesweeper.types';
 import { DIFFICULTY_CONFIGS, CELL_SIZE, CELL_SIZE_MOBILE } from './Minesweeper.config';
 import { springs } from '../design';
 
 export function Minesweeper() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('beginner');
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
 
   const {
     grid,
@@ -28,14 +28,6 @@ export function Minesweeper() {
   } = useMinesweeper(selectedDifficulty);
 
   const { scores, saveScore } = useHighScores('minesweeper');
-
-  // Check for mobile
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const isFinished = status === 'won' || status === 'lost';
   const currentBest = scores?.[difficulty]?.bestTime;

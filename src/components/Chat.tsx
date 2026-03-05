@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { m } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { SUGGESTED_QUESTIONS, PORTFOLIO_DATA } from '@/lib/portfolio-context';
@@ -74,7 +74,7 @@ function clearStoredMessages(): void {
 
 // === SUB-COMPONENTS ===
 
-function CopyButton({ text, onCopied }: { text: string; onCopied?: () => void }) {
+const CopyButton = memo(function CopyButton({ text, onCopied }: { text: string; onCopied?: () => void }) {
   const { copied, copy } = useClipboard();
 
   const handleCopy = async () => {
@@ -98,9 +98,10 @@ function CopyButton({ text, onCopied }: { text: string; onCopied?: () => void })
       )}
     </button>
   );
-}
+});
+CopyButton.displayName = 'CopyButton';
 
-function FeedbackButtons({
+const FeedbackButtons = memo(function FeedbackButtons({
   messageId,
   currentFeedback,
   onFeedback,
@@ -138,9 +139,10 @@ function FeedbackButtons({
       </button>
     </div>
   );
-}
+});
+FeedbackButtons.displayName = 'FeedbackButtons';
 
-function QuickActions({
+const QuickActions = memo(function QuickActions({
   onViewResume,
   onSeeProjects,
   disabled,
@@ -175,7 +177,8 @@ function QuickActions({
       )}
     </div>
   );
-}
+});
+QuickActions.displayName = 'QuickActions';
 
 // === MAIN COMPONENT ===
 

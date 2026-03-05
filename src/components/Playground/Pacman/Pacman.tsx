@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { Play, Pause, RotateCcw, Heart, Ghost } from 'lucide-react';
 import { GameLayout, ResultsScreen } from '../shared';
 import { usePacman } from './Pacman.hooks';
-import { useHighScores } from '../Playground.hooks';
+import { useHighScores, useIsMobile } from '../Playground.hooks';
 import { isNewHighScore } from '../Playground.utils';
 import {
   CELL_SIZE,
@@ -17,7 +17,7 @@ import {
 import { springs } from '../design';
 
 export function Pacman() {
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -37,13 +37,6 @@ export function Pacman() {
   } = usePacman();
 
   const { scores, saveScore } = useHighScores('pacman');
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Save score on game end
   useEffect(() => {

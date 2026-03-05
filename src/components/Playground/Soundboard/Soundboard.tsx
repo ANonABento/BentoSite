@@ -1,13 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
 import { Volume2, Music } from 'lucide-react';
 import { GameLayout } from '../shared';
 import { useSoundboard } from './Soundboard.hooks';
 import { SoundPad } from './SoundPad';
 import { SoundCategory } from './Soundboard.types';
 import { GRID_COLS, PAD_SIZE, PAD_SIZE_MOBILE, PAD_GAP, CATEGORY_COLORS } from './Soundboard.config';
+import { useIsMobile } from '../Playground.hooks';
 import { springs } from '../design';
 
 const CATEGORIES: { id: SoundCategory | 'all'; name: string }[] = [
@@ -18,7 +18,7 @@ const CATEGORIES: { id: SoundCategory | 'all'; name: string }[] = [
 ];
 
 export function Soundboard() {
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
 
   const {
     pads,
@@ -30,14 +30,6 @@ export function Soundboard() {
     playPad,
     initAudioContext,
   } = useSoundboard();
-
-  // Check for mobile
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Initialize audio on first click
   const handlePadClick = (padId: string) => {

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { RotateCcw, Home, Share2, Check, Copy } from 'lucide-react';
+import { RotateCcw, Home, Share2, Check } from 'lucide-react';
 import Link from 'next/link';
 import { staggerContainer, staggerItem, springs } from '../design';
 import { AnimatedScore } from './AnimatedScore';
