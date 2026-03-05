@@ -8,8 +8,11 @@ import { buttonTap } from '@/lib/animations';
 import { useToast } from '@/components/ui/Toast';
 import { useClipboard } from '@/lib/clipboard';
 import { analytics } from '@/lib/analytics';
+import { generateId, getStorageItem, setStorageItem, removeStorageItem } from '@/lib/utils';
+import { TIMEOUTS, STORAGE_KEYS, DEFAULTS, API_ENDPOINTS } from '@/lib/constants';
+import { CheckIcon, CopyIcon, ThumbsUpIcon, ThumbsDownIcon } from '@/components/ui/Icons';
 
-// === TYPES & CONSTANTS ===
+// === TYPES ===
 
 interface Message {
   id: string;
@@ -31,10 +34,7 @@ interface ChatbotProps {
   onSeeProjects?: () => void;
 }
 
-const STORAGE_KEY = 'portfolio-chat-history';
-const MAX_STORED_MESSAGES = 50;
-
-// === STORAGE UTILITIES ===
+// === MESSAGE HELPERS ===
 
 function getDefaultMessage(): Message {
   return {
@@ -45,46 +45,31 @@ function getDefaultMessage(): Message {
   };
 }
 
+function isValidMessage(m: unknown): m is Message {
+  return (
+    m !== null &&
+    typeof m === 'object' &&
+    'id' in m &&
+    'role' in m &&
+    'content' in m &&
+    'timestamp' in m
+  );
+}
+
 function loadMessages(): Message[] | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return null;
-    const parsed = JSON.parse(stored);
-    if (!Array.isArray(parsed)) return null;
-    // Validate structure
-    const valid = parsed.filter(
-      (m: unknown): m is Message =>
-        m !== null &&
-        typeof m === 'object' &&
-        'id' in m &&
-        'role' in m &&
-        'content' in m &&
-        'timestamp' in m
-    );
-    return valid.length > 0 ? valid : null;
-  } catch {
-    return null;
-  }
+  const stored = getStorageItem<unknown[]>(STORAGE_KEYS.CHAT_HISTORY, []);
+  if (!Array.isArray(stored) || stored.length === 0) return null;
+  const valid = stored.filter(isValidMessage);
+  return valid.length > 0 ? valid : null;
 }
 
 function saveMessages(messages: Message[]): void {
-  if (typeof window === 'undefined') return;
-  try {
-    const toStore = messages.slice(-MAX_STORED_MESSAGES);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
-  } catch {
-    // Storage full or unavailable - fail silently
-  }
+  const toStore = messages.slice(-DEFAULTS.MAX_CHAT_MESSAGES);
+  setStorageItem(STORAGE_KEYS.CHAT_HISTORY, toStore);
 }
 
 function clearStoredMessages(): void {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch {
-    // Fail silently
-  }
+  removeStorageItem(STORAGE_KEYS.CHAT_HISTORY);
 }
 
 // === SUB-COMPONENTS ===
@@ -107,13 +92,9 @@ function CopyButton({ text, onCopied }: { text: string; onCopied?: () => void })
       title={copied ? 'Copied!' : 'Copy message'}
     >
       {copied ? (
-        <svg className="w-3.5 h-3.5 text-[var(--status-success)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
+        <CheckIcon size={14} className="text-[var(--status-success)]" />
       ) : (
-        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-        </svg>
+        <CopyIcon size={14} />
       )}
     </button>
   );
@@ -141,9 +122,7 @@ function FeedbackButtons({
         aria-label="Helpful response"
         aria-pressed={currentFeedback === 'positive'}
       >
-        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-        </svg>
+        <ThumbsUpIcon size={14} />
       </button>
       <button
         onClick={() => onFeedback(messageId, 'negative')}
@@ -155,9 +134,7 @@ function FeedbackButtons({
         aria-label="Not helpful response"
         aria-pressed={currentFeedback === 'negative'}
       >
-        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" />
-        </svg>
+        <ThumbsDownIcon size={14} />
       </button>
     </div>
   );
@@ -256,7 +233,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
     // Only send to API if setting feedback (not clearing)
     if (newFeedback) {
       try {
-        await fetch('/api/feedback', {
+        await fetch(API_ENDPOINTS.FEEDBACK, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -278,9 +255,8 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
 
       analytics.chatMessageSent();
 
-      const messageId = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
       const userMessage: Message = {
-        id: messageId,
+        id: generateId(),
         role: 'user',
         content: content.trim(),
         timestamp: Date.now(),
@@ -295,7 +271,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
       try {
         // Create AbortController for timeout
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), TIMEOUTS.CHAT_REQUEST);
 
         // Use functional form to get current messages
         const currentMessages = await new Promise<Message[]>((resolve) => {
@@ -305,7 +281,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
           });
         });
 
-        const response = await fetch('/api/chat', {
+        const response = await fetch(API_ENDPOINTS.CHAT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -328,7 +304,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
         const data = await response.json();
 
         const assistantMessage: Message = {
-          id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+          id: generateId(),
           role: 'assistant',
           content: data.message || 'Sorry, I could not process your request.',
           timestamp: Date.now(),
@@ -341,7 +317,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
           : 'Failed to send message. Please try again.';
         setError(errorMsg);
         const errorMessage: Message = {
-          id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+          id: generateId(),
           role: 'assistant',
           content: `I apologize, but I'm having trouble connecting right now. You can reach ${PORTFOLIO_DATA.personal.name} directly at ${PORTFOLIO_DATA.personal.email}.`,
           timestamp: Date.now(),
@@ -362,7 +338,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
     setMessages((prev) => [
       ...prev,
       {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        id: generateId(),
         role: 'assistant',
         content: trimmed,
         timestamp: Date.now(),
