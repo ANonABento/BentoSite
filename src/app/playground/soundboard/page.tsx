@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { LoadingSpinner } from '@/components/Dimension/ui/feedback/loading-spinner';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const Soundboard = dynamic(
   () => import('@/components/Playground/Soundboard').then((mod) => mod.Soundboard),
@@ -16,5 +17,9 @@ const Soundboard = dynamic(
 );
 
 export default function SoundboardPage() {
-  return <Soundboard />;
+  return (
+    <ErrorBoundary title="Game Error" message="Soundboard failed to load. Please try again.">
+      <Soundboard />
+    </ErrorBoundary>
+  );
 }

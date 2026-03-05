@@ -11,6 +11,7 @@ import { ProjectCard } from './ProjectCard';
 import { staggerContainer, staggerItem, buttonTap } from '@/lib/animations';
 import { useFocusTrap } from '@/lib/use-focus-trap';
 import { BentoIcon } from '@/components/BentoOS/BentoIcon';
+import { analytics } from '@/lib/analytics';
 
 interface ProjectsModalProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      analytics.projectsModalOpened();
     }
 
     return () => {

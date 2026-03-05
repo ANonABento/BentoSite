@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const TypingGame = dynamic(
   () =>
@@ -23,5 +24,9 @@ const TypingGame = dynamic(
 );
 
 export default function TypingPage() {
-  return <TypingGame />;
+  return (
+    <ErrorBoundary title="Game Error" message="Typing Game failed to load. Please try again.">
+      <TypingGame />
+    </ErrorBoundary>
+  );
 }

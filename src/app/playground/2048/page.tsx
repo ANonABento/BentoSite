@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { LoadingSpinner } from '@/components/Dimension/ui/feedback/loading-spinner';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const Game2048 = dynamic(
   () => import('@/components/Playground/Game2048').then((mod) => mod.Game2048),
@@ -16,5 +17,9 @@ const Game2048 = dynamic(
 );
 
 export default function Game2048Page() {
-  return <Game2048 />;
+  return (
+    <ErrorBoundary title="Game Error" message="2048 failed to load. Please try again.">
+      <Game2048 />
+    </ErrorBoundary>
+  );
 }

@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const ReactionGame = dynamic(
   () =>
@@ -25,5 +26,9 @@ const ReactionGame = dynamic(
 );
 
 export default function ReactionPage() {
-  return <ReactionGame />;
+  return (
+    <ErrorBoundary title="Game Error" message="Reaction Game failed to load. Please try again.">
+      <ReactionGame />
+    </ErrorBoundary>
+  );
 }

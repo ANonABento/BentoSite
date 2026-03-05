@@ -188,6 +188,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDemoMode, setIsDemoMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { success: toastSuccess } = useToast();
@@ -306,6 +307,11 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
 
         const data = await response.json();
 
+        // Track demo mode status from API response
+        if (data.isDemoMode !== undefined) {
+          setIsDemoMode(data.isDemoMode);
+        }
+
         const assistantMessage: Message = {
           id: generateId(),
           role: 'assistant',
@@ -393,6 +399,15 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
 
   return (
     <div className="flex flex-col h-full" role="region" aria-label="Chat conversation">
+      {/* Demo Mode Indicator */}
+      {isDemoMode && (
+        <div className="flex-shrink-0 px-4 py-2 bg-[var(--status-warning-muted)] border-b border-[var(--status-warning)]">
+          <p className="text-xs font-mono text-[var(--status-warning)]">
+            <span className="font-semibold">DEMO MODE:</span> AI responses are limited. Configure API key for full functionality.
+          </p>
+        </div>
+      )}
+
       {/* Messages Area — Terminal Log */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3" aria-live="polite" aria-atomic="false">
         {messages.map((message) => {

@@ -1,11 +1,12 @@
 // ProjectCard - Individual project card for the projects modal
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import type { Project } from '@/lib/projects-data';
 import { TechBadge } from './TechBadge';
 import { BLUR_PLACEHOLDERS } from '@/lib/image-utils';
+import { analytics } from '@/lib/analytics';
 import {
   Model3DIcon,
   ImageIcon,
@@ -70,6 +71,15 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
   const hasExternalLinks = project.links.liveDemo || project.links.github;
   const canView = hasViewableMedia(project);
   const mediaIcons = getMediaIcons(project);
+
+  const handleViewProject = useCallback(() => {
+    analytics.projectViewed(project.id, project.name);
+    onSelectProject?.(project);
+  }, [project, onSelectProject]);
+
+  const handleExternalLinkClick = useCallback((linkType: 'github' | 'live_demo', url: string) => {
+    analytics.externalLinkClicked(linkType, url);
+  }, []);
 
   return (
     <div
@@ -166,7 +176,7 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
           {canView && onSelectProject && (
             <button
               type="button"
-              onClick={() => onSelectProject(project)}
+              onClick={handleViewProject}
               aria-label={`View ${project.name} in viewer`}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
                 bg-[var(--interactive)] text-[var(--text-on-accent)]
@@ -184,6 +194,7 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
               href={project.links.liveDemo}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => handleExternalLinkClick('live_demo', project.links.liveDemo!)}
               aria-label={`Open ${project.name} live demo in new window`}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
                 bg-[var(--highlight)] text-[var(--text-on-accent)]
@@ -201,6 +212,7 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
               href={project.links.github}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => handleExternalLinkClick('github', project.links.github!)}
               aria-label={`View ${project.name} on GitHub`}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
                 bg-[var(--glass-bg)] text-[var(--text-secondary)] border border-[var(--border)]

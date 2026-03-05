@@ -8,6 +8,9 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 // Import all types
 import type { ModelInfo, ModelError, DimensionViewerProps } from './Dimension.types';
 
+// Import toast for user feedback
+import { useToast } from '@/components/ui/Toast';
+
 // Import configuration and data
 import { 
   AVAILABLE_MODELS, 
@@ -92,6 +95,7 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
   // Hooks
   const isMobile = useIsMobile();
   const screenSize = useScreenSize();
+  const { success: toastSuccess, error: toastError } = useToast();
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -112,14 +116,14 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
   const handleScreenshot = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) {
-      console.error('Canvas not available for screenshot');
+      toastError('Screenshot failed: Canvas not available');
       return;
     }
 
     // Create download link
     canvas.toBlob((blob) => {
       if (!blob) {
-        console.error('Failed to create blob from canvas');
+        toastError('Screenshot failed: Could not capture image');
         return;
       }
 
@@ -132,15 +136,19 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        toastSuccess('Screenshot saved!');
       } catch (error) {
-        console.error('Screenshot failed:', error);
+        toastError('Screenshot failed: Download error');
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Screenshot failed:', error);
+        }
       } finally {
         if (url) {
           URL.revokeObjectURL(url);
         }
       }
     }, 'image/png');
-  }, [selectedModel.name]);
+  }, [selectedModel.name, toastSuccess, toastError]);
 
   // Fullscreen functionality
   const handleFullscreen = useCallback(() => {
