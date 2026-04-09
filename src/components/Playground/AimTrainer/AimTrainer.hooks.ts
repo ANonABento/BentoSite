@@ -17,8 +17,6 @@ function randomInRange(min: number, max: number): number {
 }
 
 function generateTarget(mode: GameMode, size: number): Target {
-  const settings = MODE_SETTINGS[mode];
-
   // Generate position based on mode
   let x: number, y: number, z: number;
 
@@ -86,8 +84,6 @@ export function useAimTrainer() {
 
     setState((s) => {
       if (s.status !== 'playing') return s;
-
-      const activeTargets = s.targets.filter((t) => t.active);
 
       // Remove expired targets
       const now = Date.now();

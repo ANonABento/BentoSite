@@ -37,13 +37,13 @@ export class AudioAnalyzer {
     const duration = audioBuffer.duration;
 
     // Calculate spectral flux for onset detection
-    const spectralFlux = this.calculateSpectralFlux(channelData, sampleRate);
+    const spectralFlux = this.calculateSpectralFlux(channelData);
 
     // Detect onsets from spectral flux
     const onsets = this.detectOnsets(spectralFlux, sampleRate);
 
     // Detect BPM
-    const bpm = this.detectBPM(onsets, duration);
+    const bpm = this.detectBPM(onsets);
 
     // Get overall energy for visualization
     const spectralEnergy = this.calculateEnergy(channelData, sampleRate);
@@ -61,8 +61,7 @@ export class AudioAnalyzer {
    * Calculate spectral flux (change in spectrum over time)
    */
   private calculateSpectralFlux(
-    samples: Float32Array,
-    sampleRate: number
+    samples: Float32Array
   ): number[] {
     const flux: number[] = [];
     const numFrames = Math.floor((samples.length - FFT_SIZE) / HOP_SIZE);
@@ -161,7 +160,7 @@ export class AudioAnalyzer {
         // Determine frequency band based on which part of spectrum had most energy
         const time = i * timePerFrame;
         const strength = Math.min(flux[i] / (localMean * 3 + 0.001), 1);
-        const frequency = this.determineFrequencyBand(i, flux);
+        const frequency = this.determineFrequencyBand();
 
         onsets.push({ time, strength, frequency });
       }
@@ -174,10 +173,7 @@ export class AudioAnalyzer {
   /**
    * Determine frequency band for onset (simplified)
    */
-  private determineFrequencyBand(
-    index: number,
-    flux: number[]
-  ): 'low' | 'mid' | 'high' {
+  private determineFrequencyBand(): 'low' | 'mid' | 'high' {
     // This is simplified - in a full implementation we'd look at
     // which frequency bands contributed most to the onset
     const rand = Math.random();
@@ -210,7 +206,7 @@ export class AudioAnalyzer {
   /**
    * Detect BPM from onset times using autocorrelation
    */
-  private detectBPM(onsets: Onset[], duration: number): number {
+  private detectBPM(onsets: Onset[]): number {
     if (onsets.length < 4) {
       return 120; // Default BPM
     }

@@ -2,7 +2,7 @@
  * Sorting Visualizer - Configuration
  */
 
-import { SortingAlgorithm, AlgorithmInfo } from './SortingVisualizer.types';
+import { AlgorithmInfo } from './SortingVisualizer.types';
 
 // Array configuration
 export const DEFAULT_ARRAY_SIZE = 50;

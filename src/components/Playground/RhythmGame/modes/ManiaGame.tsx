@@ -11,7 +11,6 @@ import { isNewHighScore, formatNumber } from '../../Playground.utils';
 import {
   MANIA_BEAT_MAPS,
   ManiaBeatMap,
-  KeyCount,
   LANE_COLORS,
   KEY_BINDINGS,
   MANIA_DIMENSIONS,
@@ -41,8 +40,6 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
     keyFlash,
     startGame,
     startPlaying,
-    handleKeyPress,
-    handleKeyRelease,
     resetGame,
     getCurrentTime,
   } = useManiaGame(selectedMap);

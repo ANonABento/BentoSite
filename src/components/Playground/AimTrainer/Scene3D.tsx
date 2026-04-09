@@ -84,6 +84,7 @@ interface FPSControlsProps {
 }
 
 function FPSControls({ sensitivity, enabled }: FPSControlsProps) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const controlsRef = useRef<any>(null);
 
   useEffect(() => {
@@ -109,7 +110,6 @@ interface Scene3DProps {
   isPlaying: boolean;
   onHit: (targetId: string) => void;
   onMiss: () => void;
-  onLockChange: (locked: boolean) => void;
 }
 
 export function Scene3D({
@@ -118,7 +118,6 @@ export function Scene3D({
   isPlaying,
   onHit,
   onMiss,
-  onLockChange,
 }: Scene3DProps) {
   return (
     <Canvas

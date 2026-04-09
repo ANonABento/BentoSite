@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { RotateCcw, Trophy, Grid2X2 } from 'lucide-react';
 import { GameLayout, ResultsScreen } from '../shared';
 import { useGame2048 } from './Game2048.hooks';

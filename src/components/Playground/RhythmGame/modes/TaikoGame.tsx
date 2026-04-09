@@ -1,8 +1,8 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { Drum, Upload, List, ArrowLeft } from 'lucide-react';
+import { useState, useCallback, useRef } from 'react';
+import { Drum, ArrowLeft } from 'lucide-react';
 import { GameLayout, ResultsScreen, CountdownOverlay } from '../../shared';
 import { useTaikoGame } from './TaikoGame.hooks';
 import { useHighScores } from '../../Playground.hooks';
@@ -122,7 +122,14 @@ interface DrumProps {
   lastHitRating: 'perfect' | 'good' | 'miss' | null;
 }
 
+let drumHitCounter = 0;
+
 function DrumDisplay({ lastHitType, lastHitRating }: DrumProps) {
+  const hitKeyRef = useRef(0);
+  if (lastHitRating && lastHitRating !== 'miss') {
+    hitKeyRef.current = ++drumHitCounter;
+  }
+
   return (
     <div className="relative flex items-center justify-center">
       {/* Drum body */}
@@ -157,7 +164,7 @@ function DrumDisplay({ lastHitType, lastHitRating }: DrumProps) {
         {/* Hit feedback */}
         {lastHitRating && lastHitRating !== 'miss' && (
           <motion.div
-            key={Date.now()}
+            key={hitKeyRef.current}
             className="absolute inset-0 flex items-center justify-center"
             initial={{ scale: 1, opacity: 1 }}
             animate={{ scale: 2, opacity: 0 }}

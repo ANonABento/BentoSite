@@ -2,18 +2,17 @@
 
 import { motion } from 'framer-motion';
 import { useState, useEffect, useCallback } from 'react';
-import { Play, RotateCcw, Crosshair, Target } from 'lucide-react';
+import { Play, Crosshair, Target } from 'lucide-react';
 import { GameLayout, ResultsScreen } from '../shared';
 import { Scene3D } from './Scene3D';
 import { useAimTrainer } from './AimTrainer.hooks';
 import { useHighScores } from '../Playground.hooks';
 import { isNewHighScore } from '../Playground.utils';
 import { GameMode } from './AimTrainer.types';
-import { MODES, DURATIONS, TARGET_SIZES, DEFAULT_SENSITIVITY, MIN_SENSITIVITY, MAX_SENSITIVITY } from './AimTrainer.config';
+import { MODES, DURATIONS, MIN_SENSITIVITY, MAX_SENSITIVITY } from './AimTrainer.config';
 import { springs } from '../design';
 
 export function AimTrainer() {
-  const [isLocked, setIsLocked] = useState(false);
   const [showInstructions, setShowInstructions] = useState(true);
 
   const {
@@ -52,12 +51,13 @@ export function AimTrainer() {
     }
   }, [status, score, accuracy, settings.mode, scores, saveScore]);
 
-  const handleLockChange = useCallback((locked: boolean) => {
-    setIsLocked(locked);
-    if (locked) {
-      setShowInstructions(false);
+  // Auto-dismiss instructions after game starts
+  useEffect(() => {
+    if (status === 'playing') {
+      const timer = setTimeout(() => setShowInstructions(false), 3000);
+      return () => clearTimeout(timer);
     }
-  }, []);
+  }, [status]);
 
   const handleHit = useCallback((targetId: string) => {
     handleShot(targetId);
@@ -231,7 +231,6 @@ export function AimTrainer() {
                 isPlaying={status === 'playing'}
                 onHit={handleHit}
                 onMiss={handleMiss}
-                onLockChange={handleLockChange}
               />
             </div>
 

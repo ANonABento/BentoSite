@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { TransparentHeader } from './header';
 import { BentoGrid } from './grid';
-import { VoidBackground } from './background';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
@@ -26,9 +25,6 @@ export function BentoHub() {
 
   return (
     <div className="min-h-screen bg-[var(--pg-bg-deep)] relative overflow-hidden">
-      {/* 3D Particle Background */}
-      <VoidBackground />
-
       {/* Subtle noise overlay via CSS gradient (no external image needed) */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay z-[1]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%270 0 256 256%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.9%27 numOctaves=%274%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27/%3E%3C/svg%3E")' }} />
 

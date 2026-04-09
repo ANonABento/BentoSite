@@ -53,7 +53,7 @@ export function DashboardLayout({
     addAssistant: (content: string) => void;
     clear: () => void;
   } | null>(null);
-  const [pendingChatMessage, setPendingChatMessage] = useState<string | null>(null);
+  const pendingChatMessageRef = useRef<string | null>(null);
   const isMountedRef = useRef(true);
   const mobileChatRef = useRef<HTMLDivElement>(null);
 
@@ -93,15 +93,16 @@ export function DashboardLayout({
       return;
     }
 
-    setPendingChatMessage(message);
+    pendingChatMessageRef.current = message;
   }, [chatFns, activeSection]);
 
   useEffect(() => {
+    const pendingChatMessage = pendingChatMessageRef.current;
     if (!pendingChatMessage || !chatFns || !isMountedRef.current) return;
 
     chatFns.send(pendingChatMessage);
-    setPendingChatMessage(null);
-  }, [pendingChatMessage, chatFns]);
+    pendingChatMessageRef.current = null;
+  }, [chatFns]);
 
   return (
     <>

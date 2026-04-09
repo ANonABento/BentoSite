@@ -52,7 +52,7 @@ export class BeatmapGenerator {
         notes = this.generateOsuNotes(filteredOnsets, settings);
         break;
       case 'taiko':
-        notes = this.generateTaikoNotes(filteredOnsets, settings);
+        notes = this.generateTaikoNotes(filteredOnsets);
         break;
       case 'mania':
         notes = this.generateManiaNotes(filteredOnsets, settings, 4);
@@ -168,8 +168,7 @@ export class BeatmapGenerator {
    * Generate Taiko style notes (Don and Kat)
    */
   private generateTaikoNotes(
-    onsets: Onset[],
-    settings: BeatmapSettings
+    onsets: Onset[]
   ): GeneratedNote[] {
     const notes: GeneratedNote[] = [];
 

@@ -86,6 +86,8 @@ export function useSortingVisualizer() {
     }
   }, []);
 
+  const runSortingRef = useRef<(() => void) | undefined>(undefined);
+
   // Run the sorting animation
   const runSorting = useCallback(() => {
     if (!generatorRef.current || isPausedRef.current) return;
@@ -105,8 +107,12 @@ export function useSortingVisualizer() {
     processStep(result.value);
 
     // Schedule next step
-    timeoutRef.current = setTimeout(runSorting, Math.max(1, 201 - speed));
+    timeoutRef.current = setTimeout(() => runSortingRef.current?.(), Math.max(1, 201 - speed));
   }, [speed, processStep, array.length]);
+
+  useEffect(() => {
+    runSortingRef.current = runSorting;
+  });
 
   // Start sorting
   const start = useCallback(() => {
@@ -132,7 +138,8 @@ export function useSortingVisualizer() {
   // Effect to run sorting when status changes to running
   useEffect(() => {
     if (status === 'running' && !isPausedRef.current) {
-      runSorting();
+      const id = setTimeout(runSorting, 0);
+      return () => clearTimeout(id);
     }
   }, [status, runSorting]);
 

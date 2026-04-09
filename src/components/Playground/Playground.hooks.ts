@@ -82,22 +82,34 @@ export function useCountdown(
     setSeconds(initialSeconds);
   }, [stop, initialSeconds]);
 
+  const onCompleteRef = useRef(onComplete);
   useEffect(() => {
-    if (isRunning && seconds > 0) {
-      intervalRef.current = setInterval(() => {
-        setSeconds((s) => s - 1);
-      }, 1000);
-    } else if (seconds === 0 && isRunning) {
-      setIsRunning(false);
-      onComplete?.();
-    }
+    onCompleteRef.current = onComplete;
+  });
+
+  useEffect(() => {
+    if (!isRunning || seconds <= 0) return;
+
+    intervalRef.current = setInterval(() => {
+      setSeconds((s) => {
+        if (s <= 1) {
+          if (intervalRef.current) clearInterval(intervalRef.current);
+          setTimeout(() => {
+            setIsRunning(false);
+            onCompleteRef.current?.();
+          }, 0);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, seconds, onComplete]);
+  }, [isRunning, seconds]);
 
   return {
     seconds,
@@ -112,22 +124,20 @@ export function useCountdown(
  * High scores storage hook
  */
 export function useHighScores<T extends keyof StoredScores>(gameId: T) {
-  const [scores, setScores] = useState<StoredScores[T] | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  // Load scores from localStorage
-  useEffect(() => {
+  const [scores, setScores] = useState<StoredScores[T] | null>(() => {
+    if (typeof window === 'undefined') return null;
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.highScores);
       if (stored) {
         const allScores: Partial<StoredScores> = JSON.parse(stored);
-        setScores(allScores[gameId] ?? null);
+        return allScores[gameId] ?? null;
       }
     } catch {
-      console.warn('Failed to load high scores');
+      // Ignore localStorage errors
     }
-    setIsLoaded(true);
-  }, [gameId]);
+    return null;
+  });
+  const [isLoaded] = useState(true);
 
   // Save scores to localStorage
   const saveScore = useCallback(
@@ -228,14 +238,15 @@ function formatTime(seconds: number): string {
  * Detect mobile device
  */
 export function useIsMobile(): boolean {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  );
 
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
 
-    checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);

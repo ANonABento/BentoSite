@@ -1,11 +1,9 @@
 /**
- * Fidget Hub Configuration - Physics, particles, and bento cards
+ * Bento Hub Configuration - Physics and bento cards
  */
 
 import {
   PhysicsConfig,
-  ParticleConfig,
-  VoidConfig,
   BentoCardConfig,
 } from './BentoHub.types';
 
@@ -20,29 +18,6 @@ export const PHYSICS: PhysicsConfig = {
     damping: 22,
   },
   centerPullRadius: 400,
-};
-
-// Particle system configuration (improved - less ugly)
-export const PARTICLES: ParticleConfig = {
-  count: 600,
-  countMobile: 200,
-  size: 2,
-  sizeVariance: 1,
-  color: '#a78bfa',
-  colorSecondary: '#fbbf24',
-  spiralSpeed: 0.0004,
-  inwardSpeed: 0.0002,
-  respawnRadius: 12,
-  eventHorizonRadius: 0.5,
-  opacity: 0.35,
-};
-
-// Central void effect configuration
-export const VOID: VoidConfig = {
-  glowColor: '#a78bfa',
-  glowIntensity: 0.3,
-  coreColor: '#050612',
-  pulseSpeed: 1.5,
 };
 
 // Grid template for desktop (3x3 uniform)
@@ -154,24 +129,6 @@ export const BENTO_CARDS: BentoCardConfig[] = [
     gridArea: 'soundboard',
   },
 ];
-
-// Get card by ID
-export function getCardById(id: string): BentoCardConfig | undefined {
-  return BENTO_CARDS.find((card) => card.id === id);
-}
-
-// Filter out void card for game list
-export function getGameCards(): BentoCardConfig[] {
-  return BENTO_CARDS.filter((card) => card.contentType === 'game');
-}
-
-// Size to grid span mapping
-export const SIZE_TO_SPAN: Record<string, { cols: number; rows: number }> = {
-  '1x1': { cols: 1, rows: 1 },
-  '2x1': { cols: 2, rows: 1 },
-  '1x2': { cols: 1, rows: 2 },
-  '2x2': { cols: 2, rows: 2 },
-};
 
 // Cell size in pixels (base unit)
 export const CELL_SIZE = {
