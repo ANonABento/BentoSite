@@ -139,6 +139,7 @@ jobs:
         with:
           name: next-build
           path: .
+          merge-multiple: true
 
       - name: Run E2E tests
         run: node_modules/.bin/playwright test --project=${{ matrix.browser }}
@@ -177,6 +178,7 @@ jobs:
         with:
           name: next-build
           path: .
+          merge-multiple: true
 
       - name: Run mobile viewport tests
         run: node_modules/.bin/playwright test --project="Mobile Chrome"
@@ -216,6 +218,7 @@ jobs:
         with:
           name: next-build
           path: .
+          merge-multiple: true
 
       - name: Run Lighthouse CI
         run: node_modules/.bin/lhci autorun
@@ -254,6 +257,7 @@ jobs:
         with:
           name: next-build
           path: .
+          merge-multiple: true
 
       - name: Check bundle size
         run: node scripts/check-bundle-size.mjs --json
