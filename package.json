@@ -17,8 +17,8 @@
     "e2e:headed": "playwright test --headed",
     "analyze": "ANALYZE=true next build",
     "lighthouse": "lhci autorun",
-    "size": "size-limit",
-    "size:check": "size-limit --json"
+    "size": "node scripts/check-bundle-size.mjs",
+    "size:check": "node scripts/check-bundle-size.mjs --json"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

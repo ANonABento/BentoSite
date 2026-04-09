@@ -141,7 +141,7 @@ jobs:
           path: .
 
       - name: Run E2E tests
-        run: npm run e2e -- --project=${{ matrix.browser }}
+        run: npx playwright test --project=${{ matrix.browser }}
         env:
           CI: true
 
@@ -179,7 +179,7 @@ jobs:
           path: .
 
       - name: Run mobile viewport tests
-        run: npm run e2e -- --project="Mobile Chrome"
+        run: npx playwright test --project="Mobile Chrome"
         env:
           CI: true
 
@@ -218,12 +218,15 @@ jobs:
           path: .
 
       - name: Run Lighthouse CI
-        uses: treosh/lighthouse-ci-action@v12
+        run: npm run lighthouse
+
+      - name: Upload Lighthouse artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
         with:
-          configPath: './lighthouserc.js'
-          uploadArtifacts: true
-          temporaryPublicStorage: true
-          runs: 3
+          name: lighthouse-report
+          path: .lighthouseci/
+          retention-days: 7
 
   # ============================================
   # PHASE 5: Bundle Size (PR only)
@@ -253,8 +256,4 @@ jobs:
           path: .
 
       - name: Check bundle size
-        uses: andresz1/size-limit-action@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          skip_step: build
-          directory: .
+        run: npm run size:check

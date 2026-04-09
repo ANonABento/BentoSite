@@ -1,21 +1,14 @@
 import { test, expect } from '@playwright/test';
+import { gotoDashboard } from './helpers';
 
 test.describe('Landing Page', () => {
-  test('should display landing page with Say Hi button', async ({ page }) => {
+  test('should display the bentOS boot screen', async ({ page }) => {
     await page.goto('/');
-
-    // Wait for landing to appear
-    await expect(page.getByRole('button', { name: /say hi/i })).toBeVisible();
+    await expect(page.getByText(/ANonABento/i)).toBeVisible();
   });
 
-  test('should transition to main layout after clicking Say Hi', async ({ page }) => {
-    await page.goto('/');
-
-    // Click Say Hi button
-    await page.getByRole('button', { name: /say hi/i }).click();
-
-    // Wait for transition and check header appears
-    await expect(page.locator('header')).toBeVisible({ timeout: 5000 });
+  test('should render the dashboard view directly from the query param', async ({ page }) => {
+    await gotoDashboard(page);
   });
 
   test('should have proper meta tags', async ({ page }) => {

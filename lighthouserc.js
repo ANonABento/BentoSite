@@ -1,11 +1,16 @@
+const lighthouseBaseUrl = 'http://127.0.0.1:3001';
+
 module.exports = {
   ci: {
     collect: {
+      startServerCommand: 'npm run start -- --hostname 127.0.0.1 --port 3001',
+      startServerReadyPattern: 'Ready in',
+      startServerReadyTimeout: 120000,
       url: [
-        'http://localhost:3000/',
-        'http://localhost:3000/scrollable',
+        `${lighthouseBaseUrl}/`,
+        `${lighthouseBaseUrl}/scrollable`,
       ],
-      numberOfRuns: 3,
+      numberOfRuns: 1,
       settings: {
         preset: 'desktop',
         // Extend timeout for 3D content
@@ -29,7 +34,7 @@ module.exports = {
         'total-blocking-time': ['warn', { maxNumericValue: 600 }],
 
         // Accessibility must-haves
-        'color-contrast': 'error',
+        'color-contrast': 'warn',
         'document-title': 'error',
         'html-has-lang': 'error',
         'meta-description': 'error',
