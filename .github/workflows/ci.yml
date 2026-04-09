@@ -104,6 +104,7 @@ jobs:
           path: |
             .next
             !.next/cache
+          include-hidden-files: true
           retention-days: 1
 
   # ============================================
@@ -137,7 +138,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: next-build
-          path: .next
+          path: .
 
       - name: Run E2E tests
         run: npm run e2e -- --project=${{ matrix.browser }}
@@ -175,7 +176,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: next-build
-          path: .next
+          path: .
 
       - name: Run mobile viewport tests
         run: npm run e2e -- --project="Mobile Chrome"
@@ -214,7 +215,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: next-build
-          path: .next
+          path: .
 
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v12
@@ -249,7 +250,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: next-build
-          path: .next
+          path: .
 
       - name: Check bundle size
         uses: andresz1/size-limit-action@v1
