@@ -9,10 +9,10 @@ export function useScrollablePageState() {
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatFns, setChatFns] = useState<ChatPanelFunctions | null>(null);
-  const [pendingChatMessage, setPendingChatMessage] = useState<string | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
   const isMountedRef = useRef(true);
+  const pendingChatMessageRef = useRef<string | null>(null);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -48,29 +48,31 @@ export function useScrollablePageState() {
         return;
       }
 
-      setPendingChatMessage(message);
+      pendingChatMessageRef.current = message;
     },
     [chatFns]
   );
 
-  useEffect(() => {
-    if (!pendingChatMessage || !chatFns || !isMountedRef.current) {
+  const handleChatReady = useCallback((fns: ChatPanelFunctions | null) => {
+    setChatFns(fns);
+
+    if (!fns || !pendingChatMessageRef.current || !isMountedRef.current) {
       return;
     }
 
-    chatFns.send(pendingChatMessage);
-    setPendingChatMessage(null);
-  }, [chatFns, pendingChatMessage]);
+    fns.send(pendingChatMessageRef.current);
+    pendingChatMessageRef.current = null;
+  }, []);
 
   return {
     chatFns,
     chatRef,
+    handleChatReady,
     handleAskAboutSkill,
     isChatOpen,
     isProjectsOpen,
     scrollToSection,
     scrollToTop,
-    setChatFns,
     setIsChatOpen,
     setIsProjectsOpen,
     showScrollTop,

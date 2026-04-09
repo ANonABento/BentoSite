@@ -24,12 +24,12 @@ export default function ScrollableLayout() {
   const {
     chatFns,
     chatRef,
+    handleChatReady,
     handleAskAboutSkill,
     isChatOpen,
     isProjectsOpen,
     scrollToSection,
     scrollToTop,
-    setChatFns,
     setIsChatOpen,
     setIsProjectsOpen,
     showScrollTop,
@@ -79,7 +79,7 @@ export default function ScrollableLayout() {
           isShortcutsOpen={isShortcutsOpen}
           prefersReducedMotion={prefersReducedMotion}
           scrollToTop={scrollToTop}
-          setChatFns={setChatFns}
+          setChatFns={handleChatReady}
           setIsChatOpen={setIsChatOpen}
           setIsProjectsOpen={setIsProjectsOpen}
           showScrollTop={showScrollTop}

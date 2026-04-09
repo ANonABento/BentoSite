@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { GameViewerProps } from '../Viewfinder.types';
 
 // Convert itch.io page URL to embed URL
@@ -24,11 +24,7 @@ function canEmbedGame(game: NonNullable<GameViewerProps['game']>): boolean {
 
 export function GameViewer({ game }: GameViewerProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setIsLoading(true);
-  }, [game?.type, game?.url]);
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
 
   const embedUrl = useMemo(() => {
     if (!game) return null;
@@ -38,6 +34,8 @@ export function GameViewer({ game }: GameViewerProps) {
     // Unity WebGL - direct URL
     return game.url;
   }, [game]);
+  const loadKey = game ? `${game.type}:${game.url}` : null;
+  const isLoading = Boolean(loadKey && embedUrl && loadedKey !== loadKey);
 
   if (!game || !embedUrl) {
     return (
@@ -129,11 +127,12 @@ export function GameViewer({ game }: GameViewerProps) {
         )}
 
         <iframe
+          key={loadKey ?? 'game-viewer'}
           src={embedUrl}
           className="w-full h-full border-0"
           sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-pointer-lock"
           allow="autoplay; fullscreen; gamepad"
-          onLoad={() => setIsLoading(false)}
+          onLoad={() => setLoadedKey(loadKey)}
           title="Game"
         />
       </div>

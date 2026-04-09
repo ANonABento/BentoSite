@@ -4,23 +4,27 @@ import { useEffect, useState } from 'react';
 import type { WebsiteViewerProps } from '../Viewfinder.types';
 
 export function WebsiteViewer({ url }: WebsiteViewerProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [showExternalHint, setShowExternalHint] = useState(false);
+  const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
+  const [erroredUrl, setErroredUrl] = useState<string | null>(null);
+  const [hintedUrl, setHintedUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    setIsLoading(true);
-    setError(false);
-    setShowExternalHint(false);
-
     if (!url) return;
 
     const timeoutId = window.setTimeout(() => {
-      setShowExternalHint(true);
+      setHintedUrl(url);
     }, 3500);
 
     return () => window.clearTimeout(timeoutId);
   }, [url]);
+
+  const error = Boolean(url && erroredUrl === url);
+  const showExternalHint = Boolean(
+    url && hintedUrl === url && loadedUrl !== url && erroredUrl !== url
+  );
+  const isLoading = Boolean(
+    url && loadedUrl !== url && erroredUrl !== url && hintedUrl !== url
+  );
 
   if (!url) {
     return (
@@ -85,16 +89,15 @@ export function WebsiteViewer({ url }: WebsiteViewerProps) {
         )}
 
         <iframe
+          key={url}
           src={url}
           className="w-full h-full border-0"
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
           onLoad={() => {
-            setIsLoading(false);
-            setShowExternalHint(false);
+            setLoadedUrl(url);
           }}
           onError={() => {
-            setError(true);
-            setIsLoading(false);
+            setErroredUrl(url);
           }}
           title="Embedded website"
         />
