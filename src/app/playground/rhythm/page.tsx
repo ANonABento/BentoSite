@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { Music, Drum, ArrowLeft, Piano } from 'lucide-react';
 import Link from 'next/link';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const RhythmGame = dynamic(
   () =>
@@ -191,7 +192,9 @@ export default function RhythmPage() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <RhythmGame />
+          <ErrorBoundary title="Game Error" message="osu! Style game failed to load. Please try again.">
+            <RhythmGame />
+          </ErrorBoundary>
         </motion.div>
       )}
 
@@ -202,7 +205,9 @@ export default function RhythmPage() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <TaikoGame onBack={handleBack} />
+          <ErrorBoundary title="Game Error" message="Taiko game failed to load. Please try again.">
+            <TaikoGame onBack={handleBack} />
+          </ErrorBoundary>
         </motion.div>
       )}
 
@@ -213,7 +218,9 @@ export default function RhythmPage() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <ManiaGame onBack={handleBack} />
+          <ErrorBoundary title="Game Error" message="Mania game failed to load. Please try again.">
+            <ManiaGame onBack={handleBack} />
+          </ErrorBoundary>
         </motion.div>
       )}
     </AnimatePresence>

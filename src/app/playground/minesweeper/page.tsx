@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { LoadingSpinner } from '@/components/Dimension/ui/feedback/loading-spinner';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const Minesweeper = dynamic(
   () => import('@/components/Playground/Minesweeper').then((mod) => mod.Minesweeper),
@@ -16,5 +17,9 @@ const Minesweeper = dynamic(
 );
 
 export default function MinesweeperPage() {
-  return <Minesweeper />;
+  return (
+    <ErrorBoundary title="Game Error" message="Minesweeper failed to load. Please try again.">
+      <Minesweeper />
+    </ErrorBoundary>
+  );
 }

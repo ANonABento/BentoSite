@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, useCallback, useEffect, Component, ReactNode, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { m, AnimatePresence, LazyMotion, domAnimation, useReducedMotion } from 'framer-motion';
 import Header from '../../components/Header';
 import { sectionStagger, sectionItem } from '@/lib/animations';
@@ -16,6 +16,7 @@ import {
   KeyboardShortcutsModal,
   useKeyboardShortcutsHelp,
 } from '@/components/ui/KeyboardShortcutsHelp';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 // Dynamically import sections with loading skeletons for better perceived performance
 const AboutSection = dynamic(
@@ -32,60 +33,6 @@ const FeaturedProjects = dynamic(
   () => import('../../components/Projects/FeaturedProjects').then((mod) => mod.FeaturedProjects),
   { loading: () => <ProjectsSectionSkeleton /> }
 );
-
-// Error Boundary for graceful error handling
-interface ErrorBoundaryProps {
-  children: ReactNode;
-  fallback?: ReactNode;
-}
-
-interface ErrorBoundaryState {
-  hasError: boolean;
-  error?: Error;
-}
-
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('ErrorBoundary caught an error:', error, errorInfo);
-    }
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback || (
-        <div className="w-full h-full flex items-center justify-center glass backdrop-blur-sm rounded-2xl">
-          <div className="text-center p-8">
-            <div className="w-16 h-16 mx-auto mb-4 text-[var(--status-error)]">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">Something went wrong</h3>
-            <p className="text-[var(--text-secondary)] text-sm mb-4">This component failed to load.</p>
-            <button
-              onClick={() => this.setState({ hasError: false })}
-              className="px-4 py-2 bg-[var(--interactive)] hover:bg-[var(--interactive-hover)] active:bg-[var(--interactive-active)] text-[var(--text-on-accent)] rounded-lg text-sm transition-colors"
-            >
-              Try again
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
 
 const ThreeViewer = dynamic(() => import('../../components/Dimension/Dimension'), {
   ssr: false,
@@ -124,6 +71,7 @@ export default function ScrollableLayout() {
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatFns, setChatFns] = useState<{ send: (content: string) => void; clear: () => void } | null>(null);
+  const [pendingChatMessage, setPendingChatMessage] = useState<string | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
   const { isOpen: isShortcutsOpen, close: closeShortcuts } = useKeyboardShortcutsHelp();
@@ -157,12 +105,20 @@ export default function ScrollableLayout() {
   const handleAskAboutSkill = useCallback((skill: string) => {
     const message = `Tell me about your experience with ${skill}`;
     setIsChatOpen(true);
-    setTimeout(() => {
-      if (isMountedRef.current) {
-        chatFns?.send(message);
-      }
-    }, 300);
+    if (chatFns) {
+      chatFns.send(message);
+      return;
+    }
+
+    setPendingChatMessage(message);
   }, [chatFns]);
+
+  useEffect(() => {
+    if (!pendingChatMessage || !chatFns || !isMountedRef.current) return;
+
+    chatFns.send(pendingChatMessage);
+    setPendingChatMessage(null);
+  }, [pendingChatMessage, chatFns]);
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });

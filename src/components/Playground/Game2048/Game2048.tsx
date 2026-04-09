@@ -6,7 +6,7 @@ import { RotateCcw, Trophy, Grid2X2 } from 'lucide-react';
 import { GameLayout, ResultsScreen } from '../shared';
 import { useGame2048 } from './Game2048.hooks';
 import { Tile } from './Tile';
-import { useHighScores } from '../Playground.hooks';
+import { useHighScores, useIsMobile } from '../Playground.hooks';
 import {
   GRID_SIZE,
   CELL_SIZE,
@@ -17,7 +17,7 @@ import {
 import { springs } from '../design';
 
 export function Game2048() {
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
 
   const {
     tiles,
@@ -32,14 +32,6 @@ export function Game2048() {
   } = useGame2048();
 
   const { scores, saveScore } = useHighScores('game2048');
-
-  // Check for mobile
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Save score when game ends
   useEffect(() => {

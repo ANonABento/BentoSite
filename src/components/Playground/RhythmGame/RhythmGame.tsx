@@ -9,6 +9,7 @@ import { HitCircle } from './HitCircle';
 import { AudioUploader } from './AudioUploader';
 import { useHighScores } from '../Playground.hooks';
 import { BeatMap } from '../Playground.types';
+import { DIFFICULTY_COLORS } from '../Playground.config';
 import { RHYTHM_BEAT_MAPS } from './RhythmGame.config';
 import { GeneratedBeatmap } from './audio';
 import { isNewHighScore, formatNumber } from '../Playground.utils';
@@ -196,12 +197,6 @@ export function RhythmGame() {
   const showGame = status === 'playing';
   const showResults = status === 'finished';
 
-  const difficultyColors = {
-    easy: 'bg-[var(--pg-game-success)]/15 text-[var(--pg-game-success)] border-[var(--pg-game-success)]/30',
-    medium: 'bg-[var(--pg-accent-gold)]/15 text-[var(--pg-accent-gold)] border-[var(--pg-accent-gold)]/30',
-    hard: 'bg-[var(--pg-game-error)]/15 text-[var(--pg-game-error)] border-[var(--pg-game-error)]/30',
-  };
-
   return (
     <GameLayout
       title="Rhythm Game"
@@ -344,7 +339,7 @@ export function RhythmGame() {
                       <div
                         className={`
                           px-2.5 py-1 rounded-lg text-xs font-medium capitalize border
-                          ${difficultyColors[customBeatmap.difficulty]}
+                          ${DIFFICULTY_COLORS[customBeatmap.difficulty]}
                         `}
                       >
                         {customBeatmap.difficulty}
@@ -382,7 +377,7 @@ export function RhythmGame() {
                       <div
                         className={`
                           px-2.5 py-1 rounded-lg text-xs font-medium capitalize border
-                          ${difficultyColors[map.difficulty]}
+                          ${DIFFICULTY_COLORS[map.difficulty]}
                         `}
                       >
                         {map.difficulty}

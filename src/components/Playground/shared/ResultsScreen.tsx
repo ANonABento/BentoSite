@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { RotateCcw, Home, Share2 } from 'lucide-react';
+import { RotateCcw, Home, Share2, Check } from 'lucide-react';
 import Link from 'next/link';
 import { staggerContainer, staggerItem, springs } from '../design';
 import { AnimatedScore } from './AnimatedScore';
@@ -30,6 +31,7 @@ export function ResultsScreen({
   homeHref = '/playground',
   primaryStatIndex = 0,
 }: ResultsScreenProps) {
+  const [shareState, setShareState] = useState<'idle' | 'copied' | 'shared'>('idle');
   const primaryStat = stats[primaryStatIndex];
   const secondaryStats = stats.filter((_, i) => i !== primaryStatIndex);
 
@@ -42,6 +44,36 @@ export function ResultsScreen({
     typeof primaryStat.value === 'string'
       ? primaryStat.value.replace(/[\d,]/g, '').trim()
       : '';
+
+  const handleShare = async () => {
+    const shareText = `I scored ${primaryStat.value} in ${title}!`;
+    const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+
+    // Try native share first
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${title} - ${primaryStat.value}`,
+          text: shareText,
+          url: shareUrl,
+        });
+        setShareState('shared');
+        setTimeout(() => setShareState('idle'), 2000);
+        return;
+      } catch {
+        // User cancelled or share failed, fall through to clipboard
+      }
+    }
+
+    // Fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+      setShareState('copied');
+      setTimeout(() => setShareState('idle'), 2000);
+    } catch {
+      // Clipboard failed - could show error toast here
+    }
+  };
 
   return (
     <motion.div
@@ -151,23 +183,29 @@ export function ResultsScreen({
         </Link>
       </motion.div>
 
-      {/* Share hint (future feature placeholder) */}
+      {/* Share button with feedback */}
       <motion.button
         variants={staggerItem}
         className="mt-6 flex items-center gap-2 text-sm text-[var(--pg-text-muted)] hover:text-[var(--pg-text-secondary)] transition-colors"
-        onClick={() => {
-          // TODO: Implement share functionality
-          if (navigator.share) {
-            navigator.share({
-              title: `${title} - ${primaryStat.value}`,
-              text: `I scored ${primaryStat.value} in ${title}!`,
-              url: window.location.href,
-            }).catch(() => {});
-          }
-        }}
+        onClick={handleShare}
+        disabled={shareState !== 'idle'}
       >
-        <Share2 className="w-4 h-4" />
-        Share Result
+        {shareState === 'copied' ? (
+          <>
+            <Check className="w-4 h-4 text-green-400" />
+            <span className="text-green-400">Copied to clipboard!</span>
+          </>
+        ) : shareState === 'shared' ? (
+          <>
+            <Check className="w-4 h-4 text-green-400" />
+            <span className="text-green-400">Shared!</span>
+          </>
+        ) : (
+          <>
+            <Share2 className="w-4 h-4" />
+            Share Result
+          </>
+        )}
       </motion.button>
     </motion.div>
   );

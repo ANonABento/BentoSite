@@ -25,6 +25,7 @@ npm run dev      # Dev server at localhost:3000
 npm run build    # Production build
 npm run start    # Run production server
 npm run lint     # ESLint check
+npm test         # Run unit tests
 ```
 
 ---
@@ -35,42 +36,104 @@ npm run lint     # ESLint check
 src/
 ├── app/
 │   ├── layout.tsx          # Root layout with Geist fonts, metadata
-│   ├── page.tsx            # Main page: 50/50 split Dimension + Chat
+│   ├── page.tsx            # Main page with boot sequence + dashboard
 │   └── globals.css         # Tailwind base + CSS variables (dark theme)
 │
+├── lib/                    # Shared utilities and constants
+│   ├── constants.ts        # Centralized constants (breakpoints, timeouts, etc.)
+│   ├── utils.ts            # Shared utility functions
+│   ├── design-tokens.ts    # Unified design system tokens
+│   ├── animations.ts       # Framer Motion animation configs
+│   └── __tests__/          # Unit tests for lib functions
+│
 └── components/
-    ├── Chat.tsx            # Simple chatbot with hardcoded responses
+    ├── ui/                 # Shared UI components
+    │   ├── Icons.tsx           # 30+ reusable SVG icons
+    │   ├── LoadingSpinner.tsx  # Loading states (spinner, overlay, skeleton)
+    │   ├── ErrorBoundary.tsx   # Error handling with customizable fallback
+    │   ├── Toast.tsx           # Toast notifications
+    │   └── index.ts            # Barrel exports
     │
-    └── Dimension/          # 3D Model Viewer (modular architecture)
-        ├── Dimension.tsx           # Main component, state management
-        ├── Dimension.types.ts      # TypeScript interfaces (10+ types)
-        ├── Dimension.config.ts     # Constants, model definitions, thresholds
-        ├── Dimension.hooks.ts      # 9 custom React hooks
-        ├── Dimension.3d.tsx        # Three.js scene components
-        ├── Dimension.utils.ts      # Utility functions
-        ├── Dimension.ui.tsx        # UI component exports
-        │
-        └── ui/
-            ├── components.tsx      # Legacy re-exports
-            ├── widgets/
-            │   ├── control-panel.tsx           # Main control interface
-            │   ├── camera-presets-widget.tsx   # Camera angle presets
-            │   ├── model-info-display.tsx      # Model metadata display
-            │   └── collapsible-widget.tsx      # Reusable collapsible
-            ├── modals/
-            │   ├── model-selector.tsx          # Model selection modal
-            │   └── keyboard-shortcuts-help.tsx # Help modal
-            ├── feedback/
-            │   ├── loading-spinner.tsx         # Loading animation
-            │   ├── loading-progress.tsx        # Progress bar
-            │   └── error-message.tsx           # Error display
-            └── shared/
-                ├── design-system.ts            # Design tokens
-                └── index.ts                    # Barrel exports
+    ├── Chat.tsx            # AI chatbot with terminal-style UI
+    │
+    ├── Dashboard/          # Main dashboard layout
+    │   ├── DashboardLayout.tsx # Responsive grid layout
+    │   ├── MobileTabs.tsx      # Mobile tab navigation
+    │   └── TerminalPanel.tsx   # Terminal-style chat wrapper
+    │
+    ├── Dimension/          # 3D Model Viewer (modular architecture)
+    │   ├── Dimension.tsx           # Main component, state management
+    │   ├── Dimension.types.ts      # TypeScript interfaces
+    │   ├── Dimension.config.ts     # Model definitions, thresholds
+    │   ├── Dimension.hooks.ts      # Custom React hooks
+    │   ├── Dimension.3d.tsx        # Three.js scene components
+    │   └── Dimension.utils.ts      # Utilities (re-exports shared utils)
+    │
+    └── Playground/         # Interactive games collection
+        ├── design/tokens.ts    # Playground-specific design tokens
+        └── shared/             # Shared game components
 
 public/
 └── models/
     └── placeholder.stl     # Default 3D model
+```
+
+---
+
+## Shared Utilities (`src/lib/`)
+
+### Constants (`constants.ts`)
+
+```typescript
+import { BREAKPOINTS, TIMEOUTS, DEFAULTS, PERFORMANCE } from '@/lib/constants';
+
+// Responsive breakpoints (matches Tailwind)
+BREAKPOINTS.MD  // 768
+
+// API timeouts
+TIMEOUTS.CHAT_REQUEST  // 30000ms
+
+// SSR defaults
+DEFAULTS.WINDOW_WIDTH  // 1920
+
+// Performance thresholds
+PERFORMANCE.LOW_FPS_THRESHOLD  // 30
+```
+
+### Utilities (`utils.ts`)
+
+```typescript
+import { generateId, formatFileSize, isMobileDevice, cn } from '@/lib/utils';
+
+// Generate unique IDs
+const id = generateId();  // "1709645123456-x7k2m"
+
+// Format file sizes
+formatFileSize(1048576);  // "1 MB"
+
+// Device detection
+if (isMobileDevice()) { /* ... */ }
+
+// Conditional class names
+cn('base', isActive && 'active', isDisabled && 'disabled');
+```
+
+### Icons (`components/ui/Icons.tsx`)
+
+```typescript
+import { CheckIcon, CopyIcon, SendIcon, SearchIcon } from '@/components/ui/Icons';
+
+<CopyIcon size={16} className="text-gray-400" />
+```
+
+### Loading States (`components/ui/LoadingSpinner.tsx`)
+
+```typescript
+import { LoadingSpinner, LoadingOverlay, LoadingSkeleton } from '@/components/ui';
+
+<LoadingSpinner size="lg" variant="violet" message="Loading..." />
+<LoadingOverlay message="Processing..." />
+<LoadingSkeleton width={200} height={20} />
 ```
 
 ---
@@ -117,13 +180,16 @@ ComponentName.3d.tsx     # Three.js specific components
 | `FallbackModel` | Red wireframe cube shown on load failure |
 | `SkeletonLoader` | Placeholder while model loads |
 
-### Design System (`ui/shared/design-system.ts`)
+### Design System
 
-Centralized tokens for consistency:
-- **Colors**: gray-900, blue-600, etc.
-- **Spacing**: xs (4px), sm (8px), md (16px), lg (24px)
-- **Animation**: fast (150ms), normal (200ms), slow (300ms)
-- **Patterns**: Button styles, card styles, interactive states
+Two design systems exist:
+- **`src/lib/design-tokens.ts`** - Unified tokens for the whole app
+- **`src/components/Playground/design/tokens.ts`** - Playground-specific tokens
+
+Use the unified tokens when possible:
+```typescript
+import { colors, spacing, classes } from '@/lib/design-tokens';
+```
 
 ### Mobile Optimization
 
@@ -157,7 +223,7 @@ const Dimension = dynamic(() => import('@/components/Dimension/Dimension'), {
 
 ### Styling
 - Use Tailwind utilities as primary approach
-- Use design system tokens from `design-system.ts`
+- Use design tokens from `@/lib/design-tokens`
 - Avoid inline style objects unless dynamic
 - CSS variables defined in `globals.css`
 
@@ -166,6 +232,11 @@ const Dimension = dynamic(() => import('@/components/Dimension/Dimension'), {
 - Keep files under 300 lines
 - Use barrel exports (`index.ts`) for clean imports
 - One responsibility per file
+
+### Shared Code
+- Use utilities from `@/lib/utils` instead of duplicating
+- Use constants from `@/lib/constants`
+- Use icons from `@/components/ui/Icons`
 
 ---
 
@@ -204,10 +275,16 @@ The `isMobile` flag changes:
 
 Always test changes on both desktop and mobile.
 
-### 4. Design Tokens Required
-Don't hardcode colors or spacing. Import from design system:
+### 4. Use Shared Utilities
+Don't duplicate code. Import from shared modules:
 ```tsx
-import { colors, spacing } from './ui/shared/design-system'
+// Good
+import { generateId, formatFileSize } from '@/lib/utils';
+import { TIMEOUTS } from '@/lib/constants';
+import { CopyIcon } from '@/components/ui/Icons';
+
+// Bad
+const id = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 ```
 
 ### 5. Model Config Schema
@@ -233,21 +310,29 @@ When adding new models to `Dimension.config.ts`:
 | What | File |
 |------|------|
 | Main page | `src/app/page.tsx` |
+| Shared constants | `src/lib/constants.ts` |
+| Shared utilities | `src/lib/utils.ts` |
+| Design tokens | `src/lib/design-tokens.ts` |
+| Icon library | `src/components/ui/Icons.tsx` |
+| Loading components | `src/components/ui/LoadingSpinner.tsx` |
+| Error boundary | `src/components/ui/ErrorBoundary.tsx` |
 | 3D viewer entry | `src/components/Dimension/Dimension.tsx` |
-| Three.js components | `src/components/Dimension/Dimension.3d.tsx` |
-| Type definitions | `src/components/Dimension/Dimension.types.ts` |
-| Model configs | `src/components/Dimension/Dimension.config.ts` |
-| Custom hooks | `src/components/Dimension/Dimension.hooks.ts` |
-| Design tokens | `src/components/Dimension/ui/shared/design-system.ts` |
-| Control panel | `src/components/Dimension/ui/widgets/control-panel.tsx` |
+| Chatbot | `src/components/Chat.tsx` |
 | Global styles | `src/app/globals.css` |
-| Enhancement roadmap | `plan.md` |
 
 ---
 
-## Enhancement Roadmap
+## Testing
 
-See `plan.md` for the 3-phase enhancement plan:
-- **Phase 1**: Core QoL & UI (loading states, error handling, controls)
-- **Phase 2**: Enhanced Interactivity (annotations, animations, effects)
-- **Phase 3**: Advanced Features (multi-format, AR/VR, analytics)
+Tests are in `src/lib/__tests__/` using Vitest:
+
+```bash
+npm test           # Run all tests
+npm test -- --run  # Run once without watch
+```
+
+Current test coverage:
+- `constants.test.ts` - 29 tests for all constants
+- `utils.test.ts` - 44 tests for utility functions
+- `colors.test.ts` - 11 tests for color utilities
+- `animations.test.ts` - 29 tests for animation configs

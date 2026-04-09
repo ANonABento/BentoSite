@@ -1,11 +1,12 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Play, Pause, RotateCcw, Shuffle, BarChart3 } from 'lucide-react';
 import { GameLayout } from '../shared';
 import { useSortingVisualizer } from './SortingVisualizer.hooks';
 import { SortingAlgorithm } from './SortingVisualizer.types';
+import { useIsMobile } from '../Playground.hooks';
 import {
   ALGORITHMS,
   COLORS,
@@ -17,7 +18,7 @@ import {
 import { springs } from '../design';
 
 export function SortingVisualizer() {
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
 
   const {
     array,
@@ -40,13 +41,6 @@ export function SortingVisualizer() {
     resume,
     reset,
   } = useSortingVisualizer();
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const currentAlgorithm = ALGORITHMS.find((a) => a.id === algorithm);
   const isRunning = status === 'running';

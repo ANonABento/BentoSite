@@ -1,11 +1,22 @@
 // ProjectCard - Individual project card for the projects modal
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import type { Project } from '@/lib/projects-data';
 import { TechBadge } from './TechBadge';
 import { BLUR_PLACEHOLDERS } from '@/lib/image-utils';
+import { analytics } from '@/lib/analytics';
+import {
+  Model3DIcon,
+  ImageIcon,
+  PDFIcon,
+  GlobeIcon,
+  PlayCircleIcon,
+  ExternalLinkIcon,
+  GitHubIcon,
+  EyeIcon,
+} from '@/components/ui/Icons';
 
 interface ProjectCardProps {
   project: Project;
@@ -29,59 +40,23 @@ function getMediaIcons(project: Project): { icon: React.ReactNode; label: string
   const icons: { icon: React.ReactNode; label: string }[] = [];
 
   if (project.links.modelPath) {
-    icons.push({
-      label: '3D',
-      icon: (
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg>
-      ),
-    });
+    icons.push({ label: '3D', icon: <Model3DIcon size={12} /> });
   }
 
   if (project.media?.images?.length) {
-    icons.push({
-      label: 'Images',
-      icon: (
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      ),
-    });
+    icons.push({ label: 'Images', icon: <ImageIcon size={12} /> });
   }
 
   if (project.media?.pdf) {
-    icons.push({
-      label: 'PDF',
-      icon: (
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-    });
+    icons.push({ label: 'PDF', icon: <PDFIcon size={12} /> });
   }
 
   if (project.media?.website) {
-    icons.push({
-      label: 'Website',
-      icon: (
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-        </svg>
-      ),
-    });
+    icons.push({ label: 'Website', icon: <GlobeIcon size={12} /> });
   }
 
   if (project.media?.game) {
-    icons.push({
-      label: 'Game',
-      icon: (
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-    });
+    icons.push({ label: 'Game', icon: <PlayCircleIcon size={12} /> });
   }
 
   return icons;
@@ -96,6 +71,15 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
   const hasExternalLinks = project.links.liveDemo || project.links.github;
   const canView = hasViewableMedia(project);
   const mediaIcons = getMediaIcons(project);
+
+  const handleViewProject = useCallback(() => {
+    analytics.projectViewed(project.id, project.name);
+    onSelectProject?.(project);
+  }, [project, onSelectProject]);
+
+  const handleExternalLinkClick = useCallback((linkType: 'github' | 'live_demo', url: string) => {
+    analytics.externalLinkClicked(linkType, url);
+  }, []);
 
   return (
     <div
@@ -126,20 +110,7 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
             />
           </>
         ) : (
-          <svg
-            className="w-12 h-12 text-[var(--text-muted)]"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-            />
-          </svg>
+          <Model3DIcon size={48} className="text-[var(--text-muted)]" aria-hidden="true" />
         )}
 
         {/* Media type indicators overlay */}
@@ -205,17 +176,14 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
           {canView && onSelectProject && (
             <button
               type="button"
-              onClick={() => onSelectProject(project)}
+              onClick={handleViewProject}
               aria-label={`View ${project.name} in viewer`}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
                 bg-[var(--interactive)] text-[var(--text-on-accent)]
                 hover:bg-[var(--interactive-hover)] hover:shadow-[0_0_15px_var(--purple-muted)]
                 transition-all duration-200"
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
+              <EyeIcon size={14} />
               View
             </button>
           )}
@@ -226,15 +194,14 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
               href={project.links.liveDemo}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => handleExternalLinkClick('live_demo', project.links.liveDemo!)}
               aria-label={`Open ${project.name} live demo in new window`}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
                 bg-[var(--highlight)] text-[var(--text-on-accent)]
                 hover:bg-[var(--highlight-hover)] hover:shadow-[0_0_15px_var(--orange-muted)]
                 transition-all duration-200"
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
+              <ExternalLinkIcon size={14} />
               Demo
             </a>
           )}
@@ -245,15 +212,14 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
               href={project.links.github}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => handleExternalLinkClick('github', project.links.github!)}
               aria-label={`View ${project.name} on GitHub`}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
                 bg-[var(--glass-bg)] text-[var(--text-secondary)] border border-[var(--border)]
                 hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)]
                 transition-all duration-200"
             >
-              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-              </svg>
+              <GitHubIcon size={14} />
               GitHub
             </a>
           )}

@@ -16,10 +16,10 @@ const Dimension = dynamic(() => import('@/components/Dimension/Dimension'), {
   ),
 });
 
-export function Model3DViewer({ minimal = false }: Model3DViewerProps) {
+export function Model3DViewer({ modelPath, minimal = false }: Model3DViewerProps) {
   return (
     <div className="h-full">
-      <Dimension minimal={minimal} />
+      <Dimension modelPath={modelPath} minimal={minimal} />
     </div>
   );
 }

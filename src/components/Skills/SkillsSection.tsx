@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { staggerFast, scaleIn, buttonTap } from '@/lib/animations';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { BentoIcon } from '@/components/BentoOS/BentoIcon';
+import { analytics } from '@/lib/analytics';
 
 type SkillCategory = 'hardware' | 'software' | 'tools';
 
@@ -43,9 +44,14 @@ function SkillTag({
     tools: 'hover:border-[var(--text-secondary)] hover:text-[var(--text-primary)]',
   };
 
+  const handleClick = useCallback(() => {
+    analytics.skillClicked(skill);
+    onAskAI?.(skill);
+  }, [skill, onAskAI]);
+
   return (
     <m.button
-      onClick={() => onAskAI?.(skill)}
+      onClick={handleClick}
       whileTap={buttonTap}
       className={`
         px-2 py-1 text-xs font-mono

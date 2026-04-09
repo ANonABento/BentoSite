@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { LoadingSpinner } from '@/components/Dimension/ui/feedback/loading-spinner';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const AimTrainer = dynamic(
   () => import('@/components/Playground/AimTrainer').then((mod) => mod.AimTrainer),
@@ -16,5 +17,9 @@ const AimTrainer = dynamic(
 );
 
 export default function AimTrainerPage() {
-  return <AimTrainer />;
+  return (
+    <ErrorBoundary title="Game Error" message="Aim Trainer failed to load. Please try again.">
+      <AimTrainer />
+    </ErrorBoundary>
+  );
 }

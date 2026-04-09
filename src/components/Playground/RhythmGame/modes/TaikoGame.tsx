@@ -6,6 +6,7 @@ import { Drum, ArrowLeft } from 'lucide-react';
 import { GameLayout, ResultsScreen, CountdownOverlay } from '../../shared';
 import { useTaikoGame } from './TaikoGame.hooks';
 import { useHighScores } from '../../Playground.hooks';
+import { DIFFICULTY_COLORS } from '../../Playground.config';
 import { isNewHighScore, formatNumber } from '../../Playground.utils';
 import {
   TAIKO_BEAT_MAPS,
@@ -254,12 +255,6 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
   const showGame = status === 'playing';
   const showResults = status === 'finished';
 
-  const difficultyColors = {
-    easy: 'bg-[var(--pg-game-success)]/15 text-[var(--pg-game-success)] border-[var(--pg-game-success)]/30',
-    medium: 'bg-[var(--pg-accent-gold)]/15 text-[var(--pg-accent-gold)] border-[var(--pg-accent-gold)]/30',
-    hard: 'bg-[var(--pg-game-error)]/15 text-[var(--pg-game-error)] border-[var(--pg-game-error)]/30',
-  };
-
   return (
     <GameLayout
       title="Taiko"
@@ -360,7 +355,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
                         </div>
                       </div>
                       <div
-                        className={`px-2.5 py-1 rounded-lg text-xs font-medium capitalize border ${difficultyColors[map.difficulty]}`}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-medium capitalize border ${DIFFICULTY_COLORS[map.difficulty]}`}
                       >
                         {map.difficulty}
                       </div>

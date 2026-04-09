@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 /**
  * Hook for copying text to clipboard with feedback state.
@@ -6,12 +6,32 @@ import { useState, useCallback } from 'react';
  */
 export function useClipboard(resetDelay = 2000) {
   const [copied, setCopied] = useState(false);
+  const resetTimeoutRef = useRef<number | null>(null);
+
+  const scheduleReset = useCallback(() => {
+    if (resetTimeoutRef.current !== null) {
+      window.clearTimeout(resetTimeoutRef.current);
+    }
+
+    resetTimeoutRef.current = window.setTimeout(() => {
+      setCopied(false);
+      resetTimeoutRef.current = null;
+    }, resetDelay);
+  }, [resetDelay]);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimeoutRef.current !== null) {
+        window.clearTimeout(resetTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const copy = useCallback(async (text: string): Promise<boolean> => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      setTimeout(() => setCopied(false), resetDelay);
+      scheduleReset();
       return true;
     } catch {
       // Fallback for older browsers
@@ -25,13 +45,13 @@ export function useClipboard(resetDelay = 2000) {
         document.execCommand('copy');
         document.body.removeChild(textArea);
         setCopied(true);
-        setTimeout(() => setCopied(false), resetDelay);
+        scheduleReset();
         return true;
       } catch {
         return false;
       }
     }
-  }, [resetDelay]);
+  }, [scheduleReset]);
 
   const reset = useCallback(() => {
     setCopied(false);
