@@ -34,13 +34,15 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
 
   // Lock body scroll when modal is open
   useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       analytics.projectsModalOpened();
     }
 
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = previousOverflow;
     };
   }, [isOpen]);
 
@@ -56,8 +58,6 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
       onClose();
     }
   }, [onClose]);
-
-  if (!isOpen) return null;
 
   return (
     <AnimatePresence>

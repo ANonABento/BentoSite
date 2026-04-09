@@ -53,6 +53,7 @@ export function DashboardLayout({
     addAssistant: (content: string) => void;
     clear: () => void;
   } | null>(null);
+  const [pendingChatMessage, setPendingChatMessage] = useState<string | null>(null);
   const isMountedRef = useRef(true);
   const mobileChatRef = useRef<HTMLDivElement>(null);
 
@@ -85,13 +86,22 @@ export function DashboardLayout({
     const message = `Tell me about your experience with ${skill}`;
     if (activeSection !== 'chat') {
       setActiveSection('chat');
-      setTimeout(() => {
-        if (isMountedRef.current) chatFns?.send(message);
-      }, 150);
-    } else {
-      chatFns?.send(message);
     }
+
+    if (chatFns) {
+      chatFns?.send(message);
+      return;
+    }
+
+    setPendingChatMessage(message);
   }, [chatFns, activeSection]);
+
+  useEffect(() => {
+    if (!pendingChatMessage || !chatFns || !isMountedRef.current) return;
+
+    chatFns.send(pendingChatMessage);
+    setPendingChatMessage(null);
+  }, [pendingChatMessage, chatFns]);
 
   return (
     <>
