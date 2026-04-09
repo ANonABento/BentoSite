@@ -138,7 +138,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: next-build
-          path: .
+          path: .next
           merge-multiple: true
 
       - name: Run E2E tests
@@ -177,7 +177,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: next-build
-          path: .
+          path: .next
           merge-multiple: true
 
       - name: Run mobile viewport tests
@@ -217,7 +217,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: next-build
-          path: .
+          path: .next
           merge-multiple: true
 
       - name: Run Lighthouse CI
@@ -256,7 +256,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: next-build
-          path: .
+          path: .next
           merge-multiple: true
 
       - name: Check bundle size
