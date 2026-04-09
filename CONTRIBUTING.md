@@ -12,11 +12,13 @@
   3. non-color Tailwind utilities
   4. inline styles for genuinely dynamic values only
 - Keep client/server boundaries explicit. Browser-only logic belongs in client components or hooks, and Three.js modules must stay SSR-disabled.
+- Avoid server/client drift in rendered text. Locale- or timezone-sensitive formatting should wait until client mount unless the value is intentionally server-stable.
 - Extract side effects into hooks when a component starts managing timers, storage, analytics, network calls, or DOM APIs inline.
 - When persisting high scores or run summaries, guard writes so a finished run is saved once. Avoid effects that can re-fire on derived score state and inflate counters.
 - Keep public APIs narrow. Prefer a few clear props over boolean prop piles or large “options” bags.
 - Reuse shared loading and error primitives instead of redefining spinners, overlays, and fallback shells inside routes.
 - Write tests around behavior that should survive refactors: loading states, retry paths, token-backed variants, persistence helpers, and critical interactions.
+- API routes should fail closed on bad input. Parse JSON defensively and return `400` for malformed request bodies instead of converting client mistakes into generic `500`s.
 
 ## Feature Patterns
 

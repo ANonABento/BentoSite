@@ -36,7 +36,6 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
     isFullscreen,
     isMobile,
     isWireframe,
-    loadingProgress,
     retryCount,
     rotationSpeed,
     screenSize,
@@ -75,7 +74,6 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
         error={error}
         isMobile={isMobile}
         isWireframe={isWireframe}
-        loadingProgress={loadingProgress}
         onError={handleError}
         onModelClick={handleModelClick}
         onRetry={handleRetry}

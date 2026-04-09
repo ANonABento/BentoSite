@@ -1,6 +1,7 @@
 'use client';
 
 import React, { RefObject } from 'react';
+import { useProgress } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
@@ -29,7 +30,6 @@ interface DimensionViewportProps {
   error: ModelError | null;
   isMobile: boolean;
   isWireframe: boolean;
-  loadingProgress: number;
   onError: (error: ModelError) => void;
   onModelClick: () => void;
   onRetry: () => void;
@@ -40,6 +40,31 @@ interface DimensionViewportProps {
   onZoomLevelChange: (zoom: number) => void;
 }
 
+function DimensionLoadingFallback() {
+  const { progress } = useProgress();
+  const safeProgress = Number.isFinite(progress)
+    ? Math.min(100, Math.max(0, Math.round(progress)))
+    : 0;
+
+  return (
+    <div className="w-full h-full bg-[var(--surface-deep)]" aria-busy="true" role="status">
+      <span className="sr-only">Loading 3D model...</span>
+      <Canvas
+        camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
+        performance={{ min: MIN_PERFORMANCE_SCALE }}
+        gl={{ preserveDrawingBuffer: true }}
+      />
+      <div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        style={{ zIndex: 1000 }}
+      >
+        <LoadingSpinner />
+      </div>
+      <LoadingProgress progress={safeProgress} />
+    </div>
+  );
+}
+
 export function DimensionViewport({
   autoRotate,
   canvasRef,
@@ -47,7 +72,6 @@ export function DimensionViewport({
   error,
   isMobile,
   isWireframe,
-  loadingProgress,
   onError,
   onModelClick,
   onRetry,
@@ -78,23 +102,7 @@ export function DimensionViewport({
 
   return (
     <React.Suspense
-      fallback={
-        <div className="w-full h-full bg-[var(--surface-deep)]" aria-busy="true" role="status">
-          <span className="sr-only">Loading 3D model...</span>
-          <Canvas
-            camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
-            performance={{ min: MIN_PERFORMANCE_SCALE }}
-            gl={{ preserveDrawingBuffer: true }}
-          />
-          <div
-            className="absolute inset-0 flex items-center justify-center pointer-events-none"
-            style={{ zIndex: 1000 }}
-          >
-            <LoadingSpinner />
-          </div>
-          <LoadingProgress progress={loadingProgress} />
-        </div>
-      }
+      fallback={<DimensionLoadingFallback />}
     >
       <Canvas
         camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}

@@ -2,10 +2,14 @@
 
 ## Open Decisions
 
-1. Dimension loading progress is still present in the UI, but the viewer does not currently receive real loader progress events. We can either wire this to a shared Three.js `LoadingManager` or remove the progress bar entirely. That choice affects user experience more than code structure.
+- No open product decisions are blocking this branch right now.
 
 ## Notes
 
+- The Dimension viewer loading indicator now reflects actual loader progress via the scene loading manager instead of controller-only placeholder state.
+- The feedback API now validates payload shape, content lengths, and bad JSON more defensively, which prevents malformed client payloads from becoming 500s or writing arbitrary junk into the local feedback store.
+- The chat API now also rejects malformed JSON with a `400` instead of treating parse failures as generic server errors, keeping request validation behavior aligned across both API routes.
+- Chat message timestamps now wait for client mount before locale formatting, which avoids hydration drift between server and browser timezone/locale settings.
 - The current refactor removed the highest-value color/token drift in shared UI, chat, and the reaction/results flow.
 - The project surfaces now share one richer data pipeline. Featured cards and the archive modal both derive thumbnails, media state, and dates from `src/lib/projects-data.ts` instead of maintaining parallel project-shaping logic.
 - The playground hub now has a stronger top-level shell, a local-score summary strip, a more intentional grid layout, and shared `pg-button` utilities that were previously referenced in multiple game screens without being defined.
@@ -22,4 +26,4 @@
   - `npm run build`
 - The earlier `InfiniteGrid` algorithm test mismatch was resolved by aligning the spec with the actual layout contract: `calculateBentoLayout` includes the central `__search__` card in the returned layout map.
 - `react-simple-maps` and its unused type package were removed. The Viewfinder globe now depends directly on `d3-geo` and `topojson-client`, which were previously only present transitively.
-- `next build` still emits a non-blocking `baseline-browser-mapping` freshness warning even after pinning the latest top-level package version, which implies the message is coming from a transitive toolchain dependency rather than the root manifest.
+- `next build` still emits a non-blocking `baseline-browser-mapping` freshness warning. As of April 9, 2026, `npm view baseline-browser-mapping version` returns `2.10.16`, which matches the installed version in this repo, so there is no local package update available to silence it yet.

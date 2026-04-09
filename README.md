@@ -47,6 +47,8 @@ public/                 Static assets
 
 - Projects now use a single richer data pipeline from `src/lib/projects-data.ts` for featured cards, archive browsing, thumbnails, and media metadata.
 - Playground now has a stronger hub shell, shared semantic surface utilities, and cleaned-up naming and styling across the game surfaces.
+- Dimension now reports real loader progress in its fallback UI instead of controller-only placeholder state.
+- Chat and feedback API routes now reject malformed JSON with `400` responses, and chat timestamps defer locale formatting until client mount to avoid hydration drift.
 - Recent gameplay fixes tightened weak modes:
   - Aim Trainer: moving targets in tracking mode, despawned targets count as misses, clearer pointer-lock recovery
   - Pacman: eaten ghosts respawn correctly and life-loss pauses are distinct from manual pauses
@@ -58,3 +60,4 @@ public/                 Static assets
 - Prefer semantic CSS variables and shared utility classes over hardcoded Tailwind colors.
 - Three.js surfaces should stay client-only via dynamic import with `ssr: false`.
 - For Playground score persistence, avoid save loops triggered by reactive score state. Finished runs should be persisted once per run, not once per rerender.
+- `npm run build` currently emits a non-blocking `baseline-browser-mapping` freshness warning even though the repo is already on the latest published package version.

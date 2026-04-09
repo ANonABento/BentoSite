@@ -16,6 +16,45 @@ interface FeedbackStore {
 }
 
 const FEEDBACK_FILE = process.env.FEEDBACK_FILE || path.join(os.tmpdir(), 'portfolio-feedback.json');
+const MAX_MESSAGE_ID_LENGTH = 128;
+const MAX_MESSAGE_CONTENT_LENGTH = 500;
+const MAX_USER_AGENT_LENGTH = 256;
+
+interface FeedbackPayload {
+  messageId: string;
+  feedback: FeedbackEntry['feedback'];
+  messageContent: string;
+  timestamp: number;
+}
+
+function parseFeedbackPayload(body: unknown): FeedbackPayload | null {
+  if (typeof body !== 'object' || body === null) {
+    return null;
+  }
+
+  const { messageId, feedback, messageContent, timestamp } = body as Record<string, unknown>;
+  const normalizedMessageId = typeof messageId === 'string' ? messageId.trim() : '';
+  const normalizedMessageContent =
+    typeof messageContent === 'string' ? messageContent.trim() : '';
+
+  if (
+    normalizedMessageId.length === 0 ||
+    normalizedMessageId.length > MAX_MESSAGE_ID_LENGTH ||
+    normalizedMessageContent.length === 0 ||
+    !Number.isFinite(timestamp) ||
+    typeof timestamp !== 'number' ||
+    (feedback !== 'positive' && feedback !== 'negative')
+  ) {
+    return null;
+  }
+
+  return {
+    messageId: normalizedMessageId,
+    feedback,
+    messageContent: normalizedMessageContent.slice(0, MAX_MESSAGE_CONTENT_LENGTH),
+    timestamp,
+  };
+}
 
 async function loadFeedback(): Promise<FeedbackStore> {
   try {
@@ -34,32 +73,29 @@ async function saveFeedback(store: FeedbackStore): Promise<void> {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { messageId, feedback, messageContent, timestamp } = body;
-
-    // Validate required fields
-    if (!messageId || !feedback || !messageContent || !timestamp) {
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Invalid JSON body' },
         { status: 400 }
       );
     }
 
-    // Validate feedback value
-    if (feedback !== 'positive' && feedback !== 'negative') {
+    const payload = parseFeedbackPayload(body);
+    if (!payload) {
       return NextResponse.json(
-        { error: 'Invalid feedback value' },
+        { error: 'Invalid feedback payload' },
         { status: 400 }
       );
     }
 
     // Create feedback entry
     const entry: FeedbackEntry = {
-      messageId,
-      feedback,
-      messageContent: messageContent.substring(0, 500), // Limit content length
-      timestamp,
-      userAgent: request.headers.get('user-agent') || undefined,
+      ...payload,
+      userAgent:
+        request.headers.get('user-agent')?.slice(0, MAX_USER_AGENT_LENGTH) || undefined,
     };
 
     // Load existing feedback and append

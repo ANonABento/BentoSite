@@ -2,6 +2,7 @@
 
 import { RefObject } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { useHasMounted } from '@/lib/use-has-mounted';
 import { Message } from './chat.types';
 import { CopyButton, FeedbackButtons } from './ChatMessageActions';
 
@@ -22,14 +23,18 @@ export function ChatMessageList({
   onCopySuccess,
   messagesEndRef,
 }: ChatMessageListProps) {
+  const hasMounted = useHasMounted();
+
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-3" aria-live="polite" aria-atomic="false">
       {messages.map((message) => {
-        const timeStr = new Date(message.timestamp).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        });
+        const timeStr = hasMounted
+          ? new Date(message.timestamp).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+            })
+          : '--:--';
 
         if (message.role === 'user') {
           return (

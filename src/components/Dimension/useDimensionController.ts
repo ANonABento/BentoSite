@@ -45,7 +45,6 @@ function getInitialModel(): ModelInfo {
 }
 
 export function useDimensionController() {
-  const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<ModelError | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [autoRotate, setAutoRotate] = useState(true);
@@ -66,12 +65,10 @@ export function useDimensionController() {
 
   const handleError = useCallback((nextError: ModelError) => {
     setError(nextError);
-    setLoadingProgress(0);
   }, []);
 
   const handleRetry = useCallback(() => {
     setError(null);
-    setLoadingProgress(0);
     setRetryCount((previous) => previous + 1);
   }, []);
 
@@ -230,7 +227,6 @@ export function useDimensionController() {
     isFullscreen,
     isMobile,
     isWireframe,
-    loadingProgress,
     retryCount,
     rotationSpeed,
     screenSize,
