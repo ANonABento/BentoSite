@@ -3,7 +3,8 @@ const lighthouseBaseUrl = 'http://127.0.0.1:3001';
 module.exports = {
   ci: {
     collect: {
-      startServerCommand: 'npm run start -- --hostname 127.0.0.1 --port 3001',
+      startServerCommand:
+        'node_modules/.bin/next start --hostname 127.0.0.1 --port 3001',
       startServerReadyPattern: 'Ready in',
       startServerReadyTimeout: 120000,
       url: [
