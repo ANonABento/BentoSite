@@ -140,4 +140,6 @@ export interface CameraPresetsWidgetProps {
 export interface DimensionViewerProps {
   /** Hide all UI controls for minimal/landing page view */
   minimal?: boolean;
+  /** Optional externally controlled model path */
+  modelPath?: string;
 }

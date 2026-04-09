@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
+import { useTheme } from '@/lib/theme-context';
+import { useFocusTrap } from '@/lib/use-focus-trap';
 
 interface ShortcutGroup {
   title: string;
@@ -9,15 +11,6 @@ interface ShortcutGroup {
 }
 
 const shortcutGroups: ShortcutGroup[] = [
-  {
-    title: 'Navigation',
-    shortcuts: [
-      { key: '/', description: 'Focus search or chat' },
-      { key: 'G then H', description: 'Go to home' },
-      { key: 'G then P', description: 'Go to projects' },
-      { key: 'Esc', description: 'Close modals/chat' },
-    ],
-  },
   {
     title: '3D Viewer',
     shortcuts: [
@@ -34,6 +27,7 @@ const shortcutGroups: ShortcutGroup[] = [
     title: 'General',
     shortcuts: [
       { key: '?', description: 'Show/hide this help' },
+      { key: 'Esc', description: 'Close this help dialog' },
       { key: 'T', description: 'Toggle dark/light theme' },
     ],
   },
@@ -46,6 +40,25 @@ export function KeyboardShortcutsModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const modalRef = useFocusTrap<HTMLDivElement>({
+    isActive: isOpen,
+    onEscape: onClose,
+    initialFocusRef: closeButtonRef,
+  });
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -67,6 +80,7 @@ export function KeyboardShortcutsModal({
             exit={{ opacity: 0 }}
           >
             <m.div
+              ref={modalRef}
               className="glass max-w-lg w-full rounded-2xl overflow-hidden shadow-2xl"
               initial={{ scale: 0.95, y: 10 }}
               animate={{ scale: 1, y: 0 }}
@@ -86,6 +100,7 @@ export function KeyboardShortcutsModal({
                   Keyboard Shortcuts
                 </h2>
                 <button
+                  ref={closeButtonRef}
                   onClick={onClose}
                   className="p-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg transition-colors"
                   aria-label="Close shortcuts help"
@@ -140,6 +155,7 @@ export function KeyboardShortcutsModal({
 
 export function useKeyboardShortcutsHelp() {
   const [isOpen, setIsOpen] = useState(false);
+  const { toggleTheme } = useTheme();
 
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
@@ -161,6 +177,11 @@ export function useKeyboardShortcutsHelp() {
         toggle();
       }
 
+      if (e.key.toLowerCase() === 't') {
+        e.preventDefault();
+        toggleTheme();
+      }
+
       // Escape to close
       if (e.key === 'Escape' && isOpen) {
         e.preventDefault();
@@ -170,7 +191,7 @@ export function useKeyboardShortcutsHelp() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, toggle, close]);
+  }, [isOpen, toggle, close, toggleTheme]);
 
   return { isOpen, open, close, toggle };
 }

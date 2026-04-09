@@ -35,15 +35,21 @@ function TerminalPrompt() {
 
   useEffect(() => {
     let i = 0;
+    let cursorTimeoutId: number | null = null;
     const timer = setInterval(() => {
       i++;
       setDisplayedText(fullText.slice(0, i));
       if (i >= fullText.length) {
         clearInterval(timer);
-        setTimeout(() => setShowCursor(true), 150);
+        cursorTimeoutId = window.setTimeout(() => setShowCursor(true), 150);
       }
     }, TYPEWRITER_SPEED);
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      if (cursorTimeoutId !== null) {
+        window.clearTimeout(cursorTimeoutId);
+      }
+    };
   }, []);
 
   return (
@@ -80,6 +86,16 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
   const barStartTimeRef = useRef(0);
   const fillQueueRef = useRef<number[]>([]);
   const fillingRef = useRef(false);
+  const timeoutIdsRef = useRef<number[]>([]);
+
+  const scheduleTimeout = useCallback((callback: () => void, delay: number) => {
+    const timeoutId = window.setTimeout(() => {
+      timeoutIdsRef.current = timeoutIdsRef.current.filter((id) => id !== timeoutId);
+      callback();
+    }, delay);
+    timeoutIdsRef.current.push(timeoutId);
+    return timeoutId;
+  }, []);
 
   // CRT glitch: flash + horizontal jitter, swap content at peak
   const triggerCRTTransition = useCallback(() => {
@@ -90,21 +106,21 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
     setGlitchOffset(4);
 
     // Jitter: shift opposite direction
-    setTimeout(() => setGlitchOffset(-3), 50);
+    scheduleTimeout(() => setGlitchOffset(-3), 50);
 
     // At flash peak (~100ms): swap content to terminal
-    setTimeout(() => {
+    scheduleTimeout(() => {
       if (completedRef.current) return;
       setGlitchOffset(2);
       setPhase('ready');
     }, 100);
 
     // Settle jitter
-    setTimeout(() => setGlitchOffset(0), 150);
+    scheduleTimeout(() => setGlitchOffset(0), 150);
 
     // Fade flash out
-    setTimeout(() => setShowFlash(false), 200);
-  }, []);
+    scheduleTimeout(() => setShowFlash(false), 200);
+  }, [scheduleTimeout]);
 
   // Chain: loading complete → full (hold) → CRT flash → ready
   const transitionToReady = useCallback(() => {
@@ -112,16 +128,16 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
     const elapsed = Date.now() - barStartTimeRef.current;
     const remaining = Math.max(0, MIN_DISPLAY_MS - elapsed);
 
-    setTimeout(() => {
+    scheduleTimeout(() => {
       if (completedRef.current) return;
       setPhase('full');
 
-      setTimeout(() => {
+      scheduleTimeout(() => {
         if (completedRef.current) return;
         triggerCRTTransition();
       }, FULL_HOLD_MS);
     }, remaining);
-  }, [triggerCRTTransition]);
+  }, [scheduleTimeout, triggerCRTTransition]);
 
   const processFillQueue = useCallback(() => {
     if (fillingRef.current || completedRef.current) return;
@@ -142,14 +158,14 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
         return;
       }
       setFilledSegments(current + 1);
-      setTimeout(() => fillNext(current + 1), ROLL_STAGGER);
+      scheduleTimeout(() => fillNext(current + 1), ROLL_STAGGER);
     };
 
     setFilledSegments((prev) => {
       fillNext(prev);
       return prev;
     });
-  }, [transitionToReady]);
+  }, [scheduleTimeout, transitionToReady]);
 
   const onModuleLoaded = useCallback(() => {
     loadedCountRef.current++;
@@ -166,13 +182,13 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
     completedRef.current = true;
     setPhase('done');
     setShowFlash(true);
-    setTimeout(() => setShowFlash(false), 120);
+    scheduleTimeout(() => setShowFlash(false), 120);
     // Signal parent to mount dashboard underneath for crossfade
-    setTimeout(() => onExiting(), 150);
+    scheduleTimeout(() => onExiting(), 150);
     // Trigger exit animation (600ms fade-out + scale)
     // onComplete fires via AnimatePresence onExitComplete when animation ends
-    setTimeout(() => setIsVisible(false), 200);
-  }, [onExiting]);
+    scheduleTimeout(() => setIsVisible(false), 200);
+  }, [onExiting, scheduleTimeout]);
 
   // Start preloading modules when entering loading phase
   useEffect(() => {
@@ -188,11 +204,18 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
 
   // Transition from logo to loading phase
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const timer = window.setTimeout(() => {
       if (completedRef.current) return;
       setPhase('loading');
     }, LOGO_FADE_DELAY + 400);
-    return () => clearTimeout(timer);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      timeoutIdsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+      timeoutIdsRef.current = [];
+    };
   }, []);
 
   // Allow skip during full and ready phases

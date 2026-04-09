@@ -77,14 +77,37 @@ function getInitialModel(): ModelInfo {
   return AVAILABLE_MODELS[0];
 }
 
-export default function DimensionViewer({ minimal = false }: DimensionViewerProps) {
+function getModelForPath(modelPath?: string): ModelInfo {
+  if (!modelPath) {
+    return getInitialModel();
+  }
+
+  const existingModel = AVAILABLE_MODELS.find((model) => model.path === modelPath);
+  if (existingModel) {
+    return existingModel;
+  }
+
+  return {
+    id: `external-${modelPath}`,
+    name: 'Project Model',
+    path: modelPath,
+    thumbnail: '',
+    fileSize: 0,
+    dimensions: { width: 0, height: 0, depth: 0 },
+    vertexCount: 0,
+    description: 'Model provided by the selected project.',
+    category: 'Project',
+  };
+}
+
+export default function DimensionViewer({ minimal = false, modelPath }: DimensionViewerProps) {
   // Component state
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<ModelError | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [autoRotate, setAutoRotate] = useState(true);
   const [isWireframe, setIsWireframe] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<ModelInfo>(getInitialModel);
+  const [selectedModel, setSelectedModel] = useState<ModelInfo>(() => getModelForPath(modelPath));
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [showModelInfo, setShowModelInfo] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -179,6 +202,11 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
   useEffect(() => {
     setShowModelInfo(!isMobile);
   }, [isMobile]);
+
+  useEffect(() => {
+    setSelectedModel(getModelForPath(modelPath));
+    setError(null);
+  }, [modelPath]);
 
   // Camera preset functionality
   const handleCameraPreset = useCallback((preset: string) => {

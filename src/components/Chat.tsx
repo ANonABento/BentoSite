@@ -299,23 +299,33 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
 
         clearTimeout(timeoutId);
 
-        // Check response status before parsing JSON
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `Server error: ${response.status}`);
-        }
-
-        const data = await response.json();
+        const data = await response.json().catch(() => null);
 
         // Track demo mode status from API response
-        if (data.isDemoMode !== undefined) {
+        if (data?.isDemoMode !== undefined) {
           setIsDemoMode(data.isDemoMode);
+        }
+
+        if (!response.ok) {
+          if (data?.message) {
+            const assistantFallback: Message = {
+              id: generateId(),
+              role: 'assistant',
+              content: data.message,
+              timestamp: Date.now(),
+            };
+
+            setMessages((prev) => [...prev, assistantFallback]);
+            return;
+          }
+
+          throw new Error(data?.error || `Server error: ${response.status}`);
         }
 
         const assistantMessage: Message = {
           id: generateId(),
           role: 'assistant',
-          content: data.message || 'Sorry, I could not process your request.',
+          content: data?.message || 'Sorry, I could not process your request.',
           timestamp: Date.now(),
         };
 

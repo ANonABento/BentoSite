@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
-import os from 'os';
 import path from 'path';
 
 interface FeedbackEntry {
@@ -15,9 +14,14 @@ interface FeedbackStore {
   entries: FeedbackEntry[];
 }
 
-const FEEDBACK_FILE = process.env.FEEDBACK_FILE || path.join(os.tmpdir(), 'portfolio-feedback.json');
+const FEEDBACK_FILE = process.env.FEEDBACK_FILE;
+let writeQueue: Promise<void> = Promise.resolve();
 
 async function loadFeedback(): Promise<FeedbackStore> {
+  if (!FEEDBACK_FILE) {
+    return { entries: [] };
+  }
+
   try {
     const data = await fs.readFile(FEEDBACK_FILE, 'utf-8');
     return JSON.parse(data);
@@ -28,8 +32,29 @@ async function loadFeedback(): Promise<FeedbackStore> {
 }
 
 async function saveFeedback(store: FeedbackStore): Promise<void> {
+  if (!FEEDBACK_FILE) return;
   await fs.mkdir(path.dirname(FEEDBACK_FILE), { recursive: true });
   await fs.writeFile(FEEDBACK_FILE, JSON.stringify(store, null, 2));
+}
+
+async function appendFeedback(entry: FeedbackEntry): Promise<boolean> {
+  if (!FEEDBACK_FILE) {
+    return false;
+  }
+
+  writeQueue = writeQueue.then(async () => {
+    const store = await loadFeedback();
+    store.entries.push(entry);
+
+    if (store.entries.length > 1000) {
+      store.entries = store.entries.slice(-1000);
+    }
+
+    await saveFeedback(store);
+  });
+
+  await writeQueue;
+  return true;
 }
 
 export async function POST(request: NextRequest) {
@@ -62,18 +87,12 @@ export async function POST(request: NextRequest) {
       userAgent: request.headers.get('user-agent') || undefined,
     };
 
-    // Load existing feedback and append
-    const store = await loadFeedback();
-    store.entries.push(entry);
+    const persisted = await appendFeedback(entry);
 
-    // Keep only last 1000 entries to prevent unbounded growth
-    if (store.entries.length > 1000) {
-      store.entries = store.entries.slice(-1000);
-    }
-
-    await saveFeedback(store);
-
-    return NextResponse.json({ success: true });
+    return NextResponse.json(
+      { success: true, persisted },
+      { status: persisted ? 200 : 202 }
+    );
   } catch (error) {
     console.error('Feedback API error:', error);
     return NextResponse.json(
@@ -84,16 +103,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
-  // Optional: Allow reading feedback for analytics
-  try {
-    const store = await loadFeedback();
-    const summary = {
-      total: store.entries.length,
-      positive: store.entries.filter(e => e.feedback === 'positive').length,
-      negative: store.entries.filter(e => e.feedback === 'negative').length,
-    };
-    return NextResponse.json(summary);
-  } catch {
-    return NextResponse.json({ total: 0, positive: 0, negative: 0 });
-  }
+  return NextResponse.json(
+    { error: 'Method not allowed. Use POST.' },
+    { status: 405 }
+  );
 }
