@@ -2,6 +2,7 @@
 // Kevin Jiang's portfolio data
 
 import portfolioContent from '@/content/portfolio.json';
+import { PROJECTS } from '@/lib/projects-data';
 
 // Type for simplified project data used in featured sections
 export interface PortfolioProject {
@@ -20,7 +21,7 @@ const content = portfolioContent as PortfolioContent;
 
 export const PORTFOLIO_DATA = {
   ...content,
-  projects: content.projects.map((project) => ({
+  projects: PROJECTS.map((project) => ({
     id: project.id,
     name: project.name,
     description: project.description || project.shortDescription,

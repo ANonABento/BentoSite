@@ -33,7 +33,6 @@ export function SearchCard({
   position,
   cardSize,
   isStuck,
-  stickyEdge: _stickyEdge, // Reserved for future edge-specific styling
   onClose,
   onReset,
   searchTerm,

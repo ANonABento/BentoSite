@@ -29,7 +29,6 @@ export function usePhysicsWorld({
   transitionPhase,
 }: UsePhysicsWorldOptions): UsePhysicsWorldReturn {
   const [positions, setPositions] = useState<Map<string, PhysicsPosition>>(new Map());
-  const [isReady, setIsReady] = useState(false);
 
   // Physics engine ref
   const engineRef = useRef<PhysicsEngine | null>(null);
@@ -49,7 +48,6 @@ export function usePhysicsWorld({
       if (engineRef.current) {
         engineRef.current.destroy();
         engineRef.current = null;
-        setIsReady(false);
       }
       return;
     }
@@ -71,15 +69,14 @@ export function usePhysicsWorld({
 
     engineRef.current = engine;
     engine.start();
-    setIsReady(true);
 
     return () => {
       if (settlingIntervalRef.current) {
         clearInterval(settlingIntervalRef.current);
+        settlingIntervalRef.current = null;
       }
       engine.destroy();
       engineRef.current = null;
-      setIsReady(false);
     };
   }, [enabled, isMobile]);
 
@@ -87,7 +84,7 @@ export function usePhysicsWorld({
   // It acts as a wall that pushes other cards out of the way
   useEffect(() => {
     const engine = engineRef.current;
-    if (!engine || !isReady) return;
+    if (!engine || !enabled) return;
 
     // Get search card layout
     const searchLayout = layouts.get('__search__');
@@ -99,21 +96,21 @@ export function usePhysicsWorld({
     return () => {
       engine.removeBody('__search__');
     };
-  }, [isReady, layouts]);
+  }, [enabled, layouts]);
 
   // Sync bodies with layouts
   useEffect(() => {
     const engine = engineRef.current;
-    if (!engine || !isReady) return;
+    if (!engine || !enabled) return;
 
     syncBodiesWithLayouts(engine, layouts, false);
     targetsRef.current = extractTargets(layouts);
-  }, [layouts, isReady]);
+  }, [enabled, layouts]);
 
   // Apply continuous settling forces - cards always try to return to bento positions
   useEffect(() => {
     const engine = engineRef.current;
-    if (!engine || !isReady) return;
+    if (!engine || !enabled) return;
 
     // Clear any existing interval
     if (settlingIntervalRef.current) {
@@ -142,7 +139,7 @@ export function usePhysicsWorld({
         settlingIntervalRef.current = null;
       }
     };
-  }, [transitionPhase, isMobile, isReady]);
+  }, [enabled, transitionPhase, isMobile]);
 
   /**
    * Update search card position when clamped
@@ -152,7 +149,6 @@ export function usePhysicsWorld({
     const engine = engineRef.current;
     if (!engine) return;
 
-    const wasClampedBefore = isClampedRef.current;
     isClampedRef.current = isClamped;
 
     // Move search card to clamped position
@@ -163,9 +159,7 @@ export function usePhysicsWorld({
     }
 
     // Wake all bodies so they react to the collision
-    for (const [, body] of engine.bodies) {
-      body.isSleeping = false;
-    }
+    engine.wakeAllBodies();
   }, []);
 
   // Update target positions (for external control of settling)
@@ -175,7 +169,7 @@ export function usePhysicsWorld({
 
   return {
     positions,
-    isReady,
+    isReady: enabled,
     updateSearchClampedPosition,
     updateTargets,
   };

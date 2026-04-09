@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import type { Model3DViewerProps } from '../Viewfinder.types';
 
 // Dynamic import Dimension to avoid SSR issues with Three.js
-const Dimension = dynamic(() => import('@/components/Dimension/Dimension'), {
+const Dimension = dynamic(() => import('@/components/Dimension'), {
   ssr: false,
   loading: () => (
     <div className="h-full flex items-center justify-center bg-[var(--background)]">

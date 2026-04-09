@@ -44,7 +44,7 @@ export function useCanvas({ enabled, windowSize }: UseCanvasOptions): UseCanvasR
   }, []);
 
   // Apply momentum animation
-  const applyMomentum = useCallback(() => {
+  const applyMomentum = useCallback(function applyMomentumFrame() {
     const { velocity } = momentumRef.current;
     const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
 
@@ -65,7 +65,7 @@ export function useCanvas({ enabled, windowSize }: UseCanvasOptions): UseCanvasR
       y: velocity.y * CAMERA.momentum.friction,
     };
 
-    momentumRef.current.animationId = requestAnimationFrame(applyMomentum);
+    momentumRef.current.animationId = requestAnimationFrame(applyMomentumFrame);
   }, [stopMomentum]);
 
   // Reset camera to origin

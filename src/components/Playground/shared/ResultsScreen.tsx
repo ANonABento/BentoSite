@@ -162,7 +162,7 @@ export function ResultsScreen({
       {/* Divider */}
       <motion.div
         variants={staggerItem}
-        className="w-full max-w-xs h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8"
+        className="pg-fade-divider mb-8 h-px w-full max-w-xs"
       />
 
       {/* Action buttons */}
@@ -192,13 +192,13 @@ export function ResultsScreen({
       >
         {shareState === 'copied' ? (
           <>
-            <Check className="w-4 h-4 text-green-400" />
-            <span className="text-green-400">Copied to clipboard!</span>
+            <Check className="w-4 h-4 text-[var(--pg-game-success)]" />
+            <span className="text-[var(--pg-game-success)]">Copied to clipboard!</span>
           </>
         ) : shareState === 'shared' ? (
           <>
-            <Check className="w-4 h-4 text-green-400" />
-            <span className="text-green-400">Shared!</span>
+            <Check className="w-4 h-4 text-[var(--pg-game-success)]" />
+            <span className="text-[var(--pg-game-success)]">Shared!</span>
           </>
         ) : (
           <>

@@ -87,7 +87,7 @@ export function useSortingVisualizer() {
   }, []);
 
   // Run the sorting animation
-  const runSorting = useCallback(() => {
+  const runSorting = useCallback(function runSortingStep() {
     if (!generatorRef.current || isPausedRef.current) return;
 
     const result = generatorRef.current.next();
@@ -105,7 +105,7 @@ export function useSortingVisualizer() {
     processStep(result.value);
 
     // Schedule next step
-    timeoutRef.current = setTimeout(runSorting, Math.max(1, 201 - speed));
+    timeoutRef.current = setTimeout(runSortingStep, Math.max(1, 201 - speed));
   }, [speed, processStep, array.length]);
 
   // Start sorting

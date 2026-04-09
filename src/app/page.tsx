@@ -12,15 +12,16 @@ import {
   useKeyboardShortcutsHelp,
 } from '@/components/ui/KeyboardShortcutsHelp';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { LazyPanelFallback } from '@/components/ui/LazyPanelFallback';
 
 function ModuleLoader() {
   return (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <BentoIcon size={32} className="animate-pulse" />
-        <span className="text-[var(--text-muted)] text-xs font-mono">loading module...</span>
-      </div>
-    </div>
+    <LazyPanelFallback
+      icon={<BentoIcon size={32} className="animate-pulse" />}
+      label="loading module..."
+      spinnerSize="sm"
+      spinnerVariant="purple"
+    />
   );
 }
 

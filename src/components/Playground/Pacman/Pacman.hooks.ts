@@ -42,6 +42,7 @@ function createInitialState(): GameState {
       mode: 'scatter',
       frightened: false,
       eaten: false,
+      respawnAt: null,
       targetPosition: { x: 0, y: 0 },
     },
     {
@@ -53,6 +54,7 @@ function createInitialState(): GameState {
       mode: 'scatter',
       frightened: false,
       eaten: false,
+      respawnAt: null,
       targetPosition: { x: 0, y: 0 },
     },
     {
@@ -64,6 +66,7 @@ function createInitialState(): GameState {
       mode: 'scatter',
       frightened: false,
       eaten: false,
+      respawnAt: null,
       targetPosition: { x: 0, y: 0 },
     },
     {
@@ -75,12 +78,14 @@ function createInitialState(): GameState {
       mode: 'scatter',
       frightened: false,
       eaten: false,
+      respawnAt: null,
       targetPosition: { x: 0, y: 0 },
     },
   ];
 
   return {
     status: 'idle',
+    pauseReason: null,
     pacman: {
       position: { x: pacmanSpawn.x, y: pacmanSpawn.y },
       direction: null,
@@ -144,7 +149,7 @@ export function usePacman() {
         // If game is idle, start it
         setState((s) => {
           if (s.status === 'idle') {
-            return { ...s, status: 'playing' };
+            return { ...s, status: 'playing', pauseReason: null };
           }
           return s;
         });
@@ -155,9 +160,9 @@ export function usePacman() {
         e.preventDefault();
         setState((s) => {
           if (s.status === 'playing') {
-            return { ...s, status: 'paused' };
+            return { ...s, status: 'paused', pauseReason: 'manual' };
           } else if (s.status === 'paused') {
-            return { ...s, status: 'playing' };
+            return { ...s, status: 'playing', pauseReason: null };
           }
           return s;
         });
@@ -186,7 +191,8 @@ export function usePacman() {
         setState((s) => {
           if (s.status !== 'playing') return s;
 
-          let newState = { ...s };
+          const newState = { ...s };
+          const now = Date.now();
           const pacman = { ...s.pacman };
           const maze = s.maze.map((row) => [...row]);
 
@@ -239,8 +245,25 @@ export function usePacman() {
           newState.maze = maze;
 
           // Update ghosts
-          newState.ghosts = s.ghosts.map((ghost) => {
+          newState.ghosts = s.ghosts.map((ghost, idx) => {
             const g = { ...ghost };
+            const spawnLayout = parseMaze().ghostSpawn[idx] || { x: 14, y: 14 };
+
+            if (g.eaten) {
+              if (g.respawnAt && now >= g.respawnAt) {
+                return {
+                  ...g,
+                  position: spawnLayout,
+                  direction: 'left',
+                  frightened: false,
+                  eaten: false,
+                  respawnAt: null,
+                  mode: 'scatter' as const,
+                };
+              }
+
+              return g;
+            }
 
             // Simple AI: move toward/away from pacman
             const px = Math.round(pacman.position.x);
@@ -298,7 +321,7 @@ export function usePacman() {
               newState.ghosts = newState.ghosts.map((g) => ({
                 ...g,
                 frightened: false,
-                mode: 'chase' as const,
+                mode: g.eaten ? 'eaten' as const : 'chase' as const,
               }));
             }
           }
@@ -315,7 +338,13 @@ export function usePacman() {
             if (pacX === gX && pacY === gY) {
               if (ghost.frightened && !ghost.eaten) {
                 // Eat ghost
-                newState.ghosts[i] = { ...ghost, eaten: true };
+                newState.ghosts[i] = {
+                  ...ghost,
+                  frightened: false,
+                  eaten: true,
+                  mode: 'eaten',
+                  respawnAt: now + 1500,
+                };
                 newState.score += GHOST_SCORE_BASE * (2 ** i);
               } else if (!ghost.eaten) {
                 // Lose life
@@ -335,10 +364,11 @@ export function usePacman() {
                   position: ghostSpawn[idx] || { x: 14, y: 14 },
                   frightened: false,
                   eaten: false,
+                  respawnAt: null,
                   mode: 'scatter' as const,
                 }));
                 nextDirectionRef.current = null;
-                return { ...newState, status: 'paused' };
+                return { ...newState, status: 'paused', pauseReason: 'lifeLost' as const };
               }
             }
           }
@@ -366,7 +396,7 @@ export function usePacman() {
 
   const startGame = useCallback(() => {
     setState(createInitialState());
-    setState((s) => ({ ...s, status: 'playing' }));
+    setState((s) => ({ ...s, status: 'playing', pauseReason: null }));
   }, []);
 
   const resetGame = useCallback(() => {
@@ -376,8 +406,8 @@ export function usePacman() {
 
   const togglePause = useCallback(() => {
     setState((s) => {
-      if (s.status === 'playing') return { ...s, status: 'paused' };
-      if (s.status === 'paused') return { ...s, status: 'playing' };
+      if (s.status === 'playing') return { ...s, status: 'paused', pauseReason: 'manual' };
+      if (s.status === 'paused') return { ...s, status: 'playing', pauseReason: null };
       return s;
     });
   }, []);
@@ -387,7 +417,7 @@ export function usePacman() {
     nextDirectionRef.current = direction;
     setState((s) => {
       if (s.status === 'idle') {
-        return { ...s, status: 'playing' };
+        return { ...s, status: 'playing', pauseReason: null };
       }
       return s;
     });

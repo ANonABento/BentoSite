@@ -84,7 +84,7 @@ export function generateManiaBeatMap(
   difficulty: 'easy' | 'medium' | 'hard',
   keyCount: KeyCount
 ): ManiaBeatMap {
-  const maniaNotes: ManiaNote[] = notes.map((note, index) => {
+  const maniaNotes: ManiaNote[] = notes.map((note) => {
     // Assign lanes based on frequency or random
     let lane: number;
     if (note.lane !== undefined) {

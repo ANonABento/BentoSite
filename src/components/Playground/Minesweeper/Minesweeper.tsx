@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Grid3X3, Flag, Clock, RotateCcw, Trophy } from 'lucide-react';
 import { GameLayout, ResultsScreen } from '../shared';
 import { useMinesweeper } from './Minesweeper.hooks';
@@ -89,7 +89,7 @@ export function Minesweeper() {
                 {minesRemaining}
               </span>
             </div>
-            <div className="w-px h-5 bg-white/10" />
+            <div className="pg-divider" />
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-[var(--pg-text-muted)]" />
               <span className="font-mono text-sm text-[var(--pg-text-primary)]">
@@ -141,7 +141,7 @@ export function Minesweeper() {
                         px-4 py-2 rounded-xl font-medium capitalize transition-all duration-200
                         ${selectedDifficulty === diff
                           ? 'bg-[var(--purple)] text-white shadow-lg shadow-[var(--purple)]/25'
-                          : 'bg-[var(--pg-bg-elevated)] text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)] border border-white/[0.06]'
+                          : 'pg-surface-panel text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]'
                         }
                       `}
                       whileHover={{ scale: 1.02 }}
@@ -203,7 +203,7 @@ export function Minesweeper() {
 
               {/* Grid */}
               <div
-                className="relative rounded-xl overflow-hidden border border-white/[0.08] bg-[var(--pg-bg-surface)] p-2"
+                className="pg-surface-frame pg-border-soft relative rounded-xl overflow-hidden p-2"
                 style={{
                   maxWidth: '100%',
                   overflowX: 'auto',

@@ -1,2 +1,2 @@
-export { FidgetGrid, BentoGrid } from './BentoGrid';
-export { FidgetCard, BentoCard } from './BentoCard';
+export { BentoGrid } from './BentoGrid';
+export { BentoCard } from './BentoCard';

@@ -1,6 +1,6 @@
-# Mumbai-V2 Portfolio
+# Kevin Jiang Portfolio
 
-Portfolio website with interactive 3D model viewer and chatbot interface.
+Portfolio site with an interactive 3D viewer, project archive, chatbot, and Playground surfaces.
 
 ---
 

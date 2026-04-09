@@ -4,6 +4,7 @@ import { useRef, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PointerLockControls, Sphere, Box } from '@react-three/drei';
 import * as THREE from 'three';
+import type { PointerLockControls as PointerLockControlsImpl } from 'three-stdlib';
 import { Target } from './AimTrainer.types';
 import { COLORS, ARENA } from './AimTrainer.config';
 
@@ -81,10 +82,11 @@ function Arena({ onMiss }: ArenaProps) {
 interface FPSControlsProps {
   sensitivity: number;
   enabled: boolean;
+  onLockChange: (locked: boolean) => void;
 }
 
-function FPSControls({ sensitivity, enabled }: FPSControlsProps) {
-  const controlsRef = useRef<any>(null);
+function FPSControls({ sensitivity, enabled, onLockChange }: FPSControlsProps) {
+  const controlsRef = useRef<PointerLockControlsImpl | null>(null);
 
   useEffect(() => {
     if (controlsRef.current) {
@@ -100,7 +102,13 @@ function FPSControls({ sensitivity, enabled }: FPSControlsProps) {
     }
   }, [enabled]);
 
-  return <PointerLockControls ref={controlsRef} />;
+  return (
+    <PointerLockControls
+      ref={controlsRef}
+      onLock={() => onLockChange(true)}
+      onUnlock={() => onLockChange(false)}
+    />
+  );
 }
 
 interface Scene3DProps {
@@ -144,7 +152,11 @@ export function Scene3D({
       ))}
 
       {/* FPS Controls */}
-      <FPSControls sensitivity={sensitivity} enabled={isPlaying} />
+      <FPSControls
+        sensitivity={sensitivity}
+        enabled={isPlaying}
+        onLockChange={onLockChange}
+      />
     </Canvas>
   );
 }

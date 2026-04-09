@@ -12,6 +12,7 @@ export interface Target {
   size: number;
   active: boolean;
   spawnTime: number;
+  velocity?: [number, number, number];
 }
 
 export interface GameSettings {

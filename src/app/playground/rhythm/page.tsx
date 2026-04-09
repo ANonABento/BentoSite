@@ -93,7 +93,7 @@ export default function RhythmPage() {
           className="min-h-screen bg-[var(--pg-bg-deep)] flex flex-col"
         >
           {/* Header */}
-          <header className="sticky top-0 z-40 backdrop-blur-xl bg-[var(--pg-bg-surface)]/80 border-b border-white/[0.06]">
+          <header className="pg-border-subtle sticky top-0 z-40 border-b backdrop-blur-xl bg-[var(--pg-bg-surface)]/80">
             <div className="max-w-5xl mx-auto px-6 h-16 flex items-center">
               <Link
                 href="/playground"
@@ -141,8 +141,8 @@ export default function RhythmPage() {
                     className={`
                       w-full p-5 rounded-xl text-left transition-all duration-200 border
                       ${m.available
-                        ? 'bg-[var(--pg-bg-elevated)] hover:bg-[var(--pg-bg-hover)] border-white/[0.06] cursor-pointer'
-                        : 'bg-[var(--pg-bg-surface)] border-white/[0.03] cursor-not-allowed opacity-50'
+                        ? 'pg-surface-panel hover:bg-[var(--pg-bg-hover)] cursor-pointer'
+                        : 'pg-surface-frame cursor-not-allowed opacity-50'
                       }
                     `}
                     initial={{ opacity: 0, x: -20 }}

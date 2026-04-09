@@ -1,5 +1,5 @@
 /**
- * Fidget Hub Types - Physics-based bento grid with collision
+ * Playground hub types - physics-based bento grid with collision
  */
 
 import { ReactNode } from 'react';

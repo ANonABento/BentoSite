@@ -9,6 +9,7 @@ import Image from 'next/image';
 import type { ProjectCardProps } from '../InfiniteGrid.types';
 import { Z_INDEX, ANIMATION } from '../InfiniteGrid.constants';
 import { BLUR_PLACEHOLDERS } from '@/lib/image-utils';
+import { getProjectThumbnail } from '@/lib/projects-data';
 import {
   Model3DIcon,
   ImageIcon,
@@ -29,6 +30,7 @@ export function ProjectCard({
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const thumbnail = getProjectThumbnail(project);
 
   // Staggered entrance animation
   useEffect(() => {
@@ -109,13 +111,13 @@ export function ProjectCard({
       >
         {/* Thumbnail */}
         <div className="relative w-full h-1/2 bg-[var(--glass-bg)] rounded-lg mb-2 overflow-hidden border border-[var(--border)]">
-          {project.thumbnail ? (
+          {thumbnail ? (
             <>
               {!imageLoaded && (
                 <div className="absolute inset-0 skeleton-shimmer" />
               )}
               <Image
-                src={project.thumbnail}
+                src={thumbnail}
                 alt={project.name}
                 fill
                 className={`object-cover transition-opacity duration-300 ${

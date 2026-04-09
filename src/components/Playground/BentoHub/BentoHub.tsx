@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { TransparentHeader } from './header';
 import { BentoGrid } from './grid';
 import { VoidBackground } from './background';
+import { HubOverview } from './HubOverview';
+import { getPlaygroundHubStats, loadStoredScores, type PlaygroundHubStats } from '../playground-storage';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
@@ -23,6 +25,9 @@ function useIsMobile() {
 
 export function BentoHub() {
   const isMobile = useIsMobile();
+  const [hubStats] = useState<PlaygroundHubStats>(() =>
+    getPlaygroundHubStats(loadStoredScores())
+  );
 
   return (
     <div className="min-h-screen bg-[var(--pg-bg-deep)] relative overflow-hidden">
@@ -38,11 +43,19 @@ export function BentoHub() {
       {/* Main Content */}
       <main className="relative z-10 pt-24 pb-12 px-6">
         <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <HubOverview stats={hubStats} />
+          </motion.div>
+
           {/* Physics Bento Grid */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.5, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
           >
             <BentoGrid isMobile={isMobile} />
           </motion.div>
@@ -68,7 +81,7 @@ export function BentoHub() {
                   d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                 />
               </svg>
-              Your high scores are saved locally
+              Scores stay local to this browser and the hub cards are draggable
             </p>
           </motion.div>
         </div>

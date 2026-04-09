@@ -28,7 +28,7 @@ const GameEmbed = dynamic(
 
 // Reuse existing 3D viewer
 const ThreeViewer = dynamic(
-  () => import('@/components/Dimension/Dimension'),
+  () => import('@/components/Dimension'),
   { ssr: false }
 );
 

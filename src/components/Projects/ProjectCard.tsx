@@ -1,12 +1,18 @@
-// ProjectCard - Individual project card for the projects modal
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import Image from 'next/image';
 import type { Project } from '@/lib/projects-data';
-import { TechBadge } from './TechBadge';
+import {
+  formatProjectDate,
+  getProjectMediaTypes,
+  getProjectThumbnail,
+  hasProjectViewerMedia,
+} from '@/lib/projects-data';
 import { BLUR_PLACEHOLDERS } from '@/lib/image-utils';
 import { analytics } from '@/lib/analytics';
+import { TechBadge } from './TechBadge';
+import { PROJECT_CATEGORY_THEMES, PROJECT_STATUS_COPY } from './project-theme';
 import {
   Model3DIcon,
   ImageIcon,
@@ -23,208 +29,168 @@ interface ProjectCardProps {
   onSelectProject?: (project: Project) => void;
 }
 
-// Check if project has any viewable media
-function hasViewableMedia(project: Project): boolean {
-  return !!(
-    project.links.modelPath ||
-    project.media?.images?.length ||
-    project.media?.pdf ||
-    project.media?.website ||
-    project.media?.video ||
-    project.media?.game
-  );
-}
-
-// Get media type icons for the project
-function getMediaIcons(project: Project): { icon: React.ReactNode; label: string }[] {
-  const icons: { icon: React.ReactNode; label: string }[] = [];
-
-  if (project.links.modelPath) {
-    icons.push({ label: '3D', icon: <Model3DIcon size={12} /> });
-  }
-
-  if (project.media?.images?.length) {
-    icons.push({ label: 'Images', icon: <ImageIcon size={12} /> });
-  }
-
-  if (project.media?.pdf) {
-    icons.push({ label: 'PDF', icon: <PDFIcon size={12} /> });
-  }
-
-  if (project.media?.website) {
-    icons.push({ label: 'Website', icon: <GlobeIcon size={12} /> });
-  }
-
-  if (project.media?.game) {
-    icons.push({ label: 'Game', icon: <PlayCircleIcon size={12} /> });
-  }
-
-  return icons;
-}
+const MEDIA_ICONS = {
+  '3D': <Model3DIcon size={12} />,
+  Images: <ImageIcon size={12} />,
+  PDF: <PDFIcon size={12} />,
+  Website: <GlobeIcon size={12} />,
+  Video: <PlayCircleIcon size={12} />,
+  Game: <PlayCircleIcon size={12} />,
+} as const;
 
 export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
   const [imageLoading, setImageLoading] = useState(true);
-  const MAX_VISIBLE_TECHS = 4;
-  const visibleTechs = project.technologies.slice(0, MAX_VISIBLE_TECHS);
-  const remainingCount = project.technologies.length - MAX_VISIBLE_TECHS;
-
-  const hasExternalLinks = project.links.liveDemo || project.links.github;
-  const canView = hasViewableMedia(project);
-  const mediaIcons = getMediaIcons(project);
+  const thumbnail = getProjectThumbnail(project);
+  const theme = PROJECT_CATEGORY_THEMES[project.category];
+  const mediaTypes = getProjectMediaTypes(project);
+  const status = PROJECT_STATUS_COPY[project.status];
+  const completionDate = formatProjectDate(project.dateCompleted);
+  const visibleTechs = project.technologies.slice(0, 4);
+  const remainingCount = project.technologies.length - visibleTechs.length;
+  const canView = hasProjectViewerMedia(project);
 
   const handleViewProject = useCallback(() => {
     analytics.projectViewed(project.id, project.name);
     onSelectProject?.(project);
-  }, [project, onSelectProject]);
+  }, [onSelectProject, project]);
 
   const handleExternalLinkClick = useCallback((linkType: 'github' | 'live_demo', url: string) => {
     analytics.externalLinkClicked(linkType, url);
   }, []);
 
   return (
-    <div
-      className={`
-        backdrop-blur-xl rounded-2xl border border-[var(--border)] bg-[var(--glass-bg)] p-4
-        transition-all duration-200 ease-out
-        hover:scale-[1.02] hover:border-[var(--interactive)]
-        hover:shadow-[0_0_30px_var(--purple-muted)]
-        focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50
-      `}
+    <article
+      className="group flex h-full flex-col overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--glass-bg)] shadow-[0_18px_45px_rgba(0,0,0,0.22)] transition-all duration-300 hover:-translate-y-1.5 hover:border-[var(--interactive)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.32)]"
     >
-      {/* Thumbnail - bento compartment (sharp inner corners) */}
-      <div className="relative w-full h-36 bg-[var(--glass-bg)] rounded-sm mb-4 flex items-center justify-center border border-[var(--border)] overflow-hidden">
-        {project.thumbnail ? (
+      <div className="relative h-48 overflow-hidden border-b border-[var(--border)]">
+        {thumbnail ? (
           <>
-            {imageLoading && (
-              <div className="absolute inset-0 skeleton-shimmer" aria-hidden="true" />
-            )}
+            {imageLoading && <div className="absolute inset-0 skeleton-shimmer" aria-hidden="true" />}
             <Image
-              src={project.thumbnail}
+              src={thumbnail}
               alt={project.name}
               fill
-              className={`object-cover transition-opacity duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
+              className={`object-cover transition duration-500 ${imageLoading ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}`}
               onLoad={() => setImageLoading(false)}
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
               placeholder="blur"
               blurDataURL={BLUR_PLACEHOLDERS['4:3']}
             />
           </>
         ) : (
-          <Model3DIcon size={48} className="text-[var(--text-muted)]" aria-hidden="true" />
+          <div className="absolute inset-0" style={{ background: theme.gradient }}>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_42%)]" />
+            <div className="absolute bottom-5 left-5 text-5xl opacity-80">{theme.icon}</div>
+          </div>
         )}
 
-        {/* Media type indicators overlay */}
-        {mediaIcons.length > 0 && (
-          <div className="absolute bottom-2 right-2 flex gap-1">
-            {mediaIcons.map(({ icon, label }) => (
+        <div className="absolute inset-0 bg-gradient-to-t from-[rgba(5,6,18,0.92)] via-[rgba(5,6,18,0.18)] to-transparent" />
+
+        <div className="absolute left-4 right-4 top-4 flex items-start justify-between gap-2">
+          <span className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${status.className}`}>
+            {status.label}
+          </span>
+          <div className="flex flex-wrap justify-end gap-1.5">
+            {mediaTypes.slice(0, 3).map((type) => (
               <span
-                key={label}
-                className="p-1.5 rounded bg-[var(--overlay)] text-[var(--text-on-accent)] opacity-80"
-                title={label}
+                key={type}
+                className="inline-flex items-center gap-1 rounded-full bg-[rgba(0,0,0,0.55)] px-2 py-1 text-[10px] font-medium text-[var(--text-on-accent)] backdrop-blur-sm"
+                title={type}
               >
-                {icon}
+                {MEDIA_ICONS[type]}
+                <span>{type}</span>
               </span>
             ))}
           </div>
-        )}
+        </div>
+
+        <div className="absolute inset-x-4 bottom-4 flex items-end justify-between gap-4">
+          <div>
+            <p className="mb-2 text-[11px] font-mono uppercase tracking-[0.24em] text-white/70">
+              {project.category}
+            </p>
+            <h3 className="text-xl font-semibold text-white">{project.name}</h3>
+          </div>
+          {completionDate ? (
+            <span className="project-overlay-chip rounded-full px-3 py-1 text-[10px] font-mono uppercase tracking-[0.16em]">
+              {completionDate}
+            </span>
+          ) : null}
+        </div>
       </div>
 
-      {/* Status badge */}
-      <div className="flex items-center justify-between mb-2">
-        <span
-          className={`
-            px-2.5 py-1 rounded-sm text-[10px] font-mono font-semibold uppercase tracking-widest
-            ${project.status === 'Completed'
-              ? 'bg-[var(--status-success-muted)] text-[var(--status-success)] border border-[var(--status-success)] border-opacity-30'
-              : project.status === 'In Progress'
-                ? 'bg-[var(--status-warning-muted)] text-[var(--status-warning)] border border-[var(--status-warning)] border-opacity-30'
-                : 'bg-[var(--glass-bg)] text-[var(--text-muted)] border border-[var(--border)]'
-            }
-          `}
-        >
-          {project.status === 'Completed' ? 'READY' : project.status === 'In Progress' ? 'BUILDING' : 'PLANNED'}
-        </span>
-        <span className="text-[10px] font-mono text-[var(--text-muted)]">{project.category}</span>
-      </div>
+      <div className="flex flex-1 flex-col p-5">
+        <p className="mb-4 text-sm leading-6 text-[var(--text-secondary)]">
+          {project.shortDescription}
+        </p>
 
-      {/* Title */}
-      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2 line-clamp-1">
-        {project.name}
-      </h3>
+        <div className="mb-4 flex flex-wrap gap-2">
+          {visibleTechs.map((tech) => (
+            <TechBadge key={tech} tech={tech} />
+          ))}
+          {remainingCount > 0 ? (
+            <span className="rounded-full border border-[var(--border)] px-2.5 py-1 text-xs text-[var(--text-muted)]">
+              +{remainingCount}
+            </span>
+          ) : null}
+        </div>
 
-      {/* Description */}
-      <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-2">
-        {project.shortDescription}
-      </p>
+        <div className="mb-5 grid grid-cols-3 gap-2 text-left">
+          <MetaCell label="Stack" value={`${project.technologies.length}`} />
+          <MetaCell label="Media" value={`${mediaTypes.length || 0}`} />
+          <MetaCell label="Links" value={`${[project.links.github, project.links.liveDemo, project.links.docs].filter(Boolean).length}`} />
+        </div>
 
-      {/* Tech badges */}
-      <div className="flex flex-wrap gap-1.5 mb-4">
-        {visibleTechs.map((tech) => (
-          <TechBadge key={tech} tech={tech} />
-        ))}
-        {remainingCount > 0 && (
-          <span className="text-xs text-[var(--text-muted)] self-center">
-            +{remainingCount}
-          </span>
-        )}
-      </div>
-
-      {/* Action buttons */}
-      {(hasExternalLinks || canView) && (
-        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-[var(--border)]">
-          {/* View in Viewfinder button */}
-          {canView && onSelectProject && (
+        <div className="mt-auto flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
+          {canView && onSelectProject ? (
             <button
               type="button"
               onClick={handleViewProject}
-              aria-label={`View ${project.name} in viewer`}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
-                bg-[var(--interactive)] text-[var(--text-on-accent)]
-                hover:bg-[var(--interactive-hover)] hover:shadow-[0_0_15px_var(--purple-muted)]
-                transition-all duration-200"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--interactive)] px-4 py-2 text-sm font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--interactive-hover)]"
             >
               <EyeIcon size={14} />
-              View
+              <span>Open viewer</span>
             </button>
-          )}
+          ) : null}
 
-          {/* Live Demo link */}
-          {project.links.liveDemo && (
+          {project.links.liveDemo ? (
             <a
               href={project.links.liveDemo}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => handleExternalLinkClick('live_demo', project.links.liveDemo!)}
-              aria-label={`Open ${project.name} live demo in new window`}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
-                bg-[var(--highlight)] text-[var(--text-on-accent)]
-                hover:bg-[var(--highlight-hover)] hover:shadow-[0_0_15px_var(--orange-muted)]
-                transition-all duration-200"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--highlight)] px-4 py-2 text-sm font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--highlight-hover)]"
             >
               <ExternalLinkIcon size={14} />
-              Demo
+              <span>Live demo</span>
             </a>
-          )}
+          ) : null}
 
-          {/* GitHub link */}
-          {project.links.github && (
+          {project.links.github ? (
             <a
               href={project.links.github}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => handleExternalLinkClick('github', project.links.github!)}
-              aria-label={`View ${project.name} on GitHub`}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium
-                bg-[var(--glass-bg)] text-[var(--text-secondary)] border border-[var(--border)]
-                hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)]
-                transition-all duration-200"
+              className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--glass-bg)] px-4 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
             >
               <GitHubIcon size={14} />
-              GitHub
+              <span>Code</span>
             </a>
-          )}
+          ) : null}
         </div>
-      )}
+      </div>
+    </article>
+  );
+}
+
+function MetaCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--glass-bg)] px-3 py-2">
+      <div className="text-[10px] font-mono uppercase tracking-[0.16em] text-[var(--text-muted)]">
+        {label}
+      </div>
+      <div className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{value}</div>
     </div>
   );
 }

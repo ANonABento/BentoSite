@@ -15,27 +15,31 @@ export function CountdownOverlay({
   onComplete,
   from = 3,
 }: CountdownOverlayProps) {
+  if (!isActive) return null;
+
+  return <ActiveCountdownOverlay from={from} onComplete={onComplete} />;
+}
+
+interface ActiveCountdownOverlayProps {
+  from: number;
+  onComplete: () => void;
+}
+
+function ActiveCountdownOverlay({ from, onComplete }: ActiveCountdownOverlayProps) {
   const [count, setCount] = useState(from);
 
   useEffect(() => {
-    if (!isActive) {
-      setCount(from);
-      return;
-    }
-
     if (count <= 0) {
       onComplete();
       return;
     }
 
     const timer = setTimeout(() => {
-      setCount(count - 1);
+      setCount((current) => current - 1);
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [isActive, count, from, onComplete]);
-
-  if (!isActive) return null;
+  }, [count, onComplete]);
 
   const progress = 1 - count / from;
   const circumference = 2 * Math.PI * 60; // radius 60

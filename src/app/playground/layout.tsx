@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Playground | Ben Thomas',
-  description: 'Interactive games and tests - reaction time, typing speed, rhythm game',
+  title: 'Playground | Kevin Jiang',
+  description: 'Interactive game lab with reaction, typing, rhythm, sorting, and arcade experiments.',
 };
 
 export default function PlaygroundLayout({

@@ -1,16 +1,22 @@
 'use client';
 
-import { useRef, useEffect, useState, useMemo } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { shaderMaterial } from '@react-three/drei';
 
 function useReducedMotion() {
-  const [reduced, setReduced] = useState(false);
+  const [reduced, setReduced] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  });
+
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduced(mq.matches);
     const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
@@ -19,10 +25,16 @@ function useReducedMotion() {
 }
 
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    return window.innerWidth < 768;
+  });
+
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
-    check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, []);
@@ -250,20 +262,34 @@ const GrokBlackHoleShader = shaderMaterial(
 
 function BlackHoleShader({ reducedMotion }: { reducedMotion: boolean }) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const materialRef = useRef<InstanceType<typeof GrokBlackHoleShader> | null>(null);
   const { viewport, size } = useThree();
 
-  const material = useMemo(() => new GrokBlackHoleShader(), []);
+  const [material] = useState(() => new GrokBlackHoleShader());
+
+  useEffect(() => {
+    materialRef.current = material;
+
+    return () => {
+      material.dispose();
+      materialRef.current = null;
+    };
+  }, [material]);
 
   useFrame((state) => {
-    if (material && !reducedMotion) {
-      material.uTime = state.clock.elapsedTime * 0.5;
-      material.uResolution.set(size.width, size.height);
+    const shader = materialRef.current;
+    if (shader && !reducedMotion) {
+      shader.uTime = state.clock.elapsedTime * 0.5;
+      shader.uResolution.set(size.width, size.height);
     }
   });
 
   useEffect(() => {
-    if (material) material.uResolution.set(size.width, size.height);
-  }, [size, material]);
+    const shader = materialRef.current;
+    if (shader) {
+      shader.uResolution.set(size.width, size.height);
+    }
+  }, [size]);
 
   return (
     <mesh ref={meshRef} material={material} scale={[viewport.width, viewport.height, 1]}>

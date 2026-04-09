@@ -54,7 +54,7 @@ export function Soundboard() {
             step="0.1"
             value={volume}
             onChange={(e) => setVolume(parseFloat(e.target.value))}
-            className="w-20 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[var(--pg-accent-gold)] [&::-webkit-slider-thumb]:rounded-full"
+            className="pg-range w-20"
           />
         </div>
       }
@@ -115,7 +115,7 @@ export function Soundboard() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="grid gap-3 p-4 rounded-2xl bg-[var(--pg-bg-surface)] border border-white/[0.06]"
+          className="pg-surface-frame grid gap-3 rounded-2xl p-4"
           style={{
             gridTemplateColumns: `repeat(${GRID_COLS}, ${padSize}px)`,
             maxWidth: gridWidth + 32,

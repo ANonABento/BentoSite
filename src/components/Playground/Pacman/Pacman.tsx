@@ -1,8 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { Play, Pause, RotateCcw, Heart, Ghost } from 'lucide-react';
+import { useEffect, useRef, useCallback } from 'react';
+import { Play, Pause, Heart, Ghost } from 'lucide-react';
 import { GameLayout, ResultsScreen } from '../shared';
 import { usePacman } from './Pacman.hooks';
 import { useHighScores, useIsMobile } from '../Playground.hooks';
@@ -20,9 +20,11 @@ export function Pacman() {
   const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const lastSavedRunRef = useRef<string | null>(null);
 
   const {
     status,
+    pauseReason,
     pacman,
     ghosts,
     maze,
@@ -41,6 +43,11 @@ export function Pacman() {
   // Save score on game end
   useEffect(() => {
     if (status === 'won' || status === 'lost') {
+      const runKey = `${status}:${score}:${lives}:${dotsRemaining}`;
+      if (lastSavedRunRef.current === runKey) {
+        return;
+      }
+
       const currentHigh = scores?.highScore ?? 0;
       const gamesPlayed = (scores?.gamesPlayed ?? 0) + 1;
       if (score > currentHigh) {
@@ -48,8 +55,11 @@ export function Pacman() {
       } else {
         saveScore({ highScore: currentHigh, gamesPlayed });
       }
+      lastSavedRunRef.current = runKey;
+    } else {
+      lastSavedRunRef.current = null;
     }
-  }, [status, score, scores, saveScore]);
+  }, [status, score, scores, saveScore, lives, dotsRemaining]);
 
   // Canvas rendering
   useEffect(() => {
@@ -254,7 +264,7 @@ export function Pacman() {
               Pacman
             </h2>
             <p className="text-sm text-[var(--pg-text-secondary)] mb-4">
-              Eat all the dots and avoid the ghosts!
+              Eat all the dots, use power pellets to flip the chase, and watch for ghosts to recover after you eat them.
             </p>
 
             {scores?.highScore ? (
@@ -289,6 +299,9 @@ export function Pacman() {
                   <Heart key={i} className="w-5 h-5 text-[var(--pg-game-error)] fill-current" />
                 ))}
               </div>
+              <div className="text-xs font-mono uppercase tracking-[0.18em] text-[var(--pg-text-muted)]">
+                {dotsRemaining} dots left
+              </div>
               <motion.button
                 onClick={togglePause}
                 className="p-2 rounded-lg bg-[var(--pg-bg-elevated)] hover:bg-[var(--pg-bg-hover)]"
@@ -308,7 +321,7 @@ export function Pacman() {
 
             {/* Canvas */}
             <div
-              className="rounded-xl overflow-hidden border border-white/[0.06]"
+              className="pg-border-subtle rounded-xl overflow-hidden border"
               style={{ touchAction: 'none' }}
             >
               <canvas
@@ -326,10 +339,17 @@ export function Pacman() {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="absolute inset-0 flex items-center justify-center bg-black/70 rounded-xl"
+                className="absolute inset-0 flex items-center justify-center pg-overlay-panel-strong rounded-xl"
               >
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-white mb-4">Paused</div>
+                  <div className="text-2xl font-bold text-white mb-2">
+                    {pauseReason === 'lifeLost' ? 'Life Lost' : 'Paused'}
+                  </div>
+                  <p className="mb-4 text-sm text-white/75">
+                    {pauseReason === 'lifeLost'
+                      ? 'Take a beat, then jump back in from the spawn point.'
+                      : 'Resume when you are ready.'}
+                  </p>
                   <motion.button
                     onClick={togglePause}
                     className="px-6 py-2 rounded-lg bg-[var(--purple)] text-white font-medium"

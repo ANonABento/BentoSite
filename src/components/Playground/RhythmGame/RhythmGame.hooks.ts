@@ -234,7 +234,14 @@ export function useRhythmGame(beatMap: BeatMap) {
           Math.abs(n.y - y) < 0.15
       );
 
-      if (clickableNotes.length === 0) return prev;
+      if (clickableNotes.length === 0) {
+        return {
+          ...prev,
+          combo: 0,
+          misses: prev.misses + 1,
+          maxCombo: Math.max(prev.maxCombo, prev.combo),
+        };
+      }
 
       // Click the closest one
       const closest = clickableNotes.reduce((a, b) =>

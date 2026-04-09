@@ -86,24 +86,6 @@ export function RhythmGame() {
     };
   }, []);
 
-  // Start audio when game starts playing (for custom songs)
-  useEffect(() => {
-    if (status === 'playing' && isCustomSong && customBeatmap?.audioBuffer) {
-      playAudio(customBeatmap.audioBuffer);
-    }
-
-    if (status === 'finished' || status === 'idle') {
-      stopAudio();
-    }
-  }, [status, isCustomSong, customBeatmap]);
-
-  // Handle mute toggle
-  useEffect(() => {
-    if (gainNodeRef.current) {
-      gainNodeRef.current.gain.value = isMuted ? 0 : 1;
-    }
-  }, [isMuted]);
-
   const playAudio = useCallback((audioBuffer: AudioBuffer) => {
     // Create or resume audio context
     if (!audioContextRef.current) {
@@ -145,6 +127,24 @@ export function RhythmGame() {
       audioSourceRef.current = null;
     }
   }, []);
+
+  // Start audio when game starts playing (for custom songs)
+  useEffect(() => {
+    if (status === 'playing' && isCustomSong && customBeatmap?.audioBuffer) {
+      playAudio(customBeatmap.audioBuffer);
+    }
+
+    if (status === 'finished' || status === 'idle') {
+      stopAudio();
+    }
+  }, [status, isCustomSong, customBeatmap?.audioBuffer, playAudio, stopAudio]);
+
+  // Handle mute toggle
+  useEffect(() => {
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.value = isMuted ? 0 : 1;
+    }
+  }, [isMuted]);
 
   // Handle custom beatmap generation
   const handleBeatmapGenerated = useCallback((beatmap: GeneratedBeatmap) => {
@@ -207,7 +207,7 @@ export function RhythmGame() {
             {isCustomSong && (
               <motion.button
                 onClick={() => setIsMuted(!isMuted)}
-                className="p-2 rounded-lg hover:bg-white/5"
+                className="p-2 rounded-lg hover:bg-[rgba(255,255,255,0.05)]"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -225,7 +225,7 @@ export function RhythmGame() {
             </div>
             {combo > 0 && (
               <>
-                <div className="w-px h-5 bg-white/10" />
+                <div className="pg-divider" />
                 <motion.span
                   key={combo}
                   initial={{ scale: 1.2 }}
@@ -282,6 +282,16 @@ export function RhythmGame() {
                 Click the circles when the approach ring reaches them.
               </p>
 
+              <div className="pg-surface-panel mb-6 rounded-xl px-4 py-3 text-left">
+                <div className="text-xs font-mono uppercase tracking-[0.18em] text-[var(--pg-text-muted)]">
+                  Practice flow
+                </div>
+                <p className="mt-2 text-sm leading-6 text-[var(--pg-text-secondary)]">
+                  Presets are silent timing drills. Upload a song for synced playback and generated notes.
+                  Empty clicks count as misses now, so rhythm and restraint both matter.
+                </p>
+              </div>
+
               {/* Mode toggle */}
               <div className="flex justify-center gap-2 mb-8">
                 <motion.button
@@ -315,7 +325,7 @@ export function RhythmGame() {
                       ${
                         selectedMap.id === customBeatmap.id
                           ? 'bg-[var(--purple)]/20 border-[var(--purple)]/40 shadow-lg shadow-[var(--purple)]/10'
-                          : 'bg-[var(--pg-bg-elevated)] hover:bg-[var(--pg-bg-hover)] border-white/[0.06]'
+                          : 'pg-surface-panel hover:bg-[var(--pg-bg-hover)]'
                       }
                       border
                     `}
@@ -358,7 +368,7 @@ export function RhythmGame() {
                       ${
                         selectedMap.id === map.id
                           ? 'bg-[var(--pg-accent-gold)]/10 border-[var(--pg-accent-gold)]/40 shadow-lg shadow-[var(--pg-accent-gold)]/10'
-                          : 'bg-[var(--pg-bg-elevated)] hover:bg-[var(--pg-bg-hover)] border-white/[0.06]'
+                          : 'pg-surface-panel hover:bg-[var(--pg-bg-hover)]'
                       }
                       border
                     `}
@@ -384,7 +394,7 @@ export function RhythmGame() {
                       </div>
                     </div>
                     {scores?.[map.id] && (
-                      <div className="mt-2 pt-2 border-t border-white/[0.06] flex gap-4 text-xs">
+                      <div className="pg-border-subtle mt-2 flex gap-4 border-t pt-2 text-xs">
                         <span className="text-[var(--pg-text-muted)]">
                           Best: <span className="text-[var(--pg-accent-gold)] font-mono">{formatNumber(scores[map.id].score)}</span>
                         </span>
@@ -419,7 +429,7 @@ export function RhythmGame() {
             >
               {/* Progress bar */}
               <div className="mb-4">
-                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div className="pg-progress-track h-1.5 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-[var(--purple)] to-[var(--pg-accent-gold)]"
                     style={{ width: `${progress * 100}%` }}
@@ -428,11 +438,34 @@ export function RhythmGame() {
                 </div>
               </div>
 
+              <div className="mb-4 flex flex-wrap items-center gap-3">
+                {!isCustomSong ? (
+                  <span className="pg-chip rounded-full px-3 py-1 text-xs font-mono uppercase tracking-[0.16em] text-[var(--pg-text-muted)]">
+                    Visual training map
+                  </span>
+                ) : (
+                  <span className="pg-chip rounded-full px-3 py-1 text-xs font-mono uppercase tracking-[0.16em] text-[var(--pg-text-muted)]">
+                    Synced custom audio
+                  </span>
+                )}
+                <div className="pg-surface-panel flex items-center gap-4 rounded-full px-4 py-2 text-xs">
+                  <span className="text-[var(--pg-text-muted)]">
+                    Perfect <span className="font-mono text-[var(--pg-game-success)]">{perfects}</span>
+                  </span>
+                  <span className="text-[var(--pg-text-muted)]">
+                    Good <span className="font-mono text-[var(--pg-accent-gold)]">{goods}</span>
+                  </span>
+                  <span className="text-[var(--pg-text-muted)]">
+                    Miss <span className="font-mono text-[var(--pg-game-error)]">{misses}</span>
+                  </span>
+                </div>
+              </div>
+
               {/* Playfield */}
               <div
                 ref={playfieldRef}
                 onClick={handleClick}
-                className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden cursor-pointer border border-white/[0.06]"
+                className="pg-border-subtle relative w-full aspect-[16/10] rounded-2xl overflow-hidden cursor-pointer border"
                 style={{
                   background:
                     'radial-gradient(ellipse at center, rgba(167, 139, 250, 0.08) 0%, var(--pg-bg-surface) 100%)',
