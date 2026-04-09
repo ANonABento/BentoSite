@@ -6,6 +6,4 @@ export type {
   BentoCardConfig,
   CardPosition,
   PhysicsConfig,
-  ParticleConfig,
-  VoidConfig,
 } from './BentoHub.types';

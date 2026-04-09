@@ -3,8 +3,7 @@
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 
-// Dynamic import to prevent SSR issues with Three.js
-const VoidCanvas = dynamic(() => import('./ParticleVoid').then((m) => m.ParticleVoid), {
+const VoidCanvas = dynamic(() => import('./ParticleVoid').then((mod) => mod.ParticleVoid), {
   ssr: false,
 });
 
@@ -23,7 +22,8 @@ function VoidFallback() {
     <div
       className="w-full h-full"
       style={{
-        background: 'radial-gradient(ellipse at center, rgba(167, 139, 250, 0.08) 0%, var(--pg-bg-deep) 70%)',
+        background:
+          'radial-gradient(ellipse at center, rgba(167, 139, 250, 0.08) 0%, var(--pg-bg-deep) 70%)',
       }}
     />
   );
