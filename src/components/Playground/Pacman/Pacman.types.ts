@@ -27,11 +27,13 @@ export interface Ghost extends Entity {
   mode: GhostMode;
   frightened: boolean;
   eaten: boolean;
+  respawnAt: number | null;
   targetPosition: Position;
 }
 
 export interface GameState {
   status: GameStatus;
+  pauseReason: 'manual' | 'lifeLost' | null;
   pacman: Entity;
   ghosts: Ghost[];
   maze: CellType[][];

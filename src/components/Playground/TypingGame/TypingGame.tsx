@@ -68,7 +68,7 @@ export function TypingGame() {
               <span className="pg-label">WPM</span>
               <span className="font-mono font-semibold text-[var(--purple)]">{liveWPM}</span>
             </div>
-            <div className="w-px h-5 bg-white/10" />
+            <div className="pg-divider" />
             <span className="font-mono text-[var(--pg-accent-gold)]">{formattedTime}</span>
           </div>
         ) : null
@@ -132,7 +132,7 @@ export function TypingGame() {
                         ${
                           duration === d
                             ? 'bg-[var(--purple)] text-white shadow-lg shadow-[var(--purple)]/25'
-                            : 'bg-[var(--pg-bg-elevated)] text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)] border border-white/[0.06]'
+                            : 'pg-surface-panel text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]'
                         }
                       `}
                       whileHover={{ scale: 1.02 }}
@@ -157,7 +157,7 @@ export function TypingGame() {
                         ${
                           difficulty === d
                             ? 'bg-[var(--purple)] text-white shadow-lg shadow-[var(--purple)]/25'
-                            : 'bg-[var(--pg-bg-elevated)] text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)] border border-white/[0.06]'
+                            : 'pg-surface-panel text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]'
                         }
                       `}
                       whileHover={{ scale: 1.02 }}
@@ -172,7 +172,7 @@ export function TypingGame() {
               {/* Best score if exists */}
               {scores?.bestWPM && (
                 <motion.div
-                  className="mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--pg-bg-elevated)] border border-white/[0.06]"
+                  className="pg-surface-panel mb-8 inline-flex items-center gap-2 rounded-full px-4 py-2"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.2 }}

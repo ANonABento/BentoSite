@@ -5,7 +5,7 @@ import Matter from 'matter-js';
 import type { CardLayout, PhysicsConfig } from '../InfiniteGrid.types';
 import { PHYSICS, PHYSICS_MOBILE } from '../InfiniteGrid.constants';
 
-const { Engine, World, Bodies, Body, Runner, Events } = Matter;
+const { Engine, World, Bodies, Body, Runner, Events, Sleeping } = Matter;
 
 export interface PhysicsEngine {
   engine: Matter.Engine;
@@ -23,6 +23,7 @@ export interface PhysicsEngine {
   setVelocity: (id: string, vx: number, vy: number) => void;
   setStatic: (id: string, isStatic: boolean) => void;
   wakeBody: (id: string) => void;
+  wakeAllBodies: () => void;
 
   // Lifecycle
   start: () => void;
@@ -128,7 +129,7 @@ export function createPhysicsEngine(
     const body = bodies.get(id);
     if (body) {
       Body.setPosition(body, { x, y });
-      body.isSleeping = false;
+      Sleeping.set(body, false);
     }
   }
 
@@ -153,7 +154,7 @@ export function createPhysicsEngine(
     const body = bodies.get(id);
     if (body) {
       Body.setVelocity(body, { x: vx, y: vy });
-      body.isSleeping = false;
+      Sleeping.set(body, false);
     }
   }
 
@@ -173,7 +174,16 @@ export function createPhysicsEngine(
   function wakeBody(id: string): void {
     const body = bodies.get(id);
     if (body) {
-      body.isSleeping = false;
+      Sleeping.set(body, false);
+    }
+  }
+
+  /**
+   * Wake all sleeping bodies
+   */
+  function wakeAllBodies(): void {
+    for (const [, body] of bodies) {
+      Sleeping.set(body, false);
     }
   }
 
@@ -214,6 +224,7 @@ export function createPhysicsEngine(
     setVelocity,
     setStatic,
     wakeBody,
+    wakeAllBodies,
     start,
     stop,
     destroy,

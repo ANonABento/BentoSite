@@ -20,7 +20,6 @@ export function CollapsibleWidget({
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [hasMoved, setHasMoved] = useState(false);
-  const [isKeyboardFocused, setIsKeyboardFocused] = useState(false);
   const [containerBounds, setContainerBounds] = useState({ width: 0, height: 0 });
   const widgetRef = useRef<HTMLDivElement>(null);
 
@@ -124,13 +123,6 @@ export function CollapsibleWidget({
     setIsDragging(false);
   }, [hasMoved, onToggleCollapse]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      onToggleCollapse();
-    }
-  }, [onToggleCollapse]);
-
   useEffect(() => {
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove);
@@ -168,32 +160,30 @@ export function CollapsibleWidget({
         `}
         onMouseDown={handleMouseDown}
       >
-        {/* Header with toggle button only */}
+        {/* Header keeps drag affordance on the shell while buttons handle toggling accessibly. */}
         <div
           className={`
             widget-header flex items-center justify-between px-4 py-3 border-b border-[var(--border)]
-            cursor-pointer
             hover:bg-[var(--glass-bg)]
-            ${isKeyboardFocused ? 'ring-2 ring-[var(--interactive)] ring-opacity-50 ring-inset' : ''}
           `}
-          onKeyDown={handleKeyDown}
-          onFocus={() => setIsKeyboardFocused(true)}
-          onBlur={() => setIsKeyboardFocused(false)}
-          tabIndex={0}
-          role="button"
-          aria-expanded={!isCollapsed}
-          aria-label={`Toggle ${title} panel`}
         >
-          <div className="flex items-center space-x-2">
+          <button
+            type="button"
+            className="flex min-w-0 flex-1 items-center space-x-2 rounded-md text-left focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50"
+            aria-expanded={!isCollapsed}
+            aria-label={`Toggle ${title} panel`}
+            onClick={onToggleCollapse}
+          >
             <div className="text-[var(--interactive)] hover:text-[var(--interactive-hover)]">
               {icon}
             </div>
-            <h3 className="font-semibold text-sm text-[var(--text-primary)] hover:text-[var(--interactive-hover)]">
+            <h3 className="truncate font-semibold text-sm text-[var(--text-primary)] hover:text-[var(--interactive-hover)]">
               {title}
             </h3>
-          </div>
+          </button>
 
           <button
+            type="button"
             className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded hover:bg-[var(--glass-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50 active:scale-95 transform"
             title={isCollapsed ? 'Expand panel' : 'Collapse panel'}
             aria-label={isCollapsed ? `Expand ${title} panel` : `Collapse ${title} panel`}

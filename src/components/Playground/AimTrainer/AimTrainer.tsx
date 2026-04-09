@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Play, Crosshair, Target } from 'lucide-react';
 import { GameLayout, ResultsScreen } from '../shared';
 import { Scene3D } from './Scene3D';
@@ -14,6 +14,7 @@ import { springs } from '../design';
 
 export function AimTrainer() {
   const [showInstructions, setShowInstructions] = useState(true);
+  const lastSavedRunRef = useRef<string | null>(null);
 
   const {
     status,
@@ -35,6 +36,11 @@ export function AimTrainer() {
   // Save score on finish
   useEffect(() => {
     if (status === 'finished') {
+      const runKey = `${settings.mode}:${score}:${accuracy}:${hits}:${misses}`;
+      if (lastSavedRunRef.current === runKey) {
+        return;
+      }
+
       const modeKey = settings.mode;
       const currentBest = scores?.[modeKey]?.bestScore ?? 0;
       const currentBestAcc = scores?.[modeKey]?.bestAccuracy ?? 0;
@@ -48,16 +54,21 @@ export function AimTrainer() {
           gamesPlayed,
         },
       });
+      lastSavedRunRef.current = runKey;
+    } else {
+      lastSavedRunRef.current = null;
     }
-  }, [status, score, accuracy, settings.mode, scores, saveScore]);
+  }, [status, score, accuracy, settings.mode, scores, saveScore, hits, misses]);
 
-  // Auto-dismiss instructions after game starts
   useEffect(() => {
-    if (status === 'playing') {
-      const timer = setTimeout(() => setShowInstructions(false), 3000);
-      return () => clearTimeout(timer);
+    if (status !== 'playing' && document.pointerLockElement) {
+      document.exitPointerLock?.();
     }
   }, [status]);
+
+  const handleLockChange = useCallback((locked: boolean) => {
+    setShowInstructions(!locked);
+  }, []);
 
   const handleHit = useCallback((targetId: string) => {
     handleShot(targetId);
@@ -90,7 +101,7 @@ export function AimTrainer() {
               <Target className="w-4 h-4 text-[var(--pg-game-success)]" />
               <span className="font-mono text-sm text-[var(--pg-text-primary)]">{hits}</span>
             </div>
-            <div className="w-px h-5 bg-white/10" />
+            <div className="pg-divider" />
             <span className="font-mono text-lg text-[var(--pg-accent-gold)]">{score}</span>
           </div>
         ) : null
@@ -119,7 +130,7 @@ export function AimTrainer() {
                 3D Aim Trainer
               </h2>
               <p className="text-sm text-[var(--pg-text-secondary)] mb-6">
-                First-person target practice. Click on targets to score.
+                First-person target practice. Tracking mode now moves targets and missed despawns count against your accuracy.
               </p>
 
               {/* Mode selector */}
@@ -187,13 +198,13 @@ export function AimTrainer() {
                   step={0.1}
                   value={settings.sensitivity}
                   onChange={(e) => updateSettings({ sensitivity: parseFloat(e.target.value) })}
-                  className="w-full mt-2 h-2 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-[var(--purple)] [&::-webkit-slider-thumb]:rounded-full"
+                  className="pg-range pg-range-purple w-full mt-2"
                 />
               </div>
 
               {/* Best score */}
               {modeScores?.bestScore ? (
-                <div className="mb-6 inline-flex items-center gap-4 px-4 py-2 rounded-xl bg-[var(--pg-bg-elevated)] border border-white/[0.06]">
+                <div className="pg-surface-panel mb-6 inline-flex items-center gap-4 rounded-xl px-4 py-2">
                   <span className="text-xs text-[var(--pg-text-muted)]">
                     Best: <span className="font-mono text-[var(--pg-accent-gold)]">{modeScores.bestScore}</span>
                   </span>
@@ -231,6 +242,7 @@ export function AimTrainer() {
                 isPlaying={status === 'playing'}
                 onHit={handleHit}
                 onMiss={handleMiss}
+                onLockChange={handleLockChange}
               />
             </div>
 
@@ -244,32 +256,42 @@ export function AimTrainer() {
             </div>
 
             {/* HUD */}
-            <div className="absolute top-4 left-4 right-4 flex justify-between pointer-events-none">
-              <div className="bg-black/50 backdrop-blur px-4 py-2 rounded-lg">
+          <div className="absolute top-4 left-4 right-4 flex justify-between pointer-events-none">
+              <div className="pg-overlay-panel px-4 py-2 rounded-lg">
                 <div className="text-xs text-[var(--pg-text-muted)]">Score</div>
                 <div className="font-mono text-2xl text-[var(--pg-accent-gold)]">{score}</div>
               </div>
-              <div className="bg-black/50 backdrop-blur px-4 py-2 rounded-lg text-center">
+              <div className="pg-overlay-panel px-4 py-2 rounded-lg text-center">
                 <div className="text-xs text-[var(--pg-text-muted)]">Time</div>
                 <div className="font-mono text-2xl text-white">{timeRemaining}</div>
               </div>
-              <div className="bg-black/50 backdrop-blur px-4 py-2 rounded-lg text-right">
+              <div className="pg-overlay-panel px-4 py-2 rounded-lg text-right">
                 <div className="text-xs text-[var(--pg-text-muted)]">Accuracy</div>
                 <div className="font-mono text-2xl text-[var(--pg-game-success)]">{accuracy}%</div>
+                <div className="mt-1 text-[10px] text-[var(--pg-text-muted)]">
+                  {misses} miss{misses === 1 ? '' : 'es'}
+                </div>
               </div>
             </div>
 
-            {/* Instructions (shown briefly) */}
+            {/* Re-lock prompt */}
             {showInstructions && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center pointer-events-none"
+                className="absolute inset-x-0 bottom-8 flex justify-center px-6"
               >
-                <div className="bg-black/70 backdrop-blur px-6 py-3 rounded-xl">
-                  <p className="text-white">Click anywhere to lock mouse and start aiming</p>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => document.body.requestPointerLock?.()}
+                  className="pg-overlay-panel-strong rounded-xl px-6 py-3 text-center text-white pointer-events-auto"
+                >
+                  <p className="font-medium">
+                    {hits + misses === 0 ? 'Click to lock mouse and start aiming' : 'Click to re-lock mouse and continue'}
+                  </p>
+                  <p className="mt-1 text-xs text-white/70">ESC releases the cursor</p>
+                </button>
               </motion.div>
             )}
           </div>

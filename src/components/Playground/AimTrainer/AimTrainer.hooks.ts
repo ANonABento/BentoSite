@@ -16,6 +16,17 @@ function randomInRange(min: number, max: number): number {
   return Math.random() * (max - min) + min;
 }
 
+function randomTrackingVelocity(): [number, number, number] {
+  const horizontalDirection = Math.random() > 0.5 ? 1 : -1;
+  const verticalDirection = Math.random() > 0.5 ? 1 : -1;
+
+  return [
+    randomInRange(0.04, 0.08) * horizontalDirection,
+    randomInRange(0.02, 0.05) * verticalDirection,
+    randomInRange(-0.015, 0.015),
+  ];
+}
+
 function generateTarget(mode: GameMode, size: number): Target {
   // Generate position based on mode
   let x: number, y: number, z: number;
@@ -50,6 +61,7 @@ function generateTarget(mode: GameMode, size: number): Target {
     size: TARGET_SIZE_BASE * size,
     active: true,
     spawnTime: Date.now(),
+    velocity: mode === 'tracking' ? randomTrackingVelocity() : undefined,
   };
 }
 
@@ -77,6 +89,42 @@ export function useAimTrainer() {
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const spawnTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const updateTargetPosition = useCallback((target: Target, deltaMs: number): Target => {
+    if (!target.velocity) return target;
+
+    const [x, y, z] = target.position;
+    let [vx, vy, vz] = target.velocity;
+    let nextX = x + vx * (deltaMs / 100);
+    let nextY = y + vy * (deltaMs / 100);
+    let nextZ = z + vz * (deltaMs / 100);
+    const xLimit = ARENA.width / 3;
+    const yMin = -ARENA.height / 4;
+    const yMax = ARENA.height / 3;
+    const zMin = -ARENA.depth / 2;
+    const zMax = -ARENA.depth / 4;
+
+    if (nextX < -xLimit || nextX > xLimit) {
+      vx *= -1;
+      nextX = Math.max(Math.min(nextX, xLimit), -xLimit);
+    }
+
+    if (nextY < yMin || nextY > yMax) {
+      vy *= -1;
+      nextY = Math.max(Math.min(nextY, yMax), yMin);
+    }
+
+    if (nextZ < zMin || nextZ > zMax) {
+      vz *= -1;
+      nextZ = Math.max(Math.min(nextZ, zMax), zMin);
+    }
+
+    return {
+      ...target,
+      position: [nextX, nextY, nextZ],
+      velocity: [vx, vy, vz],
+    };
+  }, []);
 
   // Spawn targets based on mode
   const spawnTargets = useCallback(() => {
@@ -169,13 +217,40 @@ export function useAimTrainer() {
       setState((s) => {
         if (s.status !== 'playing' || !s.startTime) return s;
 
-        const elapsed = Math.floor((Date.now() - s.startTime) / 1000);
+        const now = Date.now();
+        const elapsed = Math.floor((now - s.startTime) / 1000);
+        const modeSettings = MODE_SETTINGS[settings.mode];
+        let expiredTargetCount = 0;
+
+        const targets = s.targets
+          .map((target) => settings.mode === 'tracking'
+            ? updateTargetPosition(target, 100)
+            : target)
+          .filter((target) => {
+            if (modeSettings.targetLifetime === Infinity) return target.active;
+            const isExpired = now - target.spawnTime >= modeSettings.targetLifetime;
+
+            if (target.active && isExpired) {
+              expiredTargetCount += 1;
+              return false;
+            }
+
+            return target.active;
+          });
+
+        const nextState = {
+          ...s,
+          targets,
+          elapsedTime: Math.min(elapsed, settings.duration),
+          misses: s.misses + expiredTargetCount,
+          totalShots: s.totalShots + expiredTargetCount,
+        };
 
         if (elapsed >= settings.duration) {
-          return { ...s, status: 'finished', elapsedTime: settings.duration };
+          return { ...nextState, status: 'finished' as const };
         }
 
-        return { ...s, elapsedTime: elapsed };
+        return nextState;
       });
     }, 100);
 
@@ -189,7 +264,7 @@ export function useAimTrainer() {
       if (timerRef.current) clearInterval(timerRef.current);
       if (spawnTimerRef.current) clearInterval(spawnTimerRef.current);
     };
-  }, [state.status, settings.duration, settings.mode, spawnTargets]);
+  }, [state.status, settings.duration, settings.mode, spawnTargets, updateTargetPosition]);
 
   // Reset game
   const resetGame = useCallback(() => {

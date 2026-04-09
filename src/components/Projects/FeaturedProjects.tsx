@@ -1,231 +1,321 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { m, AnimatePresence } from 'framer-motion';
+import { useMemo, useState } from 'react';
+import Image from 'next/image';
+import { m } from 'framer-motion';
 import { sectionItem, staggerContainer, staggerItem } from '@/lib/animations';
-import { PORTFOLIO_DATA, type PortfolioProject } from '@/lib/portfolio-context';
+import {
+  formatProjectDate,
+  getFeaturedProjects,
+  getProjectMediaTypes,
+  getProjectThumbnail,
+  type Project,
+} from '@/lib/projects-data';
+import { PROJECT_CATEGORY_THEMES, PROJECT_STATUS_COPY } from './project-theme';
 
-const allFeaturedProjects = PORTFOLIO_DATA.projects.filter(p => p.featured);
-
-// Get unique technologies from all featured projects
-const allTechnologies = Array.from(
-  new Set(allFeaturedProjects.flatMap(p => p.technologies))
+const FEATURED_PROJECTS = getFeaturedProjects();
+const ALL_TECHNOLOGIES = Array.from(
+  new Set(FEATURED_PROJECTS.flatMap((project) => project.technologies))
 ).sort();
 
-// Category-based gradient colors
-const categoryGradients: Record<string, string> = {
-  'Robotics': 'linear-gradient(135deg, var(--purple-muted), var(--overlay-weak))',
-  'AI & Robotics': 'linear-gradient(135deg, var(--orange-muted), var(--purple-muted))',
-  'VR/AR': 'linear-gradient(135deg, var(--status-info-muted), var(--purple-muted))',
-  'Accessibility': 'linear-gradient(135deg, var(--status-info-muted), var(--overlay-weak))',
-  'Competition': 'linear-gradient(135deg, var(--status-warning-muted), var(--orange-muted))',
-  'Games': 'linear-gradient(135deg, var(--status-error-muted), var(--purple-muted))',
-};
-
-// Category icons
-const categoryIcons: Record<string, string> = {
-  'Robotics': '🦾',
-  'AI & Robotics': '🤖',
-  'VR/AR': '🥽',
-  'Accessibility': '♿',
-  'Competition': '🏆',
-  'Games': '🎮',
-};
-
-function ProjectCard({ project }: { project: PortfolioProject }) {
-  const gradient = categoryGradients[project.category] || 'linear-gradient(135deg, var(--glass-bg), var(--overlay-weak))';
-  const icon = categoryIcons[project.category] || '📦';
-
-  return (
-    <m.div
-      layout
-      variants={staggerItem}
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.3 }}
-      className="group"
-    >
-      <m.div
-        className="glass rounded-2xl overflow-hidden card-hover h-full flex flex-col"
-        whileHover={{ y: -8 }}
-        transition={{ type: 'spring', stiffness: 300 }}
-      >
-        {/* Project Header/Gradient */}
-        <div className="h-40 relative overflow-hidden">
-          <div className="absolute inset-0" style={{ backgroundImage: gradient }} />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <m.div
-              className="text-5xl opacity-30"
-              animate={{ rotate: [0, 5, -5, 0] }}
-              transition={{ duration: 6, repeat: Infinity }}
-            >
-              {icon}
-            </m.div>
-          </div>
-          {/* Category badge */}
-          <div className="absolute top-4 left-4">
-            <span className="px-3 py-1 text-xs font-medium bg-[var(--overlay-weak)] backdrop-blur-sm text-[var(--text-on-accent)] rounded-full">
-              {project.category}
-            </span>
-          </div>
-          {/* Hover overlay with GitHub link */}
-          <div className="absolute inset-0 bg-[var(--overlay)] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            {project.github && (
-              <a
-                href={project.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 bg-[var(--glass-bg)] hover:bg-[var(--glass-bg-strong)] backdrop-blur-sm rounded-lg text-[var(--text-on-accent)] text-sm transition-colors flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-                </svg>
-                View on GitHub
-              </a>
-            )}
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 flex-1 flex flex-col">
-          <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-2 group-hover:text-[var(--interactive)] transition-colors">
-            {project.name}
-          </h3>
-          <p className="text-[var(--text-secondary)] text-sm mb-4 flex-1 line-clamp-3">
-            {project.description}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {project.technologies.slice(0, 4).map((tech) => (
-              <span
-                key={tech}
-                className="px-2 py-1 text-xs bg-[var(--purple-muted)] text-[var(--purple)] rounded-md"
-              >
-                {tech}
-              </span>
-            ))}
-            {project.technologies.length > 4 && (
-              <span className="px-2 py-1 text-xs bg-[var(--glass-bg)] text-[var(--text-muted)] rounded-md">
-                +{project.technologies.length - 4}
-              </span>
-            )}
-          </div>
-        </div>
-      </m.div>
-    </m.div>
-  );
+interface FeaturedProjectsProps {
+  onViewAll?: () => void;
 }
 
-export function FeaturedProjects({ onViewAll }: { onViewAll?: () => void }) {
+export function FeaturedProjects({ onViewAll }: FeaturedProjectsProps) {
   const [selectedTech, setSelectedTech] = useState<string | null>(null);
 
-  // Filter projects based on selected technology
   const filteredProjects = useMemo(() => {
-    if (!selectedTech) return allFeaturedProjects;
-    return allFeaturedProjects.filter(p => p.technologies.includes(selectedTech));
+    if (!selectedTech) return FEATURED_PROJECTS;
+    return FEATURED_PROJECTS.filter((project) => project.technologies.includes(selectedTech));
   }, [selectedTech]);
 
-  // Get popular technologies (used in 2+ projects) for filter buttons
-  const popularTechnologies = useMemo(() => {
-    const techCounts = new Map<string, number>();
-    allFeaturedProjects.forEach(p => {
-      p.technologies.forEach(tech => {
-        techCounts.set(tech, (techCounts.get(tech) || 0) + 1);
+  const spotlight = filteredProjects[0];
+  const supportingProjects = filteredProjects.slice(1);
+  const visibleTechnologies = useMemo(() => {
+    const counts = new Map<string, number>();
+
+    FEATURED_PROJECTS.forEach((project) => {
+      project.technologies.forEach((technology) => {
+        counts.set(technology, (counts.get(technology) ?? 0) + 1);
       });
     });
-    return allTechnologies
-      .filter(tech => (techCounts.get(tech) || 0) >= 1)
-      .slice(0, 8); // Show up to 8 popular techs
+
+    return ALL_TECHNOLOGIES.filter((technology) => (counts.get(technology) ?? 0) >= 1).slice(0, 8);
   }, []);
 
   return (
     <section id="projects" className="py-16 md:py-24">
       <m.div
-        className="max-w-6xl mx-auto px-4 md:px-6"
+        className="mx-auto max-w-6xl px-4 md:px-6"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-100px' }}
         variants={staggerContainer}
       >
-        {/* Section Header */}
-        <m.div variants={sectionItem} className="mb-8 flex items-end justify-between">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
-              Featured Projects
-            </h2>
-            <div className="w-20 h-1 rounded-full" style={{ background: 'linear-gradient(to right, var(--purple), var(--orange))' }} />
-          </div>
-          {onViewAll && (
-            <button
-              onClick={onViewAll}
-              className="hidden md:flex items-center gap-2 text-[var(--interactive)] hover:text-[var(--interactive-hover)] transition-colors"
-            >
-              View All Projects
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          )}
-        </m.div>
-
-        {/* Technology Filter */}
-        <m.div variants={sectionItem} className="mb-8">
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setSelectedTech(null)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                selectedTech === null
-                  ? 'bg-[var(--interactive)] text-[var(--text-on-accent)] shadow-lg shadow-[0_0_20px_var(--purple-muted)]'
-                  : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--purple-muted)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              All
-            </button>
-            {popularTechnologies.map((tech) => (
-              <button
-                key={tech}
-                onClick={() => setSelectedTech(selectedTech === tech ? null : tech)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                  selectedTech === tech
-                  ? 'bg-[var(--interactive)] text-[var(--text-on-accent)] shadow-lg shadow-[0_0_20px_var(--purple-muted)]'
-                  : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--purple-muted)] hover:text-[var(--text-primary)]'
-                }`}
-              >
-                {tech}
-              </button>
-            ))}
-          </div>
-          {selectedTech && (
-            <p className="mt-3 text-sm text-[var(--text-muted)]">
-              Showing {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''} with {selectedTech}
+        <m.div variants={sectionItem} className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="mb-3 text-xs font-mono uppercase tracking-[0.32em] text-[var(--text-muted)]">
+              Projects
             </p>
-          )}
+            <h2 className="mb-4 text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
+              Robotics-first work, with the software and hardware depth to back it up.
+            </h2>
+            <p className="text-base leading-7 text-[var(--text-secondary)]">
+              The strongest work here is hands-on: robot perception pipelines, servo-heavy systems,
+              custom boards, and the interfaces needed to make them usable. The featured set below
+              is the fastest read on that range.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 text-left">
+            <SectionStat label="Featured" value={`${FEATURED_PROJECTS.length}`} />
+            <SectionStat
+              label="Disciplines"
+              value={`${new Set(FEATURED_PROJECTS.map((project) => project.category)).size}`}
+            />
+            <SectionStat label="Stacks" value={`${ALL_TECHNOLOGIES.length}`} />
+          </div>
         </m.div>
 
-        {/* Projects Grid */}
-        <m.div
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-          variants={staggerContainer}
-        >
-          <AnimatePresence mode="popLayout">
-            {filteredProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </AnimatePresence>
-        </m.div>
-
-        {/* Mobile View All */}
-        {onViewAll && (
-          <m.div variants={sectionItem} className="mt-8 text-center md:hidden">
-            <button
-              onClick={onViewAll}
-              className="px-6 py-3 bg-[var(--purple-muted)] hover:bg-[var(--purple)] hover:text-[var(--text-on-accent)] text-[var(--purple)] rounded-xl transition-colors"
+        <m.div variants={sectionItem} className="mb-8 flex flex-wrap gap-2">
+          <FilterChip
+            active={selectedTech === null}
+            onClick={() => setSelectedTech(null)}
+          >
+            All featured
+          </FilterChip>
+          {visibleTechnologies.map((technology) => (
+            <FilterChip
+              key={technology}
+              active={selectedTech === technology}
+              onClick={() => setSelectedTech(selectedTech === technology ? null : technology)}
             >
-              View All Projects
-            </button>
+              {technology}
+            </FilterChip>
+          ))}
+        </m.div>
+
+        {spotlight ? (
+          <m.div variants={staggerItem} className="mb-6">
+            <SpotlightProjectCard project={spotlight} onViewAll={onViewAll} />
           </m.div>
-        )}
+        ) : null}
+
+        <m.div className="grid gap-5 md:grid-cols-2" variants={staggerContainer}>
+          {supportingProjects.map((project) => (
+            <m.article
+              key={project.id}
+              variants={staggerItem}
+              className="rounded-3xl border border-[var(--border)] bg-[var(--glass-bg)] p-5"
+            >
+              <CompactProjectCard project={project} onViewAll={onViewAll} />
+            </m.article>
+          ))}
+        </m.div>
+
+        {selectedTech ? (
+          <m.p variants={sectionItem} className="mt-4 text-sm text-[var(--text-muted)]">
+            Showing {filteredProjects.length} featured project{filteredProjects.length === 1 ? '' : 's'} using {selectedTech}.
+          </m.p>
+        ) : null}
       </m.div>
     </section>
+  );
+}
+
+function SpotlightProjectCard({
+  project,
+  onViewAll,
+}: {
+  project: Project;
+  onViewAll?: () => void;
+}) {
+  const theme = PROJECT_CATEGORY_THEMES[project.category];
+  const status = PROJECT_STATUS_COPY[project.status];
+  const thumbnail = getProjectThumbnail(project);
+  const completionDate = formatProjectDate(project.dateCompleted);
+  const mediaTypes = getProjectMediaTypes(project);
+
+  return (
+    <div className="overflow-hidden rounded-[2rem] border border-[var(--border)] bg-[var(--glass-bg)] shadow-[0_24px_60px_rgba(0,0,0,0.24)]">
+      <div className="grid lg:grid-cols-[1.25fr_1fr]">
+        <div className="relative min-h-[320px] border-b border-[var(--border)] lg:border-b-0 lg:border-r">
+          {thumbnail ? (
+            <Image src={thumbnail} alt={project.name} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 60vw" />
+          ) : (
+            <div className="absolute inset-0" style={{ background: theme.gradient }}>
+              <div className="absolute bottom-8 left-8 text-7xl opacity-80">{theme.icon}</div>
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[rgba(5,6,18,0.94)] via-[rgba(5,6,18,0.24)] to-transparent" />
+          <div className="absolute inset-x-6 bottom-6">
+            <div className="mb-3 flex flex-wrap gap-2">
+              <span className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${status.className}`}>
+                {status.label}
+              </span>
+              <span className="project-overlay-chip rounded-full px-3 py-1 text-[10px] font-mono uppercase tracking-[0.18em]">
+                {project.category}
+              </span>
+              {completionDate ? (
+                <span className="project-overlay-chip rounded-full px-3 py-1 text-[10px] font-mono uppercase tracking-[0.18em]">
+                  {completionDate}
+                </span>
+              ) : null}
+            </div>
+            <h3 className="max-w-2xl text-3xl font-semibold text-white">{project.name}</h3>
+          </div>
+        </div>
+
+        <div className="flex flex-col p-6 md:p-8">
+          <p className="mb-5 text-base leading-7 text-[var(--text-secondary)]">
+            {project.description || project.shortDescription}
+          </p>
+
+          <div className="mb-6 grid grid-cols-3 gap-3">
+            <SectionStat label="Tech" value={`${project.technologies.length}`} />
+            <SectionStat label="Media" value={`${mediaTypes.length || 0}`} />
+            <SectionStat label="Links" value={`${[project.links.github, project.links.liveDemo, project.links.docs].filter(Boolean).length}`} />
+          </div>
+
+          <div className="mb-6 flex flex-wrap gap-2">
+            {project.technologies.slice(0, 6).map((technology) => (
+              <span
+                key={technology}
+                className="rounded-full border border-[var(--border)] bg-[var(--glass-bg)] px-3 py-1 text-sm text-[var(--text-secondary)]"
+              >
+                {technology}
+              </span>
+            ))}
+          </div>
+
+          <div className="mt-auto flex flex-wrap gap-3">
+            {onViewAll ? (
+              <button
+                type="button"
+                onClick={onViewAll}
+                className="rounded-full bg-[var(--interactive)] px-5 py-2.5 text-sm font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--interactive-hover)]"
+              >
+                Open archive
+              </button>
+            ) : null}
+            {project.links.liveDemo ? (
+              <a
+                href={project.links.liveDemo}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full bg-[var(--highlight)] px-5 py-2.5 text-sm font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--highlight-hover)]"
+              >
+                Live demo
+              </a>
+            ) : null}
+            {project.links.github ? (
+              <a
+                href={project.links.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border border-[var(--border)] px-5 py-2.5 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+              >
+                Source
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CompactProjectCard({
+  project,
+  onViewAll,
+}: {
+  project: Project;
+  onViewAll?: () => void;
+}) {
+  const completionDate = formatProjectDate(project.dateCompleted);
+  const mediaTypes = getProjectMediaTypes(project);
+  const theme = PROJECT_CATEGORY_THEMES[project.category];
+
+  return (
+    <div className="flex h-full flex-col">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <div>
+          <div className="mb-1 text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--text-muted)]">
+            {project.category}
+          </div>
+          <h3 className="text-xl font-semibold text-[var(--text-primary)]">{project.name}</h3>
+        </div>
+        <div
+          className="flex h-12 w-12 items-center justify-center rounded-2xl text-2xl"
+          style={{ background: theme.muted }}
+        >
+          {theme.icon}
+        </div>
+      </div>
+
+      <p className="mb-4 text-sm leading-6 text-[var(--text-secondary)]">{project.shortDescription}</p>
+
+      <div className="mb-4 flex flex-wrap gap-2">
+        {project.technologies.slice(0, 4).map((technology) => (
+          <span
+            key={technology}
+            className="rounded-full border border-[var(--border)] bg-[var(--glass-bg)] px-2.5 py-1 text-xs text-[var(--text-secondary)]"
+          >
+            {technology}
+          </span>
+        ))}
+      </div>
+
+      <div className="mt-auto flex items-center justify-between gap-4 border-t border-[var(--border)] pt-4">
+        <div className="text-xs text-[var(--text-muted)]">
+          {completionDate ?? project.status} · {mediaTypes.length || 0} media surface{mediaTypes.length === 1 ? '' : 's'}
+        </div>
+        {onViewAll ? (
+          <button
+            type="button"
+            onClick={onViewAll}
+            className="text-sm font-medium text-[var(--interactive)] transition-colors hover:text-[var(--interactive-hover)]"
+          >
+            Open archive
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function FilterChip({
+  active,
+  children,
+  onClick,
+}: {
+  active: boolean;
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+        active
+          ? 'bg-[var(--interactive)] text-[var(--text-on-accent)]'
+          : 'border border-[var(--border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function SectionStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--glass-bg)] px-4 py-3">
+      <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--text-muted)]">
+        {label}
+      </div>
+      <div className="mt-1 text-lg font-semibold text-[var(--text-primary)]">{value}</div>
+    </div>
   );
 }

@@ -5,7 +5,12 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { PROJECTS, getAllCategories, searchProjects } from '@/lib/projects-data';
+import {
+  PROJECTS,
+  getAllCategories,
+  getFeaturedProjects,
+  searchProjects,
+} from '@/lib/projects-data';
 import type { ProjectCategory, Project } from '@/lib/projects-data';
 import { ProjectCard } from './ProjectCard';
 import { staggerContainer, staggerItem, buttonTap } from '@/lib/animations';
@@ -24,6 +29,7 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ProjectCategory | 'All'>('All');
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const featuredCount = getFeaturedProjects().length;
 
   // Focus trap for accessibility
   const modalRef = useFocusTrap<HTMLDivElement>({
@@ -86,16 +92,21 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
             transition={{ duration: 0.2, ease: 'easeOut' }}
           >
             {/* Header */}
-            <div className="flex-shrink-0 px-6 py-4 border-b border-[var(--border)]">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h2 id="projects-modal-title" className="flex items-center gap-2 text-lg font-bold font-mono text-[var(--text-primary)]">
+            <div className="flex-shrink-0 border-b border-[var(--border)] px-6 py-5">
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <div className="max-w-2xl">
+                  <div className="mb-2 flex items-center gap-2 text-[var(--text-muted)]">
                     <BentoIcon size={18} />
-                    <span>file explorer</span>
+                    <span className="text-[11px] font-mono uppercase tracking-[0.24em]">
+                      Project archive
+                    </span>
+                  </div>
+                  <h2 id="projects-modal-title" className="mb-2 text-2xl font-semibold text-[var(--text-primary)]">
+                    Browse the full build archive.
                   </h2>
-                  <span className="text-[10px] font-mono text-[var(--text-muted)] pl-7">
-                    bentOS / usr / projects /
-                  </span>
+                  <p className="text-sm leading-6 text-[var(--text-secondary)]">
+                    Robotics systems, embedded hardware, VR prototypes, and software experiments all route through the same portfolio dataset now.
+                  </p>
                 </div>
                 <m.button
                   onClick={onClose}
@@ -107,6 +118,12 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </m.button>
+              </div>
+
+              <div className="mb-5 grid gap-3 sm:grid-cols-3">
+                <ArchiveStat label="Projects" value={`${PROJECTS.length}`} />
+                <ArchiveStat label="Featured" value={`${featuredCount}`} />
+                <ArchiveStat label="Categories" value={`${categories.length - 1}`} />
               </div>
 
               {/* Search and filters */}
@@ -141,7 +158,7 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
                       onClick={() => setSelectedCategory(category)}
                       whileTap={buttonTap}
                       className={`
-                        px-3 py-1.5 text-xs font-mono uppercase tracking-wider
+                        rounded-full px-3 py-1.5 text-xs font-mono uppercase tracking-wider
                         transition-all duration-150
                         focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50
                         ${selectedCategory === category
@@ -183,7 +200,7 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
                 </div>
               ) : (
                 <m.div
-                  className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}
+                  className={`grid gap-5 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'}`}
                   variants={staggerContainer}
                   initial="hidden"
                   animate="visible"
@@ -202,16 +219,27 @@ export function ProjectsModal({ isOpen, onClose, onSelectProject, isMobile = fal
             </div>
 
             {/* Footer with count */}
-            <div className="flex-shrink-0 px-6 py-3 border-t border-[var(--border)] bg-[var(--glass-bg)]">
+            <div className="flex-shrink-0 border-t border-[var(--border)] bg-[var(--glass-bg)] px-6 py-3">
               <p className="text-xs font-mono text-[var(--text-muted)]">
                 {filteredProjects.length} entries
-                {selectedCategory !== 'All' && <span> | filtered by: [{selectedCategory}]</span>}
-                {searchTerm && <span> | search: &quot;{searchTerm}&quot;</span>}
+                {selectedCategory !== 'All' && <span> · category [{selectedCategory}]</span>}
+                {searchTerm && <span> · search &quot;{searchTerm}&quot;</span>}
               </p>
             </div>
           </m.div>
         </m.div>
       )}
     </AnimatePresence>
+  );
+}
+
+function ArchiveStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--glass-bg)] px-4 py-3">
+      <div className="text-[10px] font-mono uppercase tracking-[0.16em] text-[var(--text-muted)]">
+        {label}
+      </div>
+      <div className="mt-1 text-lg font-semibold text-[var(--text-primary)]">{value}</div>
+    </div>
   );
 }

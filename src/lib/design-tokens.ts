@@ -240,8 +240,8 @@ export const breakpoints = {
  */
 export const classes = {
   // Glass morphism effect
-  glass: 'backdrop-blur-xl bg-white/5 border border-white/10',
-  glassStrong: 'backdrop-blur-2xl bg-white/10 border border-white/20',
+  glass: 'glass',
+  glassStrong: 'glass-strong',
 
   // Button base
   buttonBase:
@@ -253,19 +253,20 @@ export const classes = {
   buttonCTA:
     'bg-[var(--orange)] hover:bg-[var(--orange-hover)] active:bg-[var(--orange-active)] text-white hover:shadow-[0_0_20px_var(--orange-muted)]',
   buttonSecondary:
-    'backdrop-blur-xl bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white border border-white/10',
-  buttonGhost: 'text-gray-400 hover:text-white hover:bg-white/5',
+    'glass text-[var(--text-secondary)] hover:bg-[var(--glass-bg-strong)] hover:text-[var(--text-primary)] border border-[var(--border)]',
+  buttonGhost:
+    'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]',
   buttonDanger:
-    'bg-[var(--status-error)] hover:bg-red-500 active:bg-red-700 text-white',
+    'bg-[var(--status-error)] hover:opacity-90 active:opacity-80 text-[var(--text-on-accent)]',
 
   // Input
   input:
-    'backdrop-blur-xl bg-white/5 border border-white/10 rounded-sm px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--purple)]/50 focus:border-[var(--purple)]/50 transition-all duration-200',
+    'glass rounded-sm px-4 py-3 text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--purple)]/50 focus:border-[var(--purple)]/50 transition-all duration-200',
 
   // Card
-  card: 'backdrop-blur-xl rounded-2xl border border-white/10 bg-white/5',
+  card: 'glass rounded-2xl',
   cardInteractive:
-    'backdrop-blur-xl rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-200',
+    'glass rounded-2xl hover:bg-[var(--glass-bg-strong)] transition-all duration-200',
 
   // Text
   textPrimary: 'text-[var(--text-primary)]',

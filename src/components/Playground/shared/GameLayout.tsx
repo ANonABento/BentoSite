@@ -32,7 +32,7 @@ export function GameLayout({
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={springs.gentle}
-        className="sticky top-0 z-40 backdrop-blur-xl bg-[var(--pg-bg-surface)]/80 border-b border-white/[0.06]"
+        className="sticky top-0 z-40 backdrop-blur-xl bg-[color-mix(in_srgb,var(--pg-bg-surface)_80%,transparent)] border-b pg-border-subtle"
       >
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -43,7 +43,7 @@ export function GameLayout({
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
               <span className="text-sm font-medium hidden sm:inline">Back</span>
             </Link>
-            <div className="w-px h-5 bg-white/10" />
+            <div className="pg-divider" />
             <div className="flex items-center gap-3">
               <h1 className="text-base font-semibold text-[var(--pg-text-primary)] tracking-tight">
                 {title}

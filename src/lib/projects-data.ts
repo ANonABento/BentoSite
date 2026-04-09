@@ -39,6 +39,8 @@ const content = portfolioContent as { projects: Project[] };
 
 export const PROJECTS: Project[] = content.projects;
 
+export type ProjectMediaType = '3D' | 'Images' | 'PDF' | 'Website' | 'Video' | 'Game';
+
 // Helper functions
 export function getProjectsByCategory(category: ProjectCategory | 'All'): Project[] {
   if (category === 'All') return PROJECTS;
@@ -46,7 +48,9 @@ export function getProjectsByCategory(category: ProjectCategory | 'All'): Projec
 }
 
 export function getFeaturedProjects(): Project[] {
-  return PROJECTS.filter((p) => p.featured);
+  return PROJECTS
+    .filter((p) => p.featured)
+    .sort((left, right) => getProjectTimestamp(right) - getProjectTimestamp(left));
 }
 
 export function getProjectById(id: string): Project | undefined {
@@ -66,4 +70,60 @@ export function searchProjects(query: string, category: ProjectCategory | 'All')
       p.shortDescription.toLowerCase().includes(lowerQuery) ||
       p.technologies.some((t) => t.toLowerCase().includes(lowerQuery))
   );
+}
+
+export function getProjectThumbnail(project: Project): string | undefined {
+  return project.thumbnail ?? project.media?.images?.[0];
+}
+
+export function getProjectMediaTypes(project: Project): ProjectMediaType[] {
+  const mediaTypes: ProjectMediaType[] = [];
+
+  if (project.links.modelPath) mediaTypes.push('3D');
+  if (project.media?.images?.length) mediaTypes.push('Images');
+  if (project.media?.pdf) mediaTypes.push('PDF');
+  if (project.media?.website) mediaTypes.push('Website');
+  if (project.media?.video) mediaTypes.push('Video');
+  if (project.media?.game) mediaTypes.push('Game');
+
+  return mediaTypes;
+}
+
+export function hasProjectViewerMedia(project: Project): boolean {
+  return getProjectMediaTypes(project).length > 0;
+}
+
+export function formatProjectDate(dateCompleted?: string): string | null {
+  if (!dateCompleted) return null;
+
+  const [yearString, monthString] = dateCompleted.split('-');
+  const year = Number(yearString);
+  const month = monthString ? Number(monthString) : null;
+
+  if (!Number.isFinite(year)) return null;
+  if (!month || !Number.isFinite(month)) return `${year}`;
+
+  return new Intl.DateTimeFormat('en', {
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(Date.UTC(year, month - 1, 1)));
+}
+
+export function getProjectTimelineLabel(project: Project): string {
+  return formatProjectDate(project.dateCompleted) ?? project.status;
+}
+
+export function getProjectExternalLinkCount(project: Project): number {
+  return [project.links.github, project.links.liveDemo, project.links.docs].filter(Boolean).length;
+}
+
+function getProjectTimestamp(project: Project): number {
+  if (!project.dateCompleted) return 0;
+
+  const [yearString, monthString = '1'] = project.dateCompleted.split('-');
+  const year = Number(yearString);
+  const month = Number(monthString);
+
+  if (!Number.isFinite(year) || !Number.isFinite(month)) return 0;
+  return Date.UTC(year, month - 1, 1);
 }

@@ -76,20 +76,31 @@ export function ReactionGame() {
   // Phase-based styles
   const phaseStyles = {
     waiting: {
-      bg: 'bg-gradient-to-br from-red-500 to-red-700',
-      glow: 'shadow-[0_0_60px_rgba(239,68,68,0.3)]',
+      style: {
+        background:
+          'linear-gradient(135deg, var(--pg-game-error), color-mix(in srgb, var(--pg-game-error) 60%, black))',
+        boxShadow: '0 0 60px var(--pg-game-error)',
+      },
     },
     ready: {
-      bg: 'bg-gradient-to-br from-green-400 to-green-600',
-      glow: 'shadow-[0_0_80px_rgba(74,222,128,0.4)]',
+      style: {
+        background:
+          'linear-gradient(135deg, var(--pg-game-success), color-mix(in srgb, var(--pg-game-success) 60%, black))',
+        boxShadow: '0 0 80px var(--pg-game-success)',
+      },
     },
     tooEarly: {
-      bg: 'bg-gradient-to-br from-amber-400 to-amber-600',
-      glow: 'shadow-[0_0_60px_rgba(251,191,36,0.3)]',
+      style: {
+        background:
+          'linear-gradient(135deg, var(--pg-accent-gold), color-mix(in srgb, var(--pg-accent-gold) 65%, black))',
+        boxShadow: '0 0 60px var(--pg-accent-gold)',
+      },
     },
     clicked: {
-      bg: 'bg-gradient-to-br from-[var(--purple)] to-[var(--purple-active)]',
-      glow: 'shadow-[0_0_60px_rgba(167,139,250,0.3)]',
+      style: {
+        background: 'linear-gradient(135deg, var(--purple), var(--purple-active))',
+        boxShadow: '0 0 60px var(--purple-muted)',
+      },
     },
   };
 
@@ -153,7 +164,7 @@ export function ReactionGame() {
               {/* Best score if exists */}
               {scores?.best && (
                 <motion.div
-                  className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--pg-bg-elevated)] border border-white/[0.06]"
+                  className="pg-surface-panel mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.2 }}
@@ -193,10 +204,9 @@ export function ReactionGame() {
                   flex flex-col items-center justify-center
                   cursor-pointer select-none
                   transition-all duration-150
-                  ${currentPhaseStyle.bg}
-                  ${currentPhaseStyle.glow}
                   relative overflow-hidden
                 `}
+                style={currentPhaseStyle.style}
                 whileTap={{ scale: 0.98 }}
               >
                 {/* Subtle grid pattern */}
@@ -216,7 +226,7 @@ export function ReactionGame() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                     >
-                      <span className="text-3xl sm:text-4xl font-bold text-white/90">
+                      <span className="text-3xl sm:text-4xl font-bold text-[var(--pg-text-primary)]">
                         Wait for green...
                       </span>
                     </motion.div>
@@ -228,7 +238,7 @@ export function ReactionGame() {
                       animate={{ scale: 1, opacity: 1 }}
                       transition={springs.bouncy}
                     >
-                      <span className="text-5xl sm:text-6xl font-bold text-white">
+                      <span className="text-5xl sm:text-6xl font-bold text-[var(--pg-text-primary)]">
                         CLICK!
                       </span>
                     </motion.div>
@@ -240,10 +250,10 @@ export function ReactionGame() {
                       animate={{ x: [0, -5, 5, -5, 5, 0] }}
                       transition={{ duration: 0.4 }}
                     >
-                      <span className="text-2xl sm:text-3xl font-bold text-white/90">
+                      <span className="text-2xl sm:text-3xl font-bold text-[var(--pg-text-primary)]">
                         Too early!
                       </span>
-                      <span className="block mt-2 text-white/70 text-lg">
+                      <span className="block mt-2 text-[var(--pg-text-secondary)] text-lg">
                         Click to continue
                       </span>
                     </motion.div>
@@ -256,13 +266,13 @@ export function ReactionGame() {
                       animate="visible"
                       className="text-center"
                     >
-                      <span className="text-6xl sm:text-7xl font-bold text-white font-mono">
+                      <span className="text-6xl sm:text-7xl font-bold text-[var(--pg-text-primary)] font-mono">
                         {lastRound.reactionTime}
                       </span>
-                      <span className="text-2xl sm:text-3xl font-bold text-white/80 ml-1">
+                      <span className="text-2xl sm:text-3xl font-bold text-[var(--pg-text-secondary)] ml-1">
                         ms
                       </span>
-                      <span className="block mt-2 text-white/60 text-lg capitalize">
+                      <span className="block mt-2 text-[var(--pg-text-muted)] text-lg capitalize">
                         {getReactionRating(lastRound.reactionTime)}
                       </span>
                     </motion.div>
@@ -277,10 +287,10 @@ export function ReactionGame() {
                   const isComplete = roundData !== undefined;
                   const isCurrent = i === round - 1 && !isComplete;
 
-                  let bgColor = 'bg-white/10';
+                  let bgColor = 'bg-[var(--pg-bg-elevated)]';
                   if (isComplete) {
                     if (roundData.reactionTime < 0) {
-                      bgColor = 'bg-amber-400';
+                      bgColor = 'bg-[var(--pg-accent-gold)]';
                     } else if (roundData.reactionTime < 250) {
                       bgColor = 'bg-[var(--pg-game-success)]';
                     } else if (roundData.reactionTime < 350) {
@@ -296,7 +306,7 @@ export function ReactionGame() {
                       className={`
                         w-3 h-3 rounded-full transition-all duration-200
                         ${bgColor}
-                        ${isCurrent ? 'ring-2 ring-white/40 ring-offset-2 ring-offset-[var(--pg-bg-deep)]' : ''}
+                        ${isCurrent ? 'ring-2 ring-[var(--pg-text-muted)] ring-offset-2 ring-offset-[var(--pg-bg-deep)]' : ''}
                       `}
                       initial={isComplete ? { scale: 0 } : false}
                       animate={isComplete ? { scale: 1 } : false}

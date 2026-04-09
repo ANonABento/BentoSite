@@ -46,7 +46,7 @@ export function Cell({
           }
           ${cell.isFlagged
             ? 'bg-[var(--pg-accent-gold)]/20 border-[var(--pg-accent-gold)]/40'
-            : 'bg-[var(--pg-bg-elevated)] border-white/[0.08] hover:border-white/[0.15]'
+            : 'bg-[var(--pg-bg-elevated)] pg-border-soft pg-hover-border-strong'
           }
         `}
         style={{ width: size, height: size }}

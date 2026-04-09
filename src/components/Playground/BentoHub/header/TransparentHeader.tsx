@@ -48,15 +48,21 @@ export function TransparentHeader() {
             >
               <Sparkles className="w-4 h-4 text-[var(--pg-accent-gold)]" />
             </motion.div>
-            <h1 className="text-lg font-semibold tracking-tight">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--pg-accent-gold)] via-[var(--pg-text-primary)] to-[var(--purple)]">
-                Fidget
-              </span>
-            </h1>
+            <div className="leading-none">
+              <h1 className="text-lg font-semibold tracking-tight">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--pg-accent-gold)] via-[var(--pg-text-primary)] to-[var(--purple)]">
+                  Playground
+                </span>
+              </h1>
+              <p className="mt-1 text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--pg-text-muted)]">
+                arcade + interaction lab
+              </p>
+            </div>
           </div>
 
-          {/* Spacer for balance */}
-          <div className="w-20" />
+          <div className="pg-chip rounded-full px-3 py-1 text-[11px] font-mono uppercase tracking-[0.18em] text-[var(--pg-text-muted)]">
+            Local scores
+          </div>
         </div>
       </div>
     </motion.header>

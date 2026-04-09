@@ -1,5 +1,5 @@
 /**
- * Bento Hub Types - Physics-based bento grid with collision
+ * Playground hub types - physics-based bento grid with collision
  */
 
 import { ReactNode } from 'react';
@@ -8,10 +8,10 @@ import { ReactNode } from 'react';
 export type CardSize = '1x1' | '2x1' | '1x2' | '2x2';
 
 // Card content types
-export type CardContentType = 'game' | 'stat';
+export type CardContentType = 'game' | 'stat' | 'void';
 
 // Card color accents
-export type CardColor = 'gold' | 'purple' | 'cyan';
+export type CardColor = 'gold' | 'purple' | 'cyan' | 'void';
 
 export interface BentoCardConfig {
   id: string;
@@ -42,6 +42,27 @@ export interface PhysicsConfig {
     damping: number;
   };
   centerPullRadius: number;
+}
+
+export interface ParticleConfig {
+  count: number;
+  countMobile: number;
+  size: number;
+  sizeVariance: number;
+  color: string;
+  colorSecondary: string;
+  spiralSpeed: number;
+  inwardSpeed: number;
+  respawnRadius: number;
+  eventHorizonRadius: number;
+  opacity: number;
+}
+
+export interface VoidConfig {
+  glowColor: string;
+  glowIntensity: number;
+  coreColor: string;
+  pulseSpeed: number;
 }
 
 // Physics state for collision context

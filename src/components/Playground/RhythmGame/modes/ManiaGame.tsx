@@ -107,7 +107,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
             </span>
             {combo > 0 && (
               <>
-                <div className="w-px h-5 bg-white/10" />
+                <div className="pg-divider" />
                 <motion.span
                   key={combo}
                   initial={{ scale: 1.2 }}
@@ -177,7 +177,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
                       ${
                         selectedMap.id === map.id
                           ? 'bg-[var(--purple)]/20 border-[var(--purple)]/40 shadow-lg shadow-[var(--purple)]/10'
-                          : 'bg-[var(--pg-bg-elevated)] hover:bg-[var(--pg-bg-hover)] border-white/[0.06]'
+                          : 'pg-surface-panel hover:bg-[var(--pg-bg-hover)]'
                       }
                       border
                     `}
@@ -190,7 +190,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
                           <span className="font-semibold text-[var(--pg-text-primary)]">
                             {map.name}
                           </span>
-                          <span className="px-1.5 py-0.5 rounded bg-white/10 text-xs font-mono">
+                          <span className="px-1.5 py-0.5 rounded bg-[rgba(255,255,255,0.1)] text-xs font-mono">
                             {map.keyCount}K
                           </span>
                         </div>
@@ -205,7 +205,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
                       </div>
                     </div>
                     {scores?.[map.id] && (
-                      <div className="mt-2 pt-2 border-t border-white/[0.06] flex gap-4 text-xs">
+                      <div className="pg-border-subtle mt-2 flex gap-4 border-t pt-2 text-xs">
                         <span className="text-[var(--pg-text-muted)]">
                           Best: <span className="text-[var(--pg-accent-gold)] font-mono">{formatNumber(scores[map.id].score)}</span>
                         </span>
@@ -240,7 +240,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
             >
               {/* Progress bar */}
               <div className="mb-4">
-                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div className="pg-progress-track h-1.5 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-[var(--purple)] to-[var(--pg-accent-gold)]"
                     style={{ width: `${progress * 100}%` }}
@@ -252,7 +252,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
               {/* Mania playfield */}
               <div className="flex justify-center">
                 <div
-                  className="relative rounded-xl overflow-hidden border border-white/[0.06] bg-black/50"
+                  className="pg-border-subtle relative rounded-xl overflow-hidden border bg-black/50"
                   style={{
                     width: totalWidth + 2,
                     height: 500,

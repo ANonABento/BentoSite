@@ -3,7 +3,7 @@ import { siteConfig } from '@/lib/site-config';
 
 export const metadata: Metadata = {
   title: `Playground | ${siteConfig.name}`,
-  description: `${siteConfig.name}'s interactive games and tests, including reaction time, typing speed, and rhythm challenges.`,
+  description: `Interactive game lab from ${siteConfig.name} with reaction, typing, rhythm, sorting, and arcade experiments.`,
 };
 
 export default function PlaygroundLayout({

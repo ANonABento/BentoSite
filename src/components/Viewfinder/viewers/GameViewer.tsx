@@ -24,8 +24,7 @@ function canEmbedGame(game: NonNullable<GameViewerProps['game']>): boolean {
 
 export function GameViewer({ game }: GameViewerProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [loadedGameKey, setLoadedGameKey] = useState<string | null>(null);
-  const gameKey = game ? `${game.type}:${game.url}` : null;
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
 
   const embedUrl = useMemo(() => {
     if (!game) return null;
@@ -35,6 +34,8 @@ export function GameViewer({ game }: GameViewerProps) {
     // Unity WebGL - direct URL
     return game.url;
   }, [game]);
+  const loadKey = game ? `${game.type}:${game.url}` : null;
+  const isLoading = Boolean(loadKey && embedUrl && loadedKey !== loadKey);
 
   if (!game || !embedUrl) {
     return (
@@ -72,10 +73,9 @@ export function GameViewer({ game }: GameViewerProps) {
   const containerClass = isFullscreen
     ? 'fixed inset-0 z-50 bg-[var(--surface-deep)]'
     : 'h-full flex flex-col bg-[var(--surface-deep)]';
-  const isLoading = gameKey !== null && loadedGameKey !== gameKey;
 
   return (
-    <div key={gameKey ?? 'no-game'} className={containerClass}>
+    <div className={containerClass}>
       {/* Controls */}
       <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-[var(--overlay-strong)]">
         <div className="flex items-center gap-2">
@@ -127,11 +127,12 @@ export function GameViewer({ game }: GameViewerProps) {
         )}
 
         <iframe
+          key={loadKey ?? 'game-viewer'}
           src={embedUrl}
           className="w-full h-full border-0"
           sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-pointer-lock"
           allow="autoplay; fullscreen; gamepad"
-          onLoad={() => setLoadedGameKey(gameKey)}
+          onLoad={() => setLoadedKey(loadKey)}
           title="Game"
         />
       </div>

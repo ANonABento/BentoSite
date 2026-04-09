@@ -26,12 +26,11 @@ export function GameCard({ game, bestScore }: GameCardProps) {
         <div
           className={`
             relative overflow-hidden h-full
-            bg-[var(--pg-bg-elevated)]
+            pg-surface-glass
+            pg-hover-border-medium
             rounded-2xl
-            border border-white/[0.06]
             p-6
             transition-all duration-300
-            group-hover:border-white/[0.12]
             group-hover:bg-[var(--pg-bg-hover)]
           `}
         >

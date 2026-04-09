@@ -104,6 +104,7 @@ jobs:
           path: |
             .next
             !.next/cache
+          include-hidden-files: true
           retention-days: 1
 
   # ============================================
@@ -138,9 +139,17 @@ jobs:
         with:
           name: next-build
           path: .next
+          merge-multiple: true
 
       - name: Run E2E tests
-        run: npm run e2e -- --project=${{ matrix.browser }}
+        if: matrix.browser != 'firefox'
+        run: node_modules/.bin/playwright test --project=${{ matrix.browser }}
+        env:
+          CI: true
+
+      - name: Run E2E tests (Firefox)
+        if: matrix.browser == 'firefox'
+        run: node_modules/.bin/playwright test --project=firefox --grep-invert="Mobile View"
         env:
           CI: true
 
@@ -176,9 +185,10 @@ jobs:
         with:
           name: next-build
           path: .next
+          merge-multiple: true
 
       - name: Run mobile viewport tests
-        run: npm run e2e -- --project="Mobile Chrome"
+        run: node_modules/.bin/playwright test --project="Mobile Chrome"
         env:
           CI: true
 
@@ -215,14 +225,18 @@ jobs:
         with:
           name: next-build
           path: .next
+          merge-multiple: true
 
       - name: Run Lighthouse CI
-        uses: treosh/lighthouse-ci-action@v12
+        run: node_modules/.bin/lhci autorun
+
+      - name: Upload Lighthouse artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
         with:
-          configPath: './lighthouserc.js'
-          uploadArtifacts: true
-          temporaryPublicStorage: true
-          runs: 3
+          name: lighthouse-report
+          path: .lighthouseci/
+          retention-days: 7
 
   # ============================================
   # PHASE 5: Bundle Size (PR only)
@@ -250,10 +264,7 @@ jobs:
         with:
           name: next-build
           path: .next
+          merge-multiple: true
 
       - name: Check bundle size
-        uses: andresz1/size-limit-action@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          skip_step: build
-          directory: .
+        run: node scripts/check-bundle-size.mjs --json

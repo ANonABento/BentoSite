@@ -146,7 +146,7 @@ export function SortingVisualizer() {
               value={arraySize}
               onChange={(e) => setArraySize(parseInt(e.target.value))}
               disabled={isRunning || isPaused}
-              className="w-20 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer disabled:opacity-50 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[var(--purple)] [&::-webkit-slider-thumb]:rounded-full"
+              className="pg-range pg-range-purple w-20 disabled:opacity-50"
             />
             <span className="text-xs font-mono text-[var(--pg-text-secondary)] w-8">{arraySize}</span>
           </div>
@@ -160,7 +160,7 @@ export function SortingVisualizer() {
               max={MAX_SPEED}
               value={speed}
               onChange={(e) => setSpeed(parseInt(e.target.value))}
-              className="w-20 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[var(--pg-accent-gold)] [&::-webkit-slider-thumb]:rounded-full"
+              className="pg-range w-20"
             />
           </div>
         </div>
@@ -223,7 +223,7 @@ export function SortingVisualizer() {
 
         {/* Visualization */}
         <div
-          className="flex items-end justify-center gap-px p-4 rounded-xl bg-[var(--pg-bg-surface)] border border-white/[0.06]"
+          className="pg-surface-frame flex items-end justify-center gap-px rounded-xl p-4"
           style={{ minHeight: isMobile ? 200 : 300 }}
         >
           {array.map((value, index) => (
@@ -270,12 +270,12 @@ export function SortingVisualizer() {
             animate={{ opacity: 1, y: 0 }}
             className="mt-6 text-center"
           >
-            <div className="inline-flex items-center gap-6 px-6 py-3 rounded-xl bg-[var(--pg-bg-elevated)] border border-white/[0.06]">
+            <div className="pg-surface-panel inline-flex items-center gap-6 rounded-xl px-6 py-3">
               <div>
                 <div className="text-xs text-[var(--pg-text-muted)]">Comparisons</div>
                 <div className="font-mono text-lg text-[var(--pg-accent-gold)]">{comparisons}</div>
               </div>
-              <div className="w-px h-8 bg-white/10" />
+              <div className="pg-divider-tall" />
               <div>
                 <div className="text-xs text-[var(--pg-text-muted)]">Swaps</div>
                 <div className="font-mono text-lg text-[var(--pg-game-error)]">{swaps}</div>

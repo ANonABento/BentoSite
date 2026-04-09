@@ -53,9 +53,9 @@ export function DashboardLayout({
     addAssistant: (content: string) => void;
     clear: () => void;
   } | null>(null);
-  const pendingChatMessageRef = useRef<string | null>(null);
   const isMountedRef = useRef(true);
   const mobileChatRef = useRef<HTMLDivElement>(null);
+  const pendingChatMessageRef = useRef<string | null>(null);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -96,13 +96,20 @@ export function DashboardLayout({
     pendingChatMessageRef.current = message;
   }, [chatFns, activeSection]);
 
-  useEffect(() => {
-    const pendingChatMessage = pendingChatMessageRef.current;
-    if (!pendingChatMessage || !chatFns || !isMountedRef.current) return;
+  const handleChatReady = useCallback((fns: {
+    send: (content: string) => void;
+    addAssistant: (content: string) => void;
+    clear: () => void;
+  }) => {
+    setChatFns(fns);
 
-    chatFns.send(pendingChatMessage);
+    if (!pendingChatMessageRef.current || !isMountedRef.current) {
+      return;
+    }
+
+    fns.send(pendingChatMessageRef.current);
     pendingChatMessageRef.current = null;
-  }, [chatFns]);
+  }, []);
 
   return (
     <>
@@ -168,7 +175,7 @@ export function DashboardLayout({
                 </div>
                 <TerminalPanel
                   Chatbot={Chatbot}
-                  onChatReady={setChatFns}
+                  onChatReady={handleChatReady}
                   onClearChat={handleClearChat}
                   onViewResume={handleViewResume}
                   onSeeProjects={handleSeeProjects}
@@ -192,7 +199,7 @@ export function DashboardLayout({
             {/* Terminal */}
             <TerminalPanel
               Chatbot={Chatbot}
-              onChatReady={setChatFns}
+              onChatReady={handleChatReady}
               onClearChat={handleClearChat}
               onViewResume={handleViewResume}
               onSeeProjects={handleSeeProjects}

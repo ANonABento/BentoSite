@@ -1,23 +1,19 @@
 'use client';
 
-import { useState, useEffect, useSyncExternalStore } from 'react';
 import Link from 'next/link';
-import { useTheme } from '@/lib/theme-context';
 import { useToast } from '@/components/ui/Toast';
 import { useClipboard } from '@/lib/clipboard';
 import { analytics } from '@/lib/analytics';
 import { BentoIcon } from '@/components/BentoOS/BentoIcon';
 import {
-  SunIcon,
-  MoonIcon,
+  CheckIcon,
   GitHubIcon,
+  GridIcon,
   LinkedInIcon,
   MailIcon,
-  CheckIcon,
-  DocumentDownloadIcon,
   PlayCircleIcon,
-  GridIcon,
 } from '@/components/ui/Icons';
+import { HeaderSocialLink, ResumeButton, TaskbarClock, ThemeToggle } from './Header.parts';
 
 interface HeaderProps {
   name?: string;
@@ -30,85 +26,47 @@ interface HeaderProps {
   onProjectsClick?: () => void;
 }
 
-// SSR-safe mounted check using useSyncExternalStore
-const emptySubscribe = () => () => {};
-function useHasMounted() {
-  return useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false
-  );
-}
-
-// Theme toggle button component
-function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme();
-  const mounted = useHasMounted();
-
-  // Render a placeholder with consistent dimensions during SSR
-  if (!mounted) {
-    return (
-      <button
-        className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg transition-all duration-200 focus-ring"
-        aria-label="Toggle theme"
-      >
-        <SunIcon size={20} />
-      </button>
-    );
-  }
-
+function SocialActions({
+  copiedEmail,
+  handleEmailClick,
+  socialLinks,
+}: {
+  copiedEmail: boolean;
+  handleEmailClick: (event: React.MouseEvent) => Promise<void>;
+  socialLinks: HeaderSocialLink[];
+}) {
   return (
-    <button
-      onClick={toggleTheme}
-      className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg transition-all duration-200 focus-ring"
-      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-    >
-      {theme === 'dark' ? <SunIcon size={20} /> : <MoonIcon size={20} />}
-    </button>
-  );
-}
-
-// Resume download button component
-function ResumeButton({ resumeUrl, className = '' }: { resumeUrl: string; className?: string }) {
-  return (
-    <a
-      href={resumeUrl}
-      download
-      onClick={() => analytics.resumeDownloaded()}
-      className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm
-        bg-[var(--orange)] hover:bg-[var(--orange-hover)] active:bg-[var(--orange-active)] text-[var(--text-on-accent)]
-        hover:shadow-[0_0_20px_var(--orange-muted)] hover:scale-105
-        border border-[var(--orange-hover)]/20
-        transition-all duration-300 focus-ring ${className}`}
-    >
-      <DocumentDownloadIcon size={16} />
-      <span className="hidden sm:inline">Resume</span>
-    </a>
-  );
-}
-
-// Clock component for taskbar
-function TaskbarClock() {
-  const [time, setTime] = useState('');
-  const mounted = useHasMounted();
-
-  useEffect(() => {
-    if (!mounted) return;
-    const update = () => {
-      const now = new Date();
-      setTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
-    };
-    update();
-    const interval = setInterval(update, 60000);
-    return () => clearInterval(interval);
-  }, [mounted]);
-
-  if (!mounted || !time) return null;
-
-  return (
-    <span className="text-xs font-mono text-[var(--text-muted)] tabular-nums pl-2 hidden sm:inline">
-      {time}
-    </span>
+    <>
+      {socialLinks.map((link) =>
+        link.id === 'email' ? (
+          <button
+            key={link.id}
+            onClick={handleEmailClick}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 transform border focus-ring ${
+              copiedEmail
+                ? 'bg-[var(--status-success)] text-[var(--text-on-accent)] scale-105 shadow-[0_0_20px_var(--status-success-muted)] border-[var(--status-success)]'
+                : 'glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--interactive)] hover:scale-105 hover:shadow-[0_0_20px_var(--purple-muted)] hover:border-[var(--purple-muted)] border-[var(--border)]'
+            }`}
+            aria-label={copiedEmail ? 'Email copied!' : 'Copy email'}
+          >
+            {link.icon}
+            <span className="text-sm font-medium hidden sm:inline">{link.label}</span>
+          </button>
+        ) : (
+          <a
+            key={link.id}
+            href={link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 transform border focus-ring glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--interactive)] hover:text-[var(--text-on-accent)] hover:scale-105 hover:shadow-[0_0_20px_var(--purple-muted)] hover:border-[var(--purple-muted)] border-[var(--border)]"
+            aria-label={link.label}
+          >
+            {link.icon}
+            <span className="text-sm font-medium hidden sm:inline">{link.label}</span>
+          </a>
+        )
+      )}
+    </>
   );
 }
 
@@ -122,23 +80,23 @@ export default function Header({
   compact = false,
   onProjectsClick,
 }: HeaderProps) {
-  const [isHovered, setIsHovered] = useState<string | null>(null);
   const toast = useToast();
   const { copied: copiedEmail, copy: copyEmail } = useClipboard();
 
-  const handleEmailClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleEmailClick = async (event: React.MouseEvent) => {
+    event.preventDefault();
     const success = await copyEmail(email);
+
     if (success) {
       toast.success('Email copied to clipboard!');
       analytics.emailCopied();
-    } else {
-      // Fallback to mailto if clipboard fails
-      window.location.href = `mailto:${email}`;
+      return;
     }
+
+    window.location.href = `mailto:${email}`;
   };
 
-  const socialLinks = [
+  const socialLinks: HeaderSocialLink[] = [
     {
       id: 'github',
       href: githubUrl,
@@ -162,7 +120,6 @@ export default function Header({
   if (compact) {
     return (
       <header className="flex items-center justify-between px-4 py-3 glass rounded-xl">
-        {/* Left: bentOS branding + nav */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <BentoIcon size={20} />
@@ -174,31 +131,26 @@ export default function Header({
           <div className="hidden sm:block w-px h-5 bg-gradient-to-b from-transparent via-[var(--border)] to-transparent" />
           <Link
             href="/playground"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono
-              text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]
-              transition-all duration-200"
-            aria-label="Fidget games"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all duration-200"
+            aria-label="Open playground"
           >
             <PlayCircleIcon size={16} />
-            <span className="hidden sm:inline">Fidget</span>
+            <span className="hidden sm:inline">Playground</span>
           </Link>
-          {onProjectsClick && (
+          {onProjectsClick ? (
             <button
               onClick={onProjectsClick}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono
-                text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]
-                transition-all duration-200 focus-ring"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all duration-200 focus-ring"
               aria-label="View projects"
             >
               <GridIcon size={16} />
               <span className="hidden sm:inline">Projects</span>
             </button>
-          )}
+          ) : null}
         </div>
 
-        {/* Right: socials + theme + resume + clock */}
         <nav aria-label="Main navigation" className="flex items-center gap-1">
-          {socialLinks.map((link) => (
+          {socialLinks.map((link) =>
             link.id === 'email' ? (
               <button
                 key={link.id}
@@ -224,7 +176,7 @@ export default function Header({
                 {link.icon}
               </a>
             )
-          ))}
+          )}
           <ThemeToggle />
           <ResumeButton resumeUrl={resumeUrl} className="ml-1" />
           <TaskbarClock />
@@ -237,69 +189,23 @@ export default function Header({
     <header className="relative overflow-hidden">
       <div className="relative px-6 py-8 md:py-12">
         <div className="max-w-4xl mx-auto text-center">
-          {/* Name */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-[var(--text-primary)]">
             {name}
           </h1>
 
-          {/* Tagline */}
-          <p className="text-lg md:text-xl text-[var(--text-secondary)] mb-8">
-            {tagline}
-          </p>
+          <p className="text-lg md:text-xl text-[var(--text-secondary)] mb-8">{tagline}</p>
 
-          {/* Social links + Resume */}
           <nav aria-label="Social links" className="flex items-center justify-center gap-4 flex-wrap">
-            {socialLinks.map((link) => (
-              link.id === 'email' ? (
-                <button
-                  key={link.id}
-                  onClick={handleEmailClick}
-                  onMouseEnter={() => setIsHovered(link.id)}
-                  onMouseLeave={() => setIsHovered(null)}
-                  className={`
-                    flex items-center gap-2 px-4 py-2.5 rounded-lg
-                    transition-all duration-200 transform border focus-ring
-                    ${copiedEmail
-                      ? 'bg-[var(--status-success)] text-[var(--text-on-accent)] scale-105 shadow-[0_0_20px_var(--status-success-muted)] border-[var(--status-success)]'
-                      : isHovered === link.id
-                        ? 'bg-[var(--interactive)] text-[var(--text-on-accent)] scale-105 shadow-[0_0_20px_var(--purple-muted)] border-[var(--purple-muted)]'
-                        : 'glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border)]'
-                    }
-                  `}
-                  aria-label={copiedEmail ? 'Email copied!' : 'Copy email'}
-                >
-                  {link.icon}
-                  <span className="text-sm font-medium hidden sm:inline">{link.label}</span>
-                </button>
-              ) : (
-                <a
-                  key={link.id}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onMouseEnter={() => setIsHovered(link.id)}
-                  onMouseLeave={() => setIsHovered(null)}
-                  className={`
-                    flex items-center gap-2 px-4 py-2.5 rounded-lg
-                    transition-all duration-200 transform border focus-ring
-                    ${isHovered === link.id
-                      ? 'bg-[var(--interactive)] text-[var(--text-on-accent)] scale-105 shadow-[0_0_20px_var(--purple-muted)] border-[var(--purple-muted)]'
-                      : 'glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border)]'
-                    }
-                  `}
-                  aria-label={link.label}
-                >
-                  {link.icon}
-                  <span className="text-sm font-medium hidden sm:inline">{link.label}</span>
-                </a>
-              )
-            ))}
+            <SocialActions
+              copiedEmail={copiedEmail}
+              handleEmailClick={handleEmailClick}
+              socialLinks={socialLinks}
+            />
             <ResumeButton resumeUrl={resumeUrl} />
           </nav>
         </div>
       </div>
 
-      {/* Bottom line */}
       <div className="h-px bg-[var(--purple-muted)]" />
     </header>
   );

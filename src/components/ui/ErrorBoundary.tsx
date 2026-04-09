@@ -93,7 +93,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               {message}
             </p>
             {process.env.NODE_ENV === 'development' && this.state.error && (
-              <pre className="text-xs text-[var(--status-error)] opacity-70 mb-4 max-w-md mx-auto overflow-auto">
+              <pre className="text-xs text-[color:var(--status-error)] opacity-80 mb-4 max-w-md mx-auto overflow-auto">
                 {this.state.error.message}
               </pre>
             )}
@@ -130,7 +130,7 @@ export function InlineError({
       {onRetry && (
         <button
           onClick={onRetry}
-          className="text-xs underline hover:text-[var(--text-primary)] transition-colors"
+          className="text-xs underline hover:opacity-80 transition-opacity"
         >
           Retry
         </button>

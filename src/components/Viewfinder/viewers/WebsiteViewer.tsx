@@ -5,7 +5,7 @@ import type { WebsiteViewerProps } from '../Viewfinder.types';
 
 export function WebsiteViewer({ url }: WebsiteViewerProps) {
   const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
-  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const [erroredUrl, setErroredUrl] = useState<string | null>(null);
   const [hintedUrl, setHintedUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -17,9 +17,14 @@ export function WebsiteViewer({ url }: WebsiteViewerProps) {
 
     return () => window.clearTimeout(timeoutId);
   }, [url]);
-  const isLoading = Boolean(url && loadedUrl !== url && failedUrl !== url);
-  const error = Boolean(url && failedUrl === url);
-  const showExternalHint = Boolean(url && hintedUrl === url && isLoading);
+
+  const error = Boolean(url && erroredUrl === url);
+  const showExternalHint = Boolean(
+    url && hintedUrl === url && loadedUrl !== url && erroredUrl !== url
+  );
+  const isLoading = Boolean(
+    url && loadedUrl !== url && erroredUrl !== url && hintedUrl !== url
+  );
 
   if (!url) {
     return (
@@ -84,16 +89,15 @@ export function WebsiteViewer({ url }: WebsiteViewerProps) {
         )}
 
         <iframe
+          key={url}
           src={url}
           className="w-full h-full border-0"
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
           onLoad={() => {
             setLoadedUrl(url);
-            setFailedUrl((currentUrl) => (currentUrl === url ? null : currentUrl));
-            setHintedUrl((currentUrl) => (currentUrl === url ? null : currentUrl));
           }}
           onError={() => {
-            setFailedUrl(url);
+            setErroredUrl(url);
           }}
           title="Embedded website"
         />

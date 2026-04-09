@@ -28,6 +28,7 @@ interface TaikoGameState {
   misses: number;
   lastHitType: TaikoNoteType | null;
   lastHitRating: 'perfect' | 'good' | 'miss' | null;
+  hitEffectVersion: number;
 }
 
 interface TaikoResult {
@@ -51,6 +52,7 @@ export function useTaikoGame(beatMap: TaikoBeatMap) {
     misses: 0,
     lastHitType: null,
     lastHitRating: null,
+    hitEffectVersion: 0,
   });
   const [result, setResult] = useState<TaikoResult | null>(null);
   const [progress, setProgress] = useState(0);
@@ -80,6 +82,7 @@ export function useTaikoGame(beatMap: TaikoBeatMap) {
       misses: 0,
       lastHitType: null,
       lastHitRating: null,
+      hitEffectVersion: 0,
     });
     setResult(null);
     setProgress(0);
@@ -258,6 +261,7 @@ export function useTaikoGame(beatMap: TaikoBeatMap) {
         misses: prev.misses + (rating === 'miss' ? 1 : 0),
         lastHitType: hitType,
         lastHitRating: rating,
+        hitEffectVersion: rating === 'miss' ? prev.hitEffectVersion : prev.hitEffectVersion + 1,
       };
     });
   }, []);
@@ -293,6 +297,7 @@ export function useTaikoGame(beatMap: TaikoBeatMap) {
       misses: 0,
       lastHitType: null,
       lastHitRating: null,
+      hitEffectVersion: 0,
     });
     setResult(null);
     setProgress(0);

@@ -188,7 +188,7 @@ export function BentoCard({ config, homePosition, bestScore, registerForceUpdate
       whileTap={{ scale: 0.98 }}
     >
       <div
-        className="w-full h-full rounded-2xl overflow-hidden bg-[var(--pg-bg-elevated)]/90 backdrop-blur-sm border border-white/[0.08] transition-all duration-300 hover:border-white/[0.15] group"
+        className="pg-surface-glass pg-hover-border-strong w-full h-full rounded-2xl overflow-hidden transition-all duration-300 group"
         style={{
           boxShadow: isDragging ? `0 0 40px ${colors.glowColor}` : undefined,
         }}
@@ -251,11 +251,12 @@ export function BentoCard({ config, homePosition, bestScore, registerForceUpdate
 
           {/* Stats card special content */}
           {config.contentType === 'stat' && (
-            <div className="mt-auto pt-2 border-t border-white/[0.06]">
+            <div className="pg-border-subtle mt-auto border-t pt-2">
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-bold font-mono text-[var(--pg-accent-cyan)]">9</span>
                 <span className="text-xs text-[var(--pg-text-muted)]">games</span>
               </div>
+              <p className="mt-1 text-xs text-[var(--pg-text-muted)]">{config.description}</p>
             </div>
           )}
         </div>

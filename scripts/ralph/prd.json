@@ -1,0 +1,240 @@
+{
+  "project": "Repo Maintainability Refactor",
+  "branchName": "maintainability-practices",
+  "userStories": [
+    {
+      "id": "1",
+      "title": "Split global stylesheet into layered sources",
+      "description": "Refactor the oversized global stylesheet by moving theme tokens, shared utilities, and animation rules into imported style files while keeping `src/app/globals.css` as the single app entrypoint.",
+      "file": "src/app/globals.css",
+      "acceptanceCriteria": [
+        "`src/app/globals.css` becomes materially smaller and mostly coordinates imports",
+        "Theme variables, utility class names, and animation classes continue to resolve without regressions",
+        "The new style file split makes color tokens easier to audit separately from utilities and effects"
+      ],
+      "priority": 1,
+      "passes": false
+    },
+    {
+      "id": "2",
+      "title": "Normalize spinner variants to CSS variable tokens",
+      "description": "Update the shared loading spinner to remove hardcoded Tailwind color classes, replace the `violet`/`purple` drift with a consistent semantic API, and keep overlay/message helpers aligned with repo token rules.",
+      "file": "src/components/ui/LoadingSpinner.tsx",
+      "acceptanceCriteria": [
+        "Spinner variants use CSS variables or shared color utilities instead of hardcoded Tailwind colors",
+        "The public variant API is internally consistent and documented in the file comments/types",
+        "Existing spinner callers keep working or have a clear codemod-level migration path"
+      ],
+      "priority": 1,
+      "passes": false
+    },
+    {
+      "id": "3",
+      "title": "Tokenize default error boundary UI",
+      "description": "Remove remaining hardcoded error colors and CTA styles from the shared error boundary so fallback UIs inherit the same semantic color system as the rest of the app.",
+      "file": "src/components/ui/ErrorBoundary.tsx",
+      "acceptanceCriteria": [
+        "Default and inline error states use CSS variables or shared button/color helpers only",
+        "Retry CTA styling is consistent with shared interactive tokens",
+        "Development-only error details remain available without reintroducing hardcoded colors"
+      ],
+      "priority": 1,
+      "passes": false
+    },
+    {
+      "id": "4",
+      "title": "Remove remaining hardcoded colors from design tokens",
+      "description": "Audit the centralized design token file and replace any raw Tailwind color classes or mixed token strategies with CSS-variable-backed values that match `globals.css` and `src/lib/colors.ts`.",
+      "file": "src/lib/design-tokens.ts",
+      "acceptanceCriteria": [
+        "`src/lib/design-tokens.ts` contains no hardcoded Tailwind color classes for semantic UI states",
+        "Token names align with the existing purple/orange/status variable system",
+        "Shared token consumers can keep importing from one source without behavioral changes"
+      ],
+      "priority": 1,
+      "passes": false
+    },
+    {
+      "id": "5",
+      "title": "Extract scrollable page shell from section orchestration",
+      "description": "Break `src/app/scrollable/page.tsx` into smaller pieces by moving the local error boundary and section-loading shell into reusable app or UI modules, leaving the page focused on route composition.",
+      "file": "src/app/scrollable/page.tsx",
+      "acceptanceCriteria": [
+        "The page file falls well below the current size and primarily wires together imported sections",
+        "Local error/loading helpers are moved into reusable modules instead of being defined inline",
+        "Scroll behavior, modal state, and reduced-motion behavior remain unchanged"
+      ],
+      "priority": 1,
+      "passes": false
+    },
+    {
+      "id": "6",
+      "title": "Create a reusable lazy-panel fallback component",
+      "description": "Introduce a shared loading primitive for dynamic module fallbacks so app routes stop defining near-duplicate loading markup inline.",
+      "file": "src/components/ui/LazyPanelFallback.tsx",
+      "acceptanceCriteria": [
+        "The new component supports the fallback patterns currently duplicated in `src/app/page.tsx` and `src/app/scrollable/page.tsx`",
+        "Fallback visuals use shared icons, tokens, and loading primitives instead of ad hoc markup",
+        "Route-level dynamic imports become thinner after adopting the new primitive"
+      ],
+      "priority": 2,
+      "passes": false
+    },
+    {
+      "id": "7",
+      "title": "Extract chat domain types and persistence helpers",
+      "description": "Move message typing and localStorage serialization logic out of the monolithic chat component into dedicated chat modules so persistence can be tested independently from rendering.",
+      "file": "src/components/Chat/chat.types.ts",
+      "acceptanceCriteria": [
+        "Chat message and callback contracts live in dedicated type definitions instead of inside the UI file",
+        "Storage helpers are isolated from rendering and remain responsible for validation/slicing behavior",
+        "The main chat component stops owning low-level persistence details directly"
+      ],
+      "priority": 1,
+      "passes": false
+    },
+    {
+      "id": "8",
+      "title": "Extract chat request/session side effects into a hook",
+      "description": "Create a focused hook for message submission, timeout handling, analytics, and feedback calls so the main chat component becomes a thin orchestrator rather than a state machine plus UI file.",
+      "file": "src/components/Chat/useChatSession.ts",
+      "acceptanceCriteria": [
+        "Network requests, abort/timeout behavior, and analytics are encapsulated in a dedicated hook",
+        "The hook exposes a narrow public API that the main chat UI can consume without reaching into implementation details",
+        "The main chat component becomes materially smaller and easier to reason about"
+      ],
+      "priority": 1,
+      "passes": false
+    },
+    {
+      "id": "9",
+      "title": "Split chat presentation into focused subcomponents",
+      "description": "Move message list, message actions, quick actions, and input form rendering into dedicated presentational files while keeping the exported chat entrypoint stable for current imports.",
+      "file": "src/components/Chat.tsx",
+      "acceptanceCriteria": [
+        "The default-export chat entrypoint keeps its external API stable for existing route imports",
+        "Rendering concerns are separated into focused subcomponents instead of one 500+ line file",
+        "Each subcomponent has a clear responsibility and receives typed props only for the state it needs"
+      ],
+      "priority": 1,
+      "passes": false
+    },
+    {
+      "id": "10",
+      "title": "Add a root barrel for the Dimension feature",
+      "description": "Create a stable public API for the Dimension feature so route imports stop reaching into individual implementation files and future internal splits stay hidden behind one entrypoint.",
+      "file": "src/components/Dimension/index.ts",
+      "acceptanceCriteria": [
+        "Dimension exports are available from a single root barrel",
+        "App routes can import the main viewer and public types without referencing internal file names",
+        "The new barrel defines a clear public surface for future scene/UI refactors"
+      ],
+      "priority": 2,
+      "passes": false
+    },
+    {
+      "id": "11",
+      "title": "Extract Dimension scene primitives from the 3D module",
+      "description": "Split the 3D implementation into smaller scene-focused components such as controls, fallback geometry, and model wrappers so `Dimension.3d.tsx` stops owning every render path directly.",
+      "file": "src/components/Dimension/Dimension.3d.tsx",
+      "acceptanceCriteria": [
+        "The 3D file is reduced to scene composition rather than containing every mesh/control implementation inline",
+        "Extracted scene primitives receive narrowly typed props and preserve current SSR-disabled usage",
+        "Existing model loading, wireframe, and fallback behavior remain intact after the split"
+      ],
+      "priority": 1,
+      "passes": false
+    },
+    {
+      "id": "12",
+      "title": "Extract Dimension controller state from the main viewer",
+      "description": "Move fullscreen, model selection, viewport state, keyboard wiring, and toast-facing control logic into a dedicated controller hook so the main viewer file can focus on composition.",
+      "file": "src/components/Dimension/Dimension.tsx",
+      "acceptanceCriteria": [
+        "The main Dimension component becomes a thin composition layer around hooks and UI pieces",
+        "Cross-cutting side effects like resize handling and keyboard control setup are isolated from JSX rendering",
+        "Public props and user-visible viewer controls behave the same after refactoring"
+      ],
+      "priority": 1,
+      "passes": false
+    },
+    {
+      "id": "13",
+      "title": "Move boot sequence timing logic into a dedicated hook",
+      "description": "Extract the boot screen phase machine, timers, and cleanup into a reusable hook so the visual component focuses on presentation and animation markup rather than lifecycle bookkeeping.",
+      "file": "src/components/BentoOS/useBootSequence.ts",
+      "acceptanceCriteria": [
+        "Boot timing constants and phase transitions are encapsulated outside the JSX-heavy screen component",
+        "Timer setup and cleanup are easier to test and reason about independently",
+        "The exported `BootScreen` behavior and callbacks remain unchanged for `src/app/page.tsx`"
+      ],
+      "priority": 2,
+      "passes": false
+    },
+    {
+      "id": "14",
+      "title": "Extract header actions and link configuration",
+      "description": "Reduce the size and branching inside `Header.tsx` by moving link metadata and action wiring into dedicated helpers while keeping the visual shell focused on rendering and responsive layout.",
+      "file": "src/components/Header.tsx",
+      "acceptanceCriteria": [
+        "Link/action metadata no longer lives inline beside responsive rendering logic",
+        "Clipboard, toast, theme, and analytics behavior remain explicit but less entangled with JSX",
+        "The header file drops below the current size threshold without changing its public props"
+      ],
+      "priority": 2,
+      "passes": false
+    },
+    {
+      "id": "15",
+      "title": "Tokenize ReactionGame state styling",
+      "description": "Replace hardcoded gameplay state gradients and raw white opacity classes with named token mappings or shared design helpers so the reaction game follows the repo color rules.",
+      "file": "src/components/Playground/ReactionGame/ReactionGame.tsx",
+      "acceptanceCriteria": [
+        "Gameplay state colors are expressed through semantic token mappings rather than hardcoded Tailwind colors",
+        "The file no longer mixes several ad hoc color systems for status visuals and instructional text",
+        "The game remains visually distinct without violating the repo's color-source-of-truth rules"
+      ],
+      "priority": 2,
+      "passes": false
+    },
+    {
+      "id": "16",
+      "title": "Tokenize shared result screen feedback states",
+      "description": "Audit the shared playground result screen and replace remaining hardcoded success/share colors with semantic status tokens so every game result view inherits the same maintainable color system.",
+      "file": "src/components/Playground/shared/ResultsScreen.tsx",
+      "acceptanceCriteria": [
+        "Success and share feedback states use semantic token-backed classes only",
+        "Shared playground UI stays visually consistent across games after the token cleanup",
+        "The result screen remains reusable and does not introduce game-specific style assumptions"
+      ],
+      "priority": 2,
+      "passes": false
+    },
+    {
+      "id": "17",
+      "title": "Add regression tests for shared UI tokenized states",
+      "description": "Introduce focused component tests for shared loading and error primitives so token/API cleanups can be refactored safely without silent UI regressions.",
+      "file": "src/components/ui/__tests__/LoadingSpinner.test.tsx",
+      "acceptanceCriteria": [
+        "Tests cover the supported spinner variants and rendered accessibility labels/messages",
+        "Tests verify the error boundary retry path and default fallback rendering behavior",
+        "Shared UI token refactors have guardrails beyond lint/build success"
+      ],
+      "priority": 2,
+      "passes": false
+    },
+    {
+      "id": "18",
+      "title": "Document repo maintainability rules for future contributors",
+      "description": "Write a concise contributor-facing guide that encodes the maintainability rules for file size, styling sources, client/server boundaries, barrel exports, and when to extract hooks or shared primitives.",
+      "file": "CONTRIBUTING.md",
+      "acceptanceCriteria": [
+        "The guide covers the repo's existing color-token and Three.js SSR conventions explicitly",
+        "It gives contributors a concrete checklist for deciding when to split files or extract shared modules",
+        "The documentation is short enough to be used in normal development rather than ignored"
+      ],
+      "priority": 2,
+      "passes": false
+    }
+  ]
+}

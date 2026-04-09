@@ -84,7 +84,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
         </h3>
         <motion.button
           onClick={onCancel}
-          className="p-2 rounded-lg hover:bg-white/5 text-[var(--pg-text-muted)]"
+          className="p-2 rounded-lg hover:bg-[rgba(255,255,255,0.05)] text-[var(--pg-text-muted)]"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
@@ -105,7 +105,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
             ? 'border-[var(--pg-accent-gold)] bg-[var(--pg-accent-gold)]/5'
             : file
               ? 'border-[var(--pg-game-success)]/50 bg-[var(--pg-game-success)]/5'
-              : 'border-white/10 hover:border-white/20 bg-[var(--pg-bg-elevated)]'
+              : 'pg-surface-panel pg-border-soft hover:pg-border-strong'
           }
         `}
       >
@@ -157,7 +157,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
               type="text"
               value={songName}
               onChange={(e) => setSongName(e.target.value)}
-              className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--pg-bg-elevated)] border border-white/10 text-[var(--pg-text-primary)] text-sm focus:outline-none focus:border-[var(--pg-accent-gold)]/50"
+              className="pg-input w-full mt-1 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--pg-accent-gold)]/50"
               placeholder="Song name"
             />
           </div>
@@ -170,7 +170,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
               type="text"
               value={artist}
               onChange={(e) => setArtist(e.target.value)}
-              className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--pg-bg-elevated)] border border-white/10 text-[var(--pg-text-primary)] text-sm focus:outline-none focus:border-[var(--pg-accent-gold)]/50"
+              className="pg-input w-full mt-1 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--pg-accent-gold)]/50"
               placeholder="Artist name"
             />
           </div>
@@ -208,7 +208,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-4 p-4 rounded-xl bg-[var(--pg-bg-elevated)] border border-white/10"
+          className="pg-surface-panel pg-border-soft mt-4 rounded-xl p-4"
         >
           <div className="flex items-center gap-3">
             <Loader2 className="w-5 h-5 text-[var(--pg-accent-gold)] animate-spin" />

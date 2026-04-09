@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 /**
  * Loading spinner variants
  */
-export type SpinnerVariant = 'default' | 'violet' | 'purple' | 'orange' | 'white';
+export type SpinnerVariant = 'default' | 'purple' | 'orange' | 'white';
 
 /**
  * Loading spinner sizes
@@ -37,21 +37,17 @@ const variantClasses: Record<SpinnerVariant, { track: string; active: string }> 
     track: 'border-[var(--border)]',
     active: 'border-t-[var(--text-primary)]',
   },
-  violet: {
-    track: 'border-violet-400/30',
-    active: 'border-t-violet-400',
-  },
   purple: {
-    track: 'border-purple-500/30',
-    active: 'border-t-purple-500',
+    track: 'border-[var(--purple-muted)]',
+    active: 'border-t-[var(--interactive)]',
   },
   orange: {
-    track: 'border-[var(--orange)]/30',
+    track: 'border-[var(--orange-muted)]',
     active: 'border-t-[var(--orange)]',
   },
   white: {
-    track: 'border-white/30',
-    active: 'border-t-white',
+    track: 'border-[var(--glass-border)]',
+    active: 'border-t-[var(--text-on-accent)]',
   },
 };
 
@@ -64,7 +60,7 @@ const variantClasses: Record<SpinnerVariant, { track: string; active: string }> 
  * <LoadingSpinner />
  *
  * // With message
- * <LoadingSpinner message="Loading content..." variant="violet" />
+ * <LoadingSpinner message="Loading content..." variant="purple" />
  *
  * // Centered in container
  * <LoadingSpinner centered size="lg" />
@@ -112,13 +108,13 @@ export function LoadingSpinner({
  */
 export function LoadingOverlay({
   message = 'Loading...',
-  variant = 'violet',
+  variant = 'purple',
 }: {
   message?: string;
   variant?: SpinnerVariant;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg-primary)]/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--overlay)] backdrop-blur-sm">
       <LoadingSpinner size="xl" variant={variant} message={message} />
     </div>
   );

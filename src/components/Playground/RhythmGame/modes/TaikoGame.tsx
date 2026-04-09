@@ -120,16 +120,10 @@ function TaikoNoteComponent({ noteType, large, position, hit, rating }: TaikoNot
 interface DrumProps {
   lastHitType: TaikoNoteType | null;
   lastHitRating: 'perfect' | 'good' | 'miss' | null;
+  hitEffectVersion: number;
 }
 
-let drumHitCounter = 0;
-
-function DrumDisplay({ lastHitType, lastHitRating }: DrumProps) {
-  const hitKeyRef = useRef(0);
-  if (lastHitRating && lastHitRating !== 'miss') {
-    hitKeyRef.current = ++drumHitCounter;
-  }
-
+function DrumDisplay({ lastHitType, lastHitRating, hitEffectVersion }: DrumProps) {
   return (
     <div className="relative flex items-center justify-center">
       {/* Drum body */}
@@ -164,7 +158,7 @@ function DrumDisplay({ lastHitType, lastHitRating }: DrumProps) {
         {/* Hit feedback */}
         {lastHitRating && lastHitRating !== 'miss' && (
           <motion.div
-            key={hitKeyRef.current}
+            key={hitEffectVersion}
             className="absolute inset-0 flex items-center justify-center"
             initial={{ scale: 1, opacity: 1 }}
             animate={{ scale: 2, opacity: 0 }}
@@ -203,6 +197,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
     progress,
     lastHitType,
     lastHitRating,
+    hitEffectVersion,
     startGame,
     startPlaying,
     handleHit,
@@ -267,7 +262,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
             </span>
             {combo > 0 && (
               <>
-                <div className="w-px h-5 bg-white/10" />
+                <div className="pg-divider" />
                 <motion.span
                   key={combo}
                   initial={{ scale: 1.2 }}
@@ -338,7 +333,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
                       ${
                         selectedMap.id === map.id
                           ? 'bg-[var(--pg-accent-gold)]/10 border-[var(--pg-accent-gold)]/40 shadow-lg shadow-[var(--pg-accent-gold)]/10'
-                          : 'bg-[var(--pg-bg-elevated)] hover:bg-[var(--pg-bg-hover)] border-white/[0.06]'
+                          : 'pg-surface-panel hover:bg-[var(--pg-bg-hover)]'
                       }
                       border
                     `}
@@ -361,7 +356,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
                       </div>
                     </div>
                     {scores?.[map.id] && (
-                      <div className="mt-2 pt-2 border-t border-white/[0.06] flex gap-4 text-xs">
+                      <div className="pg-border-subtle mt-2 flex gap-4 border-t pt-2 text-xs">
                         <span className="text-[var(--pg-text-muted)]">
                           Best: <span className="text-[var(--pg-accent-gold)] font-mono">{formatNumber(scores[map.id].score)}</span>
                         </span>
@@ -396,7 +391,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
             >
               {/* Progress bar */}
               <div className="mb-4">
-                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div className="pg-progress-track h-1.5 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full"
                     style={{
@@ -411,7 +406,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
               {/* Taiko playfield */}
               <div
                 ref={playfieldRef}
-                className="relative w-full h-40 rounded-2xl overflow-hidden border border-white/[0.06] bg-[var(--pg-bg-surface)]"
+                className="pg-surface-frame relative w-full h-40 rounded-2xl overflow-hidden"
               >
                 {/* Hit zone indicator */}
                 <div
@@ -469,7 +464,11 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
 
               {/* Drum display */}
               <div className="mt-6 flex justify-center">
-                <DrumDisplay lastHitType={lastHitType} lastHitRating={lastHitRating} />
+                <DrumDisplay
+                  lastHitType={lastHitType}
+                  lastHitRating={lastHitRating}
+                  hitEffectVersion={hitEffectVersion}
+                />
               </div>
 
               {/* Touch controls for mobile */}

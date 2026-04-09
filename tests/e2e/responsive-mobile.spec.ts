@@ -1,13 +1,13 @@
 import { test, expect, devices } from '@playwright/test';
+import { gotoDashboard } from './helpers';
 
 test.use({ ...devices['Pixel 5'] });
 
 test.describe('Mobile View', () => {
   test('should show mobile tab interface', async ({ page }) => {
-    await page.goto('/');
-    await page.getByRole('button', { name: /say hi/i }).click();
-    await page.waitForTimeout(1000);
-    await expect(page.locator('body')).toBeVisible();
+    await gotoDashboard(page);
+    await expect(page.getByRole('button', { name: /viewfinder/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /terminal/i })).toBeVisible();
   });
 
   test('should be scrollable on mobile', async ({ page }) => {

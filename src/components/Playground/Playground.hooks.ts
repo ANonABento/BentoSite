@@ -4,6 +4,25 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { GameStatus, StoredScores } from './Playground.types';
 import { STORAGE_KEYS } from './Playground.config';
 
+function readStoredHighScore<T extends keyof StoredScores>(gameId: T): StoredScores[T] | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const stored = localStorage.getItem(STORAGE_KEYS.highScores);
+    if (!stored) {
+      return null;
+    }
+
+    const allScores: Partial<StoredScores> = JSON.parse(stored);
+    return allScores[gameId] ?? null;
+  } catch {
+    console.warn('Failed to load high scores');
+    return null;
+  }
+}
+
 /**
  * Game state machine hook
  */
@@ -64,6 +83,11 @@ export function useCountdown(
   const [seconds, setSeconds] = useState(initialSeconds);
   const [isRunning, setIsRunning] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   const start = useCallback(() => {
     setSeconds(initialSeconds);
@@ -82,31 +106,32 @@ export function useCountdown(
     setSeconds(initialSeconds);
   }, [stop, initialSeconds]);
 
-  const onCompleteRef = useRef(onComplete);
   useEffect(() => {
-    onCompleteRef.current = onComplete;
-  });
-
-  useEffect(() => {
-    if (!isRunning || seconds <= 0) return;
+    if (!isRunning || seconds <= 0) {
+      return;
+    }
 
     intervalRef.current = setInterval(() => {
-      setSeconds((s) => {
-        if (s <= 1) {
-          if (intervalRef.current) clearInterval(intervalRef.current);
-          setTimeout(() => {
-            setIsRunning(false);
-            onCompleteRef.current?.();
-          }, 0);
+      setSeconds((current) => {
+        if (current <= 1) {
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+
+          setIsRunning(false);
+          onCompleteRef.current?.();
           return 0;
         }
-        return s - 1;
+
+        return current - 1;
       });
     }, 1000);
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
   }, [isRunning, seconds]);
@@ -124,20 +149,8 @@ export function useCountdown(
  * High scores storage hook
  */
 export function useHighScores<T extends keyof StoredScores>(gameId: T) {
-  const [scores, setScores] = useState<StoredScores[T] | null>(() => {
-    if (typeof window === 'undefined') return null;
-    try {
-      const stored = localStorage.getItem(STORAGE_KEYS.highScores);
-      if (stored) {
-        const allScores: Partial<StoredScores> = JSON.parse(stored);
-        return allScores[gameId] ?? null;
-      }
-    } catch {
-      // Ignore localStorage errors
-    }
-    return null;
-  });
-  const [isLoaded] = useState(true);
+  const [scores, setScores] = useState<StoredScores[T] | null>(() => readStoredHighScore(gameId));
+  const isLoaded = true;
 
   // Save scores to localStorage
   const saveScore = useCallback(
@@ -238,15 +251,14 @@ function formatTime(seconds: number): string {
  * Detect mobile device
  */
 export function useIsMobile(): boolean {
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined' ? window.innerWidth < 768 : false
-  );
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
 
+    checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);

@@ -4,7 +4,7 @@ Quick reference for AI agents working on this codebase.
 
 ## Project Overview
 
-Mumbai-V2 is a Next.js 16 portfolio site with:
+This repo is a Next.js 16 portfolio site for Kevin Jiang with:
 - 3D model viewer (Three.js + React Three Fiber)
 - Interactive chatbot
 - Dark/light theme support

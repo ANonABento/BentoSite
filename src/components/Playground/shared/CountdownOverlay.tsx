@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { springs } from '../design';
 
 interface CountdownOverlayProps {
@@ -15,37 +15,31 @@ export function CountdownOverlay({
   onComplete,
   from = 3,
 }: CountdownOverlayProps) {
+  if (!isActive) return null;
+
+  return <ActiveCountdownOverlay from={from} onComplete={onComplete} />;
+}
+
+interface ActiveCountdownOverlayProps {
+  from: number;
+  onComplete: () => void;
+}
+
+function ActiveCountdownOverlay({ from, onComplete }: ActiveCountdownOverlayProps) {
   const [count, setCount] = useState(from);
-  const onCompleteRef = useRef(onComplete);
-  useEffect(() => {
-    onCompleteRef.current = onComplete;
-  });
 
-  // Reset count when isActive changes
   useEffect(() => {
-    if (!isActive) {
-      const id = setTimeout(() => setCount(from), 0);
-      return () => clearTimeout(id);
+    if (count <= 0) {
+      onComplete();
+      return;
     }
-  }, [isActive, from]);
-
-  useEffect(() => {
-    if (!isActive || count <= 0) return;
 
     const timer = setTimeout(() => {
-      setCount((c) => {
-        if (c <= 1) {
-          onCompleteRef.current();
-          return 0;
-        }
-        return c - 1;
-      });
+      setCount((current) => current - 1);
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [isActive, count]);
-
-  if (!isActive) return null;
+  }, [count, onComplete]);
 
   const progress = 1 - count / from;
   const circumference = 2 * Math.PI * 60; // radius 60

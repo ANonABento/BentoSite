@@ -10,10 +10,11 @@ import {
   GRID_TEMPLATE_MOBILE,
   CELL_SIZE,
   GRID_GAP,
+  getGridRowCount,
 } from '../BentoHub.config';
 import { usePhysicsEngine, PhysicsEngine } from '../physics';
-import { STORAGE_KEYS } from '../../Playground.config';
 import { StoredScores } from '../../Playground.types';
+import { loadStoredScores } from '../../playground-storage';
 
 // Physics context for cards to access the engine
 interface PhysicsContextValue {
@@ -38,16 +39,7 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
   const [positions, setPositions] = useState<Map<string, CardPosition>>(new Map());
   const [centerPoint, setCenterPoint] = useState({ x: 0, y: 0 });
   const [isReady, setIsReady] = useState(false);
-  const [scores] = useState<Partial<StoredScores>>(() => {
-    if (typeof window === 'undefined') return {};
-    try {
-      const stored = localStorage.getItem(STORAGE_KEYS.highScores);
-      return stored ? JSON.parse(stored) : {};
-    } catch {
-      return {};
-    }
-  });
-
+  const [scores] = useState<Partial<StoredScores>>(loadStoredScores);
   const forceUpdatesRef = useRef<Map<string, (force: { x: number; y: number }) => void>>(new Map());
 
   // Physics engine
@@ -125,6 +117,7 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
   const gap = isMobile ? GRID_GAP.mobile : GRID_GAP.desktop;
   const gridTemplate = isMobile ? GRID_TEMPLATE_MOBILE : GRID_TEMPLATE_DESKTOP;
   const columns = isMobile ? 2 : 3;
+  const rows = getGridRowCount(gridTemplate);
 
   const getBestScore = (gameId: string): string | undefined => {
     switch (gameId) {
@@ -187,11 +180,11 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
           style={{
             width: columns * cellSize + (columns - 1) * gap,
             height: 'auto',
-            minHeight: isMobile ? 5 * cellSize + 4 * gap : 3 * cellSize + 2 * gap,
+            minHeight: rows * cellSize + Math.max(rows - 1, 0) * gap,
           }}
         >
           {isReady &&
-            BENTO_CARDS.map((card) => {
+            BENTO_CARDS.filter((card) => card.contentType !== 'void').map((card) => {
               const position = positions.get(card.id);
               if (!position) return null;
 
