@@ -26,11 +26,7 @@ const CAMERA_PRESETS = {
   reset: CAMERA_POSITION,
 } as const;
 
-function getInitialModel(): ModelInfo {
-  if (AVAILABLE_MODELS.length > 0) {
-    return AVAILABLE_MODELS[0];
-  }
-
+function getFallbackModel(): ModelInfo {
   return {
     id: 'fallback',
     name: 'No Models Available',
@@ -44,12 +40,35 @@ function getInitialModel(): ModelInfo {
   };
 }
 
-export function useDimensionController() {
+function getInitialModel(modelPath?: string): ModelInfo {
+  if (modelPath) {
+    const existingModel = AVAILABLE_MODELS.find((model) => model.path === modelPath);
+    if (existingModel) {
+      return existingModel;
+    }
+
+    return {
+      id: `external-${modelPath}`,
+      name: 'Project Model',
+      path: modelPath,
+      thumbnail: '',
+      fileSize: 0,
+      dimensions: { width: 0, height: 0, depth: 0 },
+      vertexCount: 0,
+      description: 'Model provided by the selected project.',
+      category: 'Project',
+    };
+  }
+
+  return AVAILABLE_MODELS[0] ?? getFallbackModel();
+}
+
+export function useDimensionController({ modelPath }: { modelPath?: string } = {}) {
   const [error, setError] = useState<ModelError | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [autoRotate, setAutoRotate] = useState(true);
   const [isWireframe, setIsWireframe] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<ModelInfo>(getInitialModel);
+  const [selectedModel, setSelectedModel] = useState<ModelInfo>(() => getInitialModel(modelPath));
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [showModelInfo, setShowModelInfo] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -134,6 +153,11 @@ export function useDimensionController() {
   useEffect(() => {
     setShowModelInfo(!isMobile);
   }, [isMobile]);
+
+  useEffect(() => {
+    setSelectedModel(getInitialModel(modelPath));
+    setError(null);
+  }, [modelPath]);
 
   const handleCameraPreset = useCallback((preset: string) => {
     const position = CAMERA_PRESETS[preset as keyof typeof CAMERA_PRESETS];

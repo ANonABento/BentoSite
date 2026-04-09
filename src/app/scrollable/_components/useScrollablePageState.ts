@@ -9,6 +9,7 @@ export function useScrollablePageState() {
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatFns, setChatFns] = useState<ChatPanelFunctions | null>(null);
+  const [pendingChatMessage, setPendingChatMessage] = useState<string | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
   const isMountedRef = useRef(true);
@@ -40,15 +41,26 @@ export function useScrollablePageState() {
 
   const handleAskAboutSkill = useCallback(
     (skill: string) => {
+      const message = `Tell me about your experience with ${skill}`;
       setIsChatOpen(true);
-      window.setTimeout(() => {
-        if (isMountedRef.current) {
-          chatFns?.send(`Tell me about your experience with ${skill}`);
-        }
-      }, 300);
+      if (chatFns) {
+        chatFns.send(message);
+        return;
+      }
+
+      setPendingChatMessage(message);
     },
     [chatFns]
   );
+
+  useEffect(() => {
+    if (!pendingChatMessage || !chatFns || !isMountedRef.current) {
+      return;
+    }
+
+    chatFns.send(pendingChatMessage);
+    setPendingChatMessage(null);
+  }, [chatFns, pendingChatMessage]);
 
   return {
     chatFns,

@@ -14,7 +14,10 @@ import { AVAILABLE_MODELS } from './Dimension.config';
 import { DimensionViewport } from './Dimension.viewport';
 import { useDimensionController } from './useDimensionController';
 
-export default function DimensionViewer({ minimal = false }: DimensionViewerProps) {
+export default function DimensionViewer({
+  minimal = false,
+  modelPath,
+}: DimensionViewerProps) {
   const {
     autoRotate,
     canvasRef,
@@ -49,7 +52,7 @@ export default function DimensionViewer({ minimal = false }: DimensionViewerProp
     showModelInfo,
     showModelSelector,
     zoomLevel,
-  } = useDimensionController();
+  } = useDimensionController({ modelPath });
 
   return (
     <div
