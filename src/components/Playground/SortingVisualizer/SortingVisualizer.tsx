@@ -1,7 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect } from 'react';
 import { Play, Pause, RotateCcw, Shuffle, BarChart3 } from 'lucide-react';
 import { GameLayout } from '../shared';
 import { useSortingVisualizer } from './SortingVisualizer.hooks';

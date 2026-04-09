@@ -20,7 +20,9 @@ export function useCanvas({ enabled, windowSize }: UseCanvasOptions): UseCanvasR
 
   // Track current camera in a ref for gesture callbacks (avoids stale closure)
   const cameraRef = useRef<Camera>(camera);
-  cameraRef.current = camera;
+  useEffect(() => {
+    cameraRef.current = camera;
+  }, [camera]);
 
   // Track drag start position
   const dragStartRef = useRef<{ cameraX: number; cameraY: number } | null>(null);
@@ -33,6 +35,7 @@ export function useCanvas({ enabled, windowSize }: UseCanvasOptions): UseCanvasR
     velocity: { x: 0, y: 0 },
     animationId: null,
   });
+  const applyMomentumRef = useRef<() => void>(() => {});
 
   // Stop momentum animation
   const stopMomentum = useCallback(() => {
@@ -65,8 +68,13 @@ export function useCanvas({ enabled, windowSize }: UseCanvasOptions): UseCanvasR
       y: velocity.y * CAMERA.momentum.friction,
     };
 
-    momentumRef.current.animationId = requestAnimationFrame(applyMomentum);
+    momentumRef.current.animationId = requestAnimationFrame(() => {
+      applyMomentumRef.current();
+    });
   }, [stopMomentum]);
+  useEffect(() => {
+    applyMomentumRef.current = applyMomentum;
+  }, [applyMomentum]);
 
   // Reset camera to origin
   const reset = useCallback(() => {
@@ -122,7 +130,9 @@ export function useCanvas({ enabled, windowSize }: UseCanvasOptions): UseCanvasR
             };
             return prev;
           });
-          momentumRef.current.animationId = requestAnimationFrame(applyMomentum);
+          momentumRef.current.animationId = requestAnimationFrame(() => {
+            applyMomentumRef.current();
+          });
         }
       }
     },

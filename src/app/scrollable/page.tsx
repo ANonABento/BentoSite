@@ -71,7 +71,7 @@ export default function ScrollableLayout() {
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatFns, setChatFns] = useState<{ send: (content: string) => void; clear: () => void } | null>(null);
-  const [pendingChatMessage, setPendingChatMessage] = useState<string | null>(null);
+  const pendingChatMessageRef = useRef<string | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
   const { isOpen: isShortcutsOpen, close: closeShortcuts } = useKeyboardShortcutsHelp();
@@ -110,15 +110,16 @@ export default function ScrollableLayout() {
       return;
     }
 
-    setPendingChatMessage(message);
+    pendingChatMessageRef.current = message;
   }, [chatFns]);
 
   useEffect(() => {
+    const pendingChatMessage = pendingChatMessageRef.current;
     if (!pendingChatMessage || !chatFns || !isMountedRef.current) return;
 
     chatFns.send(pendingChatMessage);
-    setPendingChatMessage(null);
-  }, [pendingChatMessage, chatFns]);
+    pendingChatMessageRef.current = null;
+  }, [chatFns]);
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Grid3X3, Flag, Clock, RotateCcw, Trophy } from 'lucide-react';
 import { GameLayout, ResultsScreen } from '../shared';
 import { useMinesweeper } from './Minesweeper.hooks';

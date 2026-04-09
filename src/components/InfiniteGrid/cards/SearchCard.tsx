@@ -33,7 +33,7 @@ export function SearchCard({
   position,
   cardSize,
   isStuck,
-  stickyEdge: _stickyEdge, // Reserved for future edge-specific styling
+  stickyEdge,
   onClose,
   onReset,
   searchTerm,
@@ -68,6 +68,7 @@ export function SearchCard({
   return (
     <m.div
       style={style}
+      data-sticky-edge={stickyEdge}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{
         opacity: isVisible ? 1 : 0,

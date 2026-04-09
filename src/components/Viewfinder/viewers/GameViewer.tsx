@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { GameViewerProps } from '../Viewfinder.types';
 
 // Convert itch.io page URL to embed URL
@@ -24,11 +24,8 @@ function canEmbedGame(game: NonNullable<GameViewerProps['game']>): boolean {
 
 export function GameViewer({ game }: GameViewerProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setIsLoading(true);
-  }, [game?.type, game?.url]);
+  const [loadedGameKey, setLoadedGameKey] = useState<string | null>(null);
+  const gameKey = game ? `${game.type}:${game.url}` : null;
 
   const embedUrl = useMemo(() => {
     if (!game) return null;
@@ -75,9 +72,10 @@ export function GameViewer({ game }: GameViewerProps) {
   const containerClass = isFullscreen
     ? 'fixed inset-0 z-50 bg-[var(--surface-deep)]'
     : 'h-full flex flex-col bg-[var(--surface-deep)]';
+  const isLoading = gameKey !== null && loadedGameKey !== gameKey;
 
   return (
-    <div className={containerClass}>
+    <div key={gameKey ?? 'no-game'} className={containerClass}>
       {/* Controls */}
       <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-[var(--overlay-strong)]">
         <div className="flex items-center gap-2">
@@ -133,7 +131,7 @@ export function GameViewer({ game }: GameViewerProps) {
           className="w-full h-full border-0"
           sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-pointer-lock"
           allow="autoplay; fullscreen; gamepad"
-          onLoad={() => setIsLoading(false)}
+          onLoad={() => setLoadedGameKey(gameKey)}
           title="Game"
         />
       </div>

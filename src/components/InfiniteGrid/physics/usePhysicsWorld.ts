@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type {
   CardLayout,
   PhysicsPosition,
@@ -29,7 +29,6 @@ export function usePhysicsWorld({
   transitionPhase,
 }: UsePhysicsWorldOptions): UsePhysicsWorldReturn {
   const [positions, setPositions] = useState<Map<string, PhysicsPosition>>(new Map());
-  const [isReady, setIsReady] = useState(false);
 
   // Physics engine ref
   const engineRef = useRef<PhysicsEngine | null>(null);
@@ -49,7 +48,6 @@ export function usePhysicsWorld({
       if (engineRef.current) {
         engineRef.current.destroy();
         engineRef.current = null;
-        setIsReady(false);
       }
       return;
     }
@@ -71,7 +69,6 @@ export function usePhysicsWorld({
 
     engineRef.current = engine;
     engine.start();
-    setIsReady(true);
 
     return () => {
       if (settlingIntervalRef.current) {
@@ -79,15 +76,16 @@ export function usePhysicsWorld({
       }
       engine.destroy();
       engineRef.current = null;
-      setIsReady(false);
     };
   }, [enabled, isMobile]);
+
+  const isReady = useMemo(() => enabled, [enabled]);
 
   // Add search card as static body when physics is enabled (which means clamped)
   // It acts as a wall that pushes other cards out of the way
   useEffect(() => {
     const engine = engineRef.current;
-    if (!engine || !isReady) return;
+    if (!engine) return;
 
     // Get search card layout
     const searchLayout = layouts.get('__search__');
@@ -99,21 +97,21 @@ export function usePhysicsWorld({
     return () => {
       engine.removeBody('__search__');
     };
-  }, [isReady, layouts]);
+  }, [layouts]);
 
   // Sync bodies with layouts
   useEffect(() => {
     const engine = engineRef.current;
-    if (!engine || !isReady) return;
+    if (!engine) return;
 
     syncBodiesWithLayouts(engine, layouts, false);
     targetsRef.current = extractTargets(layouts);
-  }, [layouts, isReady]);
+  }, [layouts]);
 
   // Apply continuous settling forces - cards always try to return to bento positions
   useEffect(() => {
     const engine = engineRef.current;
-    if (!engine || !isReady) return;
+    if (!engine) return;
 
     // Clear any existing interval
     if (settlingIntervalRef.current) {
@@ -142,7 +140,7 @@ export function usePhysicsWorld({
         settlingIntervalRef.current = null;
       }
     };
-  }, [transitionPhase, isMobile, isReady]);
+  }, [transitionPhase, isMobile, enabled]);
 
   /**
    * Update search card position when clamped
@@ -152,7 +150,6 @@ export function usePhysicsWorld({
     const engine = engineRef.current;
     if (!engine) return;
 
-    const wasClampedBefore = isClampedRef.current;
     isClampedRef.current = isClamped;
 
     // Move search card to clamped position
@@ -163,8 +160,8 @@ export function usePhysicsWorld({
     }
 
     // Wake all bodies so they react to the collision
-    for (const [, body] of engine.bodies) {
-      body.isSleeping = false;
+    for (const id of engine.bodies.keys()) {
+      engine.wakeBody(id);
     }
   }, []);
 

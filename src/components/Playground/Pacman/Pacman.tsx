@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { Play, Pause, Heart, Ghost } from 'lucide-react';
 import { GameLayout, ResultsScreen } from '../shared';
 import { usePacman } from './Pacman.hooks';
