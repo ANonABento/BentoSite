@@ -130,7 +130,8 @@ describe('calculateBentoLayout', () => {
     const sizes = assignCardSizes(projects);
     const layouts = calculateBentoLayout(projects, sizes);
 
-    expect(layouts.size).toBe(3);
+    expect(layouts.size).toBe(4);
+    expect(layouts.has('__search__')).toBe(true);
     projects.forEach((p) => {
       expect(layouts.has(p.id)).toBe(true);
     });
