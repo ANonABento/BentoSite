@@ -37,7 +37,42 @@ export interface Project {
 
 const content = portfolioContent as { projects: Project[] };
 
-export const PROJECTS: Project[] = content.projects;
+// Generate test projects for physics testing
+function generateTestProjects(count: number): Project[] {
+  const categories: ProjectCategory[] = ['Robotics', 'Software', 'Hardware', 'AI & Robotics', 'Games', 'VR/AR'];
+  const statuses: ProjectStatus[] = ['Completed', 'In Progress', 'Archived'];
+  const techStacks = [
+    ['React', 'TypeScript', 'Next.js'],
+    ['Python', 'TensorFlow', 'OpenCV'],
+    ['Rust', 'WebAssembly', 'Three.js'],
+    ['C++', 'ROS', 'Arduino'],
+    ['Swift', 'Metal', 'CoreML'],
+    ['Go', 'Docker', 'Kubernetes'],
+  ];
+  const adjectives = ['Quantum', 'Neural', 'Cyber', 'Nano', 'Hyper', 'Meta', 'Ultra', 'Mega', 'Turbo', 'Fusion'];
+  const nouns = ['Bot', 'Engine', 'System', 'Core', 'Hub', 'Net', 'Lab', 'Forge', 'Studio', 'Works'];
+
+  return Array.from({ length: count }, (_, i) => ({
+    id: `test-project-${i + 1}`,
+    name: `${adjectives[i % adjectives.length]} ${nouns[i % nouns.length]} ${i + 1}`,
+    shortDescription: `A cutting-edge ${categories[i % categories.length].toLowerCase()} project exploring innovative solutions.`,
+    category: categories[i % categories.length],
+    status: statuses[i % statuses.length],
+    technologies: techStacks[i % techStacks.length],
+    featured: i % 7 === 0, // Every 7th project is featured
+    links: {},
+  }));
+}
+
+// Set to true locally to add test projects for physics/grid testing.
+// Must remain false in committed code — these are fake fixture projects
+// ("Quantum Bot", "Neural Engine", etc.) that would otherwise ship to prod.
+const ENABLE_TEST_PROJECTS = false;
+const TEST_PROJECT_COUNT = 12;
+
+export const PROJECTS: Project[] = ENABLE_TEST_PROJECTS
+  ? [...content.projects, ...generateTestProjects(TEST_PROJECT_COUNT)]
+  : content.projects;
 
 export type ProjectMediaType = '3D' | 'Images' | 'PDF' | 'Website' | 'Video' | 'Game';
 
