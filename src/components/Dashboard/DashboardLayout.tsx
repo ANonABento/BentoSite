@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect, ComponentType } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   dashboardStagger,
@@ -14,40 +15,44 @@ import { ViewfinderPanel } from './ViewfinderPanel';
 import { TerminalPanel } from './TerminalPanel';
 import { MobileTabs } from './MobileTabs';
 import type { Project } from '@/lib/projects-data';
+import { getProjectById } from '@/lib/projects-data';
 
 interface DashboardLayoutProps {
-  Viewfinder: ComponentType<{ project: Project | null; minimal?: boolean }>;
+  Viewfinder: ComponentType<{ project: Project | null; minimal?: boolean; suspended?: boolean }>;
   Chatbot: ComponentType<{
     onReady?: (fns: { send: (content: string) => void; addAssistant: (content: string) => void; clear: () => void }) => void;
     onViewResume?: () => void;
     onSeeProjects?: () => void;
   }>;
   SkillsSection: ComponentType<{ onAskAI?: (skill: string) => void }>;
-  ProjectsModal: ComponentType<{
-    isOpen: boolean;
-    onClose: () => void;
-    onSelectProject?: (p: Project) => void;
-  }>;
   KeyboardShortcutsModal: ComponentType<{ isOpen: boolean; onClose: () => void }>;
   isShortcutsOpen: boolean;
   closeShortcuts: () => void;
   /** Controls when the stagger entrance begins (set after boot exit) */
   ready: boolean;
+  /** Initial project ID to load from URL */
+  initialProjectId?: string;
 }
 
 export function DashboardLayout({
   Viewfinder,
   Chatbot,
   SkillsSection,
-  ProjectsModal,
   KeyboardShortcutsModal,
   isShortcutsOpen,
   closeShortcuts,
   ready,
+  initialProjectId,
 }: DashboardLayoutProps) {
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState<'3d' | 'chat'>('3d');
-  const [isProjectsOpen, setIsProjectsOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  // Load initial project from URL param if provided
+  const [selectedProject] = useState<Project | null>(() => {
+    if (initialProjectId) {
+      return getProjectById(initialProjectId) || null;
+    }
+    return null;
+  });
   const [chatFns, setChatFns] = useState<{
     send: (content: string) => void;
     addAssistant: (content: string) => void;
@@ -73,14 +78,8 @@ export function DashboardLayout({
   }, []);
 
   const handleSeeProjects = useCallback(() => {
-    setIsProjectsOpen(true);
-  }, []);
-
-  const handleSelectProject = useCallback((project: Project) => {
-    setSelectedProject(project);
-    setIsProjectsOpen(false);
-    setActiveSection('3d');
-  }, []);
+    router.push('/projects');
+  }, [router]);
 
   const handleAskAboutSkill = useCallback((skill: string) => {
     const message = `Tell me about your experience with ${skill}`;
@@ -129,7 +128,6 @@ export function DashboardLayout({
             email={PORTFOLIO_DATA.personal.email}
             resumeUrl="/resume.pdf"
             compact
-            onProjectsClick={() => setIsProjectsOpen(true)}
           />
         </motion.div>
 
@@ -208,12 +206,6 @@ export function DashboardLayout({
         </div>
       </motion.div>
 
-      {/* Modals (outside stagger container) */}
-      <ProjectsModal
-        isOpen={isProjectsOpen}
-        onClose={() => setIsProjectsOpen(false)}
-        onSelectProject={handleSelectProject}
-      />
       <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={closeShortcuts} />
     </>
   );
