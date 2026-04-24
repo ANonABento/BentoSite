@@ -157,18 +157,15 @@ export function useAudioAnalysis(): UseAudioAnalysisReturn {
     const audioContext = analyzerRef.current.getAudioContext();
     if (!audioContext) return;
 
-    // Stop any existing playback
     if (sourceRef.current) {
       sourceRef.current.stop();
       sourceRef.current.disconnect();
     }
 
-    // Create new source
     const source = audioContext.createBufferSource();
     source.buffer = beatmap.audioBuffer;
     source.connect(audioContext.destination);
 
-    // Resume from pause position
     const offset = pauseTimeRef.current;
     startTimeRef.current = audioContext.currentTime;
     source.start(0, offset);
@@ -176,7 +173,6 @@ export function useAudioAnalysis(): UseAudioAnalysisReturn {
     sourceRef.current = source;
     setIsPlaying(true);
 
-    // Handle playback end
     source.onended = () => {
       setIsPlaying(false);
       setCurrentTime(0);
