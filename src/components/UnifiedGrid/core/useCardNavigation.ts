@@ -8,7 +8,7 @@
  * - Escape clears focus
  */
 
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { CardPosition, CardData } from '../UnifiedGrid.types';
 
 // =============================================================================
@@ -175,7 +175,15 @@ export function useCardNavigation({
   onSelect,
   enabled = true,
 }: UseCardNavigationOptions): UseCardNavigationReturn {
-  const [focusedCardId, setFocusedCardId] = useState<string | null>(null);
+  const [storedFocusedCardId, setFocusedCardId] = useState<string | null>(null);
+
+  // Effective focus: if the stored focused card is no longer visible (e.g. it
+  // scrolled off or was filtered out), treat focus as null without writing
+  // state. The stored ID stays intact until the user makes a new selection.
+  const focusedCardId =
+    storedFocusedCardId && visible.has(storedFocusedCardId)
+      ? storedFocusedCardId
+      : null;
 
   // Build card lookup map
   const cardMap = useMemo(() => {
@@ -256,16 +264,6 @@ export function useCardNavigation({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [enabled, handleKeyDown]);
-
-  // Clear focus if focused card is no longer visible. Applied during render
-  // (guarded by prev-value ref) to avoid setState-in-effect cascades.
-  const prevVisibleRef = useRef(visible);
-  if (prevVisibleRef.current !== visible) {
-    prevVisibleRef.current = visible;
-    if (focusedCardId && !visible.has(focusedCardId)) {
-      setFocusedCardId(null);
-    }
-  }
 
   return {
     focusedCardId,

@@ -7,7 +7,7 @@
  * - Search term and category filter
  */
 
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { SearchCardState, SearchCardEdge, Camera } from '../UnifiedGrid.types';
 import { SEARCH_CARD } from '../UnifiedGrid.constants';
 import { canvasToScreen } from '../core/useViewport';
@@ -44,42 +44,30 @@ interface UseSearchCardStateReturn extends SearchCardState {
 
 /**
  * Detect which edge the search card should stick to.
- * Uses hysteresis to prevent jitter: collapse at COLLAPSE_THRESHOLD,
- * but only expand back at EXPAND_THRESHOLD (larger value).
+ * Uses midpoint of COLLAPSE_THRESHOLD and EXPAND_THRESHOLD to provide a
+ * stable edge boundary without needing hysteresis state.
  */
 function detectEdge(
   camera: Camera,
-  windowSize: { width: number; height: number },
-  currentEdge: SearchCardEdge
+  windowSize: { width: number; height: number }
 ): SearchCardEdge {
-  // Search card lives at canvas origin (0, 0)
   const screenPos = canvasToScreen(0, 0, camera, windowSize);
 
   const cardWidth = SEARCH_CARD.EXPANDED_WIDTH;
   const cardHeight = SEARCH_CARD.EXPANDED_HEIGHT;
 
-  // Calculate card bounds in screen space
   const cardLeft = screenPos.x - cardWidth / 2;
   const cardRight = screenPos.x + cardWidth / 2;
   const cardTop = screenPos.y - cardHeight / 2;
   const cardBottom = screenPos.y + cardHeight / 2;
 
-  // Use hysteresis: smaller threshold to collapse, larger to expand back
-  const collapseThreshold = SEARCH_CARD.COLLAPSE_THRESHOLD;
-  const expandThreshold = SEARCH_CARD.EXPAND_THRESHOLD;
+  // Single boundary averaged from the old hysteresis range for stability.
+  const threshold = (SEARCH_CARD.COLLAPSE_THRESHOLD + SEARCH_CARD.EXPAND_THRESHOLD) / 2;
 
-  // When already collapsed to an edge, use larger threshold to expand
-  // When centered (none), use smaller threshold to collapse
-  const leftThreshold = currentEdge === 'left' ? expandThreshold : collapseThreshold;
-  const rightThreshold = currentEdge === 'right' ? expandThreshold : collapseThreshold;
-  const topThreshold = currentEdge === 'top' ? expandThreshold : collapseThreshold;
-  const bottomThreshold = currentEdge === 'bottom' ? expandThreshold : collapseThreshold;
-
-  // Check if card would be mostly off-screen
-  if (cardRight < leftThreshold) return 'left';
-  if (cardLeft > windowSize.width - rightThreshold) return 'right';
-  if (cardBottom < topThreshold) return 'top';
-  if (cardTop > windowSize.height - bottomThreshold) return 'bottom';
+  if (cardRight < threshold) return 'left';
+  if (cardLeft > windowSize.width - threshold) return 'right';
+  if (cardBottom < threshold) return 'top';
+  if (cardTop > windowSize.height - threshold) return 'bottom';
 
   return 'none';
 }
@@ -131,83 +119,66 @@ export function useSearchCardState(
     onFilterChange,
   } = options;
 
-  // Core state
-  const [expanded, setExpanded] = useState(true);
+  // User-intent expanded state. The effective expanded state is derived below:
+  // the search card is always collapsed when it reaches an edge.
+  const [userExpanded, setUserExpanded] = useState(true);
   const [searchTerm, setSearchTermState] = useState('');
   const [category, setCategoryState] = useState<string | null>(null);
 
-  // Track previous edge in a ref for hysteresis. Updated during render,
-  // no setState needed since detectedEdge is derived each render.
-  const currentEdgeRef = useRef<SearchCardEdge>('none');
+  // Detected edge (derived from camera). Mobile is always 'top'.
+  const detectedEdge = useMemo(
+    () => (isMobile ? 'top' : detectEdge(camera, windowSize)),
+    [camera, windowSize, isMobile]
+  );
 
-  // Detect edge based on camera position (with hysteresis).
-  const detectedEdge = useMemo(() => {
-    const next = isMobile
-      ? 'top'
-      : detectEdge(camera, windowSize, currentEdgeRef.current);
-    currentEdgeRef.current = next;
-    return next;
-  }, [camera, windowSize, isMobile]);
-
-  // Auto-collapse when transitioning from 'none' to an edge. This preserves
-  // "user must tap to re-expand" UX. Applied during render (guarded by a
-  // prev-value ref) to avoid setState-in-effect cascades.
-  const prevEdgeRef = useRef<SearchCardEdge>('none');
-  if (detectedEdge !== prevEdgeRef.current) {
-    prevEdgeRef.current = detectedEdge;
-    if (detectedEdge !== 'none' && expanded) {
-      setExpanded(false);
-    }
-  }
+  // Effective expanded: must be user-expanded AND not pushed to an edge.
+  const expanded = userExpanded && detectedEdge === 'none';
 
   // Calculate screen position
   const screenPosition = useMemo(() => {
-    if (detectedEdge !== 'none' || !expanded) {
+    if (!expanded) {
       return getCollapsedPosition(
         detectedEdge === 'none' ? 'top' : detectedEdge,
         windowSize
       );
     }
-
-    // Expanded: position at canvas origin converted to screen
     return canvasToScreen(0, 0, camera, windowSize);
   }, [detectedEdge, expanded, camera, windowSize]);
 
-  // Toggle expanded state
   const toggleExpanded = useCallback(() => {
-    setExpanded((prev) => !prev);
+    setUserExpanded((prev) => !prev);
   }, []);
 
-  // Set search term with callback
-  const setSearchTerm = useCallback((term: string) => {
-    setSearchTermState(term);
-    onFilterChange?.(term, category);
-  }, [category, onFilterChange]);
+  const setSearchTerm = useCallback(
+    (term: string) => {
+      setSearchTermState(term);
+      onFilterChange?.(term, category);
+    },
+    [category, onFilterChange]
+  );
 
-  // Set category with callback
-  const setCategory = useCallback((cat: string | null) => {
-    setCategoryState(cat);
-    onFilterChange?.(searchTerm, cat);
-  }, [searchTerm, onFilterChange]);
+  const setCategory = useCallback(
+    (cat: string | null) => {
+      setCategoryState(cat);
+      onFilterChange?.(searchTerm, cat);
+    },
+    [searchTerm, onFilterChange]
+  );
 
-  // Clear all filters
   const clearFilters = useCallback(() => {
     setSearchTermState('');
     setCategoryState(null);
     onFilterChange?.('', null);
   }, [onFilterChange]);
 
-  // Determine if card is in collapsed state (edge override OR user collapsed)
-  const isCollapsed = detectedEdge !== 'none' || !expanded;
-
   return {
-    expanded: !isCollapsed,
+    expanded,
     edge: detectedEdge,
     searchTerm,
     category,
     categories,
     toggleExpanded,
-    setExpanded,
+    setExpanded: setUserExpanded,
     setSearchTerm,
     setCategory,
     clearFilters,

@@ -7,7 +7,7 @@
  * - Creates organic cycling effect with delays
  */
 
-import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import type {
   CardData,
   CardPosition,
@@ -373,40 +373,37 @@ export function useCardQueue(options: UseCardQueueOptions): UseCardQueueReturn {
   }, [filteredCards, maxVisible, rotationRange]);
 
   /**
-   * Apply search/category filter
+   * Apply search/category filter and synchronously reset visible/queue so the
+   * grid reflects the new filter immediately (without waiting for pan-driven
+   * despawn/spawn cycles). Runs in the user's event handler rather than an
+   * effect to avoid cascading re-renders.
    */
-  const applyFilter = useCallback((searchTerm: string, category: string | null) => {
-    setFilterState({ searchTerm, category });
-  }, []);
+  const applyFilter = useCallback(
+    (searchTerm: string, category: string | null) => {
+      setFilterState({ searchTerm, category });
 
-  // Re-initialize visible set and queue whenever the filtered card identity set
-  // changes (search/category filter). Tracking the id signature avoids resetting
-  // on every parent re-render where `cards` is a new array reference.
-  const filteredSignatureRef = useRef<string>('');
-  useEffect(() => {
-    const signature = filteredCards.map((c) => c.id).sort().join('|');
-    if (signature === filteredSignatureRef.current) return;
-    filteredSignatureRef.current = signature;
+      const filtered = filterCards(cards, searchTerm, category);
+      const nextVisible = calculateInitialPositions(
+        filtered,
+        Math.min(QUEUE.INITIAL_SPAWN_COUNT, maxVisible),
+        rotationRange
+      );
+      setVisible(nextVisible);
 
-    const nextVisible = calculateInitialPositions(
-      filteredCards,
-      Math.min(QUEUE.INITIAL_SPAWN_COUNT, maxVisible),
-      rotationRange
-    );
-    setVisible(nextVisible);
-
-    const visibleIds = new Set(nextVisible.keys());
-    setQueue(
-      filteredCards
-        .filter((card) => !visibleIds.has(card.id))
-        .map((card) => ({
-          id: card.id,
-          data: card,
-          queuedAt: Date.now(),
-        }))
-    );
-    lastSpawnTimeRef.current = 0;
-  }, [filteredCards, maxVisible, rotationRange]);
+      const visibleIds = new Set(nextVisible.keys());
+      setQueue(
+        filtered
+          .filter((card) => !visibleIds.has(card.id))
+          .map((card) => ({
+            id: card.id,
+            data: card,
+            queuedAt: Date.now(),
+          }))
+      );
+      lastSpawnTimeRef.current = 0;
+    },
+    [cards, maxVisible, rotationRange]
+  );
 
   return {
     visible,
