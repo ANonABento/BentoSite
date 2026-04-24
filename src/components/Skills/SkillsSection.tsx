@@ -5,8 +5,14 @@ import { m, AnimatePresence } from 'framer-motion';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { staggerFast, scaleIn, buttonTap } from '@/lib/animations';
 import { SectionHeader } from '@/components/ui/SectionHeader';
-import { BentoIcon } from '@/components/BentoOS/BentoIcon';
 import { analytics } from '@/lib/analytics';
+
+// CPU/chip icon for system info
+const SystemIcon = (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+  </svg>
+);
 
 type SkillCategory = 'hardware' | 'software' | 'tools';
 
@@ -121,7 +127,7 @@ export function SkillsSection({ onAskAI }: SkillsSectionProps) {
       {/* Header */}
       <SectionHeader
         title="system info"
-        icon={<BentoIcon size={16} />}
+        icon={SystemIcon}
         iconColor="orange"
         subtitle="> query system"
         mono
@@ -143,7 +149,7 @@ export function SkillsSection({ onAskAI }: SkillsSectionProps) {
             role="region"
             aria-label="Skills categories"
           >
-            <div className="px-4 pb-4 space-y-4">
+            <div className="p-4 space-y-4">
               <CategorySection category="hardware" skills={skills.hardware} onAskAI={onAskAI} isExpanded={isExpanded} />
               <CategorySection category="software" skills={skills.software} onAskAI={onAskAI} isExpanded={isExpanded} />
               <CategorySection category="tools" skills={skills.tools} onAskAI={onAskAI} isExpanded={isExpanded} />

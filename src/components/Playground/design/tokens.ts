@@ -1,66 +1,76 @@
 /**
  * Playground Design Tokens
- * Modern, minimalist design system inspired by Human Benchmark & Monkeytype
+ * Retro Arcade / Synthwave design system with CRT aesthetics
  */
 
 export const colors = {
-  // Backgrounds - near-black with subtle blue undertones
+  // Backgrounds - pure black with subtle color hints
   bg: {
-    deep: '#050612',
-    surface: '#0c0c14',
-    elevated: '#141420',
-    hover: '#1a1a28',
+    deep: '#0a0a0a',
+    surface: '#121212',
+    elevated: '#1a1a1a',
+    hover: '#242424',
   },
 
-  // Text - off-white to reduce eye strain
+  // Text - slightly warm white for CRT feel
   text: {
-    primary: '#e8e6e3',
-    secondary: '#a1a1aa',
-    muted: '#71717a',
-    disabled: '#52525b',
+    primary: '#f0f0e8',
+    secondary: '#a8a8a0',
+    muted: '#707070',
+    disabled: '#505050',
   },
 
-  // Accent colors - vibrant but not garish
+  // Accent colors - Neon Synthwave palette
   accent: {
-    gold: '#fbbf24',
-    goldHover: '#f59e0b',
-    cyan: '#22d3ee',
-    cyanHover: '#06b6d4',
-    rose: '#fb7185',
-    roseHover: '#f43f5e',
-    purple: '#a78bfa',
-    purpleHover: '#8b5cf6',
+    pink: '#ff007f',      // Hot pink (primary)
+    pinkHover: '#ff3399',
+    cyan: '#00ffff',      // Electric cyan
+    cyanHover: '#33ffff',
+    purple: '#bf00ff',    // Vivid purple
+    purpleHover: '#cc33ff',
+    blue: '#0066ff',      // Electric blue
+    blueHover: '#3388ff',
+    // Keep old names for backwards compat
+    gold: '#ff007f',
+    goldHover: '#ff3399',
   },
 
   // Game-specific semantic colors
   game: {
-    success: '#4ade80',
-    successBg: 'rgba(74, 222, 128, 0.15)',
-    error: '#f87171',
-    errorBg: 'rgba(248, 113, 113, 0.15)',
-    warning: '#fbbf24',
-    warningBg: 'rgba(251, 191, 36, 0.15)',
-    perfect: '#22d3ee',
-    perfectBg: 'rgba(34, 211, 238, 0.15)',
+    success: '#00ff88',
+    successBg: 'rgba(0, 255, 136, 0.15)',
+    error: '#ff3366',
+    errorBg: 'rgba(255, 51, 102, 0.15)',
+    warning: '#ffcc00',
+    warningBg: 'rgba(255, 204, 0, 0.15)',
+    perfect: '#00ffff',
+    perfectBg: 'rgba(0, 255, 255, 0.15)',
   },
 
-  // Gradients
+  // Gradients - Synthwave style
   gradient: {
-    gold: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-    cyan: 'linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%)',
-    purple: 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)',
-    rose: 'linear-gradient(135deg, #fb7185 0%, #f43f5e 100%)',
-    dark: 'linear-gradient(180deg, #0c0c14 0%, #050612 100%)',
-    radial: 'radial-gradient(ellipse at center, rgba(167, 139, 250, 0.08) 0%, transparent 70%)',
+    pink: 'linear-gradient(135deg, #ff007f 0%, #ff3399 100%)',
+    cyan: 'linear-gradient(135deg, #00ffff 0%, #00cccc 100%)',
+    purple: 'linear-gradient(135deg, #bf00ff 0%, #8000aa 100%)',
+    blue: 'linear-gradient(135deg, #0066ff 0%, #0044aa 100%)',
+    dark: 'linear-gradient(180deg, #0a0a0a 0%, #050505 100%)',
+    synthwave: 'linear-gradient(180deg, #0a0612 0%, #0a0a0a 50%, #060a0a 100%)',
+    neonHorizon: 'linear-gradient(180deg, #ff007f 0%, #bf00ff 50%, #0066ff 100%)',
+    // Keep old names for backwards compat
+    gold: 'linear-gradient(135deg, #ff007f 0%, #ff3399 100%)',
+    radial: 'radial-gradient(ellipse at center, rgba(255, 0, 127, 0.08) 0%, transparent 70%)',
   },
 
-  // Glow effects
+  // Glow effects - Stronger neon glow
   glow: {
-    gold: '0 0 20px rgba(251, 191, 36, 0.4)',
-    cyan: '0 0 20px rgba(34, 211, 238, 0.4)',
-    purple: '0 0 20px rgba(167, 139, 250, 0.4)',
-    success: '0 0 20px rgba(74, 222, 128, 0.4)',
-    error: '0 0 20px rgba(248, 113, 113, 0.4)',
+    pink: '0 0 20px rgba(255, 0, 127, 0.6), 0 0 40px rgba(255, 0, 127, 0.3)',
+    cyan: '0 0 20px rgba(0, 255, 255, 0.6), 0 0 40px rgba(0, 255, 255, 0.3)',
+    purple: '0 0 20px rgba(191, 0, 255, 0.6), 0 0 40px rgba(191, 0, 255, 0.3)',
+    blue: '0 0 20px rgba(0, 102, 255, 0.6), 0 0 40px rgba(0, 102, 255, 0.3)',
+    success: '0 0 20px rgba(0, 255, 136, 0.5)',
+    error: '0 0 20px rgba(255, 51, 102, 0.5)',
+    // Keep old names for backwards compat
+    gold: '0 0 20px rgba(255, 0, 127, 0.6), 0 0 40px rgba(255, 0, 127, 0.3)',
   },
 } as const;
 

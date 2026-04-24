@@ -19,7 +19,7 @@ export function ModelInfoDisplay({ model, isMobile }: ModelInfoDisplayProps) {
 
   return (
     <CollapsibleWidget
-      title="Model Info"
+      title={model.name}
       icon={infoIcon}
       defaultPosition={{ x: 16, y: 16 }}
       isCollapsed={isCollapsed}
@@ -28,13 +28,10 @@ export function ModelInfoDisplay({ model, isMobile }: ModelInfoDisplayProps) {
       className="max-w-sm"
     >
       <div className="space-y-3">
-        {/* Model header */}
-        <div className="space-y-1">
-          <h4 className="font-bold text-lg text-[var(--interactive)] leading-tight">{model.name}</h4>
-          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${isMobile ? 'text-xs' : 'text-sm'} bg-[var(--purple-muted)] text-[var(--interactive)] border border-[var(--interactive)] border-opacity-30`}>
-            {model.category}
-          </span>
-        </div>
+        {/* Category badge */}
+        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${isMobile ? 'text-xs' : 'text-sm'} bg-[var(--purple-muted)] text-[var(--interactive)] border border-[var(--interactive)] border-opacity-30`}>
+          {model.category}
+        </span>
 
         {!isCollapsed && (
           <React.Fragment>

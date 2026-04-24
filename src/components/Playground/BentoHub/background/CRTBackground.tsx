@@ -246,7 +246,6 @@ function CRTShaderMesh({ reducedMotion, isMobile }: { reducedMotion: boolean; is
       // eslint-disable-next-line react-hooks/immutability
       material.uTime = state.clock.elapsedTime;
       material.uResolution.set(size.width, size.height);
-      // eslint-disable-next-line react-hooks/immutability
       material.uIntensity = isMobile ? 0.6 : 1.0;
     }
   });

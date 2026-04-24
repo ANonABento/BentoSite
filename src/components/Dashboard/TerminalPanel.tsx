@@ -5,7 +5,13 @@ import { motion } from 'framer-motion';
 import { dashboardPanelIn } from '@/lib/animations';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { SectionHeader } from '@/components/ui/SectionHeader';
-import { BentoIcon } from '@/components/BentoOS/BentoIcon';
+
+// Terminal/command prompt icon
+const TerminalIcon = (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  </svg>
+);
 
 interface ChatFns {
   send: (content: string) => void;
@@ -25,10 +31,6 @@ interface TerminalPanelProps {
   onSeeProjects: () => void;
 }
 
-function BentoHeaderIcon() {
-  return <BentoIcon size={16} />;
-}
-
 export function TerminalPanel({
   Chatbot,
   onChatReady,
@@ -43,7 +45,7 @@ export function TerminalPanel({
     >
       <SectionHeader
         title="terminal"
-        icon={<BentoHeaderIcon />}
+        icon={TerminalIcon}
         iconColor="orange"
         subtitle="anon@bentOS"
         mono
