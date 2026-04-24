@@ -30,9 +30,6 @@ export const colors = {
     purpleHover: '#cc33ff',
     blue: '#0066ff',      // Electric blue
     blueHover: '#3388ff',
-    // Keep old names for backwards compat
-    gold: '#ff007f',
-    goldHover: '#ff3399',
   },
 
   // Game-specific semantic colors
@@ -56,8 +53,6 @@ export const colors = {
     dark: 'linear-gradient(180deg, #0a0a0a 0%, #050505 100%)',
     synthwave: 'linear-gradient(180deg, #0a0612 0%, #0a0a0a 50%, #060a0a 100%)',
     neonHorizon: 'linear-gradient(180deg, #ff007f 0%, #bf00ff 50%, #0066ff 100%)',
-    // Keep old names for backwards compat
-    gold: 'linear-gradient(135deg, #ff007f 0%, #ff3399 100%)',
     radial: 'radial-gradient(ellipse at center, rgba(255, 0, 127, 0.08) 0%, transparent 70%)',
   },
 
@@ -69,8 +64,6 @@ export const colors = {
     blue: '0 0 20px rgba(0, 102, 255, 0.6), 0 0 40px rgba(0, 102, 255, 0.3)',
     success: '0 0 20px rgba(0, 255, 136, 0.5)',
     error: '0 0 20px rgba(255, 51, 102, 0.5)',
-    // Keep old names for backwards compat
-    gold: '0 0 20px rgba(255, 0, 127, 0.6), 0 0 40px rgba(255, 0, 127, 0.3)',
   },
 } as const;
 
