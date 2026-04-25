@@ -3,7 +3,6 @@
 import { ComponentType } from 'react';
 import { m } from 'framer-motion';
 import { sectionItem, sectionStagger } from '@/lib/animations';
-import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import type { DimensionViewerProps } from '@/components/Dimension/Dimension.types';
 import { ScrollableErrorFallback } from './ScrollableErrorFallback';

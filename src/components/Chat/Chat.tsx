@@ -46,10 +46,15 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
   }, [clearChat, clearError]);
 
   const sendMessageRef = useRef(sendMessage);
-  sendMessageRef.current = sendMessage;
-
   const clearChatRef = useRef(clear);
-  clearChatRef.current = clear;
+
+  useEffect(() => {
+    sendMessageRef.current = sendMessage;
+  }, [sendMessage]);
+
+  useEffect(() => {
+    clearChatRef.current = clear;
+  }, [clear]);
 
   useEffect(() => {
     if (onReady) {
