@@ -55,6 +55,15 @@ describe('Chat.storage', () => {
         buildMessage('0'),
         { nope: true },
         { id: '2', role: 'user', content: 'missing timestamp' },
+        { id: '3', role: 'system', content: 'bad role', timestamp: 3 },
+        { id: '4', role: 'assistant', content: 'bad timestamp', timestamp: '4' },
+        {
+          id: '5',
+          role: 'assistant',
+          content: 'bad feedback',
+          timestamp: 5,
+          feedback: 'maybe',
+        },
       ])
     );
 

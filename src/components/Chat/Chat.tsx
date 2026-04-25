@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
 import { useToast } from '@/components/ui/Toast';
-import { useChatMessages, useChatSubmit } from './Chat.hooks';
+import { useHasMounted } from '@/lib/use-has-mounted';
+import { useChatSession } from './Chat.hooks';
 import { ChatInput } from './parts/ChatInput';
 import { MessageItem } from './parts/MessageItem';
 import { QuickActions } from './parts/QuickActions';
@@ -10,76 +10,21 @@ import { SuggestedQuestions } from './parts/SuggestedQuestions';
 import type { ChatbotProps } from './Chat.types';
 
 export default function Chatbot({ onReady, onViewResume, onSeeProjects }: ChatbotProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const { success: toastSuccess } = useToast();
-  const { messages, setMessages, messagesEndRef, addAssistantMessage, clearChat } = useChatMessages();
+  const hasMounted = useHasMounted();
   const {
+    messages,
     input,
-    setInput,
     isLoading,
     error,
     isDemoMode,
-    sendMessage,
-    handleFeedback,
-    clearError,
-  } = useChatSubmit({
     inputRef,
-    messages,
-    setMessages,
-  });
-
-  const handleCopied = useCallback(() => {
-    toastSuccess('Copied to clipboard!');
-  }, [toastSuccess]);
-
-  const addAssistant = useCallback(
-    (content: string) => {
-      clearError();
-      addAssistantMessage(content);
-    },
-    [addAssistantMessage, clearError]
-  );
-
-  const clear = useCallback(() => {
-    clearError();
-    clearChat();
-  }, [clearChat, clearError]);
-
-  const sendMessageRef = useRef(sendMessage);
-  const clearChatRef = useRef(clear);
-
-  useEffect(() => {
-    sendMessageRef.current = sendMessage;
-  }, [sendMessage]);
-
-  useEffect(() => {
-    clearChatRef.current = clear;
-  }, [clear]);
-
-  useEffect(() => {
-    if (onReady) {
-      onReady({
-        send: (content: string) => sendMessageRef.current(content),
-        addAssistant,
-        clear: () => clearChatRef.current(),
-      });
-    }
-  }, [addAssistant, onReady]);
-
-  const handleSubmit = useCallback(
-    (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      sendMessage(input);
-    },
-    [input, sendMessage]
-  );
-
-  const handleSuggestedQuestion = useCallback(
-    (question: string) => {
-      sendMessage(question);
-    },
-    [sendMessage]
-  );
+    messagesEndRef,
+    setInput,
+    handleSubmit,
+    handleSuggestedQuestion,
+    handleFeedback,
+  } = useChatSession({ onReady });
 
   return (
     <div className="flex flex-col h-full" role="region" aria-label="Chat conversation">
@@ -96,7 +41,8 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
           <MessageItem
             key={message.id}
             message={message}
-            onCopySuccess={handleCopied}
+            hasMounted={hasMounted}
+            onCopySuccess={() => toastSuccess('Copied to clipboard!')}
             onFeedback={handleFeedback}
           />
         ))}

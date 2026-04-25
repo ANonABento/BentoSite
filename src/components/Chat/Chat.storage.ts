@@ -24,13 +24,22 @@ export function getClearedMessage(): Message {
 }
 
 export function isValidMessage(message: unknown): message is Message {
+  if (message === null || typeof message !== 'object') {
+    return false;
+  }
+
+  const candidate = message as Record<string, unknown>;
+
   return (
-    message !== null &&
-    typeof message === 'object' &&
-    'id' in message &&
-    'role' in message &&
-    'content' in message &&
-    'timestamp' in message
+    typeof candidate.id === 'string' &&
+    (candidate.role === 'user' || candidate.role === 'assistant') &&
+    typeof candidate.content === 'string' &&
+    typeof candidate.timestamp === 'number' &&
+    Number.isFinite(candidate.timestamp) &&
+    (candidate.feedback === undefined ||
+      candidate.feedback === null ||
+      candidate.feedback === 'positive' ||
+      candidate.feedback === 'negative')
   );
 }
 

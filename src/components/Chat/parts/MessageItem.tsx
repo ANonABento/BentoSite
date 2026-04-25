@@ -8,20 +8,24 @@ import { FeedbackButtons } from './FeedbackButtons';
 
 interface MessageItemProps {
   message: Message;
+  hasMounted: boolean;
   onCopySuccess: () => void;
   onFeedback: (messageId: string, feedback: 'positive' | 'negative') => void;
 }
 
 export const MessageItem = memo(function MessageItem({
   message,
+  hasMounted,
   onCopySuccess,
   onFeedback,
 }: MessageItemProps) {
-  const timeStr = new Date(message.timestamp).toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
+  const timeStr = hasMounted
+    ? new Date(message.timestamp).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      })
+    : '--:--';
 
   if (message.role === 'user') {
     return (

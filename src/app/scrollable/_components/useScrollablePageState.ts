@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChatFunctions } from '@/components/Chat/chat.types';
+import type { ChatFunctions } from '@/components/Chat';
 
 type ChatPanelFunctions = Pick<ChatFunctions, 'send' | 'clear'>;
 

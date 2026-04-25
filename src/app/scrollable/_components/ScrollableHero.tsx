@@ -45,7 +45,6 @@ export function ScrollableHero({
             email={PORTFOLIO_DATA.personal.email}
             resumeUrl="/resume.pdf"
             compact
-            onProjectsClick={onOpenProjects}
           />
         </div>
       </m.header>
@@ -90,7 +89,7 @@ export function ScrollableHero({
               </p>
               <div className="flex flex-wrap gap-4">
                 <m.button
-                  onClick={() => scrollToSection('projects')}
+                  onClick={onOpenProjects}
                   className="px-6 py-3 bg-[var(--interactive)] hover:bg-[var(--interactive-hover)] text-[var(--text-on-accent)] rounded-xl font-medium transition-colors"
                   whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
                   whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}

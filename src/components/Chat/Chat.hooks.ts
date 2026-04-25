@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { analytics } from '@/lib/analytics';
 import { API_ENDPOINTS, TIMEOUTS } from '@/lib/constants';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
@@ -12,94 +12,64 @@ import {
   loadMessages,
   saveMessages,
 } from './Chat.storage';
-import type { Message } from './Chat.types';
+import type { ChatFunctions, Message } from './Chat.types';
 
-interface UseChatSubmitOptions {
-  inputRef: React.RefObject<HTMLInputElement | null>;
-  messages: Message[];
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
+interface UseChatSessionOptions {
+  onReady?: (fns: ChatFunctions) => void;
 }
 
-export function useChatMessages() {
-  const [messages, setMessages] = useState<Message[]>(() => loadMessages() ?? [getDefaultMessage()]);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    saveMessages(messages);
-  }, [messages]);
-
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, []);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
-
-  const addAssistantMessage = useCallback((content: string) => {
-    const trimmedContent = content.trim();
-    if (!trimmedContent) {
-      return;
-    }
-
-    setMessages((previousMessages) => [
-      ...previousMessages,
-      {
-        id: generateId(),
-        role: 'assistant',
-        content: trimmedContent,
-        timestamp: Date.now(),
-      },
-    ]);
-  }, []);
-
-  const clearChat = useCallback(() => {
-    clearStoredMessages();
-    setMessages([getClearedMessage()]);
-  }, []);
-
-  return {
-    messages,
-    setMessages,
-    messagesEndRef,
-    addAssistantMessage,
-    clearChat,
-  };
-}
-
-export function useChatSubmit({ inputRef, messages, setMessages }: UseChatSubmitOptions) {
+export function useChatSession({ onReady }: UseChatSessionOptions) {
+  const [messages, setMessages] = useState<Message[]>([getDefaultMessage()]);
+  const [isHydrated, setIsHydrated] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const messagesRef = useRef(messages);
 
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
 
-  const clearError = useCallback(() => {
-    setError(null);
+  useEffect(() => {
+    const stored = loadMessages();
+    if (stored) {
+      messagesRef.current = stored;
+      setMessages(stored);
+    }
+    setIsHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (isHydrated) {
+      saveMessages(messages);
+    }
+  }, [isHydrated, messages]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const handleFeedback = useCallback(
     async (messageId: string, feedback: 'positive' | 'negative') => {
-      const message = messages.find((candidate) => candidate.id === messageId);
-      if (!message) {
+      const targetMessage = messagesRef.current.find((message) => message.id === messageId);
+      if (!targetMessage) {
         return;
       }
 
-      const newFeedback = message.feedback === feedback ? null : feedback;
+      const nextFeedback = targetMessage.feedback === feedback ? null : feedback;
 
       setMessages((previousMessages) =>
-        previousMessages.map((candidate) =>
-          candidate.id === messageId
-            ? { ...candidate, feedback: newFeedback }
-            : candidate
+        previousMessages.map((message) =>
+          message.id === messageId
+            ? { ...message, feedback: nextFeedback }
+            : message
         )
       );
 
-      if (!newFeedback) {
+      if (!nextFeedback) {
         return;
       }
 
@@ -109,21 +79,55 @@ export function useChatSubmit({ inputRef, messages, setMessages }: UseChatSubmit
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             messageId,
-            feedback: newFeedback,
-            messageContent: message.content,
+            feedback: nextFeedback,
+            messageContent: targetMessage.content,
             timestamp: Date.now(),
           }),
         });
       } catch {
-        // Feedback is best-effort only.
+        // Feedback is non-critical; keep local state only.
       }
     },
-    [messages, setMessages]
+    []
   );
+
+  const addAssistantMessage = useCallback((content: string) => {
+    const trimmed = content.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    setMessages((previousMessages) => {
+      const nextMessages = [
+        ...previousMessages,
+        {
+          id: generateId(),
+          role: 'assistant' as const,
+          content: trimmed,
+          timestamp: Date.now(),
+        },
+      ];
+
+      messagesRef.current = nextMessages;
+      return nextMessages;
+    });
+    setError(null);
+  }, []);
+
+  const clearChat = useCallback(() => {
+    clearStoredMessages();
+
+    const resetMessages = [getClearedMessage()];
+
+    messagesRef.current = resetMessages;
+    setMessages(resetMessages);
+    setError(null);
+  }, []);
 
   const sendMessage = useCallback(
     async (content: string) => {
-      if (!content.trim() || isLoading) {
+      const trimmed = content.trim();
+      if (!trimmed || isLoading) {
         return;
       }
 
@@ -132,12 +136,12 @@ export function useChatSubmit({ inputRef, messages, setMessages }: UseChatSubmit
       const userMessage: Message = {
         id: generateId(),
         role: 'user',
-        content: content.trim(),
+        content: trimmed,
         timestamp: Date.now(),
       };
 
       const nextMessages = [...messagesRef.current, userMessage];
-
+      messagesRef.current = nextMessages;
       setMessages(nextMessages);
       setInput('');
       setIsLoading(true);
@@ -179,39 +183,86 @@ export function useChatSubmit({ inputRef, messages, setMessages }: UseChatSubmit
           timestamp: Date.now(),
         };
 
-        setMessages((previousMessages) => [...previousMessages, assistantMessage]);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error && err.name === 'AbortError'
+        setMessages((previousMessages) => {
+          const updatedMessages = [...previousMessages, assistantMessage];
+          messagesRef.current = updatedMessages;
+          return updatedMessages;
+        });
+      } catch (requestError) {
+        const nextError =
+          requestError instanceof Error && requestError.name === 'AbortError'
             ? 'Request timed out. Please try again.'
             : 'Failed to send message. Please try again.';
 
-        setError(errorMessage);
-        setMessages((previousMessages) => [
-          ...previousMessages,
-          {
-            id: generateId(),
-            role: 'assistant',
-            content: `I apologize, but I'm having trouble connecting right now. You can reach ${PORTFOLIO_DATA.personal.name} directly at ${PORTFOLIO_DATA.personal.email}.`,
-            timestamp: Date.now(),
-          },
-        ]);
+        setError(nextError);
+
+        const fallbackMessage: Message = {
+          id: generateId(),
+          role: 'assistant',
+          content: `I apologize, but I'm having trouble connecting right now. You can reach ${PORTFOLIO_DATA.personal.name} directly at ${PORTFOLIO_DATA.personal.email}.`,
+          timestamp: Date.now(),
+        };
+
+        setMessages((previousMessages) => {
+          const updatedMessages = [...previousMessages, fallbackMessage];
+          messagesRef.current = updatedMessages;
+          return updatedMessages;
+        });
       } finally {
         setIsLoading(false);
         inputRef.current?.focus();
       }
     },
-    [inputRef, isLoading, setMessages]
+    [isLoading]
+  );
+
+  const sendMessageRef = useRef(sendMessage);
+  sendMessageRef.current = sendMessage;
+
+  const clearChatRef = useRef(clearChat);
+  clearChatRef.current = clearChat;
+
+  useEffect(() => {
+    if (!onReady) {
+      return;
+    }
+
+    onReady({
+      send: (content: string) => {
+        void sendMessageRef.current(content);
+      },
+      addAssistant: addAssistantMessage,
+      clear: () => clearChatRef.current(),
+    });
+  }, [addAssistantMessage, onReady]);
+
+  const handleSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      void sendMessage(input);
+    },
+    [input, sendMessage]
+  );
+
+  const handleSuggestedQuestion = useCallback(
+    (question: string) => {
+      void sendMessage(question);
+    },
+    [sendMessage]
   );
 
   return {
+    messages,
     input,
-    setInput,
     isLoading,
     error,
     isDemoMode,
-    sendMessage,
+    inputRef,
+    messagesEndRef,
+    setInput,
+    handleSubmit,
+    handleSuggestedQuestion,
     handleFeedback,
-    clearError,
+    clearChat,
   };
 }

@@ -3,7 +3,7 @@
 import { ComponentType, RefObject } from 'react';
 import { AnimatePresence, m } from 'framer-motion';
 import { ErrorBoundary } from '@/components/ui';
-import { ChatFunctions } from '@/components/Chat/chat.types';
+import type { ChatFunctions } from '@/components/Chat';
 
 type ChatPanelFunctions = Pick<ChatFunctions, 'send' | 'clear'>;
 
