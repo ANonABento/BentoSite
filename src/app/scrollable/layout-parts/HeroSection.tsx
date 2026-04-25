@@ -4,7 +4,9 @@ import { ComponentType } from 'react';
 import { m } from 'framer-motion';
 import { sectionItem, sectionStagger } from '@/lib/animations';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import type { DimensionViewerProps } from '@/components/Dimension';
+import type { DimensionViewerProps } from '@/components/Dimension/Dimension.types';
+import Header from '@/components/Header';
+import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { ScrollableErrorFallback } from './ScrollableErrorFallback';
 
 interface HeroSectionProps {
@@ -25,7 +27,31 @@ export function HeroSection({
   onViewRobots,
 }: HeroSectionProps) {
   return (
-    <section className="pt-24 pb-16 md:pt-32 md:pb-24 min-h-[80vh] flex items-center">
+    <>
+      <m.header
+        className="fixed top-0 left-0 right-0 z-50 bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--border)]"
+        initial={prefersReducedMotion ? false : { y: -100 }}
+        animate={{ y: 0 }}
+        transition={
+          prefersReducedMotion
+            ? instantTransition
+            : { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }
+        }
+      >
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4">
+          <Header
+            name={PORTFOLIO_DATA.personal.name}
+            tagline={PORTFOLIO_DATA.personal.title}
+            githubUrl={PORTFOLIO_DATA.personal.github}
+            linkedinUrl={PORTFOLIO_DATA.personal.linkedin}
+            email={PORTFOLIO_DATA.personal.email}
+            resumeUrl="/resume.pdf"
+            compact
+          />
+        </div>
+      </m.header>
+
+      <section className="pt-24 pb-16 md:pt-32 md:pb-24 min-h-[80vh] flex items-center">
       <m.div
         className="max-w-7xl mx-auto px-4 md:px-6 w-full"
         initial="hidden"
@@ -119,6 +145,7 @@ export function HeroSection({
           </m.button>
         </m.div>
       </m.div>
-    </section>
+      </section>
+    </>
   );
 }

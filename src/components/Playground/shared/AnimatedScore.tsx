@@ -9,6 +9,7 @@ interface AnimatedScoreProps {
   prefix?: string;
   className?: string;
   delay?: number;
+  duration?: number;
 }
 
 /**
@@ -20,6 +21,7 @@ export function AnimatedScore({
   prefix = '',
   className = '',
   delay = 0,
+  duration = 0.3,
 }: AnimatedScoreProps) {
   const spring = useSpring(0, {
     stiffness: 100,

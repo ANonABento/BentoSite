@@ -2,7 +2,8 @@
 
 import { memo } from 'react';
 import ReactMarkdown from 'react-markdown';
-import type { Message } from '../chat.types';
+import { useHasMounted } from '@/lib/use-has-mounted';
+import type { Message } from '../Chat.types';
 import { CopyButton } from './CopyButton';
 import { FeedbackButtons } from './FeedbackButtons';
 
@@ -17,11 +18,14 @@ export const MessageItem = memo(function MessageItem({
   onCopySuccess,
   onFeedback,
 }: MessageItemProps) {
-  const timeStr = new Date(message.timestamp).toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
+  const hasMounted = useHasMounted();
+  const timeStr = hasMounted
+    ? new Date(message.timestamp).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      })
+    : '--:--';
 
   if (message.role === 'user') {
     return (

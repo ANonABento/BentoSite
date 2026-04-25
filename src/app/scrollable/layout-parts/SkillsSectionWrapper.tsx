@@ -6,12 +6,16 @@ import { sectionItem, sectionStagger } from '@/lib/animations';
 
 interface SkillsSectionWrapperProps {
   SkillsSection: ComponentType<{ onAskAI?: (skill: string) => void }>;
+  instantTransition: { duration: number };
   onAskAboutSkill: (skill: string) => void;
+  prefersReducedMotion: boolean;
 }
 
 export function SkillsSectionWrapper({
   SkillsSection,
+  instantTransition,
   onAskAboutSkill,
+  prefersReducedMotion,
 }: SkillsSectionWrapperProps) {
   return (
     <section id="skills" className="py-16 md:py-24">
@@ -21,6 +25,7 @@ export function SkillsSectionWrapper({
         whileInView="visible"
         viewport={{ once: true, margin: '-100px' }}
         variants={sectionStagger}
+        transition={prefersReducedMotion ? instantTransition : undefined}
       >
         <m.div variants={sectionItem} className="mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
