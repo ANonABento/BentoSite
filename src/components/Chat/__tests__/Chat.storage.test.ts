@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULTS, STORAGE_KEYS } from '@/lib/constants';
 import { clearStoredMessages, getDefaultMessage, loadMessages, saveMessages } from '../Chat.storage';
-import type { Message } from '../Chat.types';
+import type { Message } from '../chat.types';
 
 function buildMessage(id: string): Message {
   return {

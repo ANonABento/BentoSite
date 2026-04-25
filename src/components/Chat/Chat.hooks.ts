@@ -12,7 +12,7 @@ import {
   loadMessages,
   saveMessages,
 } from './Chat.storage';
-import type { Message } from './Chat.types';
+import type { Message } from './chat.types';
 
 interface UseChatSubmitOptions {
   inputRef: React.RefObject<HTMLInputElement | null>;

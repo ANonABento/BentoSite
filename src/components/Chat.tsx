@@ -5,8 +5,10 @@ import { useToast } from '@/components/ui/Toast';
 import { QuickActions } from '@/components/Chat/ChatMessageActions';
 import { ChatInput } from '@/components/Chat/ChatInput';
 import { ChatMessageList } from '@/components/Chat/ChatMessageList';
-import { ChatbotProps } from '@/components/Chat/chat.types';
+import type { ChatbotProps } from '@/components/Chat/chat.types';
 import { useChatSession } from '@/components/Chat/useChatSession';
+
+export type { ChatFunctions, ChatbotProps, Message } from '@/components/Chat/chat.types';
 
 export default function Chatbot({
   onReady,

@@ -4,7 +4,7 @@ import { ComponentType } from 'react';
 import { m } from 'framer-motion';
 import { sectionItem, sectionStagger } from '@/lib/animations';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import type { DimensionViewerProps } from '@/components/Dimension/Dimension.types';
+import type { DimensionViewerProps } from '@/components/Dimension';
 import { ScrollableErrorFallback } from './ScrollableErrorFallback';
 
 interface HeroSectionProps {

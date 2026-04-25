@@ -1,61 +1,41 @@
-# Dimension.tsx - 3D Model Viewer Component
+# Dimension 3D Model Viewer
 
-A comprehensive, modular 3D model viewer component built with React Three Fiber, featuring advanced model management, responsive design, and professional portfolio integration.
+A modular React Three Fiber viewer for portfolio models, with STL and GLTF/GLB loading, model selection, responsive controls, screenshots, fullscreen mode, and mobile-specific performance behavior.
 
-## 📁 File Structure
+## File Structure
 
-This component has been refactored into a **modular architecture** for better organization and scalability:
-
-```
+```text
 src/components/Dimension/
-├── README.md                    # This file - component documentation
-├── Dimension.tsx                # Main component and exports
-├── Dimension.types.ts           # TypeScript interfaces and types
-├── Dimension.config.ts          # Configuration and constants
-├── Dimension.utils.ts           # Utility functions and helpers
-├── Dimension.hooks.ts           # Custom React hooks
-├── Dimension.ui.tsx             # UI component exports (modular structure)
-├── ui/                          # Modular UI component library
-│   ├── shared/                  # Design system & shared utilities
-│   ├── widgets/                 # Draggable, collapsible widgets
-│   ├── modals/                  # Modal dialogs
-│   └── feedback/                # Loading, error, and feedback components
-└── Dimension.3d.tsx             # Three.js and 3D components
+├── index.ts                    # Public viewer barrel
+├── Dimension.tsx               # Thin viewer shell and UI composition
+├── Dimension.viewport.tsx      # Canvas setup and viewport composition
+├── useDimensionController.ts   # Viewer state, refs, shortcuts, and actions
+├── Dimension.types.ts          # Public and feature-local TypeScript types
+├── Dimension.config.ts         # Model definitions and camera constants
+├── Dimension.hooks.ts          # Small responsive and shortcut hooks
+├── Dimension.utils.ts          # Utility functions
+├── Dimension.ui.tsx            # UI implementation barrel
+├── Dimension.3d.tsx            # Compatibility barrel for scene exports
+├── scene/                      # Three.js scene primitives and model loaders
+│   ├── index.ts
+│   ├── model-format.ts
+│   ├── ModelWrapper.tsx
+│   ├── LODModel.tsx
+│   ├── GLTFModel.tsx
+│   ├── SkeletonLoader.tsx
+│   ├── SceneErrorBoundary.tsx
+│   ├── FallbackModel.tsx
+│   ├── ResponsiveOrbitControls.tsx
+│   └── StationaryBackground.tsx
+└── ui/                         # Widgets, modals, feedback, and shared UI
 ```
 
-## 🎯 Component Overview
+## Public Usage
 
-**Primary Function**: Professional 3D model viewer for portfolio websites with:
-- **Modular UI System**: Recently refactored for maintainability (14 component files)
-- STL file loading with comprehensive error handling
-- Mobile-responsive design with touch controls
-- Performance optimization with LOD (Level of Detail)
-- Keyboard shortcuts and accessibility features
-- Loading states and progress indicators
+Import the viewer through the root barrel:
 
-## 🏗️ Architecture
-
-### Core Files
-- **`Dimension.tsx`** - Main component entry point (~150 lines)
-- **`Dimension.types.ts`** - TypeScript interfaces and type definitions
-- **`Dimension.config.ts`** - Configuration constants and model data
-- **`Dimension.utils.ts`** - Utility functions and helpers
-- **`Dimension.hooks.ts`** - Custom React hooks for state management
-
-### UI System (Recently Refactored)
-- **`ui/shared/`** - Design system constants and shared utilities
-- **`ui/widgets/`** - CollapsibleWidget, ControlPanel, ModelInfoDisplay, CameraPresetsWidget
-- **`ui/modals/`** - ModelSelector, KeyboardShortcutsHelp
-- **`ui/feedback/`** - LoadingSpinner, LoadingProgress, ErrorMessage
-
-### 3D System
-- **`Dimension.3d.tsx`** - Three.js components (LODModel, ResponsiveOrbitControls, etc.)
-
-## 🚀 Getting Started
-
-### Basic Usage
 ```tsx
-import DimensionViewer from '@/components/Dimension/Dimension';
+import DimensionViewer from '@/components/Dimension';
 
 export default function MyComponent() {
   return (
@@ -66,120 +46,77 @@ export default function MyComponent() {
 }
 ```
 
-### Adding New Models
-```typescript
-// Edit Dimension.config.ts
+The public props are:
+
+```ts
+interface DimensionViewerProps {
+  minimal?: boolean;
+  modelPath?: string;
+}
+```
+
+Three.js consumers should continue to disable SSR at the caller boundary:
+
+```tsx
+const DimensionViewer = dynamic(() => import('@/components/Dimension'), {
+  ssr: false,
+});
+```
+
+## Architecture
+
+- `Dimension.tsx` composes the viewer UI and keeps `minimal` display gates close to rendering.
+- `useDimensionController.ts` owns selected model state, fullscreen, screenshot, zoom, camera presets, keyboard shortcuts, mobile defaults, and refs.
+- `Dimension.viewport.tsx` owns the `<Canvas>` configuration, loading fallback, error canvas, lights, controls, and model wrapper placement.
+- `scene/` contains focused Three.js primitives. `ModelWrapper` keeps Suspense and chooses between STL and GLTF/GLB loaders.
+- `Dimension.3d.tsx` remains only as a compatibility barrel. New internal imports should prefer `./scene`.
+
+## Adding Models
+
+Edit `Dimension.config.ts`:
+
+```ts
 export const AVAILABLE_MODELS: ModelInfo[] = [
   {
     id: 'my-model',
     name: 'My New Model',
     path: '/models/my-model.stl',
     description: 'Description of my 3D model',
-    category: 'Custom'
+    category: 'Custom',
+    thumbnail: '',
+    fileSize: 0,
+    dimensions: { width: 0, height: 0, depth: 0 },
+    vertexCount: 0,
   },
-  // ... more models
 ];
 ```
 
-## ⌨️ Keyboard Shortcuts
+Supported model formats are STL and GLTF/GLB. Paths ending in `.gltf` or `.glb` use the GLTF loader; all other paths use the STL loader.
+
+## Keyboard Shortcuts
 
 | Key | Action |
 |-----|--------|
-| `R` | Reset View |
-| `Space` | Toggle Auto-Rotation |
-| `W` | Toggle Wireframe View |
-| `M` | Open Model Manager |
-| `S` | Take Screenshot |
-| `F` | Toggle Fullscreen |
-| `Z` | Zoom to Fit |
-| `?` | Show Keyboard Shortcuts |
+| `R` | Reset camera |
+| `Space` | Toggle auto-rotation |
+| `W` | Toggle wireframe |
+| `S` | Screenshot |
+| `F` | Fullscreen |
+| `C` | Toggle camera presets |
+| `Z` | Zoom to fit |
 
-## 🎨 Key Features
+## Development
 
-### ✅ **Completed Features**
-- **Modular UI Architecture** - Recently refactored for maintainability
-- Model management with selector and info display
-- Loading states and comprehensive error handling
-- Performance optimization with LOD system
-- Mobile-responsive design with touch controls
-- Keyboard shortcuts and accessibility
-
-### 📋 **Future Enhancements**
-- Screenshot capture and download
-- Fullscreen mode
-- Preset camera positions
-- Advanced export features
-
-## 📱 Mobile Support
-
-- **Touch Controls**: Pinch-to-zoom, drag to rotate
-- **Responsive UI**: Adaptive control panel layout
-- **Performance**: LOD system, disabled shadows, reduced pixel ratio
-- **Battery**: Auto-disable auto-rotation on mobile
-
-## 🔄 Error Handling
-
-Comprehensive error system with:
-- **File Not Found**: 404 handling with retry
-- **Invalid Format**: STL validation with fallback
-- **Network Issues**: Connection error recovery
-- **Fallback Geometry**: Red wireframe cube on error
-
-## 🎯 Performance Optimizations
-
-- **LOD System**: Distance-based detail reduction
-- **Frustum Culling**: Automatic off-screen culling
-- **Shadow Management**: Disabled on mobile, optimized on desktop
-- **Memory Management**: Proper cleanup and disposal
-- **FPS Monitoring**: Real-time performance tracking
-
-## 📊 Model Requirements
-
-### Supported Formats
-- **STL** (primary): Binary and ASCII STL files
-- **Future**: GLTF/GLB support planned
-
-### Model Specifications
-- **File Size**: Optimized for web delivery (<10MB recommended)
-- **Dimensions**: Automatic scaling and centering
-- **Vertices**: Performance scaling based on vertex count
-
-## 🔧 Development
-
-### Building and Testing
 ```bash
-npm run build        # TypeScript compilation
-npm run dev          # Development server
-npm run lint         # Code linting
+npm run type-check
+npm run lint
+npm test
+npm run build
 ```
 
-### Code Quality
-- **TypeScript**: Strict type checking enabled
-- **Modular Design**: Separation of concerns
-- **Refactored UI**: 14 organized component files
+When adding to this feature:
 
-## 🤝 Contributing
-
-When adding new features:
-1. **Identify the appropriate file** based on feature type
-2. **Follow existing patterns** and naming conventions
-3. **Add TypeScript interfaces** for new props/data
-4. **Include mobile considerations** in responsive design
-5. **Test error scenarios** and edge cases
-
-### Adding New Components
-- **UI Components**: Create in appropriate `ui/` subdirectory
-- **3D Features**: Add to `Dimension.3d.tsx`
-- **Hooks**: Add to `Dimension.hooks.ts`
-- **Utilities**: Add to `Dimension.utils.ts`
-
-## 📈 Status
-
-**Status**: ✅ Production Ready  
-**Architecture**: ✅ Modular UI System  
-**Refactoring**: ✅ Complete  
-**Version**: 2.0  
-
----
-
-For questions or contributions, please refer to the component architecture or existing implementation patterns.
+1. Keep public imports rooted at `@/components/Dimension`.
+2. Keep scene internals under `scene/`.
+3. Preserve `gl={{ preserveDrawingBuffer: true }}` for screenshots.
+4. Keep mobile behavior in mind: capped pixel ratio, disabled shadows, touch controls, and mobile model-info defaults.

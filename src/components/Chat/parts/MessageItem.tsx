@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import ReactMarkdown from 'react-markdown';
-import type { Message } from '../Chat.types';
+import type { Message } from '../chat.types';
 import { CopyButton } from './CopyButton';
 import { FeedbackButtons } from './FeedbackButtons';
 
