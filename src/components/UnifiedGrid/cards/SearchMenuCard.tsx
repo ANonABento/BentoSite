@@ -250,14 +250,18 @@ function ExpandedCard({
   const inputRef = useRef<HTMLInputElement>(null);
   const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
 
-  // Debounce search input
+  // Debounce search input. Skip when local matches the prop (e.g. initial
+  // mount, or just after a fired debounce) so we don't trigger a redundant
+  // applyFilter that resets visible cards and re-rolls rotations.
   useEffect(() => {
+    if (debouncedSearch === searchTerm) return;
+
     const timeout = setTimeout(() => {
       onSearchChange(debouncedSearch);
     }, PERFORMANCE.SEARCH_DEBOUNCE);
 
     return () => clearTimeout(timeout);
-  }, [debouncedSearch, onSearchChange]);
+  }, [debouncedSearch, searchTerm, onSearchChange]);
 
   // Focus input on mount
   useEffect(() => {
