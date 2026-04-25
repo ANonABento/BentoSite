@@ -1,6 +1,6 @@
 'use client';
 
-import { ComponentType } from 'react';
+import type { ChatFunctions, ChatbotProps } from '@/components/Chat';
 import { motion } from 'framer-motion';
 import { dashboardPanelIn } from '@/lib/animations';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -13,19 +13,9 @@ const TerminalIcon = (
   </svg>
 );
 
-interface ChatFns {
-  send: (content: string) => void;
-  addAssistant: (content: string) => void;
-  clear: () => void;
-}
-
 interface TerminalPanelProps {
-  Chatbot: ComponentType<{
-    onReady?: (fns: ChatFns) => void;
-    onViewResume?: () => void;
-    onSeeProjects?: () => void;
-  }>;
-  onChatReady: (fns: ChatFns) => void;
+  Chatbot: React.ComponentType<ChatbotProps>;
+  onChatReady: (fns: ChatFunctions) => void;
   onClearChat: () => void;
   onViewResume: () => void;
   onSeeProjects: () => void;
