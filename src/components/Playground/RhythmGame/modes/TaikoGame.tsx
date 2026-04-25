@@ -5,9 +5,8 @@ import { useState, useCallback, useRef } from 'react';
 import { Drum, ArrowLeft } from 'lucide-react';
 import { GameLayout, ResultsScreen, CountdownOverlay } from '../../shared';
 import { useTaikoGame } from './TaikoGame.hooks';
-import { useHighScores } from '../../Playground.hooks';
 import { DIFFICULTY_COLORS } from '../../Playground.config';
-import { isNewHighScore, formatNumber } from '../../Playground.utils';
+import { formatNumber } from '../../Playground.utils';
 import {
   TAIKO_BEAT_MAPS,
   TaikoBeatMap,
@@ -15,6 +14,7 @@ import {
   COLORS,
   TAIKO_DIMENSIONS,
 } from './TaikoGame.config';
+import { useRhythmHighScoreSaver } from './shared';
 import { springs } from '../../design';
 
 interface TaikoNoteProps {
@@ -205,41 +205,16 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
     getCurrentTime,
   } = useTaikoGame(selectedMap);
 
-  const { scores, saveScore } = useHighScores('taiko');
+  const { scores, isNewBest, handlePlayAgain } = useRhythmHighScoreSaver(
+    'taiko',
+    selectedMap.id,
+    result,
+    resetGame
+  );
   const playfieldRef = useRef<HTMLDivElement>(null);
-
-  const isFinished = status === 'finished';
-  const currentBest = scores?.[selectedMap.id]?.score;
-  const isNewBest = isFinished && result && isNewHighScore(result.score, currentBest);
 
   // Calculate note positions
   const currentTime = status === 'playing' ? getCurrentTime() : 0;
-
-  // Save score
-  const handlePlayAgain = useCallback(() => {
-    if (result && result.score > 0) {
-      const currentMapScores = scores?.[selectedMap.id];
-      const newScores = {
-        ...(scores ?? {}),
-        [selectedMap.id]: {
-          score:
-            currentMapScores?.score && currentMapScores.score > result.score
-              ? currentMapScores.score
-              : result.score,
-          maxCombo:
-            currentMapScores?.maxCombo && currentMapScores.maxCombo > result.maxCombo
-              ? currentMapScores.maxCombo
-              : result.maxCombo,
-          accuracy:
-            currentMapScores?.accuracy && currentMapScores.accuracy > result.accuracy
-              ? currentMapScores.accuracy
-              : result.accuracy,
-        },
-      };
-      saveScore(newScores);
-    }
-    resetGame();
-  }, [result, scores, selectedMap.id, saveScore, resetGame]);
 
   // Touch controls for mobile
   const handleTouchDon = useCallback(() => handleHit('don'), [handleHit]);

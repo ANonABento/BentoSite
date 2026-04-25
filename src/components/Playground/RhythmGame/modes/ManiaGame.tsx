@@ -1,13 +1,12 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Piano, ArrowLeft } from 'lucide-react';
 import { GameLayout, ResultsScreen, CountdownOverlay } from '../../shared';
 import { useManiaGame } from './ManiaGame.hooks';
-import { useHighScores } from '../../Playground.hooks';
 import { DIFFICULTY_COLORS } from '../../Playground.config';
-import { isNewHighScore, formatNumber } from '../../Playground.utils';
+import { formatNumber } from '../../Playground.utils';
 import {
   MANIA_BEAT_MAPS,
   ManiaBeatMap,
@@ -16,6 +15,7 @@ import {
   MANIA_DIMENSIONS,
   COLORS,
 } from './ManiaGame.config';
+import { useRhythmHighScoreSaver } from './shared';
 import { springs } from '../../design';
 
 interface ManiaGameProps {
@@ -44,11 +44,12 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
     getCurrentTime,
   } = useManiaGame(selectedMap);
 
-  const { scores, saveScore } = useHighScores('mania');
-
-  const isFinished = status === 'finished';
-  const currentBest = scores?.[selectedMap.id]?.score;
-  const isNewBest = isFinished && result && isNewHighScore(result.score, currentBest);
+  const { scores, isNewBest, handlePlayAgain } = useRhythmHighScoreSaver(
+    'mania',
+    selectedMap.id,
+    result,
+    resetGame
+  );
 
   // Calculate note positions
   const currentTime = status === 'playing' ? getCurrentTime() : 0;
@@ -61,32 +62,6 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
     () => KEY_BINDINGS[selectedMap.keyCount],
     [selectedMap.keyCount]
   );
-
-  // Save score
-  const handlePlayAgain = useCallback(() => {
-    if (result && result.score > 0) {
-      const currentMapScores = scores?.[selectedMap.id];
-      const newScores = {
-        ...(scores ?? {}),
-        [selectedMap.id]: {
-          score:
-            currentMapScores?.score && currentMapScores.score > result.score
-              ? currentMapScores.score
-              : result.score,
-          maxCombo:
-            currentMapScores?.maxCombo && currentMapScores.maxCombo > result.maxCombo
-              ? currentMapScores.maxCombo
-              : result.maxCombo,
-          accuracy:
-            currentMapScores?.accuracy && currentMapScores.accuracy > result.accuracy
-              ? currentMapScores.accuracy
-              : result.accuracy,
-        },
-      };
-      saveScore(newScores);
-    }
-    resetGame();
-  }, [result, scores, selectedMap.id, saveScore, resetGame]);
 
   const showIdle = status === 'idle';
   const showCountdown = status === 'countdown';
