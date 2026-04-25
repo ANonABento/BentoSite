@@ -36,20 +36,6 @@ interface UseSpawnManagerReturn {
   tick: () => void;
   /** Force spawn a card at a specific edge */
   forceSpawn: (edge: SpawnEdge) => void;
-  /** Get opposite edge for spawn direction */
-  getOppositeEdge: (edge: SpawnEdge) => SpawnEdge;
-}
-
-/**
- * Get the opposite edge (for spawning on the side user is panning toward)
- */
-function getOppositeEdge(edge: SpawnEdge): SpawnEdge {
-  switch (edge) {
-    case 'top': return 'bottom';
-    case 'bottom': return 'top';
-    case 'left': return 'right';
-    case 'right': return 'left';
-  }
 }
 
 /**
@@ -58,6 +44,33 @@ function getOppositeEdge(edge: SpawnEdge): SpawnEdge {
 function getRandomRotation(range: number): number {
   if (range === 0) return 0;
   return (Math.random() - 0.5) * 2 * range;
+}
+
+/** Movement threshold (px) before a camera delta counts as a pan direction */
+export const MOVEMENT_THRESHOLD = 5;
+
+/**
+ * Determine which edge of the viewport the user is exploring toward, given a
+ * camera delta. Pure helper exported for testing.
+ *
+ * Sign convention: when the user drags content right, camera.x increases and
+ * the viewport in canvas-space shifts left, exposing the LEFT side of canvas.
+ * So a positive dx returns 'left' — the side the user is heading toward, where
+ * new cards should spawn.
+ */
+export function getMovementDirectionFromDelta(
+  dx: number,
+  dy: number,
+  threshold: number = MOVEMENT_THRESHOLD,
+): SpawnEdge | null {
+  if (Math.abs(dx) > Math.abs(dy)) {
+    if (dx > threshold) return 'left';
+    if (dx < -threshold) return 'right';
+  } else {
+    if (dy > threshold) return 'top';
+    if (dy < -threshold) return 'bottom';
+  }
+  return null;
 }
 
 /**
@@ -84,25 +97,11 @@ export function useSpawnManager(options: UseSpawnManagerOptions): UseSpawnManage
   const lastCameraRef = useRef<Camera>({ ...camera });
   const spawnCountRef = useRef(0);
 
-  /**
-   * Detect camera movement direction to determine spawn edge
-   */
   const getMovementDirection = useCallback((): SpawnEdge | null => {
-    const dx = camera.x - lastCameraRef.current.x;
-    const dy = camera.y - lastCameraRef.current.y;
-
-    // Threshold for significant movement
-    const threshold = 5;
-
-    if (Math.abs(dx) > Math.abs(dy)) {
-      if (dx > threshold) return 'left';  // Camera moved right = user panned left
-      if (dx < -threshold) return 'right'; // Camera moved left = user panned right
-    } else {
-      if (dy > threshold) return 'top';    // Camera moved down = user panned up
-      if (dy < -threshold) return 'bottom'; // Camera moved up = user panned down
-    }
-
-    return null;
+    return getMovementDirectionFromDelta(
+      camera.x - lastCameraRef.current.x,
+      camera.y - lastCameraRef.current.y,
+    );
   }, [camera]);
 
   /**
@@ -179,12 +178,12 @@ export function useSpawnManager(options: UseSpawnManagerOptions): UseSpawnManage
     // Don't spawn if we're at max visible
     if (cardQueue.visible.size >= QUEUE.MAX_VISIBLE) return;
 
-    // Get movement direction
-    const direction = getMovementDirection();
-    if (!direction) return;
+    // Spawn on the edge the user is exploring toward (returned by
+    // getMovementDirection). Card stays at its canvas-space position; as the
+    // viewport keeps shifting in that direction, the card slides into view.
+    const spawnEdge = getMovementDirection();
+    if (!spawnEdge) return;
 
-    // Spawn on the edge user is moving toward
-    const spawnEdge = getOppositeEdge(direction);
     spawnAtEdge(spawnEdge);
   }, [cardQueue, getMovementDirection, spawnAtEdge]);
 
@@ -227,6 +226,5 @@ export function useSpawnManager(options: UseSpawnManagerOptions): UseSpawnManage
   return {
     tick,
     forceSpawn,
-    getOppositeEdge,
   };
 }

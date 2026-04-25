@@ -128,12 +128,6 @@ export interface CardQueueState {
 
 export type SpawnEdge = 'top' | 'bottom' | 'left' | 'right';
 
-export interface SpawnRequest {
-  edge: SpawnEdge;
-  /** Position along the edge (0-1 normalized) */
-  edgePosition: number;
-}
-
 // =============================================================================
 // CAMERA / NAVIGATION
 // =============================================================================
@@ -248,12 +242,10 @@ export interface UseViewportReturn {
 }
 
 export interface UseSpawnManagerReturn {
-  /** Request a spawn check */
-  checkSpawns: () => void;
-  /** Get pending spawn requests */
-  pendingSpawns: SpawnRequest[];
-  /** Process next spawn from queue */
-  processNextSpawn: () => void;
+  /** Run a despawn + spawn check based on current camera/viewport state */
+  tick: () => void;
+  /** Force a spawn at a specific edge (testing/debugging) */
+  forceSpawn: (edge: SpawnEdge) => void;
 }
 
 export interface UseGridNavigationReturn {

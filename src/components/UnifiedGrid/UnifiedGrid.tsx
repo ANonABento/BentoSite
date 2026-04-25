@@ -127,7 +127,6 @@ function DefaultCard({
 
 function MobileScrollView({
   cards,
-  filteredCards,
   theme,
   categories,
   breadcrumb,
@@ -136,7 +135,6 @@ function MobileScrollView({
   renderCard,
 }: {
   cards: CardData[];
-  filteredCards: CardData[];
   theme: ThemeConfig;
   categories: string[];
   breadcrumb?: string;
@@ -152,17 +150,26 @@ function MobileScrollView({
   // (useMemo) rather than synced via setState/useEffect.
   const localFilteredCards = useMemo(() => {
     const term = searchTerm.toLowerCase().trim();
-    return filteredCards.filter((card) => {
+    return cards.filter((card) => {
       if (category && card.category !== category) return false;
       if (term) {
         const matchTitle = card.title.toLowerCase().includes(term);
         const matchDesc = card.description?.toLowerCase().includes(term);
         const matchCategory = card.category?.toLowerCase().includes(term);
+        // Project-specific: search technologies (mirror useCardQueue.filterCards
+        // so mobile and desktop have parity).
+        if (card.type === 'project') {
+          const projectCard = card as { technologies?: string[] };
+          const matchTech = projectCard.technologies?.some((t) =>
+            t.toLowerCase().includes(term)
+          );
+          return matchTitle || matchDesc || matchCategory || matchTech;
+        }
         return matchTitle || matchDesc || matchCategory;
       }
       return true;
     });
-  }, [filteredCards, searchTerm, category]);
+  }, [cards, searchTerm, category]);
 
   // Search card state for mobile (always collapsed at top)
   const searchState = useSearchCardState({
@@ -281,7 +288,6 @@ function DesktopCanvasView({
   onCardSelect,
   renderCard,
   onBack,
-  onFilterChange,
 }: {
   cards: CardData[];
   theme: ThemeConfig;
@@ -290,7 +296,6 @@ function DesktopCanvasView({
   onCardSelect?: (card: CardData) => void;
   renderCard?: UnifiedGridProps['renderCard'];
   onBack?: () => void;
-  onFilterChange?: (searchTerm: string, category: string | null) => void;
 }) {
   const windowSize = useWindowSize();
 
@@ -325,10 +330,7 @@ function DesktopCanvasView({
     camera: navigation.camera,
     windowSize,
     categories,
-    onFilterChange: (term, cat) => {
-      cardQueue.applyFilter(term, cat);
-      onFilterChange?.(term, cat);
-    },
+    onFilterChange: cardQueue.applyFilter,
   });
 
   // Keyboard card navigation
@@ -500,41 +502,10 @@ export function UnifiedGrid({
     return Array.from(cats).sort();
   }, [cards]);
 
-  // Filter state
-  const [filteredCards, setFilteredCards] = useState(cards);
-
-  // Filter handler
-  const handleFilterChange = useCallback(
-    (searchTerm: string, category: string | null) => {
-      const term = searchTerm.toLowerCase().trim();
-      const filtered = cards.filter((card) => {
-        // Category filter
-        if (category && card.category !== category) return false;
-
-        // Search filter
-        if (term) {
-          const matchTitle = card.title.toLowerCase().includes(term);
-          const matchDesc = card.description?.toLowerCase().includes(term);
-          const matchCategory = card.category?.toLowerCase().includes(term);
-          return matchTitle || matchDesc || matchCategory;
-        }
-        return true;
-      });
-      setFilteredCards(filtered);
-    },
-    [cards]
-  );
-
-  // Update filtered cards when source changes
-  useEffect(() => {
-    setFilteredCards(cards);
-  }, [cards]);
-
   if (isMobile) {
     return (
       <MobileScrollView
         cards={cards}
-        filteredCards={filteredCards}
         theme={themeConfig}
         categories={categories}
         breadcrumb={breadcrumb}
@@ -547,14 +518,13 @@ export function UnifiedGrid({
 
   return (
     <DesktopCanvasView
-      cards={filteredCards}
+      cards={cards}
       theme={themeConfig}
       categories={categories}
       breadcrumb={breadcrumb}
       onCardSelect={onCardSelect}
       renderCard={renderCard}
       onBack={onBack}
-      onFilterChange={handleFilterChange}
     />
   );
 }

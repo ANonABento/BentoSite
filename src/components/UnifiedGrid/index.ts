@@ -47,7 +47,6 @@ export type {
   QueuedCard,
   CardQueueState,
   SpawnEdge,
-  SpawnRequest,
   Camera,
   Velocity,
   NavigationState,

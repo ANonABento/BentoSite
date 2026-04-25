@@ -56,7 +56,7 @@ function loadCamera(key: string): Camera | null {
 }
 
 /**
- * Save camera to localStorage (debounced externally)
+ * Save camera to localStorage
  */
 function saveCamera(key: string, camera: Camera): void {
   if (typeof window === 'undefined') return;
@@ -66,6 +66,9 @@ function saveCamera(key: string, camera: Camera): void {
     // Ignore storage errors
   }
 }
+
+/** Debounce delay for camera persistence (ms) */
+const PERSIST_DEBOUNCE_MS = 250;
 
 export function useGridNavigation(options: UseGridNavigationOptions = {}): UseGridNavigationReturn {
   const {
@@ -97,27 +100,36 @@ export function useGridNavigation(options: UseGridNavigationOptions = {}): UseGr
   const dragStartRef = useRef<{ x: number; y: number; cameraX: number; cameraY: number } | null>(null);
 
   /**
-   * Update camera with bounds and callbacks
+   * Update camera with bounds. The updater is pure (no side effects); the
+   * persistence + callback effects below react to the resulting `camera` state.
    */
   const updateCamera = useCallback((update: Partial<Camera>) => {
-    setCamera((prev) => {
-      const next = {
-        x: update.x ?? prev.x,
-        y: update.y ?? prev.y,
-        zoom: clamp(update.zoom ?? prev.zoom, CAMERA.MIN_ZOOM, CAMERA.MAX_ZOOM),
-      };
+    setCamera((prev) => ({
+      x: update.x ?? prev.x,
+      y: update.y ?? prev.y,
+      zoom: clamp(update.zoom ?? prev.zoom, CAMERA.MIN_ZOOM, CAMERA.MAX_ZOOM),
+    }));
+  }, []);
 
-      // Save to storage (debounced in effect)
-      if (persistKey) {
-        saveCamera(persistKey, next);
-      }
+  /**
+   * Persist camera position with debounce so high-frequency pan animations
+   * (~60Hz from useAnimationFrame) don't hammer localStorage.
+   */
+  useEffect(() => {
+    if (!persistKey) return;
+    const timeout = setTimeout(() => {
+      saveCamera(persistKey, camera);
+    }, PERSIST_DEBOUNCE_MS);
+    return () => clearTimeout(timeout);
+  }, [camera, persistKey]);
 
-      // Notify parent
-      onCameraChange?.(next);
-
-      return next;
-    });
-  }, [persistKey, onCameraChange]);
+  /**
+   * Notify parent of camera changes. Effect rather than updater-side-effect
+   * keeps the setState updater pure (Strict Mode safe).
+   */
+  useEffect(() => {
+    onCameraChange?.(camera);
+  }, [camera, onCameraChange]);
 
   /**
    * Pan the camera by delta
