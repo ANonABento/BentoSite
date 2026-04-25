@@ -1,5 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const host = process.env.PLAYWRIGHT_HOST ?? '127.0.0.1';
+const port = process.env.PLAYWRIGHT_PORT ?? process.env.PORT ?? '3000';
+const baseURL = `http://${host}:${port}`;
+const nextCommand = process.env.CI ? 'start' : 'dev';
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
@@ -19,7 +24,7 @@ export default defineConfig({
     timeout: 15000,
   },
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     navigationTimeout: 60000,
@@ -47,9 +52,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: process.env.CI ? 'node_modules/.bin/next start' : 'node_modules/.bin/next dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    command: `node_modules/.bin/next ${nextCommand} --hostname ${host} --port ${port}`,
+    url: baseURL,
+    reuseExistingServer: !process.env.CI && !process.env.PLAYWRIGHT_PORT,
     timeout: 120 * 1000,
   },
 });
