@@ -21,23 +21,12 @@ interface UseChatSubmitOptions {
 }
 
 export function useChatMessages() {
-  const [messages, setMessages] = useState<Message[]>([getDefaultMessage()]);
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [messages, setMessages] = useState<Message[]>(() => loadMessages() ?? [getDefaultMessage()]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const storedMessages = loadMessages();
-    if (storedMessages) {
-      setMessages(storedMessages);
-    }
-    setIsHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (isHydrated) {
-      saveMessages(messages);
-    }
-  }, [isHydrated, messages]);
+    saveMessages(messages);
+  }, [messages]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -83,6 +72,11 @@ export function useChatSubmit({ inputRef, messages, setMessages }: UseChatSubmit
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const messagesRef = useRef(messages);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   const clearError = useCallback(() => {
     setError(null);
@@ -142,7 +136,9 @@ export function useChatSubmit({ inputRef, messages, setMessages }: UseChatSubmit
         timestamp: Date.now(),
       };
 
-      setMessages((previousMessages) => [...previousMessages, userMessage]);
+      const nextMessages = [...messagesRef.current, userMessage];
+
+      setMessages(nextMessages);
       setInput('');
       setIsLoading(true);
       setError(null);
@@ -151,18 +147,11 @@ export function useChatSubmit({ inputRef, messages, setMessages }: UseChatSubmit
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), TIMEOUTS.CHAT_REQUEST);
 
-        const currentMessages = await new Promise<Message[]>((resolve) => {
-          setMessages((previousMessages) => {
-            resolve(previousMessages);
-            return previousMessages;
-          });
-        });
-
         const response = await fetch(API_ENDPOINTS.CHAT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            messages: currentMessages.map((message) => ({
+            messages: nextMessages.map((message) => ({
               role: message.role,
               content: message.content,
             })),
