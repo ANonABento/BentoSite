@@ -21,6 +21,8 @@ export interface ViewfinderProps {
   onAvailableTabsChange?: (tabs: MediaTab[]) => void;
   /** Show internal tab header; disable when parent renders controls */
   showHeader?: boolean;
+  /** When true, pauses 3D rendering to save resources */
+  suspended?: boolean;
 }
 
 export interface ViewfinderHeaderProps {
@@ -33,6 +35,8 @@ export interface ViewfinderHeaderProps {
 export interface Model3DViewerProps {
   modelPath?: string;
   minimal?: boolean;
+  /** When true, pauses rendering to save resources */
+  suspended?: boolean;
 }
 
 export interface ImageViewerProps {

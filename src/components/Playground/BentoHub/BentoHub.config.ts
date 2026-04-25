@@ -20,6 +20,7 @@ export const PHYSICS: PhysicsConfig = {
     damping: 22,
   },
   centerPullRadius: 400,
+  dampingFactor: 0.95,
 };
 
 // Particle system configuration (improved - less ugly)

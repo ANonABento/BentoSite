@@ -52,6 +52,7 @@ export function Viewfinder({
   onTabChange,
   onAvailableTabsChange,
   showHeader = true,
+  suspended = false,
 }: ViewfinderProps) {
   // Determine available tabs based on project media
   const availableTabs = useMemo<MediaTab[]>(() => {
@@ -121,7 +122,7 @@ export function Viewfinder({
   const renderViewer = () => {
     switch (resolvedActiveTab) {
       case '3d':
-        return <Model3DViewer modelPath={project?.links.modelPath} minimal={minimal} />;
+        return <Model3DViewer modelPath={project?.links.modelPath} minimal={minimal} suspended={suspended} />;
       case 'images':
         return <ImageViewer images={project?.media?.images || []} />;
       case 'pdf':
@@ -141,7 +142,7 @@ export function Viewfinder({
           />
         );
       default:
-        return <Model3DViewer minimal={minimal} />;
+        return <Model3DViewer minimal={minimal} suspended={suspended} />;
     }
   };
 

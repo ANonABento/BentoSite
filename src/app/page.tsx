@@ -35,11 +35,6 @@ const Chatbot = dynamic(() => import('@/components/Chat'), {
   loading: ModuleLoader,
 });
 
-const ProjectsModal = dynamic(
-  () => import('@/components/Projects/ProjectsModal').then((mod) => mod.ProjectsModal),
-  { ssr: false }
-);
-
 const SkillsSection = dynamic(
   () => import('@/components/Skills/SkillsSection'),
   { ssr: false }
@@ -50,7 +45,8 @@ function HomeContent() {
   const router = useRouter();
 
   const urlView = searchParams.get('view');
-  const isDashboardView = urlView === 'dashboard';
+  const urlProjectId = searchParams.get('project');
+  const isDashboardView = urlView === 'dashboard' || !!urlProjectId;
   const [isBooting, setIsBooting] = useState(!isDashboardView);
   const [showDashboard, setShowDashboard] = useState(isDashboardView);
   const [dashboardReady, setDashboardReady] = useState(isDashboardView);
@@ -110,11 +106,11 @@ function HomeContent() {
             Viewfinder={Viewfinder}
             Chatbot={Chatbot}
             SkillsSection={SkillsSection}
-            ProjectsModal={ProjectsModal}
             KeyboardShortcutsModal={KeyboardShortcutsModal}
             isShortcutsOpen={isShortcutsOpen}
             closeShortcuts={closeShortcuts}
             ready={dashboardReady}
+            initialProjectId={urlProjectId || undefined}
           />
         )}
       </main>

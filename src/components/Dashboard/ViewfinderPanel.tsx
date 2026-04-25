@@ -4,22 +4,18 @@ import { ComponentType } from 'react';
 import { motion } from 'framer-motion';
 import { dashboardLeftIn, dashboardPanelIn } from '@/lib/animations';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { SectionHeader } from '@/components/ui/SectionHeader';
-import { BentoIcon } from '@/components/BentoOS/BentoIcon';
 import type { Project } from '@/lib/projects-data';
 
 interface ViewfinderPanelProps {
   selectedProject: Project | null;
-  Viewfinder: ComponentType<{ project: Project | null; minimal?: boolean }>;
+  Viewfinder: ComponentType<{ project: Project | null; minimal?: boolean; suspended?: boolean }>;
   /** When defined, renders the mobile variant (hidden/shown via activeSection) */
   mobileHidden?: boolean;
+  /** When true, pauses 3D rendering to save resources */
+  suspended?: boolean;
 }
 
-function BentoHeaderIcon() {
-  return <BentoIcon size={16} />;
-}
-
-export function ViewfinderPanel({ selectedProject, Viewfinder, mobileHidden }: ViewfinderPanelProps) {
+export function ViewfinderPanel({ selectedProject, Viewfinder, mobileHidden, suspended }: ViewfinderPanelProps) {
   const isMobileVariant = mobileHidden !== undefined;
 
   // glass-panel + motion.div MUST be the same element — a parent with a
@@ -34,17 +30,9 @@ export function ViewfinderPanel({ selectedProject, Viewfinder, mobileHidden }: V
       }`}
       variants={isMobileVariant ? dashboardPanelIn : dashboardLeftIn}
     >
-      {!selectedProject && (
-        <SectionHeader
-          title="viewfinder"
-          icon={<BentoHeaderIcon />}
-          iconColor="orange"
-          mono
-        />
-      )}
       <div className="flex-1 min-h-0">
         <ErrorBoundary>
-          <Viewfinder project={selectedProject} minimal={false} />
+          <Viewfinder project={selectedProject} minimal={false} suspended={suspended} />
         </ErrorBoundary>
       </div>
     </motion.div>

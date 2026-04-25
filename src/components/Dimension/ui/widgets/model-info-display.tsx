@@ -1,7 +1,4 @@
-// ModelInfoDisplay - Shows detailed information about the current 3D model
-// Extracted from Dimension.ui.tsx for better maintainability
-
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import type { ModelInfoDisplayProps } from '../../Dimension.types';
 import { CollapsibleWidget } from './collapsible-widget';
@@ -19,7 +16,7 @@ export function ModelInfoDisplay({ model, isMobile }: ModelInfoDisplayProps) {
 
   return (
     <CollapsibleWidget
-      title="Model Info"
+      title={model.name}
       icon={infoIcon}
       defaultPosition={{ x: 16, y: 16 }}
       isCollapsed={isCollapsed}
@@ -28,16 +25,13 @@ export function ModelInfoDisplay({ model, isMobile }: ModelInfoDisplayProps) {
       className="max-w-sm"
     >
       <div className="space-y-3">
-        {/* Model header */}
-        <div className="space-y-1">
-          <h4 className="font-bold text-lg text-[var(--interactive)] leading-tight">{model.name}</h4>
-          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${isMobile ? 'text-xs' : 'text-sm'} bg-[var(--purple-muted)] text-[var(--interactive)] border border-[var(--interactive)] border-opacity-30`}>
-            {model.category}
-          </span>
-        </div>
+        {/* Category badge */}
+        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${isMobile ? 'text-xs' : 'text-sm'} bg-[var(--purple-muted)] text-[var(--interactive)] border border-[var(--interactive)] border-opacity-30`}>
+          {model.category}
+        </span>
 
         {!isCollapsed && (
-          <React.Fragment>
+          <>
             {/* Description */}
             <p className={`${DESIGN_SYSTEM.colors.text.secondary} leading-relaxed ${isMobile ? 'text-xs' : 'text-sm'}`}>
               {model.description}
@@ -77,7 +71,7 @@ export function ModelInfoDisplay({ model, isMobile }: ModelInfoDisplayProps) {
                 </div>
               )}
             </div>
-          </React.Fragment>
+          </>
         )}
       </div>
     </CollapsibleWidget>
