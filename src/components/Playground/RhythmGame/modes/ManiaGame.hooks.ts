@@ -13,10 +13,7 @@ import { RhythmEngineActiveNote, useRhythmEngine } from './shared';
 
 type ManiaRating = 'perfect' | 'great' | 'good' | 'miss';
 
-interface ActiveManiaNote extends ManiaNote, RhythmEngineActiveNote<ManiaRating> {
-  holdActive?: boolean;
-  holdProgress?: number;
-}
+type ActiveManiaNote = ManiaNote & RhythmEngineActiveNote<ManiaRating>;
 
 interface ManiaModeState {
   pressedKeys: Set<number>;
@@ -71,10 +68,7 @@ export function useManiaGame(beatMap: ManiaBeatMap) {
     }),
     getComboMultiplier: (combo) => Math.min(1 + combo * 0.05, 2),
     matchNote: (note, input) => note.lane === input,
-    onHit: ({ input, note, modeState }) => ({
-      notePatch: {
-        holdActive: note.holdDuration ? true : undefined,
-      },
+    onHit: ({ input, modeState }) => ({
       modeStatePatch: {
         pressedKeys: new Set([...modeState.pressedKeys, input]),
         keyFlash: [...modeState.keyFlash, input],

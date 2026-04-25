@@ -84,7 +84,7 @@ describe('useRhythmHighScoreSaver', () => {
     });
   });
 
-  it('does not persist zero-score runs but still resets the game', async () => {
+  it('does not flag or persist zero-score runs but still resets the game', async () => {
     const resetGame = vi.fn();
     const { result } = renderHook(() =>
       useRhythmHighScoreSaver(
@@ -109,6 +109,6 @@ describe('useRhythmHighScoreSaver', () => {
 
     expect(resetGame).toHaveBeenCalledTimes(1);
     expect(storage.get(STORAGE_KEYS.highScores)).toBeUndefined();
-    expect(result.current.isNewBest).toBe(true);
+    expect(result.current.isNewBest).toBe(false);
   });
 });

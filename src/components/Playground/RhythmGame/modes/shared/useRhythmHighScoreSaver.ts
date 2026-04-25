@@ -13,6 +13,10 @@ interface RhythmGameResult {
   accuracy: number;
 }
 
+function keepBestMetric(current: number | undefined, next: number) {
+  return current !== undefined && current > next ? current : next;
+}
+
 export function useRhythmHighScoreSaver<TGameId extends RhythmStorageKey>(
   gameId: TGameId,
   mapId: string,
@@ -22,7 +26,7 @@ export function useRhythmHighScoreSaver<TGameId extends RhythmStorageKey>(
   const { scores, saveScore } = useHighScores(gameId);
   const currentBest = scores?.[mapId]?.score;
   const isNewBest = result
-    ? isNewHighScore(result.score, currentBest)
+    ? result.score > 0 && isNewHighScore(result.score, currentBest)
     : false;
 
   const handlePlayAgain = useCallback(() => {
@@ -31,18 +35,9 @@ export function useRhythmHighScoreSaver<TGameId extends RhythmStorageKey>(
       const newScores = {
         ...(scores ?? {}),
         [mapId]: {
-          score:
-            currentMapScores?.score && currentMapScores.score > result.score
-              ? currentMapScores.score
-              : result.score,
-          maxCombo:
-            currentMapScores?.maxCombo && currentMapScores.maxCombo > result.maxCombo
-              ? currentMapScores.maxCombo
-              : result.maxCombo,
-          accuracy:
-            currentMapScores?.accuracy && currentMapScores.accuracy > result.accuracy
-              ? currentMapScores.accuracy
-              : result.accuracy,
+          score: keepBestMetric(currentMapScores?.score, result.score),
+          maxCombo: keepBestMetric(currentMapScores?.maxCombo, result.maxCombo),
+          accuracy: keepBestMetric(currentMapScores?.accuracy, result.accuracy),
         },
       } satisfies StoredScores[TGameId];
 
