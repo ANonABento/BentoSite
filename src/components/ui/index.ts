@@ -16,6 +16,7 @@ export {
 } from './LoadingSpinner';
 export type { SpinnerVariant, SpinnerSize } from './LoadingSpinner';
 export { LazyPanelFallback } from './LazyPanelFallback';
+export { RouteLoadingFallback } from './RouteLoadingFallback';
 
 // Icons
 export * from './Icons';

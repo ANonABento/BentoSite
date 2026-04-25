@@ -28,9 +28,20 @@ export function isValidMessage(message: unknown): message is Message {
     message !== null &&
     typeof message === 'object' &&
     'id' in message &&
+    typeof message.id === 'string' &&
     'role' in message &&
+    (message.role === 'user' || message.role === 'assistant') &&
     'content' in message &&
-    'timestamp' in message
+    typeof message.content === 'string' &&
+    'timestamp' in message &&
+    typeof message.timestamp === 'number' &&
+    Number.isFinite(message.timestamp) &&
+    (
+      !('feedback' in message) ||
+      message.feedback === null ||
+      message.feedback === 'positive' ||
+      message.feedback === 'negative'
+    )
   );
 }
 

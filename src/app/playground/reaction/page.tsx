@@ -1,8 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { motion } from 'framer-motion';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { RouteLoadingFallback } from '@/components/ui';
 
 const ReactionGame = dynamic(
   () =>
@@ -12,15 +12,11 @@ const ReactionGame = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-[var(--text-secondary)]"
-        >
-          Loading...
-        </motion.div>
-      </div>
+      <RouteLoadingFallback
+        label="Loading Reaction..."
+        spinnerVariant="orange"
+        className="bg-[var(--background)]"
+      />
     ),
   }
 );

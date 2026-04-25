@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Music, Drum, ArrowLeft, Piano } from 'lucide-react';
 import Link from 'next/link';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { RouteLoadingFallback } from '@/components/ui';
 
 const RhythmGame = dynamic(
   () =>
@@ -36,15 +37,11 @@ const ManiaGame = dynamic(
 
 function LoadingScreen() {
   return (
-    <div className="min-h-screen bg-[var(--pg-bg-deep)] flex items-center justify-center">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="text-[var(--pg-text-secondary)]"
-      >
-        Loading...
-      </motion.div>
-    </div>
+    <RouteLoadingFallback
+      label="Loading Rhythm..."
+      spinnerVariant="orange"
+      className="bg-[var(--pg-bg-deep)]"
+    />
   );
 }
 
