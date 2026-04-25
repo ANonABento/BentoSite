@@ -5,7 +5,12 @@
  * /playground (games) and /projects (portfolio) pages.
  */
 
-import type { ReactNode } from 'react';
+import type {
+  CSSProperties,
+  PointerEventHandler,
+  ReactNode,
+  WheelEventHandler,
+} from 'react';
 
 // =============================================================================
 // THEME
@@ -270,7 +275,16 @@ export interface UseGridNavigationReturn {
   /** Set camera position directly */
   setCamera: (camera: Partial<Camera>) => void;
   /** Gesture bindings for the canvas */
-  bind: () => Record<string, unknown>;
+  bind: () => GridNavigationBindings;
   /** Whether momentum animation is active */
   isAnimating: boolean;
+}
+
+export interface GridNavigationBindings {
+  onPointerDown: PointerEventHandler<HTMLDivElement>;
+  onPointerMove: PointerEventHandler<HTMLDivElement>;
+  onPointerUp: PointerEventHandler<HTMLDivElement>;
+  onPointerLeave: PointerEventHandler<HTMLDivElement>;
+  onWheel: WheelEventHandler<HTMLDivElement>;
+  style: CSSProperties;
 }

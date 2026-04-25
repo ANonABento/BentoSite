@@ -4,7 +4,7 @@
  * Configuration values for the infinite grid system.
  */
 
-import type { ThemeConfig, CardSize } from './UnifiedGrid.types';
+import type { ThemeConfig, CardSize, GridTheme } from './UnifiedGrid.types';
 
 // =============================================================================
 // GRID LAYOUT
@@ -188,10 +188,10 @@ export const THEME_PREMIUM: ThemeConfig = {
   },
 };
 
-export const THEMES: Record<string, ThemeConfig> = {
+export const THEMES = {
   playful: THEME_PLAYFUL,
   premium: THEME_PREMIUM,
-};
+} satisfies Record<GridTheme, ThemeConfig>;
 
 // =============================================================================
 // MOBILE

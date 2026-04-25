@@ -9,6 +9,7 @@ import type { CardData, CardPosition, RenderCard, ThemeConfig } from '../Unified
 import { DefaultCard } from './DefaultCard';
 
 interface MobileScrollViewProps {
+  className?: string;
   cards: CardData[];
   theme: ThemeConfig;
   categories: string[];
@@ -19,6 +20,7 @@ interface MobileScrollViewProps {
 }
 
 export function MobileScrollView({
+  className,
   cards,
   theme,
   categories,
@@ -49,7 +51,7 @@ export function MobileScrollView({
 
   return (
     <div
-      className="h-full overflow-hidden flex flex-col"
+      className={['h-full overflow-hidden flex flex-col', className].filter(Boolean).join(' ')}
       style={{ background: theme.background }}
     >
       <SearchMenuCard

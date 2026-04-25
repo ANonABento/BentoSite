@@ -118,7 +118,7 @@ export function calculateInitialPositions(
     const card = cards[cardIndex];
     const spiralPos = spiralPositions[spiralIndex];
 
-    const featured = card.type === 'project' && (card as { featured?: boolean }).featured;
+    const featured = card.type === 'project' && card.featured;
     const size = getCardSize(cardIndex, featured);
     const dimensions = getCardDimensions(size);
 

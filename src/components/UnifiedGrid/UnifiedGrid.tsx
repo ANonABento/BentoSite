@@ -35,6 +35,7 @@ export interface UnifiedGridProps extends GridConfig {
 // =============================================================================
 
 export function UnifiedGrid({
+  className,
   theme,
   cards,
   onCardSelect,
@@ -58,6 +59,7 @@ export function UnifiedGrid({
   if (isMobile) {
     return (
       <MobileScrollView
+        className={className}
         cards={cards}
         theme={themeConfig}
         categories={categories}
@@ -71,6 +73,7 @@ export function UnifiedGrid({
 
   return (
     <DesktopCanvasView
+      className={className}
       cards={cards}
       theme={themeConfig}
       categories={categories}

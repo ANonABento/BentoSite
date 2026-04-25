@@ -17,6 +17,7 @@ import type { CardData, RenderCard, ThemeConfig } from '../UnifiedGrid.types';
 import { DefaultCard } from './DefaultCard';
 
 interface DesktopCanvasViewProps {
+  className?: string;
   cards: CardData[];
   theme: ThemeConfig;
   categories: string[];
@@ -27,6 +28,7 @@ interface DesktopCanvasViewProps {
 }
 
 export function DesktopCanvasView({
+  className,
   cards,
   theme,
   categories,
@@ -108,13 +110,12 @@ export function DesktopCanvasView({
   );
 
   const navBindings = navigation.bind();
-  const navStyle = navBindings.style as React.CSSProperties | undefined;
 
   return (
     <div
-      className="fixed inset-0 overflow-hidden"
+      className={['fixed inset-0 overflow-hidden', className].filter(Boolean).join(' ')}
       {...navBindings}
-      style={{ ...navStyle, background: theme.background }}
+      style={{ ...navBindings.style, background: theme.background }}
     >
       <div
         className="absolute will-change-transform"

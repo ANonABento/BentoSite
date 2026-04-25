@@ -38,8 +38,6 @@ interface UseSearchCardStateReturn extends SearchCardState {
   clearFilters: () => void;
   /** Position for the search card (screen coordinates) */
   screenPosition: { x: number; y: number };
-  /** Whether the card should be visible */
-  isVisible: boolean;
 }
 
 /**
@@ -195,6 +193,5 @@ export function useSearchCardState(
     setCategory,
     clearFilters,
     screenPosition,
-    isVisible: true,
   };
 }

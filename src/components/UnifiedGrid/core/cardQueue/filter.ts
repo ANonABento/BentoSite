@@ -21,8 +21,7 @@ export function filterCards(
       const matchCategory = card.category?.toLowerCase().includes(term);
 
       if (card.type === 'project') {
-        const projectCard = card as { technologies?: string[] };
-        const matchTech = projectCard.technologies?.some((technology) =>
+        const matchTech = card.technologies?.some((technology) =>
           technology.toLowerCase().includes(term)
         );
         return matchTitle || matchDesc || matchCategory || matchTech;

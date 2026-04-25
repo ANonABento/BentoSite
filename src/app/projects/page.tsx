@@ -56,7 +56,7 @@ function renderProjectCard(
 
   return (
     <ProjectCard
-      card={card as ProjectCardData}
+      card={card}
       position={position}
       theme={theme}
       isFocused={isFocused}

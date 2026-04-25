@@ -155,7 +155,7 @@ export function ProjectCard({
       onClick={onClick}
     >
       <div
-        className="h-full w-full overflow-hidden transition-all duration-300 ease-out"
+        className="group h-full w-full overflow-hidden transition-all duration-300 ease-out"
         style={{
           background: theme.card.background,
           border: isHighlighted

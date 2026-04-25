@@ -67,7 +67,7 @@ function renderGameCard(
 
   return (
     <GameCard
-      card={card as GameCardData}
+      card={card}
       position={position}
       theme={theme}
       index={index}
@@ -90,10 +90,7 @@ export default function PlaygroundPage() {
   const handleCardSelect = useCallback(
     (card: CardData) => {
       if (card.type === 'game') {
-        const gameCard = card as GameCardData;
-        if (gameCard.href) {
-          router.push(gameCard.href);
-        }
+        router.push(card.href);
       }
     },
     [router]
