@@ -131,6 +131,18 @@ export function useSearchCardState(
     [camera, windowSize, isMobile]
   );
 
+  // When the card transitions from centered → an edge, clear the user-expand
+  // intent so panning back to center keeps it collapsed until the user taps.
+  // React allows setState during render for prop-derived state; it batches the
+  // extra re-render and avoids a paint with stale state.
+  const [prevEdge, setPrevEdge] = useState<SearchCardEdge>('none');
+  if (detectedEdge !== prevEdge) {
+    setPrevEdge(detectedEdge);
+    if (detectedEdge !== 'none' && userExpanded) {
+      setUserExpanded(false);
+    }
+  }
+
   // Effective expanded: must be user-expanded AND not pushed to an edge.
   const expanded = userExpanded && detectedEdge === 'none';
 
