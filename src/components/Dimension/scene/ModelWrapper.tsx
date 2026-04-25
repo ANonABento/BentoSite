@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { DEFAULT_MODEL_PATH } from '../Dimension.config';
 import type { STLModelWrapperProps } from '../Dimension.types';
 import { GLTFModel } from './GLTFModel';
 import { LODModel } from './LODModel';
@@ -7,7 +8,7 @@ import { SceneErrorBoundary } from './SceneErrorBoundary';
 import { SkeletonLoader } from './SkeletonLoader';
 
 export function ModelWrapper({
-  modelPath = '/models/placeholder.stl',
+  modelPath = DEFAULT_MODEL_PATH,
   onError,
   autoRotate,
   onClick,

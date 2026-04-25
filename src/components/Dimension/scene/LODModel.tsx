@@ -2,12 +2,18 @@ import { useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
+import { DEFAULT_MODEL_PATH } from '../Dimension.config';
 import type { LODModelProps } from '../Dimension.types';
-import { isMobileDevice } from '../Dimension.utils';
-import { ORIGIN, SCENE_COLORS } from './constants';
+import {
+  getDistanceFromCamera,
+  getLODLevel,
+  getLODScale,
+  isMobileDevice,
+} from '../Dimension.utils';
+import { SCENE_COLORS } from './constants';
 
 export function LODModel({
-  modelPath = '/models/placeholder.stl',
+  modelPath = DEFAULT_MODEL_PATH,
   autoRotate,
   onClick,
   isWireframe,
@@ -44,30 +50,18 @@ export function LODModel({
     frameCountRef.current = 0;
     lastTimeRef.current = currentTime;
 
-    const meshPosition = meshRef.current?.position || ORIGIN;
-    const distanceFromCamera = camera.position.distanceTo(meshPosition);
-    const fps = fpsRef.current;
-
-    let nextLodLevel = 0;
-    if (isMobile || fps < 30) {
-      if (distanceFromCamera > 10) {
-        nextLodLevel = 2;
-      } else if (distanceFromCamera > 5) {
-        nextLodLevel = 1;
-      }
-    } else if (distanceFromCamera > 20) {
-      nextLodLevel = 2;
-    } else if (distanceFromCamera > 10) {
-      nextLodLevel = 1;
-    }
+    const distanceFromCamera = getDistanceFromCamera(
+      camera.position,
+      meshRef.current?.position
+    );
+    const nextLodLevel = getLODLevel(distanceFromCamera, isMobile, fpsRef.current);
 
     setLodLevel((previousLevel) =>
       previousLevel !== nextLodLevel ? nextLodLevel : previousLevel
     );
   });
 
-  const scale =
-    lodLevel === 2 ? 0.008 : lodLevel === 1 ? 0.009 : 0.01;
+  const scale = getLODScale(0.01, lodLevel);
 
   const materialProps = useMemo(
     () => ({

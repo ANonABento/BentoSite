@@ -1,5 +1,6 @@
 import { useMemo, useRef } from 'react';
 import { Box } from '@react-three/drei';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { isMobileDevice } from '../Dimension.utils';
 import { SCENE_COLORS } from './constants';
 import { ResponsiveOrbitControls } from './ResponsiveOrbitControls';
@@ -7,7 +8,7 @@ import { StationaryBackground } from './StationaryBackground';
 
 export function SkeletonLoader() {
   const isMobile = useMemo(() => isMobileDevice(), []);
-  const controlsRef = useRef(null);
+  const controlsRef = useRef<OrbitControlsImpl | null>(null);
 
   return (
     <>
