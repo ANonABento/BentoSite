@@ -4,6 +4,7 @@ import { useRef, useEffect, useState, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { shaderMaterial } from '@react-three/drei';
+import { useIsMobile } from '../../Playground.hooks';
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(
@@ -16,18 +17,6 @@ function useReducedMotion() {
     return () => mq.removeEventListener('change', handler);
   }, []);
   return reduced;
-}
-
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(
-    () => typeof window !== 'undefined' && window.innerWidth < 768
-  );
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
-  return isMobile;
 }
 
 // Broken CRT TV shader with all the glitch effects

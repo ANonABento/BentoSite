@@ -42,6 +42,7 @@ export interface PhysicsConfig {
     damping: number;
   };
   centerPullRadius: number;
+  dampingFactor: number;
 }
 
 export interface ParticleConfig {

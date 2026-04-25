@@ -1,7 +1,7 @@
 // ModelInfoDisplay - Shows detailed information about the current 3D model
 // Extracted from Dimension.ui.tsx for better maintainability
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import type { ModelInfoDisplayProps } from '../../Dimension.types';
 import { CollapsibleWidget } from './collapsible-widget';
@@ -34,7 +34,7 @@ export function ModelInfoDisplay({ model, isMobile }: ModelInfoDisplayProps) {
         </span>
 
         {!isCollapsed && (
-          <React.Fragment>
+          <>
             {/* Description */}
             <p className={`${DESIGN_SYSTEM.colors.text.secondary} leading-relaxed ${isMobile ? 'text-xs' : 'text-sm'}`}>
               {model.description}
@@ -74,7 +74,7 @@ export function ModelInfoDisplay({ model, isMobile }: ModelInfoDisplayProps) {
                 </div>
               )}
             </div>
-          </React.Fragment>
+          </>
         )}
       </div>
     </CollapsibleWidget>

@@ -102,7 +102,7 @@ export function BentoCard({ config, homePosition, bestScore, registerForceUpdate
           const newY = offsetRef.current.y + force.y;
 
           // Dampen the movement
-          offsetRef.current = { x: newX * 0.95, y: newY * 0.95 };
+          offsetRef.current = { x: newX * PHYSICS.dampingFactor, y: newY * PHYSICS.dampingFactor };
 
           x.set(offsetRef.current.x);
           y.set(offsetRef.current.y);
