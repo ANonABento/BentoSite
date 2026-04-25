@@ -10,6 +10,7 @@ import {
   tabContent,
 } from '@/lib/animations';
 import Header from '@/components/Header';
+import type { ChatbotProps, ChatFunctions } from '@/components/Chat';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { ViewfinderPanel } from './ViewfinderPanel';
 import { TerminalPanel } from './TerminalPanel';
@@ -19,11 +20,7 @@ import { getProjectById } from '@/lib/projects-data';
 
 interface DashboardLayoutProps {
   Viewfinder: ComponentType<{ project: Project | null; minimal?: boolean; suspended?: boolean }>;
-  Chatbot: ComponentType<{
-    onReady?: (fns: { send: (content: string) => void; addAssistant: (content: string) => void; clear: () => void }) => void;
-    onViewResume?: () => void;
-    onSeeProjects?: () => void;
-  }>;
+  Chatbot: ComponentType<ChatbotProps>;
   SkillsSection: ComponentType<{ onAskAI?: (skill: string) => void }>;
   KeyboardShortcutsModal: ComponentType<{ isOpen: boolean; onClose: () => void }>;
   isShortcutsOpen: boolean;
@@ -53,11 +50,7 @@ export function DashboardLayout({
     }
     return null;
   });
-  const [chatFns, setChatFns] = useState<{
-    send: (content: string) => void;
-    addAssistant: (content: string) => void;
-    clear: () => void;
-  } | null>(null);
+  const [chatFns, setChatFns] = useState<ChatFunctions | null>(null);
   const isMountedRef = useRef(true);
   const mobileChatRef = useRef<HTMLDivElement>(null);
   const pendingChatMessageRef = useRef<string | null>(null);
@@ -95,14 +88,10 @@ export function DashboardLayout({
     pendingChatMessageRef.current = message;
   }, [chatFns, activeSection]);
 
-  const handleChatReady = useCallback((fns: {
-    send: (content: string) => void;
-    addAssistant: (content: string) => void;
-    clear: () => void;
-  }) => {
+  const handleChatReady = useCallback((fns: ChatFunctions | null) => {
     setChatFns(fns);
 
-    if (!pendingChatMessageRef.current || !isMountedRef.current) {
+    if (!fns || !pendingChatMessageRef.current || !isMountedRef.current) {
       return;
     }
 

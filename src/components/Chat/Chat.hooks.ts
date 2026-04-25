@@ -15,7 +15,7 @@ import {
 import type { ChatFunctions, Message } from './Chat.types';
 
 interface UseChatSessionOptions {
-  onReady?: (fns: ChatFunctions) => void;
+  onReady?: (fns: ChatFunctions | null) => void;
 }
 
 export function useChatSession({ onReady }: UseChatSessionOptions) {
@@ -227,13 +227,16 @@ export function useChatSession({ onReady }: UseChatSessionOptions) {
       return;
     }
 
-    onReady({
+    const chatFunctions: ChatFunctions = {
       send: (content: string) => {
         void sendMessageRef.current(content);
       },
       addAssistant: addAssistantMessage,
       clear: () => clearChatRef.current(),
-    });
+    };
+
+    onReady(chatFunctions);
+    return () => onReady(null);
   }, [addAssistantMessage, onReady]);
 
   const handleSubmit = useCallback(
@@ -263,6 +266,5 @@ export function useChatSession({ onReady }: UseChatSessionOptions) {
     handleSubmit,
     handleSuggestedQuestion,
     handleFeedback,
-    clearChat,
   };
 }

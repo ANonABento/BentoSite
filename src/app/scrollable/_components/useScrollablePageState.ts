@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChatFunctions } from '@/components/Chat';
 
-type ChatPanelFunctions = Pick<ChatFunctions, 'send' | 'clear'>;
+export type ChatPanelFunctions = Pick<ChatFunctions, 'send' | 'clear'>;
 
 export function useScrollablePageState() {
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);

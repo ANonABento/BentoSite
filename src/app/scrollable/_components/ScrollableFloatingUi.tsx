@@ -3,16 +3,11 @@
 import { ComponentType, RefObject } from 'react';
 import { AnimatePresence, m } from 'framer-motion';
 import { ErrorBoundary } from '@/components/ui';
-import type { ChatFunctions } from '@/components/Chat';
-
-type ChatPanelFunctions = Pick<ChatFunctions, 'send' | 'clear'>;
+import type { ChatbotProps } from '@/components/Chat';
+import type { ChatPanelFunctions } from './useScrollablePageState';
 
 interface ScrollableFloatingUiProps {
-  Chatbot: ComponentType<{
-    onReady?: (fns: ChatFunctions) => void;
-    onViewResume?: () => void;
-    onSeeProjects?: () => void;
-  }>;
+  Chatbot: ComponentType<ChatbotProps>;
   KeyboardShortcutsModal: ComponentType<{ isOpen: boolean; onClose: () => void }>;
   ProjectsModal: ComponentType<{ isOpen: boolean; onClose: () => void }>;
   chatFns: ChatPanelFunctions | null;
@@ -117,7 +112,9 @@ export function ScrollableFloatingUi({
               <div className="flex-1 min-h-0">
                 <ErrorBoundary>
                   <Chatbot
-                    onReady={(fns) => setChatFns({ send: fns.send, clear: fns.clear })}
+                    onReady={(fns) =>
+                      setChatFns(fns ? { send: fns.send, clear: fns.clear } : null)
+                    }
                     onViewResume={() => window.open('/resume.pdf', '_blank')}
                     onSeeProjects={() => {
                       setIsProjectsOpen(true);

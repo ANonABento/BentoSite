@@ -15,7 +15,7 @@ const TerminalIcon = (
 
 interface TerminalPanelProps {
   Chatbot: React.ComponentType<ChatbotProps>;
-  onChatReady: (fns: ChatFunctions) => void;
+  onChatReady: (fns: ChatFunctions | null) => void;
   onClearChat: () => void;
   onViewResume: () => void;
   onSeeProjects: () => void;
