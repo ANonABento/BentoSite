@@ -10,7 +10,9 @@ export interface ErrorBoundaryProps {
   /** Child components to wrap */
   children: ReactNode;
   /** Custom fallback UI to display on error */
-  fallback?: ReactNode;
+  fallback?:
+    | ReactNode
+    | ((context: { error?: Error; retry: () => void }) => ReactNode);
   /** Callback when error is caught */
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
   /** Custom title for default fallback */
@@ -70,6 +72,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     if (this.state.hasError) {
       // Return custom fallback if provided
       if (this.props.fallback) {
+        if (typeof this.props.fallback === 'function') {
+          return this.props.fallback({
+            error: this.state.error,
+            retry: this.handleRetry,
+          });
+        }
         return this.props.fallback;
       }
 
