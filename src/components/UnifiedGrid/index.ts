@@ -43,6 +43,7 @@ export type {
   CardSize,
   Position,
   CardPosition,
+  RenderCard,
   ViewportBounds,
   QueuedCard,
   CardQueueState,

@@ -7,3 +7,4 @@ export { useViewport, useWindowSize, screenToCanvas, canvasToScreen, getCameraTr
 export { useSpawnManager } from './useSpawnManager';
 export { useGridNavigation } from './useGridNavigation';
 export { useCardNavigation } from './useCardNavigation';
+export { filterCards } from './cardQueue/filter';

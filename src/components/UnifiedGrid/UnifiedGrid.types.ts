@@ -5,6 +5,8 @@
  * /playground (games) and /projects (portfolio) pages.
  */
 
+import type { ReactNode } from 'react';
+
 // =============================================================================
 // THEME
 // =============================================================================
@@ -96,6 +98,14 @@ export interface CardPosition extends Position {
   width: number;
   height: number;
 }
+
+export type RenderCard = (
+  card: CardData,
+  position: CardPosition,
+  theme: ThemeConfig,
+  isFocused?: boolean,
+  onClick?: () => void,
+) => ReactNode;
 
 export interface ViewportBounds {
   left: number;

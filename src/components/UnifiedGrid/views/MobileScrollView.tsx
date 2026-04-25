@@ -1,0 +1,136 @@
+'use client';
+
+import { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import { SearchMenuCard, useSearchCardState } from '../cards';
+import { filterCards, useWindowSize } from '../core';
+import { MOBILE } from '../UnifiedGrid.constants';
+import type { CardData, CardPosition, RenderCard, ThemeConfig } from '../UnifiedGrid.types';
+import { DefaultCard } from './DefaultCard';
+
+interface MobileScrollViewProps {
+  cards: CardData[];
+  theme: ThemeConfig;
+  categories: string[];
+  breadcrumb?: string;
+  onCardSelect?: (card: CardData) => void;
+  onBack?: () => void;
+  renderCard?: RenderCard;
+}
+
+export function MobileScrollView({
+  cards,
+  theme,
+  categories,
+  breadcrumb,
+  onCardSelect,
+  onBack,
+  renderCard,
+}: MobileScrollViewProps) {
+  const windowSize = useWindowSize();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [category, setCategory] = useState<string | null>(null);
+
+  const localFilteredCards = useMemo(
+    () => filterCards(cards, searchTerm, category),
+    [cards, searchTerm, category]
+  );
+
+  const searchState = useSearchCardState({
+    camera: { x: 0, y: 0, zoom: 1 },
+    windowSize,
+    categories,
+    isMobile: true,
+    onFilterChange: (term, nextCategory) => {
+      setSearchTerm(term);
+      setCategory(nextCategory);
+    },
+  });
+
+  return (
+    <div
+      className="h-full overflow-hidden flex flex-col"
+      style={{ background: theme.background }}
+    >
+      <SearchMenuCard
+        theme={theme}
+        expanded={searchState.expanded}
+        edge={searchState.edge}
+        position={searchState.screenPosition}
+        searchTerm={searchState.searchTerm}
+        category={searchState.category}
+        categories={categories}
+        breadcrumb={breadcrumb}
+        onToggleExpanded={searchState.toggleExpanded}
+        onSearchChange={searchState.setSearchTerm}
+        onCategoryChange={searchState.setCategory}
+        onBack={onBack}
+        totalCards={cards.length}
+        filteredCards={localFilteredCards.length}
+      />
+
+      <div
+        className="flex-1 overflow-y-auto"
+        style={{ paddingTop: MOBILE.SEARCH_BAR_HEIGHT + 16 }}
+      >
+        <div
+          className="flex flex-col gap-4 max-w-md mx-auto"
+          style={{ padding: MOBILE.SCROLL_PADDING }}
+        >
+          {localFilteredCards.map((card, index) => {
+            const cardWidth = Math.min(
+              windowSize.width * MOBILE.CARD_WIDTH_PERCENT,
+              MOBILE.CARD_MAX_WIDTH
+            );
+            const cardHeight = 160;
+            const position: CardPosition = {
+              x: 0,
+              y: 0,
+              rotation: 0,
+              size: '1x1',
+              width: cardWidth,
+              height: cardHeight,
+            };
+
+            const wrapperStyle: React.CSSProperties = {
+              position: 'relative',
+              width: cardWidth,
+              height: cardHeight,
+            };
+
+            if (renderCard) {
+              return (
+                <div key={card.id} style={wrapperStyle}>
+                  {renderCard(card, position, theme, false, () => onCardSelect?.(card))}
+                </div>
+              );
+            }
+
+            return (
+              <motion.div
+                key={card.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                style={wrapperStyle}
+              >
+                <DefaultCard
+                  card={card}
+                  position={position}
+                  theme={theme}
+                  onClick={() => onCardSelect?.(card)}
+                />
+              </motion.div>
+            );
+          })}
+
+          {localFilteredCards.length === 0 && (
+            <div className="text-center text-white/50 py-12">
+              No items found
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

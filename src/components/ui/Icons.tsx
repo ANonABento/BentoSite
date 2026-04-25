@@ -122,6 +122,14 @@ export const ChevronLeftIcon = createIcon(
   <path d="M15 19l-7-7 7-7" />
 );
 
+/** Arrow left icon */
+export const ArrowLeftIcon = createIcon(
+  <>
+    <path d="m12 19-7-7 7-7" />
+    <path d="M19 12H5" />
+  </>
+);
+
 /** Chevron right icon */
 export const ChevronRightIcon = createIcon(
   <path d="M9 5l7 7-7 7" />
