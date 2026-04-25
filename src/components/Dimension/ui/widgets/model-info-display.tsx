@@ -1,6 +1,3 @@
-// ModelInfoDisplay - Shows detailed information about the current 3D model
-// Extracted from Dimension.ui.tsx for better maintainability
-
 import { useState } from 'react';
 
 import type { ModelInfoDisplayProps } from '../../Dimension.types';

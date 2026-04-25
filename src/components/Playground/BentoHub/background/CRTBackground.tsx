@@ -254,10 +254,6 @@ function CRTShaderMesh({ reducedMotion, isMobile }: { reducedMotion: boolean; is
   );
 }
 
-function Scene({ reducedMotion, isMobile }: { reducedMotion: boolean; isMobile: boolean }) {
-  return <CRTShaderMesh reducedMotion={reducedMotion} isMobile={isMobile} />;
-}
-
 export function CRTBackground() {
   const isMobile = useIsMobile();
   const reducedMotion = useReducedMotion();
@@ -288,7 +284,7 @@ export function CRTBackground() {
         height: '100vh',
       }}
     >
-      <Scene reducedMotion={reducedMotion} isMobile={isMobile} />
+      <CRTShaderMesh reducedMotion={reducedMotion} isMobile={isMobile} />
     </Canvas>
   );
 }
