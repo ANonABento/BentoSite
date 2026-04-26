@@ -23,6 +23,7 @@ interface HeaderProps {
   email?: string;
   resumeUrl?: string;
   compact?: boolean;
+  onProjectsClick?: () => void;
 }
 
 function SocialActions({
@@ -77,6 +78,7 @@ export default function Header({
   email = 'hello@example.com',
   resumeUrl = '/resume.pdf',
   compact = false,
+  onProjectsClick,
 }: HeaderProps) {
   const toast = useToast();
   const { copied: copiedEmail, copy: copyEmail } = useClipboard();
@@ -135,16 +137,30 @@ export default function Header({
             <PlayCircleIcon size={16} />
             <span className="hidden sm:inline">Playground</span>
           </Link>
-          <Link
-            href="/projects"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono
-              text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]
-              transition-all duration-200"
-            aria-label="View projects"
-          >
-            <GridIcon size={16} />
-            <span className="hidden sm:inline">Projects</span>
-          </Link>
+          {onProjectsClick ? (
+            <button
+              type="button"
+              onClick={onProjectsClick}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono
+                text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]
+                transition-all duration-200"
+              aria-label="View projects"
+            >
+              <GridIcon size={16} />
+              <span className="hidden sm:inline">Projects</span>
+            </button>
+          ) : (
+            <Link
+              href="/projects"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono
+                text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]
+                transition-all duration-200"
+              aria-label="View projects"
+            >
+              <GridIcon size={16} />
+              <span className="hidden sm:inline">Projects</span>
+            </Link>
+          )}
         </div>
 
         <nav aria-label="Main navigation" className="flex items-center gap-1">

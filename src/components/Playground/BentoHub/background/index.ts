@@ -1,2 +1,2 @@
-export { ArcadeBackground } from './VoidBackground';
+export { VoidBackground } from './VoidBackground';
 export { CRTBackground } from './CRTBackground';

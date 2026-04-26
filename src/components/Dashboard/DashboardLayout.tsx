@@ -128,6 +128,7 @@ export function DashboardLayout({
             email={PORTFOLIO_DATA.personal.email}
             resumeUrl="/resume.pdf"
             compact
+            onProjectsClick={handleSeeProjects}
           />
         </motion.div>
 

@@ -1,2 +1,2 @@
 export { default } from './Chat';
-export type { ChatFunctions, ChatbotProps, Message } from './Chat.types';
+export type { ChatFunctions, ChatbotProps, Message } from './chat.types';

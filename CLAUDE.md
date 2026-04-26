@@ -62,11 +62,15 @@ src/
     │   └── TerminalPanel.tsx   # Terminal-style chat wrapper
     │
     ├── Dimension/          # 3D Model Viewer (modular architecture)
-    │   ├── Dimension.tsx           # Main component, state management
+    │   ├── index.ts                # Public viewer barrel
+    │   ├── Dimension.tsx           # Main component composition
+    │   ├── Dimension.viewport.tsx  # Canvas setup and viewport composition
+    │   ├── useDimensionController.ts # Viewer state and controls
     │   ├── Dimension.types.ts      # TypeScript interfaces
     │   ├── Dimension.config.ts     # Model definitions, thresholds
     │   ├── Dimension.hooks.ts      # Custom React hooks
-    │   ├── Dimension.3d.tsx        # Three.js scene components
+    │   ├── Dimension.3d.tsx        # Compatibility scene barrel
+    │   ├── scene/                  # Three.js scene primitives
     │   └── Dimension.utils.ts      # Utilities (re-exports shared utils)
     │
     └── Playground/         # Interactive games collection
@@ -161,19 +165,18 @@ ComponentName.3d.tsx     # Three.js specific components
 |------|---------|
 | `useIsMobile()` | Device detection with window resize listener |
 | `useScreenSize()` | Tracks window width/height |
-| `usePerformanceMonitor()` | FPS monitoring for adaptive quality |
 | `useKeyboardShortcuts()` | Global keyboard event handling |
-| `useTouchGestures()` | Pinch-to-zoom, two-finger pan |
-| `useKeyboardHelp()` | Toggles keyboard shortcuts help modal |
-| `usePerformanceHUD()` | Toggles FPS display overlay |
 | `useModelSearch()` | Filters model list by search query |
 
-### Three.js Components (`Dimension.3d.tsx`)
+### Three.js Components (`scene/`)
 
 | Component | Purpose |
 |-----------|---------|
-| `STLModelWrapper` | Loads STL files with error handling and retry |
+| `ModelWrapper` | Suspense boundary and STL vs GLTF/GLB loader selection |
 | `LODModel` | Level-of-detail switching based on FPS |
+| `GLTFModel` | GLTF/GLB model rendering and wireframe updates |
+| `SceneErrorBoundary` | Model load error classification and fallback rendering |
+| `SkeletonLoader` | Suspense fallback scene |
 | `ResponsiveOrbitControls` | Camera controls adapted for mobile/desktop |
 | `StationaryBackground` | Grid floor and walls environment |
 | `BillboardText` | Always-facing-camera text labels |
@@ -215,7 +218,7 @@ import { colors, spacing, classes } from '@/lib/design-tokens';
 All Three.js components must disable SSR to prevent hydration errors:
 
 ```tsx
-const Dimension = dynamic(() => import('@/components/Dimension/Dimension'), {
+const Dimension = dynamic(() => import('@/components/Dimension'), {
   ssr: false,
   loading: () => <LoadingSpinner />
 })

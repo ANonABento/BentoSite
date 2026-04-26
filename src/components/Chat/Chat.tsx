@@ -7,7 +7,7 @@ import { ChatInput } from './parts/ChatInput';
 import { MessageItem } from './parts/MessageItem';
 import { QuickActions } from './parts/QuickActions';
 import { SuggestedQuestions } from './parts/SuggestedQuestions';
-import type { ChatbotProps } from './Chat.types';
+import type { ChatbotProps } from './chat.types';
 
 export default function Chatbot({ onReady, onViewResume, onSeeProjects }: ChatbotProps) {
   const inputRef = useRef<HTMLInputElement>(null);

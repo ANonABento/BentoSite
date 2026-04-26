@@ -21,7 +21,7 @@ import {
   ModelWrapper,
   ResponsiveOrbitControls,
   StationaryBackground,
-} from './Dimension.3d';
+} from './scene';
 
 interface DimensionViewportProps {
   autoRotate: boolean;

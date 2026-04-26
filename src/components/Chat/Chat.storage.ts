@@ -3,7 +3,7 @@
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { DEFAULTS, STORAGE_KEYS } from '@/lib/constants';
 import { getStorageItem, removeStorageItem, setStorageItem } from '@/lib/utils';
-import type { Message } from './Chat.types';
+import type { Message } from './chat.types';
 
 export function getDefaultMessage(): Message {
   return {
