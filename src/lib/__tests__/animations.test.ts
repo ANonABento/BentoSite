@@ -151,10 +151,23 @@ describe('animations utility', () => {
       });
     });
 
+    it('should use smooth but bounded timing for route transitions', () => {
+      const animate = pageTransition.animate as { transition: { duration: number } };
+      const exit = pageTransition.exit as { transition: { duration: number } };
+
+      expect(animate.transition.duration).toBe(0.3);
+      expect(exit.transition.duration).toBe(0.2);
+    });
+
     it('should honor reduced motion with instant opacity-only states', () => {
+      const animate = reducedPageTransition.animate as { transition: { duration: number } };
+      const exit = reducedPageTransition.exit as { transition: { duration: number } };
+
       expect(reducedPageTransition.initial).toMatchObject({ opacity: 0 });
       expect(reducedPageTransition.animate).toMatchObject({ opacity: 1 });
       expect(reducedPageTransition.exit).toMatchObject({ opacity: 0 });
+      expect(animate.transition.duration).toBe(0);
+      expect(exit.transition.duration).toBe(0);
     });
   });
 

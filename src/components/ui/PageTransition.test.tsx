@@ -14,8 +14,9 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('framer-motion', () => {
   type TransitionState = {
-    y?: number;
     filter?: string;
+    opacity?: number;
+    y?: number;
   };
 
   type MotionDivProps = HTMLAttributes<HTMLDivElement> & {
@@ -24,6 +25,8 @@ vi.mock('framer-motion', () => {
     exit?: string;
     initial?: string;
     variants?: {
+      animate?: TransitionState;
+      exit?: TransitionState;
       initial?: TransitionState;
     };
   };
@@ -58,9 +61,16 @@ vi.mock('framer-motion', () => {
         <div
           data-testid="page-transition-shell"
           data-animate={animate}
+          data-animate-filter={variants?.animate?.filter ?? ''}
+          data-animate-opacity={variants?.animate?.opacity ?? ''}
+          data-animate-y={variants?.animate?.y ?? ''}
           data-exit={exit}
+          data-exit-filter={variants?.exit?.filter ?? ''}
+          data-exit-opacity={variants?.exit?.opacity ?? ''}
+          data-exit-y={variants?.exit?.y ?? ''}
           data-initial={initial}
           data-initial-filter={variants?.initial?.filter ?? ''}
+          data-initial-opacity={variants?.initial?.opacity ?? ''}
           data-initial-y={variants?.initial?.y ?? ''}
           {...props}
         >
@@ -79,7 +89,7 @@ describe('PageTransition', () => {
   });
 
   it('wraps routed content in a wait-mode presence transition', () => {
-    render(<PageTransition>Home</PageTransition>);
+    render(<PageTransition className="custom-route-shell">Home</PageTransition>);
 
     expect(screen.getByTestId('page-transition-presence')).toHaveAttribute(
       'data-mode',
@@ -92,6 +102,23 @@ describe('PageTransition', () => {
     expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
       'data-initial-y',
       '12'
+    );
+    expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
+      'data-animate',
+      'animate'
+    );
+    expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
+      'data-exit',
+      'exit'
+    );
+    expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
+      'data-exit-y',
+      '-8'
+    );
+    expect(screen.getByTestId('page-transition-shell')).toHaveClass(
+      'relative',
+      'min-h-screen',
+      'custom-route-shell'
     );
     expect(screen.getByText('Home')).toBeInTheDocument();
   });
@@ -137,6 +164,18 @@ describe('PageTransition', () => {
     );
     expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
       'data-initial-filter',
+      ''
+    );
+    expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
+      'data-animate-opacity',
+      '1'
+    );
+    expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
+      'data-exit-y',
+      ''
+    );
+    expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
+      'data-exit-filter',
       ''
     );
   });
