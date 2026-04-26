@@ -61,6 +61,9 @@ export function MobileScrollView({
         expanded={searchState.expanded}
         edge={searchState.edge}
         position={searchState.screenPosition}
+        compression={searchState.compression}
+        width={searchState.width}
+        height={searchState.height}
         searchTerm={searchState.searchTerm}
         category={searchState.category}
         categories={categories}
@@ -75,7 +78,7 @@ export function MobileScrollView({
 
       <div
         className="flex-1 overflow-y-auto"
-        style={{ paddingTop: MOBILE.SEARCH_BAR_HEIGHT + 16 }}
+        style={{ paddingTop: searchState.height + MOBILE.SCROLL_GAP }}
       >
         <div
           className="flex flex-col gap-4 max-w-md mx-auto"

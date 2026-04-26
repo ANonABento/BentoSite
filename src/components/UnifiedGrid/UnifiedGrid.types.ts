@@ -38,7 +38,6 @@ export interface ThemeConfig {
   searchCard: {
     background: string;
     border: string;
-    collapsedBackground: string;
   };
 }
 
@@ -173,10 +172,16 @@ export interface NavigationState {
 export type SearchCardEdge = 'none' | 'top' | 'bottom' | 'left' | 'right';
 
 export interface SearchCardState {
-  /** Whether the search card is expanded (full) or collapsed (bar) */
+  /** Whether optional search filters/details are visible */
   expanded: boolean;
-  /** Which edge the card is stuck to (none = floating) */
+  /** Which viewport edge the card is compressing against (none = regular slot) */
   edge: SearchCardEdge;
+  /** How far the card has compressed from regular card to squashed edge state */
+  compression: number;
+  /** Current rendered width after proportional compression */
+  width: number;
+  /** Current rendered height after proportional compression */
+  height: number;
   /** Current search term */
   searchTerm: string;
   /** Selected category filter (null = all) */

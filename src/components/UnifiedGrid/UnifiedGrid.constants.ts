@@ -100,25 +100,21 @@ export const INTERACTION = {
 // SEARCH CARD
 // =============================================================================
 
+const SEARCH_CARD_DIMENSIONS = getCardDimensions('2x1');
+
 export const SEARCH_CARD = {
   /** Width when expanded */
-  EXPANDED_WIDTH: 360,
+  EXPANDED_WIDTH: SEARCH_CARD_DIMENSIONS.width,
   /** Height when expanded */
-  EXPANDED_HEIGHT: 200,
+  EXPANDED_HEIGHT: SEARCH_CARD_DIMENSIONS.height,
   /** Height when collapsed to bar */
   COLLAPSED_HEIGHT: 48,
-  /** Width when collapsed (percentage of viewport) */
-  COLLAPSED_WIDTH_PERCENT: 0.9,
-  /** Max width when collapsed */
-  COLLAPSED_MAX_WIDTH: 500,
-  /** Distance from edge to trigger collapse (px) - hysteresis lower bound */
-  COLLAPSE_THRESHOLD: 80,
-  /** Distance from edge to trigger expand (px) - hysteresis upper bound */
-  EXPAND_THRESHOLD: 150,
+  /** Minimum width when compressed against a side edge */
+  SQUASHED_SIDE_WIDTH: 64,
+  /** Off-screen distance needed to reach the fully squashed state */
+  COMPRESSION_DISTANCE: 180,
   /** Padding from viewport edge when collapsed */
   EDGE_PADDING: 16,
-  /** Animation duration for expand/collapse (ms) */
-  MORPH_DURATION: 300,
 } as const;
 
 // =============================================================================
@@ -162,7 +158,6 @@ export const THEME_PLAYFUL: ThemeConfig = {
   searchCard: {
     background: 'rgba(26, 10, 46, 0.95)',
     border: '2px solid rgba(255, 0, 255, 0.3)',
-    collapsedBackground: 'rgba(26, 10, 46, 0.98)',
   },
 };
 
@@ -184,7 +179,6 @@ export const THEME_PREMIUM: ThemeConfig = {
   searchCard: {
     background: 'rgba(10, 10, 10, 0.95)',
     border: '1px solid rgba(255, 255, 255, 0.1)',
-    collapsedBackground: 'rgba(10, 10, 10, 0.98)',
   },
 };
 
@@ -208,8 +202,6 @@ export const MOBILE = {
   SCROLL_GAP: 16,
   /** Padding at top/bottom of scroll view */
   SCROLL_PADDING: 24,
-  /** Height of collapsed search bar on mobile */
-  SEARCH_BAR_HEIGHT: 56,
 } as const;
 
 // =============================================================================
@@ -219,8 +211,6 @@ export const MOBILE = {
 export const PERFORMANCE = {
   /** Throttle interval for scroll/pan handlers (ms) */
   THROTTLE_INTERVAL: 16, // ~60fps
-  /** Debounce delay for search input (ms) */
-  SEARCH_DEBOUNCE: 200,
   /** Maximum cards to render in low-performance mode */
   LOW_PERF_MAX_CARDS: 15,
   /** FPS threshold to trigger low-performance mode */
