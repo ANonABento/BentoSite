@@ -6,7 +6,7 @@ export async function gotoDashboard(page: Page) {
 }
 
 export async function openTerminalIfTabbed(page: Page) {
-  const terminalTab = page.getByRole('button', { name: /terminal/i });
+  const terminalTab = page.getByRole('tab', { name: /terminal/i });
 
   if (await terminalTab.isVisible()) {
     await terminalTab.click();
