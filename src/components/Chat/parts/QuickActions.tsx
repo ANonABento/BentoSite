@@ -34,6 +34,7 @@ export const QuickActions = memo(function QuickActions({
           type="button"
           onClick={onSeeProjects}
           disabled={disabled}
+          aria-label="View Projects"
           className="text-xs font-mono text-[var(--purple)] hover:underline transition-all duration-150 disabled:opacity-50"
         >
           [projects --list]
