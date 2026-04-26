@@ -99,7 +99,7 @@ export default function DimensionViewer({
       {!minimal && isMobile && !error && (
         <button
           onClick={() => setShowModelInfo(!showModelInfo)}
-          className="absolute top-4 left-4 bg-[var(--overlay-strong)] hover:opacity-100 text-[var(--text-on-accent)] rounded-full p-3 backdrop-blur-sm transition-all duration-200 shadow-lg z-50"
+          className="absolute top-4 left-4 bg-[var(--overlay-strong)] hover:opacity-100 text-[var(--text-on-overlay)] rounded-full p-3 backdrop-blur-sm transition-all duration-200 shadow-lg z-50"
           title={showModelInfo ? 'Hide Model Info' : 'Show Model Info'}
           aria-label={showModelInfo ? 'Hide model information' : 'Show model information'}
           aria-expanded={showModelInfo}

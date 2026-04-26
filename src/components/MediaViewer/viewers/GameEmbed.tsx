@@ -102,7 +102,7 @@ export function GameEmbed({ type, url, title, onClose }: GameEmbedProps) {
       {fullscreen && (
         <button
           onClick={() => setFullscreen(false)}
-          className="absolute top-4 right-4 z-10 p-2 bg-[var(--overlay)] text-[var(--text-on-accent)] hover:bg-[var(--overlay-strong)] rounded-lg transition-colors"
+          className="absolute top-4 right-4 z-10 p-2 bg-[var(--overlay)] text-[var(--text-on-overlay)] hover:bg-[var(--overlay-strong)] rounded-lg transition-colors"
           title="Exit fullscreen (Esc)"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

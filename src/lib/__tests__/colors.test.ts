@@ -57,12 +57,12 @@ describe('colors utility', () => {
   describe('BUTTON_CLASSES', () => {
     it('should define CTA button classes', () => {
       expect(BUTTON_CLASSES.cta).toContain('bg-[var(--orange)]');
-      expect(BUTTON_CLASSES.cta).toContain('text-white');
+      expect(BUTTON_CLASSES.cta).toContain('text-[var(--text-on-accent)]');
     });
 
     it('should define primary button classes', () => {
       expect(BUTTON_CLASSES.primary).toContain('bg-[var(--purple)]');
-      expect(BUTTON_CLASSES.primary).toContain('text-white');
+      expect(BUTTON_CLASSES.primary).toContain('text-[var(--text-on-accent)]');
     });
 
     it('should define ghost button classes', () => {

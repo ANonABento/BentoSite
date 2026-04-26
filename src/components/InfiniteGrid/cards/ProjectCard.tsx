@@ -142,7 +142,7 @@ export function ProjectCard({
               {mediaIndicators.map(({ icon, label }) => (
                 <span
                   key={label}
-                  className="p-1 rounded bg-[var(--overlay)] text-[var(--text-on-accent)] opacity-80"
+                  className="p-1 rounded bg-[var(--overlay)] text-[var(--text-on-overlay)] opacity-80"
                   title={label}
                 >
                   {icon}

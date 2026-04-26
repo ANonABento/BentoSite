@@ -146,7 +146,7 @@ export function AimTrainer() {
                       className={`
                         px-3 py-2 rounded-lg text-sm font-medium transition-all
                         ${settings.mode === mode.id
-                          ? 'bg-[var(--pg-game-error)] text-white'
+                          ? 'bg-[var(--pg-game-error)] text-[var(--pg-text-on-accent)]'
                           : 'bg-[var(--pg-bg-elevated)] text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]'
                         }
                       `}
@@ -222,7 +222,7 @@ export function AimTrainer() {
 
               <motion.button
                 onClick={handleStart}
-                className="px-8 py-3 rounded-lg bg-[var(--pg-game-error)] text-white font-medium"
+                className="px-8 py-3 rounded-lg bg-[var(--pg-game-error)] text-[var(--pg-text-on-accent)] font-medium"
                 aria-label="Start aim training"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}

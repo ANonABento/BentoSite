@@ -74,14 +74,6 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
     }
   }, [addAssistant, onReady]);
 
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      inputRef.current?.focus();
-    }, 0);
-
-    return () => window.clearTimeout(timeout);
-  }, []);
-
   const handleSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -93,6 +85,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
   const handleSuggestedQuestion = useCallback(
     (question: string) => {
       sendMessage(question);
+      inputRef.current?.focus();
     },
     [sendMessage]
   );

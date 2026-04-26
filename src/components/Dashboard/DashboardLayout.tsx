@@ -91,6 +91,7 @@ export function DashboardLayout({
 
     if (chatFns) {
       chatFns?.send(message);
+      chatFns?.focusInput();
       return;
     }
 
@@ -111,6 +112,7 @@ export function DashboardLayout({
 
     fns.send(pendingChatMessageRef.current);
     pendingChatMessageRef.current = null;
+    fns.focusInput();
   }, []);
 
   return (

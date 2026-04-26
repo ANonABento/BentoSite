@@ -188,7 +188,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
                   className={`
                     flex-1 py-2 rounded-lg text-sm font-medium transition-all
                     ${difficulty === option.value
-                      ? `${option.color} text-white`
+                      ? `${option.color} text-[var(--pg-text-on-accent)]`
                       : 'bg-[var(--pg-bg-elevated)] text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]'
                     }
                   `}
