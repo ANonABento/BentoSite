@@ -12,6 +12,10 @@ import {
 import { LazyPanelFallback } from '@/components/ui';
 import { ViewerSkeleton } from '@/components/Viewfinder/ViewerSkeleton';
 
+const BOOT_SESSION_KEY = 'bentOS.bootComplete';
+
+type BootState = 'booting' | 'exiting' | 'complete';
+
 const Viewfinder = dynamic(
   () => import('@/components/Viewfinder').then((mod) => mod.Viewfinder),
   { ssr: false, loading: () => <ViewerSkeleton /> }
@@ -46,13 +50,53 @@ function getDashboardQuerySnapshot() {
   return new URLSearchParams(window.location.search).get('view') === 'dashboard';
 }
 
+function isHardReload() {
+  const navigation = performance.getEntriesByType('navigation')[0] as
+    | PerformanceNavigationTiming
+    | undefined;
+
+  return navigation?.type === 'reload';
+}
+
+function hasCompletedBootInSession() {
+  try {
+    return window.sessionStorage.getItem(BOOT_SESSION_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function markBootCompleteInSession() {
+  try {
+    window.sessionStorage.setItem(BOOT_SESSION_KEY, 'true');
+  } catch {
+    // Storage can be unavailable in private or restricted browsing modes.
+  }
+}
+
+function getInitialBootState(): BootState {
+  if (typeof window === 'undefined') {
+    return 'booting';
+  }
+
+  if (getDashboardQuerySnapshot()) {
+    return 'complete';
+  }
+
+  if (isHardReload()) {
+    return 'booting';
+  }
+
+  return hasCompletedBootInSession() ? 'complete' : 'booting';
+}
+
 export default function Home() {
   const startsInDashboard = useSyncExternalStore(
     subscribeToUrlChanges,
     getDashboardQuerySnapshot,
     () => false
   );
-  const [bootState, setBootState] = useState<'booting' | 'exiting' | 'complete'>('booting');
+  const [bootState, setBootState] = useState<BootState>(getInitialBootState);
   const { isOpen: isShortcutsOpen, close: closeShortcuts } = useKeyboardShortcutsHelp();
 
   const handleBootExiting = useCallback(() => {
@@ -60,6 +104,7 @@ export default function Home() {
   }, []);
 
   const handleBootComplete = useCallback(() => {
+    markBootCompleteInSession();
     setBootState('complete');
   }, []);
 
