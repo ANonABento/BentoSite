@@ -23,6 +23,7 @@ export function Cell({
   onDoubleClick,
 }: CellProps) {
   const size = isMobile ? CELL_SIZE_MOBILE : CELL_SIZE;
+  const isNumberedCell = cell.isRevealed && !cell.isMine && cell.adjacentMines > 0;
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -30,13 +31,13 @@ export function Cell({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key.toLowerCase() === 'f') {
+    if (!gameOver && !cell.isRevealed && e.key.toLowerCase() === 'f') {
       e.preventDefault();
       onRightClick();
       return;
     }
 
-    if (e.key === 'Enter' && cell.isRevealed && cell.adjacentMines > 0) {
+    if (isNumberedCell && (e.key === 'Enter' || e.key === ' ')) {
       e.preventDefault();
       onDoubleClick();
     }
@@ -47,11 +48,11 @@ export function Cell({
   }. ${cell.isRevealed
     ? cell.isMine
       ? 'Mine'
-      : cell.adjacentMines > 0
+      : isNumberedCell
         ? `${cell.adjacentMines} adjacent mines`
         : 'Empty'
     : 'Hidden cell'
-  }. ${cell.isRevealed ? 'Press Enter to chord when numbered.' : 'Press Enter to reveal or F to flag.'}`;
+  }. ${isNumberedCell ? 'Press Enter or Space to chord.' : cell.isRevealed ? '' : 'Press Enter to reveal or F to flag.'}`;
 
   // Unrevealed cell
   if (!cell.isRevealed) {
@@ -121,11 +122,11 @@ export function Cell({
       className={`
         flex items-center justify-center rounded-md cursor-default
         bg-[var(--pg-bg-surface)] border border-white/[0.04]
-        ${cell.adjacentMines > 0 ? 'cursor-pointer' : ''}
+        ${isNumberedCell ? 'cursor-pointer' : ''}
       `}
       style={{ width: size, height: size }}
-      role={cell.adjacentMines > 0 ? 'button' : 'img'}
-      tabIndex={cell.adjacentMines > 0 && !gameOver ? 0 : undefined}
+      role={isNumberedCell ? 'button' : 'img'}
+      tabIndex={isNumberedCell && !gameOver ? 0 : undefined}
       aria-label={cellLabel}
     >
       {cell.adjacentMines > 0 && (

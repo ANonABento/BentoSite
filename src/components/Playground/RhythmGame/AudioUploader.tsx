@@ -12,11 +12,23 @@ interface AudioUploaderProps {
   onCancel: () => void;
 }
 
+type BeatmapDifficulty = 'easy' | 'medium' | 'hard';
+
+const DIFFICULTY_OPTIONS: {
+  value: BeatmapDifficulty;
+  label: string;
+  color: string;
+}[] = [
+  { value: 'easy', label: 'Easy', color: 'bg-[var(--pg-game-success)]' },
+  { value: 'medium', label: 'Medium', color: 'bg-[var(--pg-accent-gold)]' },
+  { value: 'hard', label: 'Hard', color: 'bg-[var(--pg-game-error)]' },
+];
+
 export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploaderProps) {
   const [file, setFile] = useState<File | null>(null);
   const [songName, setSongName] = useState('');
   const [artist, setArtist] = useState('');
-  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+  const [difficulty, setDifficulty] = useState<BeatmapDifficulty>('medium');
   const [dragActive, setDragActive] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -64,11 +76,12 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
     }
   }, [file, mode, difficulty, songName, artist, analyzeFile, onBeatmapGenerated]);
 
-  const difficultyOptions: { value: 'easy' | 'medium' | 'hard'; label: string; color: string }[] = [
-    { value: 'easy', label: 'Easy', color: 'bg-[var(--pg-game-success)]' },
-    { value: 'medium', label: 'Medium', color: 'bg-[var(--pg-accent-gold)]' },
-    { value: 'hard', label: 'Hard', color: 'bg-[var(--pg-game-error)]' },
-  ];
+  const handleDropzoneKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileInputRef.current?.click();
+    }
+  }, []);
 
   return (
     <motion.div
@@ -83,7 +96,9 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
           Upload Audio
         </h3>
         <motion.button
+          type="button"
           onClick={onCancel}
+          aria-label="Cancel audio upload"
           className="p-2 rounded-lg hover:bg-[rgba(255,255,255,0.05)] text-[var(--pg-text-muted)]"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -99,6 +114,10 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
         onDragOver={handleDrag}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
+        onKeyDown={handleDropzoneKeyDown}
+        role="button"
+        tabIndex={0}
+        aria-label={file ? `Selected audio file ${file.name}. Press Enter to choose a different file.` : 'Upload audio file'}
         className={`
           relative p-8 rounded-xl border-2 border-dashed cursor-pointer transition-all
           ${dragActive
@@ -154,6 +173,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
               Song Name
             </label>
             <input
+              aria-label="Song name"
               type="text"
               value={songName}
               onChange={(e) => setSongName(e.target.value)}
@@ -167,6 +187,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
               Artist
             </label>
             <input
+              aria-label="Artist name"
               type="text"
               value={artist}
               onChange={(e) => setArtist(e.target.value)}
@@ -181,10 +202,13 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
               Difficulty
             </label>
             <div className="flex gap-2 mt-1">
-              {difficultyOptions.map((option) => (
+              {DIFFICULTY_OPTIONS.map((option) => (
                 <motion.button
+                  type="button"
                   key={option.value}
                   onClick={() => setDifficulty(option.value)}
+                  aria-label={`Set beatmap difficulty to ${option.label}`}
+                  aria-pressed={difficulty === option.value}
                   className={`
                     flex-1 py-2 rounded-lg text-sm font-medium transition-all
                     ${difficulty === option.value
@@ -276,8 +300,10 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
 
       {/* Action button */}
       <motion.button
+        type="button"
         onClick={handleAnalyze}
         disabled={!file || isAnalyzing}
+        aria-label={isAnalyzing ? 'Analyzing audio file' : 'Generate beatmap from selected audio'}
         className={`
           w-full mt-6 py-3 rounded-xl font-medium transition-all
           ${!file || isAnalyzing

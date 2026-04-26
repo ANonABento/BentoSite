@@ -3,17 +3,6 @@
 import { useMemo, useState } from 'react';
 import type { GameViewerProps } from '../Viewfinder.types';
 
-// Convert itch.io page URL to embed URL
-function getItchEmbedUrl(url: string): string {
-  // Already an embed URL
-  if (url.includes('/embed/')) return url;
-
-  // Convert https://user.itch.io/game to https://itch.io/embed/GAME_ID
-  // Unfortunately itch.io embeds require the game ID, not the slug
-  // For now, we'll use the HTML5 embed which works with the page URL
-  return url;
-}
-
 function canEmbedGame(game: NonNullable<GameViewerProps['game']>): boolean {
   if (game.type === 'itch') {
     return game.url.includes('/embed/');
@@ -28,10 +17,6 @@ export function GameViewer({ game }: GameViewerProps) {
 
   const embedUrl = useMemo(() => {
     if (!game) return null;
-    if (game.type === 'itch') {
-      return getItchEmbedUrl(game.url);
-    }
-    // Unity WebGL - direct URL
     return game.url;
   }, [game]);
   const loadKey = game ? `${game.type}:${game.url}` : null;
