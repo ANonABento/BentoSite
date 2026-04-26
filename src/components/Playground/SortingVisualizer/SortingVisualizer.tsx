@@ -107,10 +107,12 @@ export function SortingVisualizer() {
               key={algo.id}
               onClick={() => !isRunning && setAlgorithm(algo.id as SortingAlgorithm)}
               disabled={isRunning}
+              aria-label={`Select ${algo.name} sorting algorithm`}
+              aria-pressed={algorithm === algo.id}
               className={`
                 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
                 ${algorithm === algo.id
-                  ? 'bg-[var(--purple)] text-white'
+                  ? 'bg-[var(--purple)] text-[var(--text-on-accent)]'
                   : 'bg-[var(--pg-bg-elevated)] text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]'
                 }
                 ${isRunning ? 'opacity-50 cursor-not-allowed' : ''}
@@ -147,6 +149,7 @@ export function SortingVisualizer() {
               onChange={(e) => setArraySize(parseInt(e.target.value))}
               disabled={isRunning || isPaused}
               className="pg-range pg-range-purple w-20 disabled:opacity-50"
+              aria-label="Array size"
             />
             <span className="text-xs font-mono text-[var(--pg-text-secondary)] w-8">{arraySize}</span>
           </div>
@@ -161,6 +164,7 @@ export function SortingVisualizer() {
               value={speed}
               onChange={(e) => setSpeed(parseInt(e.target.value))}
               className="pg-range w-20"
+              aria-label="Sorting speed"
             />
           </div>
         </div>
@@ -170,6 +174,7 @@ export function SortingVisualizer() {
           <motion.button
             onClick={generateArray}
             disabled={isRunning}
+            aria-label="Shuffle array"
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--pg-bg-elevated)] text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
             whileHover={!isRunning ? { scale: 1.02 } : {}}
             whileTap={!isRunning ? { scale: 0.98 } : {}}
@@ -181,7 +186,8 @@ export function SortingVisualizer() {
           {isIdle || isFinished ? (
             <motion.button
               onClick={start}
-              className="flex items-center gap-2 px-6 py-2 rounded-lg bg-[var(--purple)] text-white font-medium"
+              aria-label={`Start ${currentAlgorithm?.name ?? 'selected'} sort`}
+              className="flex items-center gap-2 px-6 py-2 rounded-lg bg-[var(--purple)] text-[var(--text-on-accent)] font-medium"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -191,6 +197,7 @@ export function SortingVisualizer() {
           ) : isRunning ? (
             <motion.button
               onClick={pause}
+              aria-label="Pause sorting visualization"
               className="flex items-center gap-2 px-6 py-2 rounded-lg bg-[var(--pg-accent-gold)] text-black font-medium"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -201,7 +208,8 @@ export function SortingVisualizer() {
           ) : (
             <motion.button
               onClick={resume}
-              className="flex items-center gap-2 px-6 py-2 rounded-lg bg-[var(--purple)] text-white font-medium"
+              aria-label="Resume sorting visualization"
+              className="flex items-center gap-2 px-6 py-2 rounded-lg bg-[var(--purple)] text-[var(--text-on-accent)] font-medium"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -212,6 +220,7 @@ export function SortingVisualizer() {
 
           <motion.button
             onClick={reset}
+            aria-label="Reset sorting visualization"
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--pg-bg-elevated)] text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -225,6 +234,8 @@ export function SortingVisualizer() {
         <div
           className="pg-surface-frame flex items-end justify-center gap-px rounded-xl p-4"
           style={{ minHeight: isMobile ? 200 : 300 }}
+          role="img"
+          aria-label={`${currentAlgorithm?.name ?? 'Sorting'} visualization with ${arraySize} bars, ${comparisons} comparisons, and ${swaps} swaps.`}
         >
           {array.map((value, index) => (
             <motion.div

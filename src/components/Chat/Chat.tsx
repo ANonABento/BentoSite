@@ -69,6 +69,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
         send: (content: string) => sendMessageRef.current(content),
         addAssistant,
         clear: () => clearChatRef.current(),
+        focusInput: () => inputRef.current?.focus(),
       });
     }
   }, [addAssistant, onReady]);
@@ -84,12 +85,13 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
   const handleSuggestedQuestion = useCallback(
     (question: string) => {
       sendMessage(question);
+      inputRef.current?.focus();
     },
     [sendMessage]
   );
 
   return (
-    <div className="flex flex-col h-full" role="region" aria-label="Chat conversation">
+    <div className="flex flex-col h-full" role="region" aria-label="Chat assistant">
       {isDemoMode && (
         <div className="flex-shrink-0 px-4 py-2 bg-[var(--status-warning-muted)] border-b border-[var(--status-warning)]">
           <p className="text-xs font-mono text-[var(--status-warning)]">
@@ -98,7 +100,13 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-3" aria-live="polite" aria-atomic="false">
+      <div
+        className="flex-1 overflow-y-auto p-4 space-y-3"
+        aria-live="polite"
+        aria-atomic="false"
+        aria-label="Chat conversation"
+        role="log"
+      >
         {messages.map((message) => (
           <MessageItem
             key={message.id}

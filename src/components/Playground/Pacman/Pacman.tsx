@@ -275,7 +275,8 @@ export function Pacman() {
 
             <motion.button
               onClick={startGame}
-              className="px-6 py-3 rounded-lg bg-[var(--purple)] text-white font-medium"
+              className="px-6 py-3 rounded-lg bg-[var(--purple)] text-[var(--text-on-accent)] font-medium"
+              aria-label="Start Pacman game"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -305,6 +306,8 @@ export function Pacman() {
               <motion.button
                 onClick={togglePause}
                 className="p-2 rounded-lg bg-[var(--pg-bg-elevated)] hover:bg-[var(--pg-bg-hover)]"
+                aria-label={status === 'paused' ? 'Resume Pacman' : 'Pause Pacman'}
+                aria-pressed={status === 'paused'}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -331,6 +334,9 @@ export function Pacman() {
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
                 className="block"
+                role="img"
+                aria-label={`Pacman maze. Score ${score}. ${lives} lives. ${dotsRemaining} dots left. Use arrow keys or WASD to move.`}
+                tabIndex={0}
               />
             </div>
 
@@ -352,7 +358,8 @@ export function Pacman() {
                   </p>
                   <motion.button
                     onClick={togglePause}
-                    className="px-6 py-2 rounded-lg bg-[var(--purple)] text-white font-medium"
+                    className="px-6 py-2 rounded-lg bg-[var(--purple)] text-[var(--text-on-accent)] font-medium"
+                    aria-label="Resume Pacman"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >

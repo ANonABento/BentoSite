@@ -179,6 +179,7 @@ export function CameraPresetsWidget({
                   key={name}
                   onClick={() => onPresetSelect(name as keyof typeof presets)}
                   className="px-3 py-2 text-xs rounded-sm transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50 bg-[var(--glass-bg)] border border-[var(--border)] hover:bg-[var(--purple-muted)] hover:border-[var(--purple)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  aria-label={`Move camera to ${name} preset`}
                 >
                   <div className="capitalize font-medium">{name}</div>
                 </button>

@@ -94,7 +94,7 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
             {mediaTypes.slice(0, 3).map((type) => (
               <span
                 key={type}
-                className="inline-flex items-center gap-1 rounded-full bg-[rgba(0,0,0,0.55)] px-2 py-1 text-[10px] font-medium text-[var(--text-on-accent)] backdrop-blur-sm"
+                className="inline-flex items-center gap-1 rounded-full bg-[rgba(0,0,0,0.55)] px-2 py-1 text-[10px] font-medium text-[var(--text-on-overlay)] backdrop-blur-sm"
                 title={type}
               >
                 {MEDIA_ICONS[type]}

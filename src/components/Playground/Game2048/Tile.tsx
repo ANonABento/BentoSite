@@ -44,6 +44,8 @@ export function Tile({ tile, isMobile }: TileProps) {
           : { duration: 0.15 },
       }}
       className="absolute flex items-center justify-center rounded-lg font-bold select-none"
+      role="img"
+      aria-label={`Tile ${tile.value} at row ${tile.row + 1}, column ${tile.col + 1}`}
       style={{
         width: size,
         height: size,

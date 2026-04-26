@@ -137,10 +137,12 @@ export function Minesweeper() {
                     <motion.button
                       key={diff}
                       onClick={() => handleDifficultyChange(diff)}
+                      aria-label={`Select ${config.name} difficulty, ${config.cols} by ${config.rows}, ${config.mines} mines`}
+                      aria-pressed={selectedDifficulty === diff}
                       className={`
                         px-4 py-2 rounded-xl font-medium capitalize transition-all duration-200
                         ${selectedDifficulty === diff
-                          ? 'bg-[var(--purple)] text-white shadow-lg shadow-[var(--purple)]/25'
+                          ? 'bg-[var(--purple)] text-[var(--text-on-accent)] shadow-lg shadow-[var(--purple)]/25'
                           : 'pg-surface-panel text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]'
                         }
                       `}
@@ -187,6 +189,7 @@ export function Minesweeper() {
                 <motion.button
                   onClick={() => resetGame()}
                   className="p-2 rounded-lg bg-[var(--pg-bg-elevated)] hover:bg-[var(--pg-bg-hover)] transition-colors"
+                  aria-label="Start a new Minesweeper game"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   title="New Game (N)"

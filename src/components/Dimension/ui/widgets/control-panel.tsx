@@ -203,6 +203,7 @@ export function ControlPanel({
                   onChange={(e) => onZoomChange(Number(e.target.value))}
                   className="w-full h-2 bg-[var(--glass-bg-strong)] rounded-lg appearance-none cursor-pointer accent-[var(--purple)]"
                   aria-label="Zoom level"
+                  aria-valuetext={`${Math.round(zoomLevel)} units`}
                 />
               </div>
 
@@ -221,6 +222,7 @@ export function ControlPanel({
                   onChange={(e) => onRotationSpeedChange(Number(e.target.value))}
                   className="w-full h-2 bg-[var(--glass-bg-strong)] rounded-lg appearance-none cursor-pointer accent-[var(--purple)]"
                   aria-label="Rotation speed"
+                  aria-valuetext={`${rotationSpeed.toFixed(1)} times`}
                 />
               </div>
             </div>

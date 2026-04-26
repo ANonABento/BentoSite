@@ -113,8 +113,12 @@ export function DesktopCanvasView({
 
   return (
     <div
+      id="main-content"
       className={['fixed inset-0 overflow-hidden', className].filter(Boolean).join(' ')}
       {...navBindings}
+      role="application"
+      aria-label={`${breadcrumb ?? 'Card grid'} interactive grid. Use arrow keys to focus cards, Enter to open, WASD to pan, and R to reset view.`}
+      tabIndex={-1}
       style={{ ...navBindings.style, background: theme.background }}
     >
       <div
@@ -172,6 +176,7 @@ export function DesktopCanvasView({
 
       <button
         onClick={navigation.reset}
+        aria-label="Reset grid view"
         className="fixed bottom-4 right-4 px-4 py-2 rounded-lg text-sm font-medium transition-all"
         style={{
           background: theme.searchCard.background,

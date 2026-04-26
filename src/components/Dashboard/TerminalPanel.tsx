@@ -42,6 +42,7 @@ export function TerminalPanel({
         action={
           <button
             onClick={onClearChat}
+            aria-label="Clear chat conversation"
             className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors px-2 py-1 rounded hover:bg-[var(--glass-bg)]"
           >
             Clear

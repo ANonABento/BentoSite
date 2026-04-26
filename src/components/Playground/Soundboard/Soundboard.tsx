@@ -55,6 +55,7 @@ export function Soundboard() {
             value={volume}
             onChange={(e) => setVolume(parseFloat(e.target.value))}
             className="pg-range w-20"
+            aria-label="Soundboard volume"
           />
         </div>
       }
@@ -90,6 +91,8 @@ export function Soundboard() {
             <motion.button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
+              aria-label={`Show ${cat.name.toLowerCase()} sound pads`}
+              aria-pressed={selectedCategory === cat.id}
               className={`
                 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
                 ${selectedCategory === cat.id

@@ -36,6 +36,8 @@ export const CSS_VARS = {
   textPrimary: 'var(--text-primary)',
   textSecondary: 'var(--text-secondary)',
   textMuted: 'var(--text-muted)',
+  textOnAccent: 'var(--text-on-accent)',
+  textOnOverlay: 'var(--text-on-overlay)',
 
   // Status
   success: 'var(--status-success)',
@@ -94,12 +96,12 @@ export const GRADIENTS = {
 export const BUTTON_CLASSES = {
   // CTA button - orange (highlight/attention)
   cta: `bg-[var(--orange)] hover:bg-[var(--orange-hover)] active:bg-[var(--orange-active)]
-        text-white shadow-lg hover:shadow-[0_0_20px_var(--orange-muted)]
+        text-[var(--text-on-accent)] shadow-lg hover:shadow-[0_0_20px_var(--orange-muted)]
         border border-[var(--orange-hover)]/20`,
 
   // Primary button - purple (interactive)
   primary: `bg-[var(--purple)] hover:bg-[var(--purple-hover)] active:bg-[var(--purple-active)]
-            text-white shadow-lg hover:shadow-[0_0_20px_var(--purple-muted)]
+            text-[var(--text-on-accent)] shadow-lg hover:shadow-[0_0_20px_var(--purple-muted)]
             border border-[var(--purple-hover)]/20`,
 
   // Ghost button with orange hover

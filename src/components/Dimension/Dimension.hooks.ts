@@ -13,6 +13,7 @@ interface KeyboardCallbacks {
   onToggleFullscreen?: () => void;
   onZoomFit?: () => void;
   onCameraPresets?: () => void;
+  onModelManager?: () => void;
 }
 
 /**
@@ -99,6 +100,9 @@ export const useKeyboardShortcuts = (callbacks: KeyboardCallbacks) => {
           break;
         case 'c':
           cbs.onCameraPresets?.();
+          break;
+        case 'm':
+          cbs.onModelManager?.();
           break;
         case 'z':
           cbs.onZoomFit?.();

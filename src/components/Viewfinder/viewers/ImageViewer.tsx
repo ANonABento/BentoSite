@@ -58,7 +58,7 @@ export function ImageViewer({ images }: ImageViewerProps) {
           <>
             <button
               onClick={goToPrevious}
-              className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-[var(--overlay)] text-[var(--text-on-accent)] hover:bg-[var(--overlay-strong)] transition-colors"
+              className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-[var(--overlay)] text-[var(--text-on-overlay)] hover:bg-[var(--overlay-strong)] transition-colors"
               aria-label="Previous image"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,7 +67,7 @@ export function ImageViewer({ images }: ImageViewerProps) {
             </button>
             <button
               onClick={goToNext}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-[var(--overlay)] text-[var(--text-on-accent)] hover:bg-[var(--overlay-strong)] transition-colors"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-[var(--overlay)] text-[var(--text-on-overlay)] hover:bg-[var(--overlay-strong)] transition-colors"
               aria-label="Next image"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +78,7 @@ export function ImageViewer({ images }: ImageViewerProps) {
         )}
 
         {/* Image counter */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-[var(--overlay)] text-[var(--text-on-accent)] text-sm">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-[var(--overlay)] text-[var(--text-on-overlay)] text-sm">
           {currentIndex + 1} / {images.length}
         </div>
       </div>
