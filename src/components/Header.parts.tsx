@@ -25,7 +25,7 @@ export function ThemeToggle() {
   if (!mounted) {
     return (
       <button
-        className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg transition-all duration-200 focus-ring"
+        className="interactive-hover p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg focus-ring"
         aria-label="Toggle theme"
       >
         <SunIcon size={20} />
@@ -36,7 +36,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg transition-all duration-200 focus-ring"
+      className="interactive-hover p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg focus-ring"
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >
       {theme === 'dark' ? <SunIcon size={20} /> : <MoonIcon size={20} />}
@@ -57,11 +57,11 @@ export function ResumeButton({
       download
       onClick={() => analytics.resumeDownloaded()}
       aria-label="Download resume"
-      className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm
+      className={`interactive-hover flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm
         bg-[var(--orange)] hover:bg-[var(--orange-hover)] active:bg-[var(--orange-active)] text-[var(--text-on-accent)]
         hover:shadow-[0_0_20px_var(--orange-muted)] hover:scale-105
         border border-[var(--orange-hover)]/20
-        transition-all duration-300 focus-ring ${className}`}
+        focus-ring ${className}`}
     >
       <DocumentDownloadIcon size={16} />
       <span className="hidden sm:inline">Resume</span>

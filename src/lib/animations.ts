@@ -412,6 +412,72 @@ export const sectionItem: Variants = {
   },
 };
 
+// Viewport section reveal for whole-page scroll surfaces.
+export const scrollReveal: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 28,
+    filter: 'blur(8px)',
+  },
+  visible: (delay = 0) => ({
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: {
+      duration: 0.55,
+      delay,
+      ease: easings.apple,
+    },
+  }),
+};
+
+export const reducedScrollReveal: Variants = {
+  hidden: {
+    opacity: 0,
+  },
+  visible: (delay = 0) => ({
+    opacity: 1,
+    transition: {
+      duration: ANIMATION_DURATIONS.NORMAL / 1000,
+      delay,
+      ease: easings.easeOutQuart,
+    },
+  }),
+};
+
+// Bento hub cards enter as a soft cascade while preserving their physics springs.
+export const bentoCardEntrance: Variants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.92,
+  },
+  visible: (index = 0) => ({
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.42,
+      delay: index * 0.045,
+      ease: easings.easeOutExpo,
+    },
+  }),
+};
+
+export const bentoSlotReveal: Variants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.96,
+  },
+  visible: (index = 0) => ({
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.35,
+      delay: index * 0.035,
+      ease: easings.easeOutQuart,
+    },
+  }),
+};
+
 // Dashboard entrance — generic fallback (mobile tabs, etc.)
 // No scale/filter transforms — these break backdrop-filter on glass-panel children
 export const dashboardPanelIn: Variants = {

@@ -42,7 +42,7 @@ function SocialActions({
           <button
             key={link.id}
             onClick={handleEmailClick}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 transform border focus-ring ${
+            className={`interactive-hover flex items-center gap-2 px-4 py-2.5 rounded-lg transform border focus-ring ${
               copiedEmail
                 ? 'bg-[var(--status-success)] text-[var(--text-on-accent)] scale-105 shadow-[0_0_20px_var(--status-success-muted)] border-[var(--status-success)]'
                 : 'glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--interactive)] hover:scale-105 hover:shadow-[0_0_20px_var(--purple-muted)] hover:border-[var(--purple-muted)] border-[var(--border)]'
@@ -58,7 +58,7 @@ function SocialActions({
             href={link.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 transform border focus-ring glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--interactive)] hover:text-[var(--text-on-accent)] hover:scale-105 hover:shadow-[0_0_20px_var(--purple-muted)] hover:border-[var(--purple-muted)] border-[var(--border)]"
+            className="interactive-hover flex items-center gap-2 px-4 py-2.5 rounded-lg transform border focus-ring glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--interactive)] hover:text-[var(--text-on-accent)] hover:scale-105 hover:shadow-[0_0_20px_var(--purple-muted)] hover:border-[var(--purple-muted)] border-[var(--border)]"
             aria-label={link.label}
           >
             {link.icon}
@@ -131,7 +131,7 @@ export default function Header({
           <div className="hidden sm:block w-px h-5 bg-gradient-to-b from-transparent via-[var(--border)] to-transparent" />
           <Link
             href="/playground"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all duration-200"
+            className="interactive-hover flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]"
             aria-label="Open playground"
           >
             <PlayCircleIcon size={16} />
@@ -147,9 +147,7 @@ export default function Header({
                   }
                 : undefined
             }
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono
-              text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]
-              transition-all duration-200"
+            className="interactive-hover flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]"
             aria-label="View Projects"
           >
             <GridIcon size={16} />
@@ -163,7 +161,7 @@ export default function Header({
               <button
                 key={link.id}
                 onClick={handleEmailClick}
-                className={`p-2 rounded-lg transition-all duration-200 focus-ring ${
+                className={`interactive-hover p-2 rounded-lg focus-ring ${
                   copiedEmail
                     ? 'text-[var(--status-success)] bg-[var(--status-success-muted)]'
                     : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]'
@@ -178,7 +176,7 @@ export default function Header({
                 href={link.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg transition-all duration-200 focus-ring"
+                className="interactive-hover p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg focus-ring"
                 aria-label={link.label}
               >
                 {link.icon}

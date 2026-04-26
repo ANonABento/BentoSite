@@ -105,6 +105,8 @@ export interface GameCardProps {
   onClick?: () => void;
   /** Whether the card has keyboard focus */
   isFocused?: boolean;
+  /** Visible-order index used for entrance staggering */
+  entranceIndex?: number;
 }
 
 // =============================================================================
@@ -118,6 +120,7 @@ export function GameCard({
   index = 0,
   onClick,
   isFocused = false,
+  entranceIndex = 0,
 }: GameCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   // Load best score from localStorage lazily (synchronous on first render).
@@ -152,6 +155,7 @@ export function GameCard({
         type: 'spring',
         stiffness: ANIMATION.SPRING.stiffness,
         damping: ANIMATION.SPRING.damping,
+        delay: Math.min(entranceIndex, 8) * 0.025,
       }}
       whileHover={{ scale: 1.015, y: -2 }}
       whileTap={{ scale: 0.98 }}

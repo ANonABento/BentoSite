@@ -33,6 +33,8 @@ export interface ProjectCardProps {
   onClick?: () => void;
   /** Whether the card has keyboard focus */
   isFocused?: boolean;
+  /** Visible-order index used for entrance staggering */
+  entranceIndex?: number;
 }
 
 // =============================================================================
@@ -121,6 +123,7 @@ export function ProjectCard({
   theme,
   onClick,
   isFocused = false,
+  entranceIndex = 0,
 }: ProjectCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -148,6 +151,7 @@ export function ProjectCard({
         type: 'spring',
         stiffness: ANIMATION.SPRING.stiffness,
         damping: ANIMATION.SPRING.damping,
+        delay: Math.min(entranceIndex, 8) * 0.025,
       }}
       whileHover={{ scale: 1.015, y: -2 }}
       onHoverStart={() => setIsHovered(true)}

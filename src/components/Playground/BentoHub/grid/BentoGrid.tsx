@@ -1,8 +1,9 @@
 'use client';
 
 import { useRef, useState, useEffect, useLayoutEffect, useCallback, createContext, useContext } from 'react';
-import { useAnimationFrame } from 'framer-motion';
+import { motion, useAnimationFrame } from 'framer-motion';
 import { BentoCard } from './BentoCard';
+import { bentoSlotReveal } from '@/lib/animations';
 import type { CardPosition } from '../BentoHub.types';
 import {
   GRID_TEMPLATE_DESKTOP,
@@ -194,14 +195,18 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
           />
 
           {isReady &&
-            VISIBLE_BENTO_CARDS.map((card) => {
+            VISIBLE_BENTO_CARDS.map((card, index) => {
               const position = positions.get(card.id);
               if (!position) return null;
 
               return (
-                <div
+                <motion.div
                   key={`${card.id}-slot`}
                   className="pointer-events-none absolute rounded-2xl border border-[rgba(255,255,255,0.045)] bg-[rgba(255,255,255,0.018)]"
+                  custom={index}
+                  initial="hidden"
+                  animate="visible"
+                  variants={bentoSlotReveal}
                   style={{
                     left: position.x,
                     top: position.y,

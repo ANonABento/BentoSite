@@ -47,7 +47,8 @@ function renderGameCard(
   position: CardPosition,
   theme: ThemeConfig,
   isFocused?: boolean,
-  onClick?: () => void
+  onClick?: () => void,
+  entranceIndex = 0
 ): ReactNode {
   if (card.type !== 'game') {
     return null;
@@ -63,6 +64,7 @@ function renderGameCard(
       index={index}
       isFocused={isFocused}
       onClick={onClick}
+      entranceIndex={entranceIndex}
     />
   );
 }
