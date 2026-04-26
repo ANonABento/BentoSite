@@ -141,6 +141,8 @@ export function AimTrainer() {
                     <motion.button
                       key={mode.id}
                       onClick={() => updateSettings({ mode: mode.id as GameMode })}
+                      aria-label={`Select ${mode.name} aim trainer mode`}
+                      aria-pressed={settings.mode === mode.id}
                       className={`
                         px-3 py-2 rounded-lg text-sm font-medium transition-all
                         ${settings.mode === mode.id
@@ -170,10 +172,12 @@ export function AimTrainer() {
                     <motion.button
                       key={d}
                       onClick={() => updateSettings({ duration: d })}
+                      aria-label={`Set aim trainer duration to ${d} seconds`}
+                      aria-pressed={settings.duration === d}
                       className={`
                         px-4 py-2 rounded-lg font-mono text-sm transition-all
                         ${settings.duration === d
-                          ? 'bg-[var(--purple)] text-white'
+                          ? 'bg-[var(--purple)] text-[var(--text-on-accent)]'
                           : 'bg-[var(--pg-bg-elevated)] text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]'
                         }
                       `}
@@ -199,6 +203,8 @@ export function AimTrainer() {
                   value={settings.sensitivity}
                   onChange={(e) => updateSettings({ sensitivity: parseFloat(e.target.value) })}
                   className="pg-range pg-range-purple w-full mt-2"
+                  aria-label="Aim sensitivity"
+                  aria-valuetext={`${settings.sensitivity.toFixed(1)} sensitivity`}
                 />
               </div>
 
@@ -217,6 +223,7 @@ export function AimTrainer() {
               <motion.button
                 onClick={handleStart}
                 className="px-8 py-3 rounded-lg bg-[var(--pg-game-error)] text-white font-medium"
+                aria-label="Start aim training"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -286,6 +293,7 @@ export function AimTrainer() {
                   type="button"
                   onClick={() => document.body.requestPointerLock?.()}
                   className="pg-overlay-panel-strong rounded-xl px-6 py-3 text-center text-white pointer-events-auto"
+                  aria-label={hits + misses === 0 ? 'Lock mouse and start aiming' : 'Re-lock mouse and continue aiming'}
                 >
                   <p className="font-medium">
                     {hits + misses === 0 ? 'Click to lock mouse and start aiming' : 'Click to re-lock mouse and continue'}

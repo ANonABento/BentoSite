@@ -24,6 +24,7 @@ export const QuickActions = memo(function QuickActions({
           type="button"
           onClick={onViewResume}
           disabled={disabled}
+          aria-label="Download resume from chat"
           className="text-xs font-mono text-[var(--orange)] hover:underline transition-all duration-150 disabled:opacity-50"
         >
           [resume --download]

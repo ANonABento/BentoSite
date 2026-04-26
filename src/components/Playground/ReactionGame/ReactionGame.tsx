@@ -179,6 +179,7 @@ export function ReactionGame() {
               <motion.button
                 onClick={startGame}
                 className="pg-button pg-button-primary text-lg px-10 py-4"
+                aria-label="Start reaction time test"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -199,6 +200,13 @@ export function ReactionGame() {
               {/* Click zone */}
               <motion.button
                 onClick={handleClick}
+                aria-label={
+                  phase === 'ready'
+                    ? 'Click now'
+                    : phase === 'waiting'
+                      ? 'Wait for green before clicking'
+                      : 'Continue reaction test'
+                }
                 className={`
                   w-full aspect-[4/3] rounded-3xl
                   flex flex-col items-center justify-center

@@ -20,7 +20,7 @@ import { getProjectById } from '@/lib/projects-data';
 interface DashboardLayoutProps {
   Viewfinder: ComponentType<{ project: Project | null; minimal?: boolean; suspended?: boolean }>;
   Chatbot: ComponentType<{
-    onReady?: (fns: { send: (content: string) => void; addAssistant: (content: string) => void; clear: () => void }) => void;
+    onReady?: (fns: { send: (content: string) => void; addAssistant: (content: string) => void; clear: () => void; focusInput: () => void }) => void;
     onViewResume?: () => void;
     onSeeProjects?: () => void;
   }>;
@@ -57,6 +57,7 @@ export function DashboardLayout({
     send: (content: string) => void;
     addAssistant: (content: string) => void;
     clear: () => void;
+    focusInput: () => void;
   } | null>(null);
   const isMountedRef = useRef(true);
   const mobileChatRef = useRef<HTMLDivElement>(null);
@@ -71,6 +72,7 @@ export function DashboardLayout({
 
   const handleClearChat = useCallback(() => {
     chatFns?.clear();
+    chatFns?.focusInput();
   }, [chatFns]);
 
   const handleViewResume = useCallback(() => {
@@ -99,6 +101,7 @@ export function DashboardLayout({
     send: (content: string) => void;
     addAssistant: (content: string) => void;
     clear: () => void;
+    focusInput: () => void;
   }) => {
     setChatFns(fns);
 

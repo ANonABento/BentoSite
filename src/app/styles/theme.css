@@ -32,9 +32,9 @@
   --glass-bg-strong: rgba(255, 255, 255, 0.1);
   --glass-border: rgba(255, 255, 255, 0.1);
   --text-primary: #ffffff;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
-  --text-on-accent: #ffffff;
+  --text-secondary: #d4d4d8;
+  --text-muted: #a1a1aa;
+  --text-on-accent: #0a0a0f;
   --shadow-color: rgba(0, 0, 0, 0.5);
   --code-bg: rgba(167, 139, 250, 0.15);
   --code-text: #c4b5fd;
@@ -75,8 +75,8 @@
   --pg-bg-elevated: #141420;
   --pg-bg-hover: #1a1a28;
   --pg-text-primary: #e8e6e3;
-  --pg-text-secondary: #a1a1aa;
-  --pg-text-muted: #71717a;
+  --pg-text-secondary: #d4d4d8;
+  --pg-text-muted: #a1a1aa;
   --pg-text-disabled: #52525b;
   --pg-accent-gold: #fbbf24;
   --pg-accent-gold-hover: #f59e0b;
@@ -105,10 +105,10 @@
   --purple-active: #6d28d9;
   --purple-muted: rgba(139, 92, 246, 0.15);
 
-  --orange: #c45a1c;
-  --orange-hover: #a84e18;
-  --orange-active: #8f4214;
-  --orange-muted: rgba(196, 90, 28, 0.15);
+  --orange: #a84e18;
+  --orange-hover: #8f4214;
+  --orange-active: #78350f;
+  --orange-muted: rgba(168, 78, 24, 0.15);
 
   /* Semantic color roles */
   --interactive: var(--purple);
@@ -128,8 +128,8 @@
   --glass-bg-strong: rgba(255, 255, 255, 0.85);
   --glass-border: rgba(0, 0, 0, 0.1);
   --text-primary: #18181b;
-  --text-secondary: #52525b;
-  --text-muted: #a1a1aa;
+  --text-secondary: #3f3f46;
+  --text-muted: #71717a;
   --text-on-accent: #ffffff;
   --shadow-color: rgba(0, 0, 0, 0.1);
   --code-bg: rgba(139, 92, 246, 0.1);
@@ -160,8 +160,8 @@
   --pg-bg-elevated: #141420;
   --pg-bg-hover: #1a1a28;
   --pg-text-primary: #e8e6e3;
-  --pg-text-secondary: #a1a1aa;
-  --pg-text-muted: #71717a;
+  --pg-text-secondary: #d4d4d8;
+  --pg-text-muted: #a1a1aa;
   --pg-text-disabled: #52525b;
   --pg-accent-gold: #fbbf24;
   --pg-accent-gold-hover: #f59e0b;

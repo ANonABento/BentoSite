@@ -103,7 +103,7 @@ export default function RhythmPage() {
           </header>
 
           {/* Content */}
-          <main className="flex-1 flex flex-col items-center justify-center p-6">
+          <main id="main-content" className="flex-1 flex flex-col items-center justify-center p-6" tabIndex={-1}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -135,6 +135,7 @@ export default function RhythmPage() {
                     key={m.id}
                     onClick={() => m.available && setMode(m.id)}
                     disabled={!m.available}
+                    aria-label={`${m.available ? 'Open' : 'Unavailable'} ${m.name} rhythm mode`}
                     className={`
                       w-full p-5 rounded-xl text-left transition-all duration-200 border
                       ${m.available

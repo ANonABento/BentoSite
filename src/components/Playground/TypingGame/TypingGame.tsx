@@ -87,6 +87,7 @@ export function TypingGame() {
         autoCapitalize="off"
         autoCorrect="off"
         spellCheck={false}
+        aria-label="Typing test input"
       />
 
       <div className="flex-1 flex flex-col items-center justify-center p-6">
@@ -127,11 +128,13 @@ export function TypingGame() {
                     <motion.button
                       key={d}
                       onClick={() => setDuration(d)}
+                      aria-label={`Set typing test duration to ${d} seconds`}
+                      aria-pressed={duration === d}
                       className={`
                         px-5 py-2.5 rounded-xl font-mono font-medium transition-all duration-200
                         ${
                           duration === d
-                            ? 'bg-[var(--purple)] text-white shadow-lg shadow-[var(--purple)]/25'
+                            ? 'bg-[var(--purple)] text-[var(--text-on-accent)] shadow-lg shadow-[var(--purple)]/25'
                             : 'pg-surface-panel text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]'
                         }
                       `}
@@ -152,11 +155,13 @@ export function TypingGame() {
                     <motion.button
                       key={d}
                       onClick={() => setDifficulty(d)}
+                      aria-label={`Set typing difficulty to ${d}`}
+                      aria-pressed={difficulty === d}
                       className={`
                         px-5 py-2.5 rounded-xl font-medium capitalize transition-all duration-200
                         ${
                           difficulty === d
-                            ? 'bg-[var(--purple)] text-white shadow-lg shadow-[var(--purple)]/25'
+                            ? 'bg-[var(--purple)] text-[var(--text-on-accent)] shadow-lg shadow-[var(--purple)]/25'
                             : 'pg-surface-panel text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]'
                         }
                       `}
@@ -187,6 +192,7 @@ export function TypingGame() {
               <motion.button
                 onClick={startGame}
                 className="pg-button pg-button-primary text-lg px-10 py-4"
+                aria-label="Start typing speed test"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -204,6 +210,9 @@ export function TypingGame() {
               exit={{ opacity: 0 }}
               className="w-full max-w-4xl"
               onClick={() => inputRef.current?.focus()}
+              role="application"
+              aria-label="Typing test. Type the displayed words using the keyboard."
+              tabIndex={0}
             >
               {/* Stats bar */}
               <div className="flex justify-between items-center mb-8">

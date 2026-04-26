@@ -29,6 +29,30 @@ export function Cell({
     onRightClick();
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key.toLowerCase() === 'f') {
+      e.preventDefault();
+      onRightClick();
+      return;
+    }
+
+    if (e.key === 'Enter' && cell.isRevealed && cell.adjacentMines > 0) {
+      e.preventDefault();
+      onDoubleClick();
+    }
+  };
+
+  const cellLabel = `Row ${cell.row + 1}, column ${cell.col + 1}${
+    cell.isFlagged ? ', flagged' : ''
+  }. ${cell.isRevealed
+    ? cell.isMine
+      ? 'Mine'
+      : cell.adjacentMines > 0
+        ? `${cell.adjacentMines} adjacent mines`
+        : 'Empty'
+    : 'Hidden cell'
+  }. ${cell.isRevealed ? 'Press Enter to chord when numbered.' : 'Press Enter to reveal or F to flag.'}`;
+
   // Unrevealed cell
   if (!cell.isRevealed) {
     return (
@@ -36,7 +60,10 @@ export function Cell({
         onClick={onClick}
         onContextMenu={handleContextMenu}
         onDoubleClick={onDoubleClick}
+        onKeyDown={handleKeyDown}
         disabled={gameOver}
+        aria-label={cellLabel}
+        aria-pressed={cell.isFlagged}
         className={`
           relative flex items-center justify-center
           rounded-md border transition-all duration-100
@@ -75,6 +102,8 @@ export function Cell({
         animate={{ scale: 1 }}
         className="flex items-center justify-center rounded-md bg-[var(--pg-game-error)]/20 border border-[var(--pg-game-error)]/30"
         style={{ width: size, height: size }}
+        role="img"
+        aria-label={cellLabel}
       >
         <Bomb className="w-4 h-4 text-[var(--pg-game-error)]" strokeWidth={2} />
       </motion.div>
@@ -88,12 +117,16 @@ export function Cell({
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.1 }}
       onClick={onDoubleClick}
+      onKeyDown={handleKeyDown}
       className={`
         flex items-center justify-center rounded-md cursor-default
         bg-[var(--pg-bg-surface)] border border-white/[0.04]
         ${cell.adjacentMines > 0 ? 'cursor-pointer' : ''}
       `}
       style={{ width: size, height: size }}
+      role={cell.adjacentMines > 0 ? 'button' : 'img'}
+      tabIndex={cell.adjacentMines > 0 && !gameOver ? 0 : undefined}
+      aria-label={cellLabel}
     >
       {cell.adjacentMines > 0 && (
         <span

@@ -129,6 +129,7 @@ export function Game2048() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             title="New Game"
+            aria-label="Start a new 2048 game"
           >
             <RotateCcw className="w-5 h-5 text-[var(--pg-text-secondary)]" />
           </motion.button>
@@ -146,6 +147,9 @@ export function Game2048() {
         {/* Game grid */}
         <div
           className="relative rounded-xl overflow-hidden"
+          role="application"
+          aria-label={`2048 game board. Score ${score}. Use arrow keys or WASD to move tiles.`}
+          tabIndex={0}
           style={{
             width: gridSize,
             height: gridSize,
@@ -202,6 +206,7 @@ export function Game2048() {
                   <motion.button
                     onClick={continueGame}
                     className="px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white font-medium transition-colors"
+                    aria-label="Keep playing after reaching 2048"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -210,6 +215,7 @@ export function Game2048() {
                   <motion.button
                     onClick={resetGame}
                     className="px-4 py-2 rounded-lg bg-white text-[var(--pg-accent-gold)] font-medium transition-colors"
+                    aria-label="Start a new 2048 game"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >

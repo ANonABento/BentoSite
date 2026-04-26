@@ -27,7 +27,7 @@ export const ChatInput = memo(function ChatInput({
       style={{ borderTop: '1px solid transparent', borderImage: 'linear-gradient(90deg, transparent, var(--border), transparent) 1' }}
     >
       <form onSubmit={onSubmit} className="flex items-center gap-2">
-        <span className="text-[var(--orange)] font-mono text-sm shrink-0 select-none">$</span>
+        <span className="text-[var(--orange)] font-mono text-sm shrink-0 select-none" aria-hidden="true">$</span>
         <input
           ref={inputRef}
           type="text"
@@ -36,6 +36,7 @@ export const ChatInput = memo(function ChatInput({
           placeholder="type a command..."
           disabled={isLoading}
           aria-label="Type your message"
+          autoComplete="off"
           className="flex-1 bg-transparent border-none font-mono text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none caret-[var(--orange)] disabled:opacity-50"
         />
         <m.button

@@ -249,9 +249,9 @@ export const classes = {
 
   // Button variants
   buttonPrimary:
-    'bg-[var(--purple)] hover:bg-[var(--purple-hover)] active:bg-[var(--purple-active)] text-white hover:shadow-[0_0_20px_var(--purple-muted)]',
+    'bg-[var(--purple)] hover:bg-[var(--purple-hover)] active:bg-[var(--purple-active)] text-[var(--text-on-accent)] hover:shadow-[0_0_20px_var(--purple-muted)]',
   buttonCTA:
-    'bg-[var(--orange)] hover:bg-[var(--orange-hover)] active:bg-[var(--orange-active)] text-white hover:shadow-[0_0_20px_var(--orange-muted)]',
+    'bg-[var(--orange)] hover:bg-[var(--orange-hover)] active:bg-[var(--orange-active)] text-[var(--text-on-accent)] hover:shadow-[0_0_20px_var(--orange-muted)]',
   buttonSecondary:
     'glass text-[var(--text-secondary)] hover:bg-[var(--glass-bg-strong)] hover:text-[var(--text-primary)] border border-[var(--border)]',
   buttonGhost:

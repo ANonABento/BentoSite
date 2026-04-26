@@ -63,10 +63,12 @@ export function GameLayout({
 
       {/* Content */}
       <motion.main
+        id="main-content"
         variants={fadeUp}
         initial="hidden"
         animate="visible"
         className="flex-1 flex flex-col relative"
+        tabIndex={-1}
       >
         {children}
       </motion.main>

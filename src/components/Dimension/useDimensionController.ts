@@ -228,6 +228,7 @@ export function useDimensionController({ modelPath }: { modelPath?: string } = {
     onToggleFullscreen: handleFullscreen,
     onZoomFit: handleZoomFit,
     onCameraPresets: () => setShowCameraPresets((previous) => !previous),
+    onModelManager: handleModelManager,
   });
 
   return {

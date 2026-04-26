@@ -27,6 +27,8 @@ export function SoundPad({ pad, isActive, isMobile, onClick }: SoundPadProps) {
       whileTap={{ scale: 0.95 }}
       animate={isActive ? { scale: [1, 1.1, 1] } : {}}
       transition={{ duration: 0.15 }}
+      aria-label={`Play ${pad.name} sound with key ${pad.keyBinding}`}
+      aria-pressed={isActive}
     >
       {/* Ripple effect when active */}
       {isActive && (
@@ -40,7 +42,7 @@ export function SoundPad({ pad, isActive, isMobile, onClick }: SoundPadProps) {
       )}
 
       {/* Emoji */}
-      <span className="text-2xl mb-1 relative z-10">{pad.emoji}</span>
+      <span className="text-2xl mb-1 relative z-10" aria-hidden="true">{pad.emoji}</span>
 
       {/* Name */}
       <span

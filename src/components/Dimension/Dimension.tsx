@@ -58,6 +58,9 @@ export default function DimensionViewer({
     <div
       ref={containerRef}
       className={`w-full h-full bg-[var(--surface-deep)] relative ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}
+      role="region"
+      aria-label={`3D model viewer showing ${selectedModel.name}. Keyboard shortcuts: R reset, Space toggle rotation, W wireframe, Z zoom to fit, C camera presets, M model selector, S screenshot, F fullscreen.`}
+      tabIndex={0}
     >
       {/* Model Selector Modal */}
       {showModelSelector && (
@@ -98,13 +101,15 @@ export default function DimensionViewer({
           onClick={() => setShowModelInfo(!showModelInfo)}
           className="absolute top-4 left-4 bg-[var(--overlay-strong)] hover:opacity-100 text-[var(--text-on-accent)] rounded-full p-3 backdrop-blur-sm transition-all duration-200 shadow-lg z-50"
           title={showModelInfo ? 'Hide Model Info' : 'Show Model Info'}
+          aria-label={showModelInfo ? 'Hide model information' : 'Show model information'}
+          aria-expanded={showModelInfo}
         >
           {showModelInfo ? (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           ) : (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           )}

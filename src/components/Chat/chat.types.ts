@@ -10,6 +10,7 @@ export interface ChatFunctions {
   send: (content: string) => void;
   addAssistant: (content: string) => void;
   clear: () => void;
+  focusInput: () => void;
 }
 
 export interface ChatbotProps {

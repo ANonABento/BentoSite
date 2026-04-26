@@ -51,7 +51,9 @@ export function MobileScrollView({
 
   return (
     <div
+      id="main-content"
       className={['h-full overflow-hidden flex flex-col', className].filter(Boolean).join(' ')}
+      tabIndex={-1}
       style={{ background: theme.background }}
     >
       <SearchMenuCard
