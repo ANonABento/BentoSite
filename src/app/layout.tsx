@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { siteConfig } from '@/lib/site-config';
+import { buildSiteJsonLd } from '@/lib/seo';
 import { ThemeProvider } from '@/lib/theme-context';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { ToastProvider } from '@/components/ui/Toast';
@@ -69,24 +71,6 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
 };
 
-// JSON-LD structured data for Person schema
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Person',
-  name: siteConfig.name,
-  jobTitle: siteConfig.title,
-  url: siteConfig.url,
-  sameAs: [siteConfig.links.github, siteConfig.links.linkedin],
-  knowsAbout: [
-    'Hardware Engineering',
-    'Software Development',
-    'Robotics',
-    'Embedded Systems',
-    'Web Development',
-    '3D Visualization',
-  ],
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -111,10 +95,7 @@ export default function RootLayout({
             `,
           }}
         />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        <JsonLd id="site-json-ld" data={buildSiteJsonLd()} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
