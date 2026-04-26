@@ -14,6 +14,8 @@ import {
   BarChart3,
   Crosshair,
   Hash,
+  ArrowRight,
+  Trophy,
 } from 'lucide-react';
 import { BentoCardConfig, CardPosition } from '../BentoHub.types';
 import { PHYSICS } from '../BentoHub.config';
@@ -23,6 +25,7 @@ interface BentoCardProps {
   config: BentoCardConfig;
   homePosition: CardPosition;
   bestScore?: string;
+  index: number;
   registerForceUpdater: (cardId: string, updater: (force: { x: number; y: number }) => void) => () => void;
 }
 
@@ -48,6 +51,7 @@ const COLOR_CONFIG: Record<string, {
   hoverGradient: string;
   accentLine: string;
   glowColor: string;
+  borderGlow: string;
 }> = {
   gold: {
     iconBg: 'bg-[var(--pg-accent-gold)]/10',
@@ -56,6 +60,7 @@ const COLOR_CONFIG: Record<string, {
     hoverGradient: 'from-[var(--pg-accent-gold)]/10',
     accentLine: 'from-[var(--pg-accent-gold)]',
     glowColor: 'rgba(251, 191, 36, 0.25)',
+    borderGlow: 'rgba(251, 191, 36, 0.2)',
   },
   purple: {
     iconBg: 'bg-[var(--purple)]/10',
@@ -64,6 +69,7 @@ const COLOR_CONFIG: Record<string, {
     hoverGradient: 'from-[var(--purple)]/10',
     accentLine: 'from-[var(--purple)]',
     glowColor: 'rgba(167, 139, 250, 0.25)',
+    borderGlow: 'rgba(167, 139, 250, 0.2)',
   },
   cyan: {
     iconBg: 'bg-[var(--pg-accent-cyan)]/10',
@@ -72,10 +78,11 @@ const COLOR_CONFIG: Record<string, {
     hoverGradient: 'from-[var(--pg-accent-cyan)]/10',
     accentLine: 'from-[var(--pg-accent-cyan)]',
     glowColor: 'rgba(34, 211, 238, 0.25)',
+    borderGlow: 'rgba(34, 211, 238, 0.2)',
   },
 };
 
-export function BentoCard({ config, homePosition, bestScore, registerForceUpdater }: BentoCardProps) {
+export function BentoCard({ config, homePosition, bestScore, index, registerForceUpdater }: BentoCardProps) {
   const router = useRouter();
   const { engine } = usePhysicsContext();
   const [isDragging, setIsDragging] = useState(false);
@@ -165,6 +172,9 @@ export function BentoCard({ config, homePosition, bestScore, registerForceUpdate
 
   const colors = COLOR_CONFIG[config.color] || COLOR_CONFIG.gold;
   const icon = GAME_ICONS[config.id];
+  const isWide = homePosition.width > homePosition.height * 1.35;
+  const isCompact = homePosition.width < 150;
+  const isTight = isCompact || homePosition.height < 150;
 
   return (
     <motion.div
@@ -184,79 +194,94 @@ export function BentoCard({ config, homePosition, bestScore, registerForceUpdate
         height: homePosition.height,
       }}
       className={`cursor-grab active:cursor-grabbing ${isDragging ? 'z-50' : 'z-10'}`}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      initial={{ opacity: 0, scale: 0.94 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.35, delay: index * 0.035, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ scale: 1.018 }}
+      whileTap={{ scale: 0.975 }}
     >
       <div
-        className="pg-surface-glass pg-hover-border-strong w-full h-full rounded-2xl overflow-hidden transition-all duration-300 group"
+        className="pg-surface-glass pg-hover-border-strong group relative h-full w-full overflow-hidden rounded-2xl transition-all duration-300"
         style={{
-          boxShadow: isDragging ? `0 0 40px ${colors.glowColor}` : undefined,
+          boxShadow: isDragging
+            ? `0 0 44px ${colors.glowColor}, 0 24px 70px rgba(0, 0, 0, 0.38)`
+            : '0 18px 48px rgba(0, 0, 0, 0.18)',
         }}
       >
+        <div
+          className="pointer-events-none absolute inset-0 rounded-2xl opacity-70 transition-opacity duration-300 group-hover:opacity-100"
+          style={{ boxShadow: `inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px ${colors.borderGlow}` }}
+        />
+
         {/* Gradient overlay on hover */}
         <div
           className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-gradient-to-br ${colors.hoverGradient} via-transparent to-transparent`}
         />
 
+        <div className="pointer-events-none absolute right-3 top-3 h-16 w-16 rounded-full bg-[rgba(255,255,255,0.035)] blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
+
         {/* Card content */}
-        <div className="relative z-10 p-4 h-full flex flex-col">
-          {/* Icon */}
-          <motion.div
-            className={`w-12 h-12 rounded-xl flex items-center justify-center ${colors.iconBg} ${colors.iconText} mb-3`}
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: 'spring' as const, stiffness: 400, damping: 25 }}
-          >
-            {icon}
-          </motion.div>
+        <div className={`relative z-10 flex h-full ${isWide ? 'flex-row items-stretch gap-4' : 'flex-col'} ${isTight ? 'p-3' : 'p-4'}`}>
+          <div className={`${isWide ? 'flex min-w-0 flex-1 flex-col' : 'contents'}`}>
+            {/* Icon */}
+            <motion.div
+              className={`${isTight ? 'mb-2 h-10 w-10 rounded-lg' : 'mb-3 h-12 w-12 rounded-xl'} flex shrink-0 items-center justify-center ${colors.iconBg} ${colors.iconText}`}
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: 'spring' as const, stiffness: 400, damping: 25 }}
+            >
+              {icon}
+            </motion.div>
 
-          {/* Title */}
-          <h3 className="text-lg font-semibold text-[var(--pg-text-primary)] tracking-tight">
-            {config.title}
-          </h3>
+            {/* Title */}
+            <h3 className={`${isTight ? 'text-base' : 'text-lg'} text-balance font-semibold tracking-tight text-[var(--pg-text-primary)]`}>
+              {config.title}
+            </h3>
 
-          {/* Description */}
-          {config.description && (
-            <p className="text-sm text-[var(--pg-text-muted)] mt-1 line-clamp-2">
-              {config.description}
-            </p>
-          )}
+            {/* Description */}
+            {config.description && (
+              <p className={`${isTight ? 'line-clamp-1 text-xs leading-5' : 'line-clamp-2 text-sm leading-6'} mt-1 text-[var(--pg-text-muted)]`}>
+                {config.description}
+              </p>
+            )}
 
-          {/* Spacer */}
-          <div className="flex-1" />
+            {/* Spacer */}
+            <div className="flex-1" />
+          </div>
 
           {/* Best score (for game cards) */}
           {config.contentType === 'game' && (
-            <div className="flex items-center justify-between mt-2">
+            <div className={`${isWide ? `${isTight ? 'min-w-[94px]' : 'min-w-[112px]'} flex-col items-end justify-between border-l border-[rgba(255,255,255,0.08)] pl-4` : 'mt-2 items-center justify-between'} flex`}>
               {bestScore ? (
-                <div className="flex items-center gap-2">
-                  <span className="pg-label">Best</span>
-                  <span className={`font-mono font-semibold text-sm ${colors.scoreText}`}>
+                <div className={`${isWide ? 'items-end text-right' : 'items-center'} flex gap-2`}>
+                  <span className="pg-label inline-flex items-center gap-1">
+                    <Trophy className="h-3 w-3" />
+                    Best
+                  </span>
+                  <span className={`${isTight ? 'text-xs' : 'text-sm'} font-mono font-semibold ${colors.scoreText}`}>
                     {bestScore}
                   </span>
                 </div>
               ) : (
-                <span className="text-xs text-[var(--pg-text-muted)]">Click to play</span>
+                <span className="text-xs font-medium text-[var(--pg-text-muted)]">Ready to play</span>
               )}
 
               {/* Play arrow */}
               <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center ${colors.iconBg} ${colors.iconText} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+                className={`${isTight ? 'h-7 w-7' : 'h-8 w-8'} flex items-center justify-center rounded-full ${colors.iconBg} ${colors.iconText} opacity-0 transition-all duration-300 group-hover:translate-x-0.5 group-hover:opacity-100`}
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+                <ArrowRight className="h-4 w-4" />
               </div>
             </div>
           )}
 
           {/* Stats card special content */}
           {config.contentType === 'stat' && (
-            <div className="pg-border-subtle mt-auto border-t pt-2">
+            <div className="pg-border-subtle mt-auto border-t pt-3">
               <div className="flex items-baseline gap-2">
-                <span className="text-xl font-bold font-mono text-[var(--pg-accent-cyan)]">9</span>
+                <span className={`${isTight ? 'text-xl' : 'text-2xl'} font-mono font-bold text-[var(--pg-accent-cyan)]`}>9</span>
                 <span className="text-xs text-[var(--pg-text-muted)]">games</span>
               </div>
-              <p className="mt-1 text-xs text-[var(--pg-text-muted)]">{config.description}</p>
+              <p className="mt-1 text-xs leading-5 text-[var(--pg-text-muted)]">{config.description}</p>
             </div>
           )}
         </div>

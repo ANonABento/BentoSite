@@ -153,7 +153,7 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
 
   return (
     <PhysicsContext.Provider value={{ engine, centerPoint }}>
-      <div ref={containerRef} className="relative w-full flex justify-center">
+      <div ref={containerRef} className="relative flex w-full justify-center py-4 md:py-6">
         {/* Hidden grid for position calculation */}
         <div
           ref={gridRef}
@@ -183,8 +183,36 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
             minHeight: rows * cellSize + Math.max(rows - 1, 0) * gap,
           }}
         >
+          <div className="pointer-events-none absolute -inset-4 rounded-[2rem] border border-[rgba(255,255,255,0.05)] bg-[rgba(255,255,255,0.015)] shadow-[0_24px_90px_rgba(0,0,0,0.22)]" />
+          <div
+            className="pointer-events-none absolute -inset-4 rounded-[2rem] opacity-30"
+            style={{
+              background:
+                'radial-gradient(circle at 20% 0%, rgba(251,191,36,0.12), transparent 34%), radial-gradient(circle at 78% 100%, rgba(167,139,250,0.12), transparent 38%)',
+            }}
+          />
+
           {isReady &&
             BENTO_CARDS.filter((card) => card.contentType !== 'void').map((card) => {
+              const position = positions.get(card.id);
+              if (!position) return null;
+
+              return (
+                <div
+                  key={`${card.id}-slot`}
+                  className="pointer-events-none absolute rounded-2xl border border-[rgba(255,255,255,0.045)] bg-[rgba(255,255,255,0.018)]"
+                  style={{
+                    left: position.x,
+                    top: position.y,
+                    width: position.width,
+                    height: position.height,
+                  }}
+                />
+              );
+            })}
+
+          {isReady &&
+            BENTO_CARDS.filter((card) => card.contentType !== 'void').map((card, index) => {
               const position = positions.get(card.id);
               if (!position) return null;
 
@@ -194,11 +222,11 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
                   config={card}
                   homePosition={position}
                   bestScore={getBestScore(card.id)}
+                  index={index}
                   registerForceUpdater={registerForceUpdater}
                 />
               );
             })}
-
         </div>
       </div>
     </PhysicsContext.Provider>
