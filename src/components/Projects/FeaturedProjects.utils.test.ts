@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   filterProjectsByTechnology,
   getFeaturedTechnologyFilterOptions,
-  getFeaturedTechnologyFilters,
 } from './FeaturedProjects.utils';
 import type { Project } from '@/lib/projects-data';
 
@@ -23,7 +22,7 @@ const projects = [
 
 describe('FeaturedProjects filtering', () => {
   it('returns every available technology tag without truncating the filter list', () => {
-    expect(getFeaturedTechnologyFilters(projects)).toEqual([
+    expect(getFeaturedTechnologyFilterOptions(projects).map((option) => option.technology)).toEqual([
       'C#',
       'OpenCV',
       'Python',

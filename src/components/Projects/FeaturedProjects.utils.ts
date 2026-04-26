@@ -23,10 +23,6 @@ export function getFeaturedTechnologyFilterOptions(
   );
 }
 
-export function getFeaturedTechnologyFilters(projects: ProjectTechnologySource[]): string[] {
-  return getFeaturedTechnologyFilterOptions(projects).map((option) => option.technology);
-}
-
 export function filterProjectsByTechnology<T extends ProjectTechnologySource>(
   projects: T[],
   technology: string | null
