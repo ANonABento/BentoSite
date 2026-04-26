@@ -12,7 +12,7 @@ import {
   useViewport,
   useWindowSize,
 } from '../core';
-import { GRID } from '../UnifiedGrid.constants';
+import { GRID, SEARCH_CARD } from '../UnifiedGrid.constants';
 import type { CardData, RenderCard, ThemeConfig } from '../UnifiedGrid.types';
 import { DefaultCard } from './DefaultCard';
 
@@ -128,6 +128,22 @@ export function DesktopCanvasView({
           transformOrigin: '0 0',
         }}
       >
+        <div
+          aria-hidden="true"
+          className="absolute pointer-events-none"
+          style={{
+            left: -SEARCH_CARD.EXPANDED_WIDTH / 2,
+            top: -SEARCH_CARD.EXPANDED_HEIGHT / 2,
+            width: SEARCH_CARD.EXPANDED_WIDTH,
+            height: SEARCH_CARD.EXPANDED_HEIGHT,
+            background: theme.card.background,
+            border: theme.card.border,
+            borderRadius: theme.card.borderRadius,
+            opacity: searchState.compression * 0.35,
+            boxShadow: theme.card.shadow,
+          }}
+        />
+
         <AnimatePresence mode="popLayout">
           {Array.from(cardQueue.visible.entries()).map(([cardId, position]) => {
             const cardData = cards.find((card) => card.id === cardId);
@@ -162,6 +178,9 @@ export function DesktopCanvasView({
         expanded={searchState.expanded}
         edge={searchState.edge}
         position={searchState.screenPosition}
+        compression={searchState.compression}
+        width={searchState.width}
+        height={searchState.height}
         searchTerm={searchState.searchTerm}
         category={searchState.category}
         categories={categories}

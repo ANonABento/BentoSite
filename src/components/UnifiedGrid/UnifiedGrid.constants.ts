@@ -100,17 +100,23 @@ export const INTERACTION = {
 // SEARCH CARD
 // =============================================================================
 
+const SEARCH_CARD_DIMENSIONS = getCardDimensions('2x1');
+
 export const SEARCH_CARD = {
   /** Width when expanded */
-  EXPANDED_WIDTH: 360,
+  EXPANDED_WIDTH: SEARCH_CARD_DIMENSIONS.width,
   /** Height when expanded */
-  EXPANDED_HEIGHT: 200,
+  EXPANDED_HEIGHT: SEARCH_CARD_DIMENSIONS.height,
   /** Height when collapsed to bar */
   COLLAPSED_HEIGHT: 48,
+  /** Minimum width when compressed against a side edge */
+  SQUASHED_SIDE_WIDTH: 64,
   /** Width when collapsed (percentage of viewport) */
   COLLAPSED_WIDTH_PERCENT: 0.9,
   /** Max width when collapsed */
   COLLAPSED_MAX_WIDTH: 500,
+  /** Off-screen distance needed to reach the fully squashed state */
+  COMPRESSION_DISTANCE: 180,
   /** Distance from edge to trigger collapse (px) - hysteresis lower bound */
   COLLAPSE_THRESHOLD: 80,
   /** Distance from edge to trigger expand (px) - hysteresis upper bound */

@@ -176,6 +176,12 @@ export interface SearchCardState {
   expanded: boolean;
   /** Which edge the card is stuck to (none = floating) */
   edge: SearchCardEdge;
+  /** How far the card has compressed from regular card to squashed edge state */
+  compression: number;
+  /** Current rendered width after proportional compression */
+  width: number;
+  /** Current rendered height after proportional compression */
+  height: number;
   /** Current search term */
   searchTerm: string;
   /** Selected category filter (null = all) */

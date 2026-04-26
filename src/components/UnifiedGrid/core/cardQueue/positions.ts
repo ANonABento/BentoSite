@@ -1,5 +1,5 @@
 import type { CardData, CardPosition, CardSize } from '../../UnifiedGrid.types';
-import { GRID, getCardDimensions } from '../../UnifiedGrid.constants';
+import { GRID, SEARCH_CARD, getCardDimensions } from '../../UnifiedGrid.constants';
 
 /**
  * Assigns card sizes based on index pattern for visual variety.
@@ -91,12 +91,12 @@ export function calculateInitialPositions(
   const positions = new Map<string, CardPosition>();
   const placed: Array<{ x: number; y: number; width: number; height: number }> = [];
 
-  // Leave space in center for search card.
+  // Leave a regular 2x1 card slot in the center for the search card.
   const searchCardSpace = {
-    x: -GRID.CELL_SIZE,
-    y: -GRID.CELL_SIZE / 2,
-    width: GRID.CELL_SIZE * 2 + GRID.GAP,
-    height: GRID.CELL_SIZE + GRID.GAP,
+    x: -SEARCH_CARD.EXPANDED_WIDTH / 2,
+    y: -SEARCH_CARD.EXPANDED_HEIGHT / 2,
+    width: SEARCH_CARD.EXPANDED_WIDTH,
+    height: SEARCH_CARD.EXPANDED_HEIGHT,
   };
   placed.push(searchCardSpace);
 

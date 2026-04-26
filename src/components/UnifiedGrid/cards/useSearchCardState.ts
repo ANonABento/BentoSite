@@ -2,13 +2,13 @@
  * useSearchCardState - Search Card Edge Detection & Morph Logic
  *
  * Manages the search card's state including:
- * - Edge detection (when to collapse to bar)
- * - Expand/collapse state
+ * - Edge detection from the regular grid slot
+ * - Proportional compression as that slot moves off-screen
  * - Search term and category filter
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import type { SearchCardState, SearchCardEdge, Camera } from '../UnifiedGrid.types';
+import type { Position, SearchCardState, SearchCardEdge, Camera } from '../UnifiedGrid.types';
 import { SEARCH_CARD } from '../UnifiedGrid.constants';
 import { canvasToScreen } from '../core/useViewport';
 
@@ -26,9 +26,9 @@ interface UseSearchCardStateOptions {
 }
 
 interface UseSearchCardStateReturn extends SearchCardState {
-  /** Toggle expanded/collapsed state */
+  /** Toggle details open/closed */
   toggleExpanded: () => void;
-  /** Set expanded state directly */
+  /** Set details open state directly */
   setExpanded: (expanded: boolean) => void;
   /** Update search term */
   setSearchTerm: (term: string) => void;
@@ -37,73 +37,106 @@ interface UseSearchCardStateReturn extends SearchCardState {
   /** Clear all filters */
   clearFilters: () => void;
   /** Position for the search card (screen coordinates) */
-  screenPosition: { x: number; y: number };
+  screenPosition: Position;
+}
+
+interface SearchCardPresentation {
+  edge: SearchCardEdge;
+  compression: number;
+  screenPosition: Position;
+  width: number;
+  height: number;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  if (min > max) return (min + max) / 2;
+  return Math.min(Math.max(value, min), max);
+}
+
+function lerp(from: number, to: number, progress: number): number {
+  return from + (to - from) * progress;
 }
 
 /**
- * Detect which edge the search card should stick to.
- * Uses midpoint of COLLAPSE_THRESHOLD and EXPAND_THRESHOLD to provide a
- * stable edge boundary without needing hysteresis state.
+ * Calculate the search card's display from its regular grid slot. The card
+ * starts compressing only as the full 2x1 slot moves beyond a viewport edge,
+ * and the compression value is proportional to that off-screen distance.
  */
-function detectEdge(
+function getSearchCardPresentation(
   camera: Camera,
   windowSize: { width: number; height: number }
-): SearchCardEdge {
-  const screenPos = canvasToScreen(0, 0, camera, windowSize);
-
+): SearchCardPresentation {
+  const regularPosition = canvasToScreen(0, 0, camera, windowSize);
   const cardWidth = SEARCH_CARD.EXPANDED_WIDTH;
   const cardHeight = SEARCH_CARD.EXPANDED_HEIGHT;
+  const padding = SEARCH_CARD.EDGE_PADDING;
 
-  const cardLeft = screenPos.x - cardWidth / 2;
-  const cardRight = screenPos.x + cardWidth / 2;
-  const cardTop = screenPos.y - cardHeight / 2;
-  const cardBottom = screenPos.y + cardHeight / 2;
+  const cardLeft = regularPosition.x - cardWidth / 2;
+  const cardRight = regularPosition.x + cardWidth / 2;
+  const cardTop = regularPosition.y - cardHeight / 2;
+  const cardBottom = regularPosition.y + cardHeight / 2;
 
-  // Single boundary averaged from the old hysteresis range for stability.
-  const threshold = (SEARCH_CARD.COLLAPSE_THRESHOLD + SEARCH_CARD.EXPAND_THRESHOLD) / 2;
+  const edgeDistances: Record<Exclude<SearchCardEdge, 'none'>, number> = {
+    left: Math.max(0, padding - cardRight),
+    right: Math.max(0, cardLeft - (windowSize.width - padding)),
+    top: Math.max(0, padding - cardBottom),
+    bottom: Math.max(0, cardTop - (windowSize.height - padding)),
+  };
 
-  if (cardRight < threshold) return 'left';
-  if (cardLeft > windowSize.width - threshold) return 'right';
-  if (cardBottom < threshold) return 'top';
-  if (cardTop > windowSize.height - threshold) return 'bottom';
+  const [edge, offscreenDistance] = (
+    Object.entries(edgeDistances) as Array<[Exclude<SearchCardEdge, 'none'>, number]>
+  ).reduce<[SearchCardEdge, number]>(
+    (best, [nextEdge, distance]) => (distance > best[1] ? [nextEdge, distance] : best),
+    ['none', 0]
+  );
 
-  return 'none';
+  const compression = clamp(offscreenDistance / SEARCH_CARD.COMPRESSION_DISTANCE, 0, 1);
+  const isSideEdge = edge === 'left' || edge === 'right';
+  const isHorizontalEdge = edge === 'top' || edge === 'bottom';
+  const width = isSideEdge
+    ? lerp(cardWidth, SEARCH_CARD.SQUASHED_SIDE_WIDTH, compression)
+    : cardWidth;
+  const height = isHorizontalEdge
+    ? lerp(cardHeight, SEARCH_CARD.COLLAPSED_HEIGHT, compression)
+    : cardHeight;
+
+  const minX = padding + width / 2;
+  const maxX = windowSize.width - padding - width / 2;
+  const minY = padding + height / 2;
+  const maxY = windowSize.height - padding - height / 2;
+
+  return {
+    edge,
+    compression,
+    width,
+    height,
+    screenPosition: {
+      x: compression > 0 ? clamp(regularPosition.x, minX, maxX) : regularPosition.x,
+      y: compression > 0 ? clamp(regularPosition.y, minY, maxY) : regularPosition.y,
+    },
+  };
 }
 
-/**
- * Calculate screen position for collapsed bar
- */
-function getCollapsedPosition(
-  edge: SearchCardEdge,
-  windowSize: { width: number; height: number }
-): { x: number; y: number } {
-  const padding = SEARCH_CARD.EDGE_PADDING;
-  const barHeight = SEARCH_CARD.COLLAPSED_HEIGHT;
+function getMobilePresentation(
+  windowSize: { width: number; height: number },
+  expanded: boolean
+): SearchCardPresentation {
+  const width = Math.min(
+    windowSize.width - SEARCH_CARD.EDGE_PADDING * 2,
+    SEARCH_CARD.EXPANDED_WIDTH
+  );
+  const height = expanded ? SEARCH_CARD.EXPANDED_HEIGHT : SEARCH_CARD.COLLAPSED_HEIGHT;
 
-  switch (edge) {
-    case 'top':
-      return {
-        x: windowSize.width / 2,
-        y: padding + barHeight / 2,
-      };
-    case 'bottom':
-      return {
-        x: windowSize.width / 2,
-        y: windowSize.height - padding - barHeight / 2,
-      };
-    case 'left':
-      return {
-        x: padding + barHeight / 2, // Rotated, so height becomes width
-        y: windowSize.height / 2,
-      };
-    case 'right':
-      return {
-        x: windowSize.width - padding - barHeight / 2,
-        y: windowSize.height / 2,
-      };
-    default:
-      return { x: windowSize.width / 2, y: windowSize.height / 2 };
-  }
+  return {
+    edge: 'top',
+    compression: expanded ? 0 : 1,
+    width,
+    height,
+    screenPosition: {
+      x: windowSize.width / 2,
+      y: SEARCH_CARD.EDGE_PADDING + height / 2,
+    },
+  };
 }
 
 export function useSearchCardState(
@@ -117,43 +150,16 @@ export function useSearchCardState(
     onFilterChange,
   } = options;
 
-  // User-intent expanded state. The effective expanded state is derived below:
-  // the search card is always collapsed when it reaches an edge.
   const [userExpanded, setUserExpanded] = useState(true);
   const [searchTerm, setSearchTermState] = useState('');
   const [category, setCategoryState] = useState<string | null>(null);
 
-  // Detected edge (derived from camera). Mobile is always 'top'.
-  const detectedEdge = useMemo(
-    () => (isMobile ? 'top' : detectEdge(camera, windowSize)),
-    [camera, windowSize, isMobile]
+  const presentation = useMemo(
+    () => (isMobile
+      ? getMobilePresentation(windowSize, userExpanded)
+      : getSearchCardPresentation(camera, windowSize)),
+    [camera, windowSize, isMobile, userExpanded]
   );
-
-  // When the card transitions from centered → an edge, clear the user-expand
-  // intent so panning back to center keeps it collapsed until the user taps.
-  // React allows setState during render for prop-derived state; it batches the
-  // extra re-render and avoids a paint with stale state.
-  const [prevEdge, setPrevEdge] = useState<SearchCardEdge>('none');
-  if (detectedEdge !== prevEdge) {
-    setPrevEdge(detectedEdge);
-    if (detectedEdge !== 'none' && userExpanded) {
-      setUserExpanded(false);
-    }
-  }
-
-  // Effective expanded: must be user-expanded AND not pushed to an edge.
-  const expanded = userExpanded && detectedEdge === 'none';
-
-  // Calculate screen position
-  const screenPosition = useMemo(() => {
-    if (!expanded) {
-      return getCollapsedPosition(
-        detectedEdge === 'none' ? 'top' : detectedEdge,
-        windowSize
-      );
-    }
-    return canvasToScreen(0, 0, camera, windowSize);
-  }, [detectedEdge, expanded, camera, windowSize]);
 
   const toggleExpanded = useCallback(() => {
     setUserExpanded((prev) => !prev);
@@ -182,8 +188,11 @@ export function useSearchCardState(
   }, [onFilterChange]);
 
   return {
-    expanded,
-    edge: detectedEdge,
+    expanded: userExpanded,
+    edge: presentation.edge,
+    compression: presentation.compression,
+    width: presentation.width,
+    height: presentation.height,
     searchTerm,
     category,
     categories,
@@ -192,6 +201,6 @@ export function useSearchCardState(
     setSearchTerm,
     setCategory,
     clearFilters,
-    screenPosition,
+    screenPosition: presentation.screenPosition,
   };
 }
