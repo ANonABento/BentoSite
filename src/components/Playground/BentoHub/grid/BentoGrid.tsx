@@ -3,17 +3,18 @@
 import { useRef, useState, useEffect, useLayoutEffect, useCallback, createContext, useContext } from 'react';
 import { useAnimationFrame } from 'framer-motion';
 import { BentoCard } from './BentoCard';
-import { CardPosition } from '../BentoHub.types';
+import type { CardPosition } from '../BentoHub.types';
 import {
-  BENTO_CARDS,
   GRID_TEMPLATE_DESKTOP,
   GRID_TEMPLATE_MOBILE,
   CELL_SIZE,
   GRID_GAP,
+  VISIBLE_BENTO_CARDS,
+  BENTO_CARDS,
   getGridRowCount,
 } from '../BentoHub.config';
-import { usePhysicsEngine, PhysicsEngine } from '../physics';
-import { StoredScores } from '../../Playground.types';
+import { usePhysicsEngine, type PhysicsEngine, type Vector2 } from '../physics';
+import type { StoredScores } from '../../Playground.types';
 import { loadStoredScores } from '../../playground-storage';
 
 // Physics context for cards to access the engine
@@ -40,7 +41,7 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
   const [centerPoint, setCenterPoint] = useState({ x: 0, y: 0 });
   const [isReady, setIsReady] = useState(false);
   const [scores] = useState<Partial<StoredScores>>(loadStoredScores);
-  const forceUpdatesRef = useRef<Map<string, (force: { x: number; y: number }) => void>>(new Map());
+  const forceUpdatesRef = useRef<Map<string, (force: Vector2) => void>>(new Map());
 
   // Physics engine
   const engine = usePhysicsEngine({
@@ -54,7 +55,7 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
   });
 
   // Register force updater for a card
-  const registerForceUpdater = useCallback((cardId: string, updater: (force: { x: number; y: number }) => void) => {
+  const registerForceUpdater = useCallback((cardId: string, updater: (force: Vector2) => void) => {
     forceUpdatesRef.current.set(cardId, updater);
     return () => {
       forceUpdatesRef.current.delete(cardId);
@@ -131,18 +132,18 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
         const best = Math.max(...Object.values(rhythmScores).map((s) => s.score));
         return best > 0 ? `${best.toLocaleString()}` : undefined;
       case 'minesweeper':
-        const msScores = scores.minesweeper as Record<string, { bestTime: number }> | undefined;
+        const msScores = scores.minesweeper;
         if (!msScores) return undefined;
         const bestTime = Math.min(...Object.values(msScores).map((s) => s.bestTime).filter(t => t < Infinity));
         return bestTime < Infinity ? `${bestTime}s` : undefined;
       case 'game2048':
-        const g2048Scores = scores.game2048 as { bestScore: number } | undefined;
+        const g2048Scores = scores.game2048;
         return g2048Scores?.bestScore ? g2048Scores.bestScore.toLocaleString() : undefined;
       case 'pacman':
-        const pacmanScores = scores.pacman as { highScore: number } | undefined;
+        const pacmanScores = scores.pacman;
         return pacmanScores?.highScore ? pacmanScores.highScore.toLocaleString() : undefined;
       case 'aim':
-        const aimScores = scores.aimTrainer as Record<string, { bestScore: number }> | undefined;
+        const aimScores = scores.aimTrainer;
         if (!aimScores) return undefined;
         const bestAimScore = Math.max(...Object.values(aimScores).map((s) => s.bestScore).filter(s => s > 0));
         return bestAimScore > 0 ? bestAimScore.toLocaleString() : undefined;
@@ -153,7 +154,7 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
 
   return (
     <PhysicsContext.Provider value={{ engine, centerPoint }}>
-      <div ref={containerRef} className="relative w-full flex justify-center">
+      <div ref={containerRef} className="relative flex w-full justify-center py-4 md:py-6">
         {/* Hidden grid for position calculation */}
         <div
           ref={gridRef}
@@ -183,8 +184,36 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
             minHeight: rows * cellSize + Math.max(rows - 1, 0) * gap,
           }}
         >
+          <div className="pointer-events-none absolute -inset-4 rounded-[2rem] border border-[rgba(255,255,255,0.05)] bg-[rgba(255,255,255,0.015)] shadow-[0_24px_90px_rgba(0,0,0,0.22)]" />
+          <div
+            className="pointer-events-none absolute -inset-4 rounded-[2rem] opacity-30"
+            style={{
+              background:
+                'radial-gradient(circle at 20% 0%, rgba(251,191,36,0.12), transparent 34%), radial-gradient(circle at 78% 100%, rgba(167,139,250,0.12), transparent 38%)',
+            }}
+          />
+
           {isReady &&
-            BENTO_CARDS.filter((card) => card.contentType !== 'void').map((card) => {
+            VISIBLE_BENTO_CARDS.map((card) => {
+              const position = positions.get(card.id);
+              if (!position) return null;
+
+              return (
+                <div
+                  key={`${card.id}-slot`}
+                  className="pointer-events-none absolute rounded-2xl border border-[rgba(255,255,255,0.045)] bg-[rgba(255,255,255,0.018)]"
+                  style={{
+                    left: position.x,
+                    top: position.y,
+                    width: position.width,
+                    height: position.height,
+                  }}
+                />
+              );
+            })}
+
+          {isReady &&
+            VISIBLE_BENTO_CARDS.map((card, index) => {
               const position = positions.get(card.id);
               if (!position) return null;
 
@@ -194,11 +223,11 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
                   config={card}
                   homePosition={position}
                   bestScore={getBestScore(card.id)}
+                  index={index}
                   registerForceUpdater={registerForceUpdater}
                 />
               );
             })}
-
         </div>
       </div>
     </PhysicsContext.Provider>
