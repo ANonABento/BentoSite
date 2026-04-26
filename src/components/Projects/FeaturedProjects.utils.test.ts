@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   filterProjectsByTechnology,
+  getFeaturedTechnologyFilterOptions,
   getFeaturedTechnologyFilters,
 } from './FeaturedProjects.utils';
 import type { Project } from '@/lib/projects-data';
@@ -30,6 +31,18 @@ describe('FeaturedProjects filtering', () => {
       'ROS2',
       'Three.js',
       'Unity',
+    ]);
+  });
+
+  it('returns technology filters with matching featured project counts', () => {
+    expect(getFeaturedTechnologyFilterOptions(projects)).toEqual([
+      { technology: 'C#', count: 1 },
+      { technology: 'OpenCV', count: 1 },
+      { technology: 'Python', count: 2 },
+      { technology: 'PyTorch', count: 1 },
+      { technology: 'ROS2', count: 2 },
+      { technology: 'Three.js', count: 1 },
+      { technology: 'Unity', count: 1 },
     ]);
   });
 
