@@ -27,7 +27,7 @@ export function ScrollReveal({
     <m.div
       id={id}
       className={className}
-      custom={delay}
+      custom={prefersReducedMotion ? 0 : delay}
       initial="hidden"
       whileInView="visible"
       viewport={defaultViewport}

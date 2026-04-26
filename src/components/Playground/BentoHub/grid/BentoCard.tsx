@@ -214,8 +214,8 @@ export function BentoCard({ config, homePosition, bestScore, index, registerForc
       className={`cursor-grab active:cursor-grabbing ${isDragging ? 'z-50' : 'z-10'}`}
       custom={index}
       initial={prefersReducedMotion ? false : 'hidden'}
-      animate="visible"
-      variants={bentoCardEntrance}
+      animate={prefersReducedMotion ? undefined : 'visible'}
+      variants={prefersReducedMotion ? undefined : bentoCardEntrance}
       whileHover={prefersReducedMotion ? undefined : { scale: 1.018 }}
       whileTap={prefersReducedMotion ? undefined : { scale: 0.975 }}
     >

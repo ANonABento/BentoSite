@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect, useLayoutEffect, useCallback, createContext, useContext } from 'react';
-import { motion, useAnimationFrame } from 'framer-motion';
+import { motion, useAnimationFrame, useReducedMotion } from 'framer-motion';
 import { BentoCard } from './BentoCard';
 import { bentoSlotReveal } from '@/lib/animations';
 import type { CardPosition } from '../BentoHub.types';
@@ -43,6 +43,7 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
   const [isReady, setIsReady] = useState(false);
   const [scores] = useState<Partial<StoredScores>>(loadStoredScores);
   const forceUpdatesRef = useRef<Map<string, (force: Vector2) => void>>(new Map());
+  const prefersReducedMotion = useReducedMotion() ?? false;
 
   // Physics engine
   const engine = usePhysicsEngine({
@@ -204,9 +205,9 @@ export function BentoGrid({ isMobile }: BentoGridProps) {
                   key={`${card.id}-slot`}
                   className="pointer-events-none absolute rounded-2xl border border-[rgba(255,255,255,0.045)] bg-[rgba(255,255,255,0.018)]"
                   custom={index}
-                  initial="hidden"
-                  animate="visible"
-                  variants={bentoSlotReveal}
+                  initial={prefersReducedMotion ? false : 'hidden'}
+                  animate={prefersReducedMotion ? undefined : 'visible'}
+                  variants={prefersReducedMotion ? undefined : bentoSlotReveal}
                   style={{
                     left: position.x,
                     top: position.y,
