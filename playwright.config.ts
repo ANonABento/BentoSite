@@ -1,21 +1,20 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const isCI = !!process.env.CI;
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 1,
-  // Local runs hit `npm run dev`, whose first request per route triggers a
-  // cold Next.js compile. Parallel workers racing each other on uncompiled
-  // routes across five browser projects can exhaust the dev server
-  // (observed: ERR_CONNECTION_REFUSED after ~1m of parallel load), so run
-  // serially locally. CI uses `npm run start` (prebuilt) where parallelism
-  // is safe.
-  workers: process.env.CI ? 2 : 1,
-  reporter: process.env.CI ? 'github' : 'html',
+  forbidOnly: isCI,
+  retries: isCI ? 2 : 1,
+  // Run the suite against the production server. `next dev` can become
+  // transiently unavailable between browser projects while compiling routes,
+  // which shows up as intermittent ERR_CONNECTION_REFUSED/NS_ERROR_CONNECTION_REFUSED.
+  workers: 2,
+  reporter: isCI ? 'github' : 'html',
   expect: {
-    // Bump from the 5s default to tolerate first-hit dev compiles and the
-    // boot screen's ~1–2s preload + typewriter animation.
+    // Bump from the 5s default to tolerate the boot screen's preload and
+    // typewriter animation on slower browsers.
     timeout: 15000,
   },
   use: {
@@ -47,9 +46,11 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: process.env.CI ? 'node_modules/.bin/next start' : 'node_modules/.bin/next dev',
+    command: isCI
+      ? 'node_modules/.bin/next start'
+      : 'node_modules/.bin/next build && node_modules/.bin/next start',
     url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
+    reuseExistingServer: !isCI,
+    timeout: 180 * 1000,
   },
 });
