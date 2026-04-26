@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
 import { LazyMotion, domAnimation } from 'framer-motion';
 import { BootScreen } from '@/components/BentoOS/BootScreen';
@@ -33,29 +33,41 @@ const SkillsSection = dynamic(
   { ssr: false }
 );
 
+function subscribeToUrlChanges(onStoreChange: () => void) {
+  window.addEventListener('popstate', onStoreChange);
+  return () => window.removeEventListener('popstate', onStoreChange);
+}
+
+function getDashboardQuerySnapshot() {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  return new URLSearchParams(window.location.search).get('view') === 'dashboard';
+}
+
 export default function Home() {
-  const [showBoot, setShowBoot] = useState(true);
-  const [dashboardReady, setDashboardReady] = useState(false);
+  const startsInDashboard = useSyncExternalStore(
+    subscribeToUrlChanges,
+    getDashboardQuerySnapshot,
+    () => false
+  );
+  const [bootState, setBootState] = useState<'booting' | 'exiting' | 'complete'>('booting');
   const { isOpen: isShortcutsOpen, close: closeShortcuts } = useKeyboardShortcutsHelp();
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('view') === 'dashboard') {
-      setShowBoot(false);
-      setDashboardReady(true);
-    }
-  }, []);
-
   const handleBootExiting = useCallback(() => {
-    setDashboardReady(true);
+    setBootState('exiting');
   }, []);
 
   const handleBootComplete = useCallback(() => {
-    setShowBoot(false);
+    setBootState('complete');
   }, []);
 
+  const showBoot = !startsInDashboard && bootState !== 'complete';
+  const dashboardReady = startsInDashboard || bootState !== 'booting';
+
   return (
-    <LazyMotion features={domAnimation} strict>
+    <LazyMotion features={domAnimation}>
       <main
         id="main-content"
         className="h-screen overflow-hidden bg-[var(--background)] bg-grid transition-colors duration-300"
