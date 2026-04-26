@@ -26,7 +26,7 @@ export function resolveBootState({
 
 export function getNavigationWasReload(
   performanceApi: Pick<Performance, 'getEntriesByType'> | null | undefined
-) {
+): boolean {
   try {
     const navigation = performanceApi?.getEntriesByType('navigation')[0] as
       | PerformanceNavigationTiming
@@ -38,9 +38,29 @@ export function getNavigationWasReload(
   }
 }
 
+interface HardReloadBootTracker {
+  getPending: (
+    performanceApi: Pick<Performance, 'getEntriesByType'> | null | undefined
+  ) => boolean;
+  markHandled: () => void;
+}
+
+export function createHardReloadBootTracker(): HardReloadBootTracker {
+  let hardReloadBootHandled = false;
+
+  return {
+    getPending: (
+      performanceApi: Pick<Performance, 'getEntriesByType'> | null | undefined
+    ) => getNavigationWasReload(performanceApi) && !hardReloadBootHandled,
+    markHandled: () => {
+      hardReloadBootHandled = true;
+    },
+  };
+}
+
 export function readBootComplete(
   storage: Pick<Storage, 'getItem'> | null | undefined
-) {
+): boolean {
   try {
     return storage?.getItem(BOOT_SESSION_KEY) === 'true';
   } catch {
@@ -50,7 +70,7 @@ export function readBootComplete(
 
 export function writeBootComplete(
   storage: Pick<Storage, 'setItem'> | null | undefined
-) {
+): void {
   try {
     storage?.setItem(BOOT_SESSION_KEY, 'true');
   } catch {

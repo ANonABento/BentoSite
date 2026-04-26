@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   BOOT_SESSION_KEY,
+  createHardReloadBootTracker,
   getNavigationWasReload,
   readBootComplete,
   resolveBootState,
@@ -85,6 +86,28 @@ describe('boot-session utilities', () => {
     };
 
     expect(getNavigationWasReload(performanceApi)).toBe(true);
+  });
+
+  it('consumes the hard reload boot once per browser document', () => {
+    const tracker = createHardReloadBootTracker();
+    const performanceApi = {
+      getEntriesByType: vi.fn(
+        () => [{ type: 'reload' }] as PerformanceNavigationTiming[]
+      ),
+    };
+
+    expect(tracker.getPending(performanceApi)).toBe(true);
+
+    tracker.markHandled();
+
+    expect(tracker.getPending(performanceApi)).toBe(false);
+    expect(
+      resolveBootState({
+        hasCompletedBoot: true,
+        isDashboardView: false,
+        isHardReload: tracker.getPending(performanceApi),
+      })
+    ).toBe('complete');
   });
 
   it('treats missing navigation entries as normal navigation', () => {

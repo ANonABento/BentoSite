@@ -13,7 +13,7 @@ import { LazyPanelFallback } from '@/components/ui';
 import { ViewerSkeleton } from '@/components/Viewfinder/ViewerSkeleton';
 import {
   type BootState,
-  getNavigationWasReload,
+  createHardReloadBootTracker,
   readBootComplete,
   resolveBootState,
   writeBootComplete,
@@ -40,12 +40,14 @@ const SkillsSection = dynamic(
   { ssr: false }
 );
 
-function subscribeToUrlChanges(onStoreChange: () => void) {
+const hardReloadBootTracker = createHardReloadBootTracker();
+
+function subscribeToLocationChanges(onStoreChange: () => void): () => void {
   window.addEventListener('popstate', onStoreChange);
   return () => window.removeEventListener('popstate', onStoreChange);
 }
 
-function getDashboardQuerySnapshot() {
+function getDashboardQuerySnapshot(): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
@@ -53,27 +55,22 @@ function getDashboardQuerySnapshot() {
   return new URLSearchParams(window.location.search).get('view') === 'dashboard';
 }
 
-function subscribeToBootStateChanges(onStoreChange: () => void) {
-  window.addEventListener('popstate', onStoreChange);
-  return () => window.removeEventListener('popstate', onStoreChange);
-}
-
 function getBootStateSnapshot(): BootState {
   return resolveBootState({
     hasCompletedBoot: readBootComplete(window.sessionStorage),
     isDashboardView: getDashboardQuerySnapshot(),
-    isHardReload: getNavigationWasReload(window.performance),
+    isHardReload: hardReloadBootTracker.getPending(window.performance),
   });
 }
 
 export default function Home() {
   const startsInDashboard = useSyncExternalStore(
-    subscribeToUrlChanges,
+    subscribeToLocationChanges,
     getDashboardQuerySnapshot,
     () => false
   );
   const sessionBootState = useSyncExternalStore(
-    subscribeToBootStateChanges,
+    subscribeToLocationChanges,
     getBootStateSnapshot,
     () => 'checking'
   );
@@ -87,6 +84,7 @@ export default function Home() {
 
   const handleBootComplete = useCallback(() => {
     writeBootComplete(window.sessionStorage);
+    hardReloadBootTracker.markHandled();
     setBootStateOverride('complete');
   }, []);
 
