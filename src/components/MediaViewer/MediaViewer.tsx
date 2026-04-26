@@ -2,34 +2,35 @@
 
 import dynamic from 'next/dynamic';
 import { AnimatePresence } from 'framer-motion';
+import { LazyPanelFallback } from '@/components/ui';
 
 import type { MediaViewerProps, MediaType } from './MediaViewer.types';
 
 // Dynamic imports for code splitting
 const ImageGallery = dynamic(
   () => import('./viewers/ImageGallery').then((mod) => ({ default: mod.ImageGallery })),
-  { ssr: false }
+  { ssr: false, loading: () => <LazyPanelFallback label="Loading images..." /> }
 );
 
 const PDFViewer = dynamic(
   () => import('./viewers/PDFViewer').then((mod) => ({ default: mod.PDFViewer })),
-  { ssr: false }
+  { ssr: false, loading: () => <LazyPanelFallback label="Loading PDF..." /> }
 );
 
 const WebsiteEmbed = dynamic(
   () => import('./viewers/WebsiteEmbed').then((mod) => ({ default: mod.WebsiteEmbed })),
-  { ssr: false }
+  { ssr: false, loading: () => <LazyPanelFallback label="Loading website..." /> }
 );
 
 const GameEmbed = dynamic(
   () => import('./viewers/GameEmbed').then((mod) => ({ default: mod.GameEmbed })),
-  { ssr: false }
+  { ssr: false, loading: () => <LazyPanelFallback label="Loading game..." /> }
 );
 
 // Reuse existing 3D viewer
 const ThreeViewer = dynamic(
   () => import('@/components/Dimension'),
-  { ssr: false }
+  { ssr: false, loading: () => <LazyPanelFallback label="Loading 3D model..." /> }
 );
 
 interface ActiveViewer {

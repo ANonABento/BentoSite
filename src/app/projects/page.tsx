@@ -3,101 +3,27 @@
 /**
  * /projects - Projects showcase page
  *
- * Uses UnifiedGrid with premium theme to display portfolio projects
- * in an infinite scrollable/pannable grid.
+ * Thin route shell. The grid and card renderer live behind a route-level
+ * dynamic boundary so the page module does not eagerly import them.
  */
 
-import { useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { PROJECTS } from '@/lib/projects-data';
-import type { ProjectCardData, CardData, CardPosition, ThemeConfig } from '@/components/UnifiedGrid';
-import { ProjectCard } from '@/components/UnifiedGrid/cards';
+import { RouteLoadingFallback } from '@/components/ui';
 
-// Dynamic import to avoid SSR issues
-const UnifiedGrid = dynamic(
-  () => import('@/components/UnifiedGrid').then((mod) => mod.UnifiedGrid),
-  { ssr: false }
+const ProjectsGridClient = dynamic(
+  () => import('./_components/ProjectsGridClient').then((mod) => mod.ProjectsGridClient),
+  {
+    ssr: false,
+    loading: () => (
+      <RouteLoadingFallback
+        label="loading projects..."
+        spinnerVariant="purple"
+        showIcon
+      />
+    ),
+  }
 );
 
-/**
- * Convert Project to ProjectCardData
- */
-function mapProjectToCardData(project: typeof PROJECTS[number]): ProjectCardData {
-  return {
-    id: project.id,
-    type: 'project',
-    title: project.name,
-    description: project.shortDescription,
-    thumbnail: project.thumbnail,
-    category: project.category,
-    technologies: project.technologies,
-    status: project.status,
-    links: {
-      github: project.links.github,
-      demo: project.links.liveDemo,
-      modelPath: project.links.modelPath,
-    },
-    featured: project.featured,
-  };
-}
-
-/**
- * Custom card renderer for projects
- */
-function renderProjectCard(
-  card: CardData,
-  position: CardPosition,
-  theme: ThemeConfig,
-  isFocused?: boolean,
-  onClick?: () => void,
-): React.ReactNode {
-  if (card.type !== 'project') return null;
-
-  return (
-    <ProjectCard
-      card={card}
-      position={position}
-      theme={theme}
-      isFocused={isFocused}
-      onClick={onClick}
-    />
-  );
-}
-
 export default function ProjectsPage() {
-  const router = useRouter();
-
-  // Convert projects to card data
-  const projectCards = useMemo(
-    () => PROJECTS.map(mapProjectToCardData),
-    []
-  );
-
-  // Handle card selection - navigate to dashboard with project loaded in Viewfinder
-  const handleCardSelect = useCallback(
-    (card: CardData) => {
-      if (card.type === 'project') {
-        // Navigate to dashboard with project query param to open in Viewfinder
-        router.push(`/?project=${card.id}`);
-      }
-    },
-    [router]
-  );
-
-  // Handle back navigation
-  const handleBack = useCallback(() => {
-    router.push('/');
-  }, [router]);
-
-  return (
-    <UnifiedGrid
-      theme="premium"
-      cards={projectCards}
-      onCardSelect={handleCardSelect}
-      onBack={handleBack}
-      breadcrumb="bentOS / projects"
-      renderCard={renderProjectCard}
-    />
-  );
+  return <ProjectsGridClient />;
 }

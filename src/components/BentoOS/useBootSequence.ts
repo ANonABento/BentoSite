@@ -10,12 +10,7 @@ const LOGO_FADE_DELAY = 300;
 const ROLL_STAGGER = 60;
 const MIN_DISPLAY_MS = 800;
 const FULL_HOLD_MS = 500;
-
-const PRELOAD_MODULES = [
-  () => import('@/components/Viewfinder'),
-  () => import('@/components/Chat'),
-  () => import('@/components/Skills/SkillsSection'),
-];
+const BOOT_PROGRESS_TARGETS = [6, 12, SEGMENT_COUNT];
 
 export function useBootSequence({ onExiting }: { onExiting: () => void }) {
   const [phase, setPhase] = useState<BootPhase>('logo');
@@ -24,7 +19,7 @@ export function useBootSequence({ onExiting }: { onExiting: () => void }) {
   const [showFlash, setShowFlash] = useState(false);
   const [glitchOffset, setGlitchOffset] = useState(0);
   const completedRef = useRef(false);
-  const loadedCountRef = useRef(0);
+  const progressCountRef = useRef(0);
   const barStartTimeRef = useRef(0);
   const fillQueueRef = useRef<number[]>([]);
   const fillingRef = useRef(false);
@@ -91,7 +86,7 @@ export function useBootSequence({ onExiting }: { onExiting: () => void }) {
 
         if (fillQueueRef.current.length > 0) {
           processQueue();
-        } else if (loadedCountRef.current >= PRELOAD_MODULES.length) {
+        } else if (progressCountRef.current >= BOOT_PROGRESS_TARGETS.length) {
           transitionToReady();
         }
 
@@ -108,11 +103,14 @@ export function useBootSequence({ onExiting }: { onExiting: () => void }) {
     });
   }, [transitionToReady]);
 
-  const onModuleLoaded = useCallback(() => {
-    loadedCountRef.current += 1;
-    fillQueueRef.current.push(
-      Math.min(loadedCountRef.current * SEGMENTS_PER_MODULE, SEGMENT_COUNT)
-    );
+  const advanceBootProgress = useCallback(() => {
+    const targetSegment = BOOT_PROGRESS_TARGETS[progressCountRef.current];
+    if (targetSegment === undefined) {
+      return;
+    }
+
+    progressCountRef.current += 1;
+    fillQueueRef.current.push(targetSegment);
     processFillQueue();
   }, [processFillQueue]);
 
@@ -137,12 +135,14 @@ export function useBootSequence({ onExiting }: { onExiting: () => void }) {
 
     barStartTimeRef.current = Date.now();
 
-    PRELOAD_MODULES.forEach((loadModule) => {
-      loadModule()
-        .catch(() => {})
-        .finally(() => onModuleLoaded());
+    const timers = BOOT_PROGRESS_TARGETS.map((_, index) => {
+      return window.setTimeout(() => advanceBootProgress(), index * SEGMENTS_PER_MODULE * 20);
     });
-  }, [onModuleLoaded, phase]);
+
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, [advanceBootProgress, phase]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {

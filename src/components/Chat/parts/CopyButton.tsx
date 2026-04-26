@@ -22,7 +22,7 @@ export const CopyButton = memo(function CopyButton({ text, onCopied }: CopyButto
   return (
     <button
       onClick={handleCopy}
-      className="p-1.5 rounded-sm bg-[var(--glass-bg)] hover:bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200"
+      className="p-1.5 rounded-sm bg-[var(--glass-bg)] hover:bg-[var(--glass-bg-strong)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200"
       aria-label={copied ? 'Copied!' : 'Copy message'}
       title={copied ? 'Copied!' : 'Copy message'}
     >

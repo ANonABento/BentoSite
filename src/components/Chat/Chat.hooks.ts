@@ -21,12 +21,25 @@ interface UseChatSubmitOptions {
 }
 
 export function useChatMessages() {
-  const [messages, setMessages] = useState<Message[]>(() => loadMessages() ?? [getDefaultMessage()]);
+  const [messages, setMessages] = useState<Message[]>([getDefaultMessage()]);
+  const [isHydrated, setIsHydrated] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    saveMessages(messages);
-  }, [messages]);
+    const storedMessages = loadMessages();
+    if (storedMessages) {
+      // Chat history is intentionally restored after hydration to avoid SSR/client drift.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setMessages(storedMessages);
+    }
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (isHydrated) {
+      saveMessages(messages);
+    }
+  }, [isHydrated, messages]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -84,20 +97,22 @@ export function useChatSubmit({ inputRef, messages, setMessages }: UseChatSubmit
 
   const handleFeedback = useCallback(
     async (messageId: string, feedback: 'positive' | 'negative') => {
-      const message = messages.find((candidate) => candidate.id === messageId);
+      const message = messagesRef.current.find((candidate) => candidate.id === messageId);
       if (!message) {
         return;
       }
 
       const newFeedback = message.feedback === feedback ? null : feedback;
 
-      setMessages((previousMessages) =>
-        previousMessages.map((candidate) =>
+      setMessages((previousMessages) => {
+        const updatedMessages = previousMessages.map((candidate) =>
           candidate.id === messageId
             ? { ...candidate, feedback: newFeedback }
             : candidate
-        )
-      );
+        );
+        messagesRef.current = updatedMessages;
+        return updatedMessages;
+      });
 
       if (!newFeedback) {
         return;
@@ -118,7 +133,7 @@ export function useChatSubmit({ inputRef, messages, setMessages }: UseChatSubmit
         // Feedback is best-effort only.
       }
     },
-    [messages, setMessages]
+    [setMessages]
   );
 
   const sendMessage = useCallback(
@@ -136,9 +151,14 @@ export function useChatSubmit({ inputRef, messages, setMessages }: UseChatSubmit
         timestamp: Date.now(),
       };
 
-      const nextMessages = [...messagesRef.current, userMessage];
-
-      setMessages(nextMessages);
+      const nextMessages = await new Promise<Message[]>((resolve) => {
+        setMessages((previousMessages) => {
+          const updatedMessages = [...previousMessages, userMessage];
+          messagesRef.current = updatedMessages;
+          resolve(updatedMessages);
+          return updatedMessages;
+        });
+      });
       setInput('');
       setIsLoading(true);
       setError(null);
@@ -179,7 +199,11 @@ export function useChatSubmit({ inputRef, messages, setMessages }: UseChatSubmit
           timestamp: Date.now(),
         };
 
-        setMessages((previousMessages) => [...previousMessages, assistantMessage]);
+        setMessages((previousMessages) => {
+          const updatedMessages = [...previousMessages, assistantMessage];
+          messagesRef.current = updatedMessages;
+          return updatedMessages;
+        });
       } catch (err) {
         const errorMessage =
           err instanceof Error && err.name === 'AbortError'
@@ -187,15 +211,19 @@ export function useChatSubmit({ inputRef, messages, setMessages }: UseChatSubmit
             : 'Failed to send message. Please try again.';
 
         setError(errorMessage);
-        setMessages((previousMessages) => [
-          ...previousMessages,
-          {
-            id: generateId(),
-            role: 'assistant',
-            content: `I apologize, but I'm having trouble connecting right now. You can reach ${PORTFOLIO_DATA.personal.name} directly at ${PORTFOLIO_DATA.personal.email}.`,
-            timestamp: Date.now(),
-          },
-        ]);
+        setMessages((previousMessages) => {
+          const updatedMessages = [
+            ...previousMessages,
+            {
+              id: generateId(),
+              role: 'assistant' as const,
+              content: `I apologize, but I'm having trouble connecting right now. You can reach ${PORTFOLIO_DATA.personal.name} directly at ${PORTFOLIO_DATA.personal.email}.`,
+              timestamp: Date.now(),
+            },
+          ];
+          messagesRef.current = updatedMessages;
+          return updatedMessages;
+        });
       } finally {
         setIsLoading(false);
         inputRef.current?.focus();

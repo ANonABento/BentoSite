@@ -1,17 +1,19 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { LoadingSpinner } from '@/components/Dimension/ui/feedback/loading-spinner';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { RouteLoadingFallback } from '@/components/ui';
 
 const Game2048 = dynamic(
   () => import('@/components/Playground/Game2048').then((mod) => mod.Game2048),
   {
     ssr: false,
     loading: () => (
-      <div className="min-h-screen bg-[var(--pg-bg-deep)] flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
+      <RouteLoadingFallback
+        label="Loading 2048..."
+        spinnerVariant="orange"
+        className="bg-[var(--pg-bg-deep)]"
+      />
     ),
   }
 );

@@ -6,7 +6,6 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { LayoutGroup, LazyMotion, domAnimation } from 'framer-motion';
 import { BootScreen } from '@/components/BentoOS/BootScreen';
 import { BentoIcon } from '@/components/BentoOS/BentoIcon';
-import { DashboardLayout } from '@/components/Dashboard';
 import {
   KeyboardShortcutsModal,
   useKeyboardShortcutsHelp,
@@ -34,6 +33,11 @@ const Chatbot = dynamic(() => import('@/components/Chat'), {
   ssr: false,
   loading: ModuleLoader,
 });
+
+const DashboardLayout = dynamic(
+  () => import('@/components/Dashboard').then((mod) => mod.DashboardLayout),
+  { ssr: false, loading: ModuleLoader }
+);
 
 const SkillsSection = dynamic(
   () => import('@/components/Skills/SkillsSection'),
@@ -88,16 +92,6 @@ function HomeContent() {
         {/* Boot screen overlay — manages its own exit animation */}
         {isBooting && (
           <BootScreen onExiting={handleBootExiting} onComplete={handleBootComplete} />
-        )}
-
-        {/* Preload 3D in background during boot */}
-        {isBooting && !showDashboard && (
-          <div
-            className="fixed inset-0 opacity-0 pointer-events-none -z-10"
-            aria-hidden="true"
-          >
-            <Viewfinder project={null} minimal />
-          </div>
         )}
 
         {/* Dashboard — mounts during boot exit for crossfade, animates when ready */}
