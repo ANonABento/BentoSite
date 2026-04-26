@@ -44,7 +44,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: process.env.CI ? 'node_modules/.bin/next start' : 'npm run build && node_modules/.bin/next start',
+    command: process.env.CI ? 'npm run start' : 'npm run build && npm run start',
     url: 'http://localhost:3000',
     reuseExistingServer: false,
     timeout: 120 * 1000,
