@@ -8,7 +8,7 @@
  */
 
 /**
- * Creates a shimmer SVG placeholder as a base64 data URL
+ * Creates a shimmer SVG placeholder as an encoded data URL
  * This provides a nice gradient loading effect before images load
  */
 export function createShimmerPlaceholder(width: number, height: number): string {
@@ -24,8 +24,8 @@ export function createShimmerPlaceholder(width: number, height: number): string 
       <rect width="${width}" height="${height}" fill="url(#g)" />
     </svg>
   `;
-  
-  return `data:image/svg+xml;base64,${Buffer.from(shimmerSvg).toString('base64')}`;
+
+  return createSvgDataUrl(shimmerSvg);
 }
 
 /**
@@ -37,8 +37,12 @@ export function createColorPlaceholder(color: string = '#1a1a2e'): string {
       <rect width="1" height="1" fill="${color}" />
     </svg>
   `;
-  
-  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+
+  return createSvgDataUrl(svg);
+}
+
+function createSvgDataUrl(svg: string): string {
+  return `data:image/svg+xml,${encodeURIComponent(svg.trim())}`;
 }
 
 /**

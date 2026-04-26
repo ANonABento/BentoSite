@@ -1,6 +1,12 @@
 'use client';
 
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import {
+  AnimatePresence,
+  LazyMotion,
+  domAnimation,
+  m,
+  useReducedMotion,
+} from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { easings } from '@/lib/animations';
@@ -81,18 +87,20 @@ export function PageTransition({ children, className = '' }: PageTransitionProps
   ].filter(Boolean).join(' ');
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={pathname}
-        variants={variants}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-        className={wrapperClassName}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <LazyMotion features={domAnimation}>
+      <AnimatePresence mode="wait" initial={false}>
+        <m.div
+          key={pathname}
+          variants={variants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          className={wrapperClassName}
+        >
+          {children}
+        </m.div>
+      </AnimatePresence>
+    </LazyMotion>
   );
 }
 
@@ -116,13 +124,15 @@ export function PageTransitionItem({
   const prefersReducedMotion = useReducedMotion() ?? false;
 
   return (
-    <motion.div
-      variants={prefersReducedMotion ? reducedPageVariants : contentVariants}
-      className={className}
-      transition={{ delay: prefersReducedMotion ? 0 : delay }}
-    >
-      {children}
-    </motion.div>
+    <LazyMotion features={domAnimation}>
+      <m.div
+        variants={prefersReducedMotion ? reducedPageVariants : contentVariants}
+        className={className}
+        transition={{ delay: prefersReducedMotion ? 0 : delay }}
+      >
+        {children}
+      </m.div>
+    </LazyMotion>
   );
 }
 
@@ -143,21 +153,23 @@ export function FadeTransition({
   const prefersReducedMotion = useReducedMotion() ?? false;
 
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{
-            duration: prefersReducedMotion ? 0 : ANIMATION_DURATIONS.NORMAL / 1000,
-          }}
-          className={className}
-        >
-          {children}
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <LazyMotion features={domAnimation}>
+      <AnimatePresence>
+        {isVisible && (
+          <m.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: prefersReducedMotion ? 0 : ANIMATION_DURATIONS.NORMAL / 1000,
+            }}
+            className={className}
+          >
+            {children}
+          </m.div>
+        )}
+      </AnimatePresence>
+    </LazyMotion>
   );
 }
 
@@ -187,21 +199,23 @@ export function SlideTransition({
   const initialOffset = prefersReducedMotion ? { x: 0, y: 0 } : offset;
 
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          initial={{ opacity: 0, ...initialOffset }}
-          animate={{ opacity: 1, x: 0, y: 0 }}
-          exit={{ opacity: 0, ...initialOffset }}
-          transition={{
-            duration: prefersReducedMotion ? 0 : ANIMATION_DURATIONS.SLOW / 1000,
-            ease: easings.apple,
-          }}
-          className={className}
-        >
-          {children}
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <LazyMotion features={domAnimation}>
+      <AnimatePresence>
+        {isVisible && (
+          <m.div
+            initial={{ opacity: 0, ...initialOffset }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            exit={{ opacity: 0, ...initialOffset }}
+            transition={{
+              duration: prefersReducedMotion ? 0 : ANIMATION_DURATIONS.SLOW / 1000,
+              ease: easings.apple,
+            }}
+            className={className}
+          >
+            {children}
+          </m.div>
+        )}
+      </AnimatePresence>
+    </LazyMotion>
   );
 }
