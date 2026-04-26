@@ -478,6 +478,8 @@ export const bentoSlotReveal: Variants = {
   }),
 };
 
+export const unifiedGridCardEntranceDelay = (index = 0) => Math.min(index, 8) * 0.025;
+
 // Dashboard entrance — generic fallback (mobile tabs, etc.)
 // No scale/filter transforms — these break backdrop-filter on glass-panel children
 export const dashboardPanelIn: Variants = {

@@ -30,6 +30,7 @@ import {
   reducedScrollReveal,
   bentoCardEntrance,
   bentoSlotReveal,
+  unifiedGridCardEntranceDelay,
 } from '../animations';
 
 describe('animations utility', () => {
@@ -310,6 +311,14 @@ describe('animations utility', () => {
       expect(visible.scale).toBe(1);
       expect(visible.transition.delay).toBeCloseTo(0.14);
       expect(visible.transition.duration).toBeLessThan(0.42);
+    });
+  });
+
+  describe('unified grid card entrance delay', () => {
+    it('stagger cards by visible index and caps delayed entrances', () => {
+      expect(unifiedGridCardEntranceDelay()).toBe(0);
+      expect(unifiedGridCardEntranceDelay(3)).toBeCloseTo(0.075);
+      expect(unifiedGridCardEntranceDelay(12)).toBeCloseTo(0.2);
     });
   });
 });

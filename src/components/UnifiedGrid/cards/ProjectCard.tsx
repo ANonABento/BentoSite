@@ -16,6 +16,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import type { ProjectCardData, CardPosition, ThemeConfig } from '../UnifiedGrid.types';
 import { ANIMATION } from '../UnifiedGrid.constants';
+import { unifiedGridCardEntranceDelay } from '@/lib/animations';
 import {
   Model3DIcon,
   GitHubIcon,
@@ -48,10 +49,17 @@ const BLUR_PLACEHOLDER =
 // STATUS BADGE
 // =============================================================================
 
-function StatusBadge({ status }: { status?: string }) {
+type ProjectStatus = ProjectCardData['status'];
+
+function StatusBadge({ status }: { status?: ProjectStatus }) {
   if (!status) return null;
 
-  const config = {
+  const statusConfig: Record<NonNullable<ProjectStatus>, {
+    label: string;
+    bg: string;
+    text: string;
+    border: string;
+  }> = {
     Completed: {
       label: 'READY',
       bg: 'bg-emerald-500/10',
@@ -70,12 +78,8 @@ function StatusBadge({ status }: { status?: string }) {
       text: 'text-gray-400',
       border: 'border-gray-500/30',
     },
-  }[status] || {
-    label: status.toUpperCase(),
-    bg: 'bg-gray-500/10',
-    text: 'text-gray-400',
-    border: 'border-gray-500/30',
   };
+  const config = statusConfig[status];
 
   return (
     <span
@@ -152,7 +156,7 @@ export function ProjectCard({
         type: 'spring',
         stiffness: ANIMATION.SPRING.stiffness,
         damping: ANIMATION.SPRING.damping,
-        delay: prefersReducedMotion ? 0 : Math.min(entranceIndex, 8) * 0.025,
+        delay: prefersReducedMotion ? 0 : unifiedGridCardEntranceDelay(entranceIndex),
       }}
       whileHover={prefersReducedMotion ? undefined : { scale: 1.015, y: -2 }}
       onHoverStart={() => setIsHovered(true)}

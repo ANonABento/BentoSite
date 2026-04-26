@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import type { GameCardData, CardPosition, ThemeConfig } from '../UnifiedGrid.types';
 import { ANIMATION } from '../UnifiedGrid.constants';
+import { unifiedGridCardEntranceDelay } from '@/lib/animations';
 
 // =============================================================================
 // ICON MAPPING
@@ -156,7 +157,7 @@ export function GameCard({
         type: 'spring',
         stiffness: ANIMATION.SPRING.stiffness,
         damping: ANIMATION.SPRING.damping,
-        delay: prefersReducedMotion ? 0 : Math.min(entranceIndex, 8) * 0.025,
+        delay: prefersReducedMotion ? 0 : unifiedGridCardEntranceDelay(entranceIndex),
       }}
       whileHover={prefersReducedMotion ? undefined : { scale: 1.015, y: -2 }}
       whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
