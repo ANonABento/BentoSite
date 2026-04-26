@@ -62,13 +62,13 @@ function lerp(from: number, to: number, progress: number): number {
  * starts compressing only as the full 2x1 slot moves beyond a viewport edge,
  * and the compression value is proportional to that off-screen distance.
  */
-function getSearchCardPresentation(
+export function getSearchCardPresentation(
   camera: Camera,
   windowSize: { width: number; height: number }
 ): SearchCardPresentation {
   const regularPosition = canvasToScreen(0, 0, camera, windowSize);
-  const cardWidth = SEARCH_CARD.EXPANDED_WIDTH;
-  const cardHeight = SEARCH_CARD.EXPANDED_HEIGHT;
+  const cardWidth = SEARCH_CARD.EXPANDED_WIDTH * camera.zoom;
+  const cardHeight = SEARCH_CARD.EXPANDED_HEIGHT * camera.zoom;
   const padding = SEARCH_CARD.EDGE_PADDING;
 
   const cardLeft = regularPosition.x - cardWidth / 2;
@@ -77,10 +77,10 @@ function getSearchCardPresentation(
   const cardBottom = regularPosition.y + cardHeight / 2;
 
   const edgeDistances: Record<Exclude<SearchCardEdge, 'none'>, number> = {
-    left: Math.max(0, padding - cardRight),
-    right: Math.max(0, cardLeft - (windowSize.width - padding)),
-    top: Math.max(0, padding - cardBottom),
-    bottom: Math.max(0, cardTop - (windowSize.height - padding)),
+    left: Math.max(0, padding - cardLeft),
+    right: Math.max(0, cardRight - (windowSize.width - padding)),
+    top: Math.max(0, padding - cardTop),
+    bottom: Math.max(0, cardBottom - (windowSize.height - padding)),
   };
 
   const [edge, offscreenDistance] = (
