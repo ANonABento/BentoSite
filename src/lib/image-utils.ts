@@ -4,7 +4,7 @@
  * Provides utilities for:
  * - Generating blur data URLs for Next.js Image component
  * - Creating shimmer effects for loading states
- * - Base64-encoded SVG placeholders
+ * - Encoded SVG placeholders
  */
 
 /**
@@ -43,7 +43,7 @@ export function createColorPlaceholder(color: string = '#1a1a2e'): string {
 
 /**
  * Predefined blur placeholders for common aspect ratios
- * These are tiny base64-encoded images that show while the real image loads
+ * These are small encoded SVG images that show while the real image loads
  */
 export const BLUR_PLACEHOLDERS = {
   // 4:3 aspect ratio (project thumbnails)
@@ -69,7 +69,14 @@ export const BLUR_PLACEHOLDERS = {
  * Get appropriate blur placeholder based on dimensions
  */
 export function getBlurPlaceholder(width?: number, height?: number): string {
-  if (!width || !height) {
+  if (
+    width === undefined ||
+    height === undefined ||
+    width <= 0 ||
+    height <= 0 ||
+    !Number.isFinite(width) ||
+    !Number.isFinite(height)
+  ) {
     return BLUR_PLACEHOLDERS.default;
   }
   
