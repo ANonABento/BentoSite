@@ -10,7 +10,7 @@
 
 import { motion } from 'framer-motion';
 import { ArrowLeftIcon, ChevronDownIcon, CloseIcon, SearchIcon } from '@/components/ui/Icons';
-import type { ThemeConfig, SearchCardEdge } from '../UnifiedGrid.types';
+import type { Position, ThemeConfig, SearchCardEdge } from '../UnifiedGrid.types';
 
 // =============================================================================
 // PROPS
@@ -24,7 +24,7 @@ export interface SearchMenuCardProps {
   /** Which edge the card is stuck to */
   edge: SearchCardEdge;
   /** Screen position */
-  position: { x: number; y: number };
+  position: Position;
   /** Proportional squash amount, from regular card (0) to edge card (1) */
   compression: number;
   /** Rendered width */
@@ -51,6 +51,38 @@ export interface SearchMenuCardProps {
   totalCards?: number;
   /** Filtered card count */
   filteredCards?: number;
+}
+
+interface CategoryFilterButtonProps {
+  active: boolean;
+  accentColor: string;
+  children: string;
+  interactive: boolean;
+  onClick: () => void;
+}
+
+function CategoryFilterButton({
+  active,
+  accentColor,
+  children,
+  interactive,
+  onClick,
+}: CategoryFilterButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full transition-colors whitespace-nowrap ${
+        active ? 'text-white' : 'text-white/60 hover:text-white/80'
+      }`}
+      style={{
+        background: active ? `${accentColor}30` : 'rgba(255,255,255,0.05)',
+        border: active ? `1px solid ${accentColor}50` : '1px solid transparent',
+      }}
+      tabIndex={interactive ? 0 : -1}
+    >
+      {children}
+    </button>
+  );
 }
 
 // =============================================================================
@@ -81,6 +113,7 @@ export function SearchMenuCard({
   const isSideSquashed = (edge === 'left' || edge === 'right') && compression > 0.45;
   const isTight = width < 220 || height < 120;
   const compactSearch = compression > 0.72 || isTight;
+  const headerInteractive = !isSideSquashed;
 
   return (
     <motion.div
@@ -118,6 +151,7 @@ export function SearchMenuCard({
             height: isSideSquashed ? 0 : 24,
             overflow: 'hidden',
           }}
+          aria-hidden={isSideSquashed}
         >
           <span className="text-xs text-white/50 font-mono truncate">
             {breadcrumb || 'bentOS'}
@@ -135,6 +169,7 @@ export function SearchMenuCard({
               className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors"
               aria-label={expanded ? 'Hide filters' : 'Show filters'}
               style={{ color: theme.accent.primary }}
+              tabIndex={headerInteractive ? 0 : -1}
             >
               <ChevronDownIcon
                 className="w-4 h-4 transition-transform"
@@ -150,6 +185,7 @@ export function SearchMenuCard({
             className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors w-fit"
             style={{ opacity: detailsOpacity }}
             tabIndex={detailsInteractive ? 0 : -1}
+            aria-hidden={!detailsInteractive}
           >
             <ArrowLeftIcon className="w-4 h-4" />
             <span>Back to Dashboard</span>
@@ -219,32 +255,24 @@ export function SearchMenuCard({
             style={{ background: `linear-gradient(to left, ${theme.card.background}, transparent)` }}
           />
           <div className="flex gap-1.5 overflow-x-auto scrollbar-hide px-1 -mx-1 pb-1">
-            <button
+            <CategoryFilterButton
+              active={category === null}
+              accentColor={theme.accent.primary}
+              interactive={detailsInteractive}
               onClick={() => onCategoryChange(null)}
-              className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full transition-colors ${
-                category === null ? 'text-white' : 'text-white/60 hover:text-white/80'
-              }`}
-              style={{
-                background: category === null ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)',
-                border: category === null ? `1px solid ${theme.accent.primary}50` : '1px solid transparent',
-              }}
             >
               All
-            </button>
+            </CategoryFilterButton>
             {categories.map((cat) => (
-              <button
+              <CategoryFilterButton
                 key={cat}
+                active={category === cat}
+                accentColor={theme.accent.primary}
+                interactive={detailsInteractive}
                 onClick={() => onCategoryChange(cat === category ? null : cat)}
-                className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full transition-colors whitespace-nowrap ${
-                  category === cat ? 'text-white' : 'text-white/60 hover:text-white/80'
-                }`}
-                style={{
-                  background: category === cat ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)',
-                  border: category === cat ? `1px solid ${theme.accent.primary}50` : '1px solid transparent',
-                }}
               >
                 {cat}
-              </button>
+              </CategoryFilterButton>
             ))}
           </div>
         </div>
