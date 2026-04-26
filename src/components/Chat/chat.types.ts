@@ -1,18 +1,9 @@
-export type MessageRole = 'user' | 'assistant';
-export type MessageFeedback = 'positive' | 'negative';
-
 export interface Message {
   id: string;
-  role: MessageRole;
+  role: 'user' | 'assistant';
   content: string;
   timestamp: number;
-  feedback?: MessageFeedback | null;
-}
-
-export interface ChatResponse {
-  message?: string;
-  error?: string;
-  isDemoMode?: boolean;
+  feedback?: 'positive' | 'negative' | null;
 }
 
 export interface ChatFunctions {
