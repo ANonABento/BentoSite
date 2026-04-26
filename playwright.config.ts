@@ -1,9 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const host = process.env.PLAYWRIGHT_HOST ?? '127.0.0.1';
-const port = process.env.PLAYWRIGHT_PORT ?? process.env.PORT ?? '3000';
-const baseURL = `http://${host}:${port}`;
-const nextCommand = process.env.CI ? 'start' : 'dev';
+const e2ePort = process.env.E2E_PORT ?? '3100';
+const baseURL = `http://localhost:${e2ePort}`;
+const reuseExistingServer = process.env.PLAYWRIGHT_REUSE_SERVER === '1';
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -52,9 +51,11 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `node_modules/.bin/next ${nextCommand} --hostname ${host} --port ${port}`,
+    command: process.env.CI
+      ? `PORT=${e2ePort} node_modules/.bin/next start`
+      : `PORT=${e2ePort} node_modules/.bin/next dev`,
     url: baseURL,
-    reuseExistingServer: !process.env.CI && !process.env.PLAYWRIGHT_PORT,
+    reuseExistingServer,
     timeout: 120 * 1000,
   },
 });
