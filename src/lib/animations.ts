@@ -1,4 +1,4 @@
-import { Variants, Transition } from 'framer-motion';
+import type { Transition, Variants } from 'framer-motion';
 import { ANIMATION_DURATIONS } from './constants';
 
 // Premium easing curves
@@ -182,7 +182,7 @@ export const tabContent: Variants = {
 };
 
 // Route-level page transition for App Router navigation
-export const pageTransition: Variants = {
+export const pageTransition = {
   initial: {
     opacity: 0,
     y: 12,
@@ -206,10 +206,10 @@ export const pageTransition: Variants = {
       ease: easings.easeOutQuart,
     },
   },
-};
+} satisfies Variants;
 
 // Reduced-motion route transition keeps context changes perceptible without movement
-export const reducedPageTransition: Variants = {
+export const reducedPageTransition = {
   initial: {
     opacity: 0,
   },
@@ -225,7 +225,7 @@ export const reducedPageTransition: Variants = {
       duration: ANIMATION_DURATIONS.INSTANT,
     },
   },
-};
+} satisfies Variants;
 
 // Card hover with 3D tilt effect
 export const cardHover = {

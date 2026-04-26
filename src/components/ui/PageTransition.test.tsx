@@ -91,35 +91,16 @@ describe('PageTransition', () => {
   it('wraps routed content in a wait-mode presence transition', () => {
     render(<PageTransition className="custom-route-shell">Home</PageTransition>);
 
-    expect(screen.getByTestId('page-transition-presence')).toHaveAttribute(
-      'data-mode',
-      'wait'
-    );
-    expect(screen.getByTestId('page-transition-presence')).toHaveAttribute(
-      'data-initial',
-      'false'
-    );
-    expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
-      'data-initial-y',
-      '12'
-    );
-    expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
-      'data-animate',
-      'animate'
-    );
-    expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
-      'data-exit',
-      'exit'
-    );
-    expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
-      'data-exit-y',
-      '-8'
-    );
-    expect(screen.getByTestId('page-transition-shell')).toHaveClass(
-      'relative',
-      'min-h-screen',
-      'custom-route-shell'
-    );
+    const presence = screen.getByTestId('page-transition-presence');
+    const shell = screen.getByTestId('page-transition-shell');
+
+    expect(presence).toHaveAttribute('data-mode', 'wait');
+    expect(presence).toHaveAttribute('data-initial', 'false');
+    expect(shell).toHaveAttribute('data-initial-y', '12');
+    expect(shell).toHaveAttribute('data-animate', 'animate');
+    expect(shell).toHaveAttribute('data-exit', 'exit');
+    expect(shell).toHaveAttribute('data-exit-y', '-8');
+    expect(shell).toHaveClass('relative', 'min-h-screen', 'custom-route-shell');
     expect(screen.getByText('Home')).toBeInTheDocument();
   });
 
@@ -158,25 +139,12 @@ describe('PageTransition', () => {
 
     render(<PageTransition>Projects</PageTransition>);
 
-    expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
-      'data-initial-y',
-      ''
-    );
-    expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
-      'data-initial-filter',
-      ''
-    );
-    expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
-      'data-animate-opacity',
-      '1'
-    );
-    expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
-      'data-exit-y',
-      ''
-    );
-    expect(screen.getByTestId('page-transition-shell')).toHaveAttribute(
-      'data-exit-filter',
-      ''
-    );
+    const shell = screen.getByTestId('page-transition-shell');
+
+    expect(shell).toHaveAttribute('data-initial-y', '');
+    expect(shell).toHaveAttribute('data-initial-filter', '');
+    expect(shell).toHaveAttribute('data-animate-opacity', '1');
+    expect(shell).toHaveAttribute('data-exit-y', '');
+    expect(shell).toHaveAttribute('data-exit-filter', '');
   });
 });
