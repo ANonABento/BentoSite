@@ -167,14 +167,16 @@ export const BENTO_CARDS: BentoCardConfig[] = [
   },
 ];
 
-// Get card by ID
-export function getCardById(id: string): BentoCardConfig | undefined {
-  return BENTO_CARDS.find((card) => card.id === id);
-}
+export const VISIBLE_BENTO_CARDS: BentoCardConfig[] = BENTO_CARDS.filter(
+  (card) => card.contentType !== 'void'
+);
 
-// Filter out void card for game list
+const GAME_CARDS: BentoCardConfig[] = BENTO_CARDS.filter(
+  (card) => card.contentType === 'game'
+);
+
 export function getGameCards(): BentoCardConfig[] {
-  return BENTO_CARDS.filter((card) => card.contentType === 'game');
+  return [...GAME_CARDS];
 }
 
 export function getGridRowCount(template: string): number {
@@ -184,14 +186,6 @@ export function getGridRowCount(template: string): number {
     .map((row) => row.trim())
     .filter(Boolean).length;
 }
-
-// Size to grid span mapping
-export const SIZE_TO_SPAN: Record<string, { cols: number; rows: number }> = {
-  '1x1': { cols: 1, rows: 1 },
-  '2x1': { cols: 2, rows: 1 },
-  '1x2': { cols: 1, rows: 2 },
-  '2x2': { cols: 2, rows: 2 },
-};
 
 // Cell size in pixels (base unit)
 export const CELL_SIZE = {

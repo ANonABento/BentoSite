@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { motion, useMotionValue, useSpring, PanInfo } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import {
@@ -17,8 +17,9 @@ import {
   ArrowRight,
   Trophy,
 } from 'lucide-react';
-import { BentoCardConfig, CardPosition } from '../BentoHub.types';
+import type { BentoCardConfig, CardColor, CardPosition } from '../BentoHub.types';
 import { PHYSICS } from '../BentoHub.config';
+import type { Vector2 } from '../physics';
 import { usePhysicsContext } from './BentoGrid';
 
 interface BentoCardProps {
@@ -26,11 +27,11 @@ interface BentoCardProps {
   homePosition: CardPosition;
   bestScore?: string;
   index: number;
-  registerForceUpdater: (cardId: string, updater: (force: { x: number; y: number }) => void) => () => void;
+  registerForceUpdater: (cardId: string, updater: (force: Vector2) => void) => () => void;
 }
 
 // Icon mapping for games
-const GAME_ICONS: Record<string, React.ReactNode> = {
+const GAME_ICONS: Record<string, ReactNode> = {
   reaction: <Zap className="w-6 h-6" />,
   typing: <Keyboard className="w-6 h-6" />,
   rhythm: <Music className="w-6 h-6" />,
@@ -43,8 +44,7 @@ const GAME_ICONS: Record<string, React.ReactNode> = {
   pacman: <Ghost className="w-6 h-6" />,
 };
 
-// Color config for card accents
-const COLOR_CONFIG: Record<string, {
+interface CardColorStyles {
   iconBg: string;
   iconText: string;
   scoreText: string;
@@ -52,7 +52,10 @@ const COLOR_CONFIG: Record<string, {
   accentLine: string;
   glowColor: string;
   borderGlow: string;
-}> = {
+}
+
+// Color config for card accents
+const COLOR_CONFIG: Record<'cyan' | 'gold' | 'purple', CardColorStyles> = {
   gold: {
     iconBg: 'bg-[var(--pg-accent-gold)]/10',
     iconText: 'text-[var(--pg-accent-gold)]',
@@ -81,6 +84,19 @@ const COLOR_CONFIG: Record<string, {
     borderGlow: 'rgba(34, 211, 238, 0.2)',
   },
 };
+
+function getCardColorStyles(color: CardColor): CardColorStyles {
+  switch (color) {
+    case 'cyan':
+      return COLOR_CONFIG.cyan;
+    case 'purple':
+      return COLOR_CONFIG.purple;
+    case 'gold':
+    case 'pink':
+    case 'void':
+      return COLOR_CONFIG.gold;
+  }
+}
 
 export function BentoCard({ config, homePosition, bestScore, index, registerForceUpdater }: BentoCardProps) {
   const router = useRouter();
@@ -170,7 +186,7 @@ export function BentoCard({ config, homePosition, bestScore, index, registerForc
     [engine, config.id, config.href, router, x, y]
   );
 
-  const colors = COLOR_CONFIG[config.color] || COLOR_CONFIG.gold;
+  const colors = getCardColorStyles(config.color);
   const icon = GAME_ICONS[config.id];
   const isWide = homePosition.width > homePosition.height * 1.35;
   const isCompact = homePosition.width < 150;
