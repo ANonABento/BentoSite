@@ -1,4 +1,5 @@
 import { Variants, Transition } from 'framer-motion';
+import { ANIMATION_DURATIONS } from './constants';
 
 // Premium easing curves
 export const easings = {
@@ -176,6 +177,52 @@ export const tabContent: Variants = {
     transition: {
       duration: 0.15,
       ease: 'easeIn',
+    },
+  },
+};
+
+// Route-level page transition for App Router navigation
+export const pageTransition: Variants = {
+  initial: {
+    opacity: 0,
+    y: 12,
+    filter: 'blur(6px)',
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: {
+      duration: ANIMATION_DURATIONS.SLOW / 1000,
+      ease: easings.apple,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -8,
+    filter: 'blur(4px)',
+    transition: {
+      duration: ANIMATION_DURATIONS.NORMAL / 1000,
+      ease: easings.easeOutQuart,
+    },
+  },
+};
+
+// Reduced-motion route transition keeps context changes perceptible without movement
+export const reducedPageTransition: Variants = {
+  initial: {
+    opacity: 0,
+  },
+  animate: {
+    opacity: 1,
+    transition: {
+      duration: ANIMATION_DURATIONS.INSTANT,
+    },
+  },
+  exit: {
+    opacity: 0,
+    transition: {
+      duration: ANIMATION_DURATIONS.INSTANT,
     },
   },
 };

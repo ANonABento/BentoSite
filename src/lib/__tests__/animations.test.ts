@@ -13,6 +13,8 @@ import {
   tabContent,
   cardHover,
   glowPulse,
+  pageTransition,
+  reducedPageTransition,
   skeletonPulse,
   buttonTap,
   buttonHover,
@@ -126,6 +128,33 @@ describe('animations utility', () => {
       expect(tabContent.initial).toBeDefined();
       expect(tabContent.animate).toBeDefined();
       expect(tabContent.exit).toBeDefined();
+    });
+  });
+
+  describe('pageTransition variant', () => {
+    it('should have initial, animate, and exit states', () => {
+      expect(pageTransition.initial).toBeDefined();
+      expect(pageTransition.animate).toBeDefined();
+      expect(pageTransition.exit).toBeDefined();
+    });
+
+    it('should enter from below and exit upward with blur', () => {
+      expect(pageTransition.initial).toMatchObject({
+        opacity: 0,
+        y: 12,
+        filter: 'blur(6px)',
+      });
+      expect(pageTransition.exit).toMatchObject({
+        opacity: 0,
+        y: -8,
+        filter: 'blur(4px)',
+      });
+    });
+
+    it('should honor reduced motion with instant opacity-only states', () => {
+      expect(reducedPageTransition.initial).toMatchObject({ opacity: 0 });
+      expect(reducedPageTransition.animate).toMatchObject({ opacity: 1 });
+      expect(reducedPageTransition.exit).toMatchObject({ opacity: 0 });
     });
   });
 
