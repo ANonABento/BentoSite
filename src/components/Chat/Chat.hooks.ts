@@ -7,12 +7,11 @@ import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { generateId } from '@/lib/utils';
 import {
   clearStoredMessages,
-  getClearedMessage,
-  getDefaultMessage,
-  loadMessages,
-  saveMessages,
-} from './Chat.storage';
-import type { Message } from './Chat.types';
+  createDefaultMessage,
+  loadStoredMessages,
+  saveStoredMessages,
+} from './chat-storage';
+import type { Message } from './chat.types';
 
 interface UseChatSubmitOptions {
   inputRef: React.RefObject<HTMLInputElement | null>;
@@ -21,7 +20,9 @@ interface UseChatSubmitOptions {
 }
 
 export function useChatMessages() {
-  const [messages, setMessages] = useState<Message[]>(() => loadMessages() ?? [getDefaultMessage()]);
+  const [messages, setMessages] = useState<Message[]>(
+    () => loadStoredMessages() ?? [createDefaultMessage()]
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesRef = useRef(messages);
 
@@ -30,7 +31,7 @@ export function useChatMessages() {
   }, [messages]);
 
   useEffect(() => {
-    saveMessages(messages);
+    saveStoredMessages(messages);
   }, [messages]);
 
   const scrollToBottom = useCallback(() => {
@@ -65,7 +66,13 @@ export function useChatMessages() {
 
   const clearChat = useCallback(() => {
     clearStoredMessages();
-    const resetMessages = [getClearedMessage()];
+    const resetMessages = [
+      {
+        ...createDefaultMessage(),
+        id: generateId(),
+        content: `Chat cleared! I'm ${PORTFOLIO_DATA.personal.name}'s AI assistant. What would you like to know?`,
+      },
+    ];
     messagesRef.current = resetMessages;
     setMessages(resetMessages);
   }, []);

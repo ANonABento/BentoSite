@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { siteConfig } from '@/lib/site-config';
 import { ThemeProvider } from '@/lib/theme-context';
+import { PageTransition } from '@/components/ui/PageTransition';
 import { ToastProvider } from '@/components/ui/Toast';
 import './globals.css';
 
@@ -123,7 +124,7 @@ export default function RootLayout({
         </a>
         <ThemeProvider>
           <ToastProvider>
-            {children}
+            <PageTransition>{children}</PageTransition>
           </ToastProvider>
         </ThemeProvider>
         <Analytics />

@@ -4,7 +4,8 @@ import { RefObject } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useHasMounted } from '@/lib/use-has-mounted';
 import type { Message } from './chat.types';
-import { CopyButton, FeedbackButtons } from './ChatMessageActions';
+import { CopyButton } from './parts/CopyButton';
+import { FeedbackButtons } from './parts/FeedbackButtons';
 
 interface ChatMessageListProps {
   messages: Message[];

@@ -12,7 +12,14 @@ import type { ChatbotProps } from './chat.types';
 export default function Chatbot({ onReady, onViewResume, onSeeProjects }: ChatbotProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { success: toastSuccess } = useToast();
-  const { messages, setMessages, messagesEndRef, addAssistantMessage, clearChat } = useChatMessages();
+  const {
+    messages,
+    messagesRef,
+    setMessages,
+    messagesEndRef,
+    addAssistantMessage,
+    clearChat,
+  } = useChatMessages();
   const {
     input,
     setInput,
@@ -24,7 +31,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
     clearError,
   } = useChatSubmit({
     inputRef,
-    messages,
+    messagesRef,
     setMessages,
   });
 

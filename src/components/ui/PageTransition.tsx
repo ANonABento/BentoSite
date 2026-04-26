@@ -1,38 +1,56 @@
 'use client';
 
-import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import { easings } from '@/lib/animations';
+import { ANIMATION_DURATIONS } from '@/lib/constants';
+import type { Variants } from 'framer-motion';
 
-// Page transition variants
 const pageVariants: Variants = {
   initial: {
     opacity: 0,
-    y: 20,
-    scale: 0.98,
+    y: 12,
+    filter: 'blur(6px)',
   },
   animate: {
     opacity: 1,
     y: 0,
-    scale: 1,
+    filter: 'blur(0px)',
     transition: {
-      duration: 0.4,
-      ease: [0.25, 0.46, 0.45, 0.94], // Apple-style easing
-      staggerChildren: 0.05,
+      duration: ANIMATION_DURATIONS.SLOW / 1000,
+      ease: easings.apple,
     },
   },
   exit: {
     opacity: 0,
-    y: -20,
-    scale: 0.98,
+    y: -8,
+    filter: 'blur(4px)',
     transition: {
-      duration: 0.3,
-      ease: 'easeIn',
+      duration: ANIMATION_DURATIONS.NORMAL / 1000,
+      ease: easings.easeOutQuart,
     },
   },
 };
 
-// Content stagger variants for child elements
+const reducedPageVariants: Variants = {
+  initial: {
+    opacity: 0,
+  },
+  animate: {
+    opacity: 1,
+    transition: {
+      duration: ANIMATION_DURATIONS.INSTANT,
+    },
+  },
+  exit: {
+    opacity: 0,
+    transition: {
+      duration: ANIMATION_DURATIONS.INSTANT,
+    },
+  },
+};
+
 const contentVariants: Variants = {
   initial: {
     opacity: 0,
@@ -42,8 +60,8 @@ const contentVariants: Variants = {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.3,
-      ease: [0.25, 0.46, 0.45, 0.94],
+      duration: ANIMATION_DURATIONS.SLOW / 1000,
+      ease: easings.apple,
     },
   },
 };
@@ -53,37 +71,32 @@ interface PageTransitionProps {
   className?: string;
 }
 
-/**
- * PageTransition - Smooth page transition wrapper
- * 
- * Wraps page content with smooth fade/slide animations when navigating.
- * Uses AnimatePresence for exit animations and Framer Motion for enter animations.
- * 
- * Usage:
- * ```tsx
- * <PageTransition>
- *   <YourPageContent />
- * </PageTransition>
- * ```
- */
 export function PageTransition({ children, className = '' }: PageTransitionProps) {
   const pathname = usePathname();
+  const prefersReducedMotion = useReducedMotion() ?? false;
+  const variants = prefersReducedMotion ? reducedPageVariants : pageVariants;
+  const wrapperClassName = [
+    'relative min-h-screen bg-[var(--background)]',
+    className,
+  ].filter(Boolean).join(' ');
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={pathname}
-        variants={pageVariants}
+        variants={variants}
         initial="initial"
         animate="animate"
         exit="exit"
-        className={className}
+        className={wrapperClassName}
       >
         {children}
       </motion.div>
     </AnimatePresence>
   );
 }
+
+export const RouteTransitionProvider = PageTransition;
 
 /**
  * PageTransitionItem - Individual element that animates within a page transition
@@ -100,11 +113,13 @@ export function PageTransitionItem({
   className?: string;
   delay?: number;
 }) {
+  const prefersReducedMotion = useReducedMotion() ?? false;
+
   return (
     <motion.div
-      variants={contentVariants}
+      variants={prefersReducedMotion ? reducedPageVariants : contentVariants}
       className={className}
-      transition={{ delay }}
+      transition={{ delay: prefersReducedMotion ? 0 : delay }}
     >
       {children}
     </motion.div>
@@ -125,6 +140,8 @@ export function FadeTransition({
   className?: string;
   isVisible?: boolean;
 }) {
+  const prefersReducedMotion = useReducedMotion() ?? false;
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -132,7 +149,9 @@ export function FadeTransition({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{
+            duration: prefersReducedMotion ? 0 : ANIMATION_DURATIONS.NORMAL / 1000,
+          }}
           className={className}
         >
           {children}
@@ -156,6 +175,7 @@ export function SlideTransition({
   direction?: 'up' | 'down' | 'left' | 'right';
   isVisible?: boolean;
 }) {
+  const prefersReducedMotion = useReducedMotion() ?? false;
   const directionOffset = {
     up: { y: 30, x: 0 },
     down: { y: -30, x: 0 },
@@ -164,17 +184,18 @@ export function SlideTransition({
   };
 
   const offset = directionOffset[direction];
+  const initialOffset = prefersReducedMotion ? { x: 0, y: 0 } : offset;
 
   return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, ...offset }}
+          initial={{ opacity: 0, ...initialOffset }}
           animate={{ opacity: 1, x: 0, y: 0 }}
-          exit={{ opacity: 0, ...offset }}
-          transition={{ 
-            duration: 0.3, 
-            ease: [0.25, 0.46, 0.45, 0.94],
+          exit={{ opacity: 0, ...initialOffset }}
+          transition={{
+            duration: prefersReducedMotion ? 0 : ANIMATION_DURATIONS.SLOW / 1000,
+            ease: easings.apple,
           }}
           className={className}
         >
