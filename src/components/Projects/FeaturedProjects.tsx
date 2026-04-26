@@ -13,13 +13,13 @@ import {
 } from '@/lib/projects-data';
 import {
   filterProjectsByTechnology,
-  getFeaturedTechnologyFilters,
+  getFeaturedTechnologyFilterOptions,
 } from './FeaturedProjects.utils';
 import { FilterChip, SectionStat } from './FeaturedProjects.parts';
 import { PROJECT_CATEGORY_THEMES, PROJECT_STATUS_COPY } from './project-theme';
 
 const FEATURED_PROJECTS = getFeaturedProjects();
-const ALL_TECHNOLOGIES = getFeaturedTechnologyFilters(FEATURED_PROJECTS);
+const TECHNOLOGY_FILTERS = getFeaturedTechnologyFilterOptions(FEATURED_PROJECTS);
 
 interface FeaturedProjectsProps {
   onViewAll?: () => void;
@@ -65,24 +65,34 @@ export function FeaturedProjects({ onViewAll }: FeaturedProjectsProps) {
               label="Disciplines"
               value={`${new Set(FEATURED_PROJECTS.map((project) => project.category)).size}`}
             />
-            <SectionStat label="Stacks" value={`${ALL_TECHNOLOGIES.length}`} />
+            <SectionStat label="Stacks" value={`${TECHNOLOGY_FILTERS.length}`} />
           </div>
         </m.div>
 
-        <m.div variants={sectionItem} className="mb-8 flex flex-wrap gap-2">
+        <m.div
+          variants={sectionItem}
+          className="mb-8 flex flex-wrap gap-2"
+          role="group"
+          aria-label="Filter featured projects by technology"
+        >
           <FilterChip
             active={selectedTech === null}
+            label="Show all featured projects"
             onClick={() => setSelectedTech(null)}
           >
             All featured
           </FilterChip>
-          {ALL_TECHNOLOGIES.map((technology) => (
+          {TECHNOLOGY_FILTERS.map(({ technology, count }) => (
             <FilterChip
               key={technology}
               active={selectedTech === technology}
+              label={`Show featured projects using ${technology}`}
               onClick={() => setSelectedTech(selectedTech === technology ? null : technology)}
             >
-              {technology}
+              <span>{technology}</span>
+              <span className="rounded-full border border-current/20 px-1.5 text-[11px] leading-5 opacity-80">
+                {count}
+              </span>
             </FilterChip>
           ))}
         </m.div>
@@ -106,7 +116,7 @@ export function FeaturedProjects({ onViewAll }: FeaturedProjectsProps) {
         </m.div>
 
         {selectedTech ? (
-          <m.p variants={sectionItem} className="mt-4 text-sm text-[var(--text-muted)]">
+          <m.p variants={sectionItem} className="mt-4 text-sm text-[var(--text-muted)]" aria-live="polite">
             Showing {filteredProjects.length} featured project{filteredProjects.length === 1 ? '' : 's'} using {selectedTech}.
           </m.p>
         ) : null}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   filterProjectsByTechnology,
-  getFeaturedTechnologyFilters,
+  getFeaturedTechnologyFilterOptions,
 } from './FeaturedProjects.utils';
 import type { Project } from '@/lib/projects-data';
 
@@ -22,7 +22,7 @@ const projects = [
 
 describe('FeaturedProjects filtering', () => {
   it('returns every available technology tag without truncating the filter list', () => {
-    expect(getFeaturedTechnologyFilters(projects)).toEqual([
+    expect(getFeaturedTechnologyFilterOptions(projects).map((option) => option.technology)).toEqual([
       'C#',
       'OpenCV',
       'Python',
@@ -30,6 +30,38 @@ describe('FeaturedProjects filtering', () => {
       'ROS2',
       'Three.js',
       'Unity',
+    ]);
+  });
+
+  it('returns technology filters with matching featured project counts', () => {
+    expect(getFeaturedTechnologyFilterOptions(projects)).toEqual([
+      { technology: 'C#', count: 1 },
+      { technology: 'OpenCV', count: 1 },
+      { technology: 'Python', count: 2 },
+      { technology: 'PyTorch', count: 1 },
+      { technology: 'ROS2', count: 2 },
+      { technology: 'Three.js', count: 1 },
+      { technology: 'Unity', count: 1 },
+    ]);
+  });
+
+  it('counts each technology once per project when building filter totals', () => {
+    expect(
+      getFeaturedTechnologyFilterOptions([
+        ...projects,
+        {
+          id: 'duplicate-tags',
+          technologies: ['Python', 'Python', 'ROS2'],
+        },
+      ])
+    ).toEqual([
+      { technology: 'C#', count: 1 },
+      { technology: 'OpenCV', count: 1 },
+      { technology: 'Python', count: 3 },
+      { technology: 'PyTorch', count: 1 },
+      { technology: 'ROS2', count: 3 },
+      { technology: 'Three.js', count: 1 },
+      { technology: 'Unity', count: 1 },
     ]);
   });
 
@@ -42,5 +74,9 @@ describe('FeaturedProjects filtering', () => {
       'robot-arm',
       'ar-robot',
     ]);
+  });
+
+  it('returns no projects for an unavailable technology tag', () => {
+    expect(filterProjectsByTechnology(projects, 'React')).toEqual([]);
   });
 });

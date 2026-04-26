@@ -3,16 +3,18 @@ import type { ReactNode } from 'react';
 interface FilterChipProps {
   active: boolean;
   children: ReactNode;
+  label?: string;
   onClick: () => void;
 }
 
-export function FilterChip({ active, children, onClick }: FilterChipProps) {
+export function FilterChip({ active, children, label, onClick }: FilterChipProps) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+      aria-label={label}
+      className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
         active
           ? 'bg-[var(--interactive)] text-[var(--text-on-accent)]'
           : 'border border-[var(--border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
