@@ -105,7 +105,7 @@ export function MobileScrollView({
             if (renderCard) {
               return (
                 <div key={card.id} style={wrapperStyle}>
-                  {renderCard(card, position, theme, false, () => onCardSelect?.(card))}
+                  {renderCard(card, position, theme, false, () => onCardSelect?.(card), index)}
                 </div>
               );
             }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
-import { motion, useMotionValue, useSpring, PanInfo } from 'framer-motion';
+import { motion, useMotionValue, useReducedMotion, useSpring, PanInfo } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import {
   Zap,
@@ -21,6 +21,7 @@ import type { BentoCardConfig, CardColor, CardPosition } from '../BentoHub.types
 import { PHYSICS } from '../BentoHub.config';
 import type { Vector2 } from '../physics';
 import { usePhysicsContext } from './BentoGrid';
+import { bentoCardEntrance } from '@/lib/animations';
 
 interface BentoCardProps {
   config: BentoCardConfig;
@@ -101,6 +102,7 @@ function getCardColorStyles(color: CardColor): CardColorStyles {
 export function BentoCard({ config, homePosition, bestScore, index, registerForceUpdater }: BentoCardProps) {
   const router = useRouter();
   const { engine } = usePhysicsContext();
+  const prefersReducedMotion = useReducedMotion() ?? false;
   const [isDragging, setIsDragging] = useState(false);
   const offsetRef = useRef({ x: 0, y: 0 });
 
@@ -210,11 +212,12 @@ export function BentoCard({ config, homePosition, bestScore, index, registerForc
         height: homePosition.height,
       }}
       className={`cursor-grab active:cursor-grabbing ${isDragging ? 'z-50' : 'z-10'}`}
-      initial={{ opacity: 0, scale: 0.94 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.35, delay: index * 0.035, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={{ scale: 1.018 }}
-      whileTap={{ scale: 0.975 }}
+      custom={index}
+      initial={prefersReducedMotion ? false : 'hidden'}
+      animate={prefersReducedMotion ? undefined : 'visible'}
+      variants={prefersReducedMotion ? undefined : bentoCardEntrance}
+      whileHover={prefersReducedMotion ? undefined : { scale: 1.018 }}
+      whileTap={prefersReducedMotion ? undefined : { scale: 0.975 }}
     >
       <div
         className="pg-surface-glass pg-hover-border-strong group relative h-full w-full overflow-hidden rounded-2xl transition-all duration-300"

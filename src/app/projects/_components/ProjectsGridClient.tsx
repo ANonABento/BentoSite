@@ -42,7 +42,8 @@ function renderProjectCard(
   position: CardPosition,
   theme: ThemeConfig,
   isFocused?: boolean,
-  onClick?: () => void
+  onClick?: () => void,
+  entranceIndex = 0
 ): ReactNode {
   if (card.type !== 'project') {
     return null;
@@ -55,6 +56,7 @@ function renderProjectCard(
       theme={theme}
       isFocused={isFocused}
       onClick={onClick}
+      entranceIndex={entranceIndex}
     />
   );
 }

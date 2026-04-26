@@ -26,6 +26,11 @@ import {
   gentleSpring,
   sectionStagger,
   sectionItem,
+  scrollReveal,
+  reducedScrollReveal,
+  bentoCardEntrance,
+  bentoSlotReveal,
+  unifiedGridCardEntranceDelay,
 } from '../animations';
 
 describe('animations utility', () => {
@@ -239,6 +244,81 @@ describe('animations utility', () => {
     it('sectionItem should have blur effect', () => {
       expect(sectionItem.hidden).toMatchObject({ filter: 'blur(8px)' });
       expect(sectionItem.visible).toMatchObject({ filter: 'blur(0px)' });
+    });
+  });
+
+  describe('scroll reveal variants', () => {
+    it('scrollReveal animates from a blurred offset with caller-provided delay', () => {
+      expect(scrollReveal.hidden).toMatchObject({
+        opacity: 0,
+        y: 28,
+        filter: 'blur(8px)',
+      });
+
+      const visible = (scrollReveal.visible as (delay?: number) => {
+        opacity: number;
+        y: number;
+        filter: string;
+        transition: { delay: number };
+      })(0.08);
+
+      expect(visible).toMatchObject({
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+      });
+      expect(visible.transition.delay).toBe(0.08);
+    });
+
+    it('reducedScrollReveal keeps the reveal opacity-only', () => {
+      expect(reducedScrollReveal.hidden).toMatchObject({ opacity: 0 });
+
+      const visible = (reducedScrollReveal.visible as (delay?: number) => {
+        opacity: number;
+        y?: number;
+        filter?: string;
+      })();
+
+      expect(visible.opacity).toBe(1);
+      expect(visible.y).toBeUndefined();
+      expect(visible.filter).toBeUndefined();
+    });
+  });
+
+  describe('bento entrance variants', () => {
+    it('stagger bento card entrances by visible index', () => {
+      const visible = (bentoCardEntrance.visible as (index?: number) => {
+        opacity: number;
+        scale: number;
+        transition: { delay: number };
+      })(3);
+
+      expect(bentoCardEntrance.hidden).toMatchObject({ opacity: 0, scale: 0.92 });
+      expect(visible.opacity).toBe(1);
+      expect(visible.scale).toBe(1);
+      expect(visible.transition.delay).toBeCloseTo(0.135);
+    });
+
+    it('stagger bento slot reveals with shorter timing than cards', () => {
+      const visible = (bentoSlotReveal.visible as (index?: number) => {
+        opacity: number;
+        scale: number;
+        transition: { delay: number; duration: number };
+      })(4);
+
+      expect(bentoSlotReveal.hidden).toMatchObject({ opacity: 0, scale: 0.96 });
+      expect(visible.opacity).toBe(1);
+      expect(visible.scale).toBe(1);
+      expect(visible.transition.delay).toBeCloseTo(0.14);
+      expect(visible.transition.duration).toBeLessThan(0.42);
+    });
+  });
+
+  describe('unified grid card entrance delay', () => {
+    it('stagger cards by visible index and caps delayed entrances', () => {
+      expect(unifiedGridCardEntranceDelay()).toBe(0);
+      expect(unifiedGridCardEntranceDelay(3)).toBeCloseTo(0.075);
+      expect(unifiedGridCardEntranceDelay(12)).toBeCloseTo(0.2);
     });
   });
 });

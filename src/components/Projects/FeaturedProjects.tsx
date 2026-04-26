@@ -108,7 +108,9 @@ export function FeaturedProjects({ onViewAll }: FeaturedProjectsProps) {
             <m.article
               key={project.id}
               variants={staggerItem}
-              className="rounded-3xl border border-[var(--border)] bg-[var(--glass-bg)] p-5"
+              whileHover={{ y: -4 }}
+              transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="card-hover rounded-3xl border border-[var(--border)] bg-[var(--glass-bg)] p-5"
             >
               <CompactProjectCard project={project} onViewAll={onViewAll} />
             </m.article>
@@ -139,7 +141,11 @@ function SpotlightProjectCard({
   const mediaTypes = getProjectMediaTypes(project);
 
   return (
-    <div className="overflow-hidden rounded-[2rem] border border-[var(--border)] bg-[var(--glass-bg)] shadow-[0_24px_60px_rgba(0,0,0,0.24)]">
+    <m.div
+      className="card-hover overflow-hidden rounded-[2rem] border border-[var(--border)] bg-[var(--glass-bg)] shadow-[0_24px_60px_rgba(0,0,0,0.24)]"
+      whileHover={{ y: -3 }}
+      transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+    >
       <div className="grid lg:grid-cols-[1.25fr_1fr]">
         <div className="relative min-h-[320px] border-b border-[var(--border)] lg:border-b-0 lg:border-r">
           {thumbnail ? (
@@ -223,7 +229,7 @@ function SpotlightProjectCard({
           </div>
         </div>
       </div>
-    </div>
+    </m.div>
   );
 }
 

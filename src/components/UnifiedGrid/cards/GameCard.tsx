@@ -12,7 +12,7 @@
  */
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   Zap,
   Keyboard,
@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import type { GameCardData, CardPosition, ThemeConfig } from '../UnifiedGrid.types';
 import { ANIMATION } from '../UnifiedGrid.constants';
+import { unifiedGridCardEntranceDelay } from '@/lib/animations';
 
 // =============================================================================
 // ICON MAPPING
@@ -105,6 +106,8 @@ export interface GameCardProps {
   onClick?: () => void;
   /** Whether the card has keyboard focus */
   isFocused?: boolean;
+  /** Visible-order index used for entrance staggering */
+  entranceIndex?: number;
 }
 
 // =============================================================================
@@ -118,8 +121,10 @@ export function GameCard({
   index = 0,
   onClick,
   isFocused = false,
+  entranceIndex = 0,
 }: GameCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const prefersReducedMotion = useReducedMotion() ?? false;
   // Load best score from localStorage lazily (synchronous on first render).
   // SSR is disabled for this page, so window is available when this renders.
   const [bestScore] = useState<string | null>(() => {
@@ -139,7 +144,7 @@ export function GameCard({
         width: position.width,
         height: position.height,
       }}
-      initial={{ opacity: 0, scale: 0.92, rotate: position.rotation }}
+      initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.92, rotate: position.rotation }}
       animate={{
         opacity: 1,
         scale: 1,
@@ -147,14 +152,15 @@ export function GameCard({
         y: position.y,
         rotate: position.rotation,
       }}
-      exit={{ opacity: 0, scale: 0.92 }}
+      exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
       transition={{
         type: 'spring',
         stiffness: ANIMATION.SPRING.stiffness,
         damping: ANIMATION.SPRING.damping,
+        delay: prefersReducedMotion ? 0 : unifiedGridCardEntranceDelay(entranceIndex),
       }}
-      whileHover={{ scale: 1.015, y: -2 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={prefersReducedMotion ? undefined : { scale: 1.015, y: -2 }}
+      whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       onClick={onClick}

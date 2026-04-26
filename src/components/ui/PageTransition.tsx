@@ -21,7 +21,7 @@ export function PageTransition({ children, className = '' }: PageTransitionProps
   const prefersReducedMotion = useReducedMotion() ?? false;
   const variants = prefersReducedMotion ? reducedPageTransition : pageTransition;
   const wrapperClassName = [
-    'relative min-h-screen bg-[var(--background)]',
+    'relative min-h-screen bg-[var(--background)] will-change-[opacity,transform,filter]',
     className,
   ].filter(Boolean).join(' ');
 

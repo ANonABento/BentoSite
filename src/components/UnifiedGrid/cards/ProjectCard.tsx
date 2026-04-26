@@ -12,10 +12,11 @@
  */
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import type { ProjectCardData, CardPosition, ThemeConfig } from '../UnifiedGrid.types';
 import { ANIMATION } from '../UnifiedGrid.constants';
+import { unifiedGridCardEntranceDelay } from '@/lib/animations';
 import {
   Model3DIcon,
   GitHubIcon,
@@ -33,6 +34,8 @@ export interface ProjectCardProps {
   onClick?: () => void;
   /** Whether the card has keyboard focus */
   isFocused?: boolean;
+  /** Visible-order index used for entrance staggering */
+  entranceIndex?: number;
 }
 
 // =============================================================================
@@ -46,10 +49,17 @@ const BLUR_PLACEHOLDER =
 // STATUS BADGE
 // =============================================================================
 
-function StatusBadge({ status }: { status?: string }) {
+type ProjectStatus = ProjectCardData['status'];
+
+function StatusBadge({ status }: { status?: ProjectStatus }) {
   if (!status) return null;
 
-  const config = {
+  const statusConfig: Record<NonNullable<ProjectStatus>, {
+    label: string;
+    bg: string;
+    text: string;
+    border: string;
+  }> = {
     Completed: {
       label: 'READY',
       bg: 'bg-emerald-500/10',
@@ -68,12 +78,8 @@ function StatusBadge({ status }: { status?: string }) {
       text: 'text-gray-400',
       border: 'border-gray-500/30',
     },
-  }[status] || {
-    label: status.toUpperCase(),
-    bg: 'bg-gray-500/10',
-    text: 'text-gray-400',
-    border: 'border-gray-500/30',
   };
+  const config = statusConfig[status];
 
   return (
     <span
@@ -121,9 +127,11 @@ export function ProjectCard({
   theme,
   onClick,
   isFocused = false,
+  entranceIndex = 0,
 }: ProjectCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const prefersReducedMotion = useReducedMotion() ?? false;
   const isHighlighted = isHovered || isFocused;
 
   const isLargeCard = position.size === '2x2' || position.size === '2x1';
@@ -135,7 +143,7 @@ export function ProjectCard({
         width: position.width,
         height: position.height,
       }}
-      initial={{ opacity: 0, scale: 0.92 }}
+      initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.92 }}
       animate={{
         opacity: 1,
         scale: 1,
@@ -143,13 +151,14 @@ export function ProjectCard({
         y: position.y,
         rotate: position.rotation,
       }}
-      exit={{ opacity: 0, scale: 0.92 }}
+      exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
       transition={{
         type: 'spring',
         stiffness: ANIMATION.SPRING.stiffness,
         damping: ANIMATION.SPRING.damping,
+        delay: prefersReducedMotion ? 0 : unifiedGridCardEntranceDelay(entranceIndex),
       }}
-      whileHover={{ scale: 1.015, y: -2 }}
+      whileHover={prefersReducedMotion ? undefined : { scale: 1.015, y: -2 }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       onClick={onClick}

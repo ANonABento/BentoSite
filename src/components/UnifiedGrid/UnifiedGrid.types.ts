@@ -110,6 +110,7 @@ export type RenderCard = (
   theme: ThemeConfig,
   isFocused?: boolean,
   onClick?: () => void,
+  entranceIndex?: number,
 ) => ReactNode;
 
 export interface ViewportBounds {

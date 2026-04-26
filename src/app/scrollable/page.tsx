@@ -13,7 +13,7 @@ import {
   SkillsSkeleton,
   TimelineSectionSkeleton,
 } from '@/components/ui/Skeleton';
-import { LazyPanelFallback } from '@/components/ui';
+import { LazyPanelFallback, ScrollReveal } from '@/components/ui';
 import type { ChatFunctions } from '@/components/Chat';
 import { ChatPanel } from './layout-parts/ChatPanel';
 import { HeroSection } from './layout-parts/HeroSection';
@@ -131,16 +131,24 @@ export default function ScrollableLayout() {
           prefersReducedMotion={prefersReducedMotion}
         />
 
-        <AboutSection />
-        <FeaturedProjects onViewAll={() => setIsProjectsOpen(true)} />
-        <TimelineSection />
+        <ScrollReveal>
+          <AboutSection />
+        </ScrollReveal>
+        <ScrollReveal delay={0.04}>
+          <FeaturedProjects onViewAll={() => setIsProjectsOpen(true)} />
+        </ScrollReveal>
+        <ScrollReveal delay={0.04}>
+          <TimelineSection />
+        </ScrollReveal>
 
-        <SkillsSectionWrapper
-          SkillsSection={SkillsSection}
-          instantTransition={instantTransition}
-          onAskAboutSkill={handleAskAboutSkill}
-          prefersReducedMotion={prefersReducedMotion}
-        />
+        <ScrollReveal delay={0.04}>
+          <SkillsSectionWrapper
+            SkillsSection={SkillsSection}
+            instantTransition={instantTransition}
+            onAskAboutSkill={handleAskAboutSkill}
+            prefersReducedMotion={prefersReducedMotion}
+          />
+        </ScrollReveal>
 
         <ScrollableFooter onScrollToSection={scrollToSection} />
 

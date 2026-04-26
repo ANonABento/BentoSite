@@ -129,7 +129,7 @@ export function DesktopCanvasView({
         }}
       >
         <AnimatePresence mode="popLayout">
-          {Array.from(cardQueue.visible.entries()).map(([cardId, position]) => {
+          {Array.from(cardQueue.visible.entries()).map(([cardId, position], index) => {
             const cardData = cards.find((card) => card.id === cardId);
             if (!cardData) return null;
 
@@ -138,7 +138,14 @@ export function DesktopCanvasView({
             if (renderCard) {
               return (
                 <Fragment key={cardId}>
-                  {renderCard(cardData, position, theme, isFocused, () => handleCardClick(cardData))}
+                  {renderCard(
+                    cardData,
+                    position,
+                    theme,
+                    isFocused,
+                    () => handleCardClick(cardData),
+                    index
+                  )}
                 </Fragment>
               );
             }
