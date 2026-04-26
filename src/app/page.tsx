@@ -11,10 +11,13 @@ import {
 } from '@/components/ui/KeyboardShortcutsHelp';
 import { LazyPanelFallback } from '@/components/ui';
 import { ViewerSkeleton } from '@/components/Viewfinder/ViewerSkeleton';
-
-const BOOT_SESSION_KEY = 'bentOS.bootComplete';
-
-type BootState = 'booting' | 'exiting' | 'complete';
+import {
+  type BootState,
+  getNavigationWasReload,
+  readBootComplete,
+  resolveBootState,
+  writeBootComplete,
+} from '@/lib/boot-session';
 
 const Viewfinder = dynamic(
   () => import('@/components/Viewfinder').then((mod) => mod.Viewfinder),
@@ -50,44 +53,17 @@ function getDashboardQuerySnapshot() {
   return new URLSearchParams(window.location.search).get('view') === 'dashboard';
 }
 
-function isHardReload() {
-  const navigation = performance.getEntriesByType('navigation')[0] as
-    | PerformanceNavigationTiming
-    | undefined;
-
-  return navigation?.type === 'reload';
+function subscribeToBootStateChanges(onStoreChange: () => void) {
+  window.addEventListener('popstate', onStoreChange);
+  return () => window.removeEventListener('popstate', onStoreChange);
 }
 
-function hasCompletedBootInSession() {
-  try {
-    return window.sessionStorage.getItem(BOOT_SESSION_KEY) === 'true';
-  } catch {
-    return false;
-  }
-}
-
-function markBootCompleteInSession() {
-  try {
-    window.sessionStorage.setItem(BOOT_SESSION_KEY, 'true');
-  } catch {
-    // Storage can be unavailable in private or restricted browsing modes.
-  }
-}
-
-function getInitialBootState(): BootState {
-  if (typeof window === 'undefined') {
-    return 'booting';
-  }
-
-  if (getDashboardQuerySnapshot()) {
-    return 'complete';
-  }
-
-  if (isHardReload()) {
-    return 'booting';
-  }
-
-  return hasCompletedBootInSession() ? 'complete' : 'booting';
+function getBootStateSnapshot(): BootState {
+  return resolveBootState({
+    hasCompletedBoot: readBootComplete(window.sessionStorage),
+    isDashboardView: getDashboardQuerySnapshot(),
+    isHardReload: getNavigationWasReload(window.performance),
+  });
 }
 
 export default function Home() {
@@ -96,20 +72,27 @@ export default function Home() {
     getDashboardQuerySnapshot,
     () => false
   );
-  const [bootState, setBootState] = useState<BootState>(getInitialBootState);
+  const sessionBootState = useSyncExternalStore(
+    subscribeToBootStateChanges,
+    getBootStateSnapshot,
+    () => 'checking'
+  );
+  const [bootStateOverride, setBootStateOverride] = useState<BootState | null>(null);
+  const bootState = bootStateOverride ?? sessionBootState;
   const { isOpen: isShortcutsOpen, close: closeShortcuts } = useKeyboardShortcutsHelp();
 
   const handleBootExiting = useCallback(() => {
-    setBootState('exiting');
+    setBootStateOverride('exiting');
   }, []);
 
   const handleBootComplete = useCallback(() => {
-    markBootCompleteInSession();
-    setBootState('complete');
+    writeBootComplete(window.sessionStorage);
+    setBootStateOverride('complete');
   }, []);
 
-  const showBoot = !startsInDashboard && bootState !== 'complete';
-  const dashboardReady = startsInDashboard || bootState !== 'booting';
+  const showBoot = !startsInDashboard && bootState !== 'checking' && bootState !== 'complete';
+  const dashboardReady =
+    startsInDashboard || (bootState !== 'checking' && bootState !== 'booting');
 
   return (
     <LazyMotion features={domAnimation}>
