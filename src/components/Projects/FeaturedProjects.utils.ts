@@ -13,7 +13,7 @@ export function getFeaturedTechnologyFilterOptions(
   const counts = new Map<string, number>();
 
   for (const project of projects) {
-    for (const technology of project.technologies) {
+    for (const technology of new Set(project.technologies)) {
       counts.set(technology, (counts.get(technology) ?? 0) + 1);
     }
   }

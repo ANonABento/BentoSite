@@ -46,6 +46,26 @@ describe('FeaturedProjects filtering', () => {
     ]);
   });
 
+  it('counts each technology once per project when building filter totals', () => {
+    expect(
+      getFeaturedTechnologyFilterOptions([
+        ...projects,
+        {
+          id: 'duplicate-tags',
+          technologies: ['Python', 'Python', 'ROS2'],
+        },
+      ])
+    ).toEqual([
+      { technology: 'C#', count: 1 },
+      { technology: 'OpenCV', count: 1 },
+      { technology: 'Python', count: 3 },
+      { technology: 'PyTorch', count: 1 },
+      { technology: 'ROS2', count: 3 },
+      { technology: 'Three.js', count: 1 },
+      { technology: 'Unity', count: 1 },
+    ]);
+  });
+
   it('keeps all projects visible when no technology is selected', () => {
     expect(filterProjectsByTechnology(projects, null)).toEqual(projects);
   });
@@ -55,5 +75,9 @@ describe('FeaturedProjects filtering', () => {
       'robot-arm',
       'ar-robot',
     ]);
+  });
+
+  it('returns no projects for an unavailable technology tag', () => {
+    expect(filterProjectsByTechnology(projects, 'React')).toEqual([]);
   });
 });
