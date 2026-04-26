@@ -11,6 +11,13 @@ import {
 } from '@/components/ui/KeyboardShortcutsHelp';
 import { LazyPanelFallback } from '@/components/ui';
 import { ViewerSkeleton } from '@/components/Viewfinder/ViewerSkeleton';
+import {
+  type BootState,
+  createHardReloadBootTracker,
+  readBootComplete,
+  resolveBootState,
+  writeBootComplete,
+} from '@/lib/boot-session';
 
 const Viewfinder = dynamic(
   () => import('@/components/Viewfinder').then((mod) => mod.Viewfinder),
@@ -33,12 +40,14 @@ const SkillsSection = dynamic(
   { ssr: false }
 );
 
-function subscribeToUrlChanges(onStoreChange: () => void) {
+const hardReloadBootTracker = createHardReloadBootTracker();
+
+function subscribeToLocationChanges(onStoreChange: () => void): () => void {
   window.addEventListener('popstate', onStoreChange);
   return () => window.removeEventListener('popstate', onStoreChange);
 }
 
-function getDashboardQuerySnapshot() {
+function getDashboardQuerySnapshot(): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
@@ -46,25 +55,42 @@ function getDashboardQuerySnapshot() {
   return new URLSearchParams(window.location.search).get('view') === 'dashboard';
 }
 
+function getBootStateSnapshot(): BootState {
+  return resolveBootState({
+    hasCompletedBoot: readBootComplete(window.sessionStorage),
+    isDashboardView: getDashboardQuerySnapshot(),
+    isHardReload: hardReloadBootTracker.getPending(window.performance),
+  });
+}
+
 export default function Home() {
   const startsInDashboard = useSyncExternalStore(
-    subscribeToUrlChanges,
+    subscribeToLocationChanges,
     getDashboardQuerySnapshot,
     () => false
   );
-  const [bootState, setBootState] = useState<'booting' | 'exiting' | 'complete'>('booting');
+  const sessionBootState = useSyncExternalStore(
+    subscribeToLocationChanges,
+    getBootStateSnapshot,
+    () => 'checking'
+  );
+  const [bootStateOverride, setBootStateOverride] = useState<BootState | null>(null);
+  const bootState = bootStateOverride ?? sessionBootState;
   const { isOpen: isShortcutsOpen, close: closeShortcuts } = useKeyboardShortcutsHelp();
 
   const handleBootExiting = useCallback(() => {
-    setBootState('exiting');
+    setBootStateOverride('exiting');
   }, []);
 
   const handleBootComplete = useCallback(() => {
-    setBootState('complete');
+    writeBootComplete(window.sessionStorage);
+    hardReloadBootTracker.markHandled();
+    setBootStateOverride('complete');
   }, []);
 
-  const showBoot = !startsInDashboard && bootState !== 'complete';
-  const dashboardReady = startsInDashboard || bootState !== 'booting';
+  const showBoot = !startsInDashboard && bootState !== 'checking' && bootState !== 'complete';
+  const dashboardReady =
+    startsInDashboard || (bootState !== 'checking' && bootState !== 'booting');
 
   return (
     <LazyMotion features={domAnimation}>
