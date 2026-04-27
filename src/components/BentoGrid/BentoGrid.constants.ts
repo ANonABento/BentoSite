@@ -22,11 +22,23 @@ export const GRID: GridLayoutConfig & {
   spawnBuffer: number;
   /** Buffer zone for despawning (pixels beyond viewport). */
   despawnBuffer: number;
+  /** @deprecated Use cellSize. */
+  CELL_SIZE: number;
+  /** @deprecated Use gap. */
+  GAP: number;
+  /** @deprecated Use spawnBuffer. */
+  SPAWN_BUFFER: number;
+  /** @deprecated Use despawnBuffer. */
+  DESPAWN_BUFFER: number;
 } = {
   cellSize: 180,
   gap: 12,
   spawnBuffer: 100,
   despawnBuffer: 200,
+  CELL_SIZE: 180,
+  GAP: 12,
+  SPAWN_BUFFER: 100,
+  DESPAWN_BUFFER: 200,
 };
 
 export const CARD_SIZES: Record<CardSize, { cols: number; rows: number }> = {
@@ -61,6 +73,16 @@ export const CARD_POOL = {
   initialStagger: 50,
   /** Queue policy for cards waiting to respawn. */
   policy: 'FIFO',
+  /** @deprecated Use spawnDelay. */
+  SPAWN_DELAY: 100,
+  /** @deprecated Use maxVisible. */
+  MAX_VISIBLE: 30,
+  /** @deprecated Use initialSpawnCount. */
+  INITIAL_SPAWN_COUNT: 12,
+  /** @deprecated Use initialStagger. */
+  INITIAL_STAGGER: 50,
+  /** @deprecated Use policy. */
+  POLICY: 'FIFO',
 } as const;
 
 /** @deprecated Use CARD_POOL. Kept during the refactor bridge. */
@@ -71,6 +93,15 @@ export const QUEUE = CARD_POOL;
 // =============================================================================
 
 export const CAMERA = {
+  DEFAULT: { x: 0, y: 0, zoom: 1 },
+  MIN_ZOOM: 0.3,
+  MAX_ZOOM: 2.5,
+  ZOOM_SENSITIVITY: 0.001,
+  PAN_SPEED: 15,
+  MOMENTUM_FRICTION: 0.92,
+  MIN_VELOCITY: 0.5,
+  SPRING_STIFFNESS: 200,
+  SPRING_DAMPING: 30,
   minZoom: 0.3,
   maxZoom: 2.5,
   defaultZoom: 1,
@@ -139,6 +170,14 @@ export const SEARCH_CARD = {
   STICKY_THRESHOLD: 60,
   /** Padding from viewport edge when stuck/collapsed. */
   EDGE_PADDING: 16,
+  /** @deprecated Use STICKY_THRESHOLD. */
+  threshold: 60,
+  /** @deprecated Use EDGE_PADDING. */
+  edgePadding: 16,
+  /** @deprecated Use EXPANDED_WIDTH. */
+  cardWidth: SEARCH_CARD_DIMENSIONS.width,
+  /** @deprecated Use EXPANDED_HEIGHT. */
+  cardHeight: SEARCH_CARD_DIMENSIONS.height,
   /** Extra padding around clamped search card for layout exclusion. */
   EXCLUSION_PADDING: 24,
   expandedWidth: SEARCH_CARD_DIMENSIONS.width,
@@ -152,8 +191,6 @@ export const SEARCH_CARD = {
   compressionDistance: 180,
   /** Distance from viewport edge to trigger sticky behavior (px). */
   stickyThreshold: 60,
-  /** Padding from viewport edge when stuck/collapsed. */
-  edgePadding: 16,
   /** Extra padding around clamped search card for layout exclusion. */
   exclusionPadding: 24,
   spring: {
@@ -204,6 +241,14 @@ export const PERFORMANCE = {
   throttleInterval: 16,
   lowPerfMaxCards: 15,
   lowFpsThreshold: 30,
+  MAX_VISIBLE_CARDS: 50,
+  MAX_VISIBLE_CARDS_MOBILE: 25,
+  PHYSICS_UPDATE_RATE: 16,
+  ENGINE_TICK_RATE: 16,
+  MAX_PHYSICS_BODIES: 100,
+  THROTTLE_INTERVAL: 16,
+  LOW_PERF_MAX_CARDS: 15,
+  LOW_FPS_THRESHOLD: 30,
 } as const;
 
 // =============================================================================
@@ -268,6 +313,11 @@ export const MOBILE = {
   cardMaxWidth: 400,
   scrollGap: 16,
   scrollPadding: 24,
+  BREAKPOINT: 768,
+  CARD_WIDTH_PERCENT: 0.9,
+  CARD_MAX_WIDTH: 400,
+  SCROLL_GAP: 16,
+  SCROLL_PADDING: 24,
 } as const;
 
 // =============================================================================
@@ -290,6 +340,9 @@ export const INTERACTION = {
   dragThreshold: 5,
   clickMaxDuration: 200,
   touchTargetMin: 44,
+  DRAG_THRESHOLD: 5,
+  CLICK_MAX_DURATION: 200,
+  TOUCH_TARGET_MIN: 44,
 } as const;
 
 // =============================================================================
@@ -318,6 +371,23 @@ export const KEYBOARD = {
   cycle: ['Tab'],
   zoomIn: ['+', '='],
   zoomOut: ['-', '_'],
+  PAN_UP: ['w', 'W'],
+  PAN_DOWN: ['s', 'S'],
+  PAN_LEFT: ['a', 'A'],
+  PAN_RIGHT: ['d', 'D'],
+  CARD_UP: ['ArrowUp'],
+  CARD_DOWN: ['ArrowDown'],
+  CARD_LEFT: ['ArrowLeft'],
+  CARD_RIGHT: ['ArrowRight'],
+  SELECT: ['Enter', ' '],
+  BLUR: ['Escape'],
+  RESET: ['r', 'R'],
+  BACK: ['Backspace'],
+  CLOSE: ['Escape'],
+  SEARCH: ['/', 'f', 'F'],
+  CYCLE: ['Tab'],
+  ZOOM_IN: ['+', '='],
+  ZOOM_OUT: ['-', '_'],
 } as const;
 
 // =============================================================================

@@ -133,6 +133,10 @@ export interface NavigationState {
 }
 
 export interface ViewportBounds extends Size {
+  /** Canvas-space left edge alias used by InfiniteGrid. */
+  x: number;
+  /** Canvas-space top edge alias used by InfiniteGrid. */
+  y: number;
   /** Canvas-space left edge. */
   left: number;
   /** Canvas-space top edge. */
@@ -152,7 +156,12 @@ export type CardSize = '1x1' | '2x1' | '1x2' | '2x2';
 export interface GridLayoutConfig {
   cellSize: number;
   gap: number;
+  /** @deprecated Column count is removed from BentoGrid layout planning. */
+  columns?: number;
 }
+
+/** @deprecated Use GridLayoutConfig for layout constants or BentoGridProps for component props. */
+export type GridConfig = GridLayoutConfig;
 
 export interface CardPosition extends Point, Size {
   /** Rotation in degrees. */
@@ -165,7 +174,7 @@ export interface CardLayout extends CardPosition {
   id: string;
 }
 
-export interface ExclusionZone extends Bounds {}
+export type ExclusionZone = Bounds;
 
 export type RenderCard = (
   card: CardData,
@@ -256,6 +265,8 @@ export interface SearchCardState {
   width: number;
   /** Current rendered height after proportional compression. */
   height: number;
+  /** Current rendered size, kept for InfiniteGrid sticky-state compatibility. */
+  size: Size;
   /** Current search term. */
   searchTerm: string;
   /** Selected category filter (null = all). */
@@ -331,6 +342,20 @@ export interface BentoGridProps {
   renderCard?: RenderCard;
 }
 
+/** @deprecated Use BentoGridProps. Kept during the refactor bridge. */
+export interface GridState {
+  /** Current visible cards with positions. */
+  visibleCards: Map<string, CardPosition>;
+  /** Cards in the FIFO pool waiting to spawn. */
+  queuedCards: PooledCard[];
+  /** Search/filter state. */
+  search: SearchCardState;
+  /** Navigation/camera state. */
+  navigation: NavigationState;
+  /** Whether grid is in mobile mode. */
+  isMobile: boolean;
+}
+
 export interface SearchCardProps {
   /** Position to render at in canvas coordinates. */
   position: Point;
@@ -341,6 +366,8 @@ export interface SearchCardProps {
   /** Card dimensions. */
   cardSize: Size;
   onBack?: () => void;
+  /** @deprecated Use onBack. */
+  onClose?: () => void;
   onReset: () => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
@@ -348,12 +375,16 @@ export interface SearchCardProps {
   selectedCategory: string | null;
   onCategoryChange: (category: string | null) => void;
   totalCount: number;
+  /** @deprecated Use totalCount. */
+  projectCount?: number;
   visibleCount: number;
   theme: ThemeConfig;
 }
 
 export interface ProjectCardProps {
   card: ProjectCardData;
+  /** @deprecated Use card.project when the original portfolio project is needed. */
+  project?: Project;
   layout: CardLayout;
   /** Position from physics world. */
   physicsPosition?: PhysicsPosition;
@@ -387,6 +418,12 @@ export interface UseCameraReturn {
   /** Gesture binding for canvas element. */
   bind: () => GridNavigationBindings;
 }
+
+/** @deprecated Use UseCameraReturn. */
+export type UseGridNavigationReturn = UseCameraReturn;
+
+/** @deprecated Use UseCameraReturn. */
+export type UseCanvasReturn = UseCameraReturn;
 
 export interface UseViewportReturn {
   /** Current viewport bounds in canvas coordinates. */
