@@ -31,4 +31,29 @@ describe('calculateLayoutWithExclusion', () => {
       expect(rectsOverlap(position, paddedExclusion, 0)).toBe(false);
     });
   });
+
+  it('keeps fallback placements non-overlapping when the exclusion zone is huge', () => {
+    const exclusionZone = {
+      x: -5000,
+      y: -5000,
+      width: 10000,
+      height: 10000,
+      padding: 0,
+    };
+    const positions = Array.from(
+      calculateLayoutWithExclusion(cards, exclusionZone, 0).values(),
+    );
+
+    expect(positions).toHaveLength(cards.length);
+
+    positions.forEach((position) => {
+      expect(rectsOverlap(position, exclusionZone, 0)).toBe(false);
+    });
+
+    for (let i = 0; i < positions.length; i++) {
+      for (let j = i + 1; j < positions.length; j++) {
+        expect(rectsOverlap(positions[i], positions[j])).toBe(false);
+      }
+    }
+  });
 });

@@ -125,6 +125,12 @@ export function usePhysicsWorld({
     const existing = engine.getBody(layout.id);
     if (!existing) {
       engine.addBody(layout.id, layout, isStatic);
+    } else if (
+      engine.layouts.get(layout.id)?.width !== layout.width ||
+      engine.layouts.get(layout.id)?.height !== layout.height
+    ) {
+      engine.removeBody(layout.id);
+      engine.addBody(layout.id, layout, isStatic);
     } else {
       engine.layouts.set(layout.id, layout);
       engine.setStatic(layout.id, isStatic);
@@ -149,7 +155,7 @@ export function usePhysicsWorld({
 
   return {
     positions,
-    isReady: enabled && engineRef.current !== null,
+    isReady: enabled,
     addCard,
     removeCard,
     applyEntranceBurst,

@@ -181,10 +181,11 @@ export interface UseCardPoolReturn {
   visible: Map<string, CardPosition>;
   queue: QueuedCard[];
   cardDataMap: Map<string, CardData>;
+  maxVisible: number;
   enqueue: (cardId: string) => void;
   dequeue: () => QueuedCard | undefined;
   removeVisible: (cardId: string) => void;
-  addVisible: (cardId: string, position: CardPosition) => void;
+  addVisible: (cardId: string, position: CardPosition) => boolean;
   reset: () => void;
   applyFilter: (searchTerm: string, category: string | null) => void;
 }

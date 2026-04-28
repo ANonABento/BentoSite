@@ -54,15 +54,32 @@ export function calculateLayoutWithExclusion(
     }
 
     if (!placedPosition) {
-      const fallbackY = (Math.ceil(Math.sqrt(cards.length)) + cardIndex + 1) * (GRID.CELL_SIZE + GRID.GAP);
-      placedPosition = {
-        x: 0,
-        y: fallbackY,
-        rotation: getRandomRotation(rotationRange),
-        size,
-        width: dimensions.width,
-        height: dimensions.height,
-      };
+      const rowStep = GRID.CELL_SIZE + GRID.GAP;
+      const fallbackY = paddedExclusion.y + paddedExclusion.height + rowStep;
+      let row = 0;
+
+      while (!placedPosition) {
+        const rect = {
+          x: 0,
+          y: fallbackY + row * rowStep,
+          width: dimensions.width,
+          height: dimensions.height,
+        };
+
+        if (
+          !rectsOverlap(rect, paddedExclusion, 0) &&
+          !placed.some((placedRect) => rectsOverlap(rect, placedRect))
+        ) {
+          placedPosition = {
+            ...rect,
+            rotation: getRandomRotation(rotationRange),
+            size,
+          };
+          placed.push(rect);
+        }
+
+        row++;
+      }
     }
 
     positions.set(card.id, placedPosition);

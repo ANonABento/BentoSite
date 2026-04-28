@@ -1,8 +1,13 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { CardData, CardPosition, ProjectCardData } from '../BentoGrid.types';
+import type {
+  CardData,
+  CardPosition,
+  ProjectCardData,
+  UseViewportReturn,
+} from '../BentoGrid.types';
 import { GRID, getCardDimensions } from '../BentoGrid.constants';
-import { filterCards, useCardPool } from '../core';
+import { filterCards, useCardPool, useSpawnManager } from '../core';
 import { calculateInitialPositions, rectsOverlap } from '../layout';
 
 const cards: CardData[] = [
@@ -44,6 +49,21 @@ const cards: CardData[] = [
 function cardRectsOverlap(a: CardPosition, b: CardPosition): boolean {
   return rectsOverlap(a, b, GRID.GAP);
 }
+
+const viewport: UseViewportReturn = {
+  bounds: {
+    left: -500,
+    top: -300,
+    right: 500,
+    bottom: 300,
+    width: 1000,
+    height: 600,
+  },
+  isInViewport: () => true,
+  isCardInViewport: () => true,
+  getSpawnPosition: () => ({ x: 500, y: 0 }),
+  getExitEdge: () => null,
+};
 
 describe('BentoGrid filterCards', () => {
   it('trims and lowercases search terms', () => {
@@ -142,5 +162,62 @@ describe('useCardPool', () => {
     expect(secondDequeued).toBe('game-rhythm');
 
     vi.useRealTimers();
+  });
+
+  it('returns despawned visible cards to the back of the queue once', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(1000);
+
+    const { result } = renderHook(() =>
+      useCardPool({
+        cards,
+        maxVisible: 2,
+        rotationRange: 0,
+      }),
+    );
+
+    const despawnedCardId = Array.from(result.current.visible.keys())[0];
+
+    act(() => {
+      result.current.removeVisible(despawnedCardId);
+      result.current.removeVisible(despawnedCardId);
+    });
+
+    expect(result.current.visible.has(despawnedCardId)).toBe(false);
+    expect(result.current.queue.map((card) => card.id)).toEqual([
+      'game-rhythm',
+      'project-mobile',
+      despawnedCardId,
+    ]);
+
+    vi.useRealTimers();
+  });
+
+  it('does not dequeue a card when a forced spawn hits the visible limit', () => {
+    const { result } = renderHook(() => {
+      const cardPool = useCardPool({
+        cards,
+        maxVisible: 1,
+        rotationRange: 0,
+      });
+      const spawnManager = useSpawnManager({
+        cardPool,
+        viewport,
+        camera: { x: 0, y: 0, zoom: 1 },
+        rotationRange: 0,
+        enabled: false,
+      });
+
+      return { cardPool, spawnManager };
+    });
+
+    const initialQueueIds = result.current.cardPool.queue.map((card) => card.id);
+
+    act(() => {
+      result.current.spawnManager.forceSpawn('right');
+    });
+
+    expect(result.current.cardPool.visible.size).toBe(1);
+    expect(result.current.cardPool.queue.map((card) => card.id)).toEqual(initialQueueIds);
   });
 });

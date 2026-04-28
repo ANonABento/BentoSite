@@ -182,6 +182,17 @@ export function syncBodiesWithLayouts(
       return;
     }
 
+    const existingLayout = physicsEngine.layouts.get(id);
+    if (
+      existingLayout &&
+      (existingLayout.width !== layout.width || existingLayout.height !== layout.height)
+    ) {
+      const existingBody = physicsEngine.getBody(id);
+      physicsEngine.removeBody(id);
+      physicsEngine.addBody(id, layout, existingBody?.isStatic ?? isStatic);
+      return;
+    }
+
     physicsEngine.layouts.set(id, layout);
   });
 }

@@ -63,8 +63,14 @@ export function useCardPool(options: UseCardPoolOptions): UseCardPoolReturn {
     return createQueuedCards(filteredCards.filter((card) => !visibleIds.has(card.id)));
   });
 
+  const visibleRef = useRef(visible);
   const queueRef = useRef(queue);
   const lastSpawnTimeRef = useRef(0);
+
+  const setVisibleMap = useCallback((nextVisible: Map<string, CardPosition>) => {
+    visibleRef.current = nextVisible;
+    setVisible(nextVisible);
+  }, []);
 
   const setQueue = useCallback((nextQueue: QueuedCard[]) => {
     queueRef.current = nextQueue;
@@ -107,35 +113,29 @@ export function useCardPool(options: UseCardPoolOptions): UseCardPoolReturn {
 
   const removeVisible = useCallback(
     (cardId: string) => {
-      let removed = false;
+      if (!visibleRef.current.has(cardId)) return;
 
-      setVisible((prev) => {
-        if (!prev.has(cardId)) return prev;
-
-        const next = new Map(prev);
-        next.delete(cardId);
-        removed = true;
-        return next;
-      });
-
-      if (removed) {
-        enqueue(cardId);
-      }
+      const nextVisible = new Map(visibleRef.current);
+      nextVisible.delete(cardId);
+      setVisibleMap(nextVisible);
+      enqueue(cardId);
     },
-    [enqueue],
+    [enqueue, setVisibleMap],
   );
 
   const addVisible = useCallback(
     (cardId: string, position: CardPosition) => {
-      setVisible((prev) => {
-        if (prev.size >= maxVisible && !prev.has(cardId)) return prev;
+      const currentVisible = visibleRef.current;
+      if (currentVisible.size >= maxVisible && !currentVisible.has(cardId)) {
+        return false;
+      }
 
-        const next = new Map(prev);
-        next.set(cardId, position);
-        return next;
-      });
+      const nextVisible = new Map(currentVisible);
+      nextVisible.set(cardId, position);
+      setVisibleMap(nextVisible);
+      return true;
     },
-    [maxVisible],
+    [maxVisible, setVisibleMap],
   );
 
   const reset = useCallback(() => {
@@ -145,12 +145,12 @@ export function useCardPool(options: UseCardPoolOptions): UseCardPoolReturn {
       rotationRange,
     );
 
-    setVisible(initialVisible);
+    setVisibleMap(initialVisible);
 
     const visibleIds = new Set(initialVisible.keys());
     setQueue(createQueuedCards(filteredCards.filter((card) => !visibleIds.has(card.id))));
     lastSpawnTimeRef.current = 0;
-  }, [filteredCards, maxVisible, rotationRange, setQueue]);
+  }, [filteredCards, maxVisible, rotationRange, setQueue, setVisibleMap]);
 
   const applyFilter = useCallback(
     (searchTerm: string, category: string | null) => {
@@ -163,19 +163,20 @@ export function useCardPool(options: UseCardPoolOptions): UseCardPoolReturn {
         rotationRange,
       );
 
-      setVisible(nextVisible);
+      setVisibleMap(nextVisible);
 
       const visibleIds = new Set(nextVisible.keys());
       setQueue(createQueuedCards(filtered.filter((card) => !visibleIds.has(card.id))));
       lastSpawnTimeRef.current = 0;
     },
-    [cards, maxVisible, rotationRange, setQueue],
+    [cards, maxVisible, rotationRange, setQueue, setVisibleMap],
   );
 
   return {
     visible,
     queue,
     cardDataMap,
+    maxVisible,
     enqueue,
     dequeue,
     removeVisible,

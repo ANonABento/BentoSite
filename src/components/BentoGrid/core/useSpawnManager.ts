@@ -8,7 +8,7 @@ import type {
   UseSpawnManagerReturn,
   UseViewportReturn,
 } from '../BentoGrid.types';
-import { GRID, QUEUE } from '../BentoGrid.constants';
+import { GRID } from '../BentoGrid.constants';
 import { getCardDimensions, getCardSizeForIndex, getRandomRotation } from '../layout';
 
 interface UseSpawnManagerOptions {
@@ -66,6 +66,8 @@ export function useSpawnManager(options: UseSpawnManagerOptions): UseSpawnManage
 
   const spawnAtEdge = useCallback(
     (edge: SpawnEdge): boolean => {
+      if (cardPool.visible.size >= cardPool.maxVisible) return false;
+
       const queuedCard = cardPool.dequeue();
       if (!queuedCard) return false;
 
@@ -87,7 +89,12 @@ export function useSpawnManager(options: UseSpawnManagerOptions): UseSpawnManage
         height: dimensions.height,
       };
 
-      cardPool.addVisible(queuedCard.id, position);
+      const added = cardPool.addVisible(queuedCard.id, position);
+      if (!added) {
+        cardPool.enqueue(queuedCard.id);
+        return false;
+      }
+
       physics?.addCard(queuedCard.id, position);
       physics?.applyEntranceBurst(queuedCard.id, {
         x: viewport.bounds.left + viewport.bounds.width / 2,
@@ -119,7 +126,7 @@ export function useSpawnManager(options: UseSpawnManagerOptions): UseSpawnManage
 
   const checkSpawns = useCallback(() => {
     if (cardPool.queue.length === 0) return;
-    if (cardPool.visible.size >= QUEUE.MAX_VISIBLE) return;
+    if (cardPool.visible.size >= cardPool.maxVisible) return;
 
     const spawnEdge = getMovementDirection();
     if (!spawnEdge) return;
