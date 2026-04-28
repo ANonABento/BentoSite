@@ -1,45 +1,12 @@
 /**
- * Consolidated BentoGrid type definitions.
+ * BentoGrid shared types.
  *
- * These types bridge the existing InfiniteGrid physics model with the
- * UnifiedGrid card queue/view model while the refactor is built in phases.
+ * These consolidate the camera, viewport, and card primitives from the
+ * InfiniteGrid and UnifiedGrid implementations while the refactor is phased in.
  */
 
+import type { CSSProperties, ReactNode } from 'react';
 import type Matter from 'matter-js';
-import type {
-  CSSProperties,
-  PointerEventHandler,
-  ReactNode,
-  WheelEventHandler,
-} from 'react';
-import type { Project } from '@/lib/projects-data';
-
-// =============================================================================
-// Primitives
-// =============================================================================
-
-export interface Point {
-  x: number;
-  y: number;
-}
-
-export type Position = Point;
-
-export interface Size {
-  width: number;
-  height: number;
-}
-
-export interface Bounds {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-// =============================================================================
-// Theme
-// =============================================================================
 
 export type GridTheme = 'playful' | 'premium';
 
@@ -64,10 +31,6 @@ export interface ThemeConfig {
     border: string;
   };
 }
-
-// =============================================================================
-// Card Data
-// =============================================================================
 
 export type CardType = 'game' | 'project';
 
@@ -102,28 +65,48 @@ export interface ProjectCardData extends BaseCardData {
 
 export type CardData = GameCardData | ProjectCardData;
 
-// =============================================================================
-// Grid Layout
-// =============================================================================
-
 export type CardSize = '1x1' | '2x1' | '1x2' | '2x2';
 
-/**
- * Physics layout uses center-based coordinates because Matter.js bodies are
- * positioned by center point.
- */
-export interface CardLayout {
-  id: string;
+export interface Point {
   x: number;
   y: number;
-  width: number;
-  height: number;
-  size: CardSize;
 }
 
-/**
- * Render positions are retained from UnifiedGrid and use top-left coordinates.
- */
+export type Position = Point;
+
+export interface Size {
+  width: number;
+  height: number;
+}
+
+export type Rect = Point & Size;
+
+export type Bounds = Rect;
+
+export interface ViewportBounds {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+  width: number;
+  height: number;
+}
+
+export interface Camera {
+  x: number;
+  y: number;
+  zoom: number;
+}
+
+export interface Velocity {
+  x: number;
+  y: number;
+}
+
+export type SpawnEdge = 'top' | 'bottom' | 'left' | 'right';
+export type StickyEdge = 'none' | SpawnEdge;
+export type SearchCardEdge = StickyEdge;
+
 export interface CardPosition extends Position {
   rotation: number;
   size: CardSize;
@@ -140,89 +123,11 @@ export type RenderCard = (
   entranceIndex?: number,
 ) => ReactNode;
 
-export interface GridConfig {
-  cellSize: number;
-  columns: number;
-  gap: number;
-}
-
-export interface GridRuntimeConfig {
-  theme: GridTheme;
-  cards: CardData[];
-  onCardSelect?: (card: CardData) => void;
-  onBack?: () => void;
-  pageTitle?: string;
-  breadcrumb?: string;
-}
-
-// =============================================================================
-// Card Pool
-// =============================================================================
-
 export interface QueuedCard {
   id: string;
   data: CardData;
   queuedAt: number;
 }
-
-export interface CardPoolState {
-  visible: Map<string, CardPosition>;
-  queue: QueuedCard[];
-  cardDataMap: Map<string, CardData>;
-}
-
-export type SpawnEdge = 'top' | 'bottom' | 'left' | 'right';
-
-// =============================================================================
-// Camera / Viewport
-// =============================================================================
-
-export interface Camera {
-  x: number;
-  y: number;
-  zoom: number;
-}
-
-export interface Velocity {
-  x: number;
-  y: number;
-}
-
-export interface CanvasState {
-  camera: Camera;
-  isDragging: boolean;
-  momentum: Point;
-}
-
-export interface NavigationState {
-  camera: Camera;
-  velocity: Velocity;
-  isDragging: boolean;
-  isPanning: boolean;
-}
-
-export interface ViewportBounds {
-  left: number;
-  top: number;
-  right: number;
-  bottom: number;
-  width: number;
-  height: number;
-}
-
-export interface CanvasBounds {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-// =============================================================================
-// Search Card
-// =============================================================================
-
-export type StickyEdge = 'none' | 'top' | 'bottom' | 'left' | 'right';
-export type SearchCardEdge = StickyEdge;
 
 export interface SearchCardState {
   expanded: boolean;
@@ -234,25 +139,6 @@ export interface SearchCardState {
   category: string | null;
   categories: string[];
 }
-
-export interface SearchCardPresentation {
-  edge: SearchCardEdge;
-  compression: number;
-  width: number;
-  height: number;
-  screenPosition: Point;
-}
-
-export interface ExclusionZone {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-// =============================================================================
-// Physics
-// =============================================================================
 
 export interface PhysicsPosition {
   x: number;
@@ -274,74 +160,47 @@ export interface PhysicsConfig {
   density: number;
   sleepThreshold: number;
   settlingStrength: number;
-  damping: number;
-  maxSettlingForce: number;
-  entranceBurstStrength: number;
 }
 
-export interface BodySyncResult {
-  added: string[];
-  removed: string[];
-  updated: string[];
+export type ExclusionZone = Rect;
+
+export interface GridConfig {
+  theme: GridTheme;
+  cards: CardData[];
+  onCardSelect?: (card: CardData) => void;
+  onBack?: () => void;
+  pageTitle?: string;
+  breadcrumb?: string;
 }
 
-// =============================================================================
-// Layout Transitions
-// =============================================================================
-
-export interface LayoutTransition {
-  kept: Set<string>;
-  removed: Set<string>;
-  added: Set<string>;
+export interface CameraBindingStyle {
+  cursor: CSSProperties['cursor'];
+  touchAction: CSSProperties['touchAction'];
 }
 
-export type TransitionPhase = 'idle' | 'removing' | 'settling' | 'adding';
+export type CameraBindings = Record<string, unknown> & {
+  style: CameraBindingStyle;
+};
 
-// =============================================================================
-// Component Props
-// =============================================================================
-
-export interface BentoGridProps {
-  isOpen?: boolean;
-  onClose?: () => void;
-  onSelectProject?: (project: Project) => void;
-}
-
-export interface UsePhysicsWorldReturn {
-  positions: Map<string, PhysicsPosition>;
-  isReady: boolean;
-  updateSearchClampedPosition: (x: number, y: number, isStuck: boolean) => void;
-  updateTargets: (layouts: Map<string, CardLayout>) => void;
-  applyEntranceBurstToCards: (
-    cardIds: Iterable<string>,
-    center?: Point,
-    strength?: number,
-  ) => void;
+export interface UseCameraReturn {
+  camera: Camera;
+  pan: (dx: number, dy: number) => void;
+  zoom: (delta: number, center?: Position) => void;
+  setCamera: (camera: Partial<Camera> | ((camera: Camera) => Camera)) => void;
+  reset: () => void;
+  stopMomentum: () => void;
+  isDragging: boolean;
+  isAnimating: boolean;
+  bind: () => CameraBindings;
 }
 
 export interface UseViewportReturn {
   bounds: ViewportBounds;
+  windowSize: Size;
   isInViewport: (position: Position, buffer?: number) => boolean;
-  isCardInViewport: (card: CardPosition, buffer?: number) => boolean;
+  isCardInViewport: (card: CardPosition | Rect, buffer?: number) => boolean;
   getSpawnPosition: (edge: SpawnEdge) => Position;
   getExitEdge: (position: Position) => SpawnEdge | null;
-}
-
-export interface UseGridNavigationReturn {
-  camera: Camera;
-  pan: (dx: number, dy: number) => void;
-  zoom: (delta: number, center?: Position) => void;
-  reset: () => void;
-  setCamera: (camera: Partial<Camera>) => void;
-  bind: () => GridNavigationBindings;
-  isAnimating: boolean;
-}
-
-export interface GridNavigationBindings {
-  onPointerDown: PointerEventHandler<HTMLDivElement>;
-  onPointerMove: PointerEventHandler<HTMLDivElement>;
-  onPointerUp: PointerEventHandler<HTMLDivElement>;
-  onPointerLeave: PointerEventHandler<HTMLDivElement>;
-  onWheel: WheelEventHandler<HTMLDivElement>;
-  style: CSSProperties;
+  screenToCanvas: (screenX: number, screenY: number) => Position;
+  canvasToScreen: (canvasX: number, canvasY: number) => Position;
 }
