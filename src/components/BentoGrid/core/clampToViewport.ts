@@ -7,6 +7,10 @@ export interface ClampResult {
   isClamped: boolean;
 }
 
+function isAwayFromCenter(value: number, center: number): boolean {
+  return Math.abs(value - center) > 0.5;
+}
+
 export function clampCanvasPosition(
   canvasPosition: Point,
   cardSize: Size,
@@ -28,24 +32,44 @@ export function clampCanvasPosition(
   const minY = padding + halfHeight;
   const maxY = windowSize.height - padding - halfHeight;
 
-  if (screenPosition.x < minX) {
-    clampedScreenX = minX;
-    edge = 'left';
-    isClamped = true;
-  } else if (screenPosition.x > maxX) {
-    clampedScreenX = maxX;
-    edge = 'right';
-    isClamped = true;
+  if (minX > maxX) {
+    const centerX = windowSize.width / 2;
+    clampedScreenX = centerX;
+    if (isAwayFromCenter(screenPosition.x, centerX)) {
+      edge = screenPosition.x < centerX ? 'left' : 'right';
+      isClamped = true;
+    }
+  } else {
+    if (screenPosition.x < minX) {
+      clampedScreenX = minX;
+      edge = 'left';
+      isClamped = true;
+    } else if (screenPosition.x > maxX) {
+      clampedScreenX = maxX;
+      edge = 'right';
+      isClamped = true;
+    }
   }
 
-  if (screenPosition.y < minY) {
-    clampedScreenY = minY;
-    if (edge === 'none') edge = 'top';
-    isClamped = true;
-  } else if (screenPosition.y > maxY) {
-    clampedScreenY = maxY;
-    if (edge === 'none') edge = 'bottom';
-    isClamped = true;
+  if (minY > maxY) {
+    const centerY = windowSize.height / 2;
+    clampedScreenY = centerY;
+    if (isAwayFromCenter(screenPosition.y, centerY)) {
+      if (edge === 'none') {
+        edge = screenPosition.y < centerY ? 'top' : 'bottom';
+      }
+      isClamped = true;
+    }
+  } else {
+    if (screenPosition.y < minY) {
+      clampedScreenY = minY;
+      if (edge === 'none') edge = 'top';
+      isClamped = true;
+    } else if (screenPosition.y > maxY) {
+      clampedScreenY = maxY;
+      if (edge === 'none') edge = 'bottom';
+      isClamped = true;
+    }
   }
 
   return {

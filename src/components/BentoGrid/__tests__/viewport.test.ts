@@ -131,6 +131,27 @@ describe('BentoGrid viewport helpers', () => {
       .toBe(116);
   });
 
+  it('centers oversized cards on axes where full visibility is impossible', () => {
+    const result = clampCanvasPosition(
+      { x: -400, y: 0 },
+      { width: 600, height: 100 },
+      { x: 0, y: 0, zoom: 1 },
+      { width: 500, height: 400 },
+      16,
+    );
+    const screenPosition = canvasToScreen(
+      result.position.x,
+      result.position.y,
+      { x: 0, y: 0, zoom: 1 },
+      { width: 500, height: 400 },
+    );
+
+    expect(result.isClamped).toBe(true);
+    expect(result.edge).toBe('left');
+    expect(screenPosition.x).toBe(250);
+    expect(screenPosition.y).toBe(200);
+  });
+
   it('calculates spawn positions just outside each viewport edge', () => {
     const bounds = {
       left: -500,
