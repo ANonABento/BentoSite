@@ -7,8 +7,10 @@ import { sectionItem, staggerContainer, staggerItem } from '@/lib/animations';
 import {
   formatProjectDate,
   getFeaturedProjects,
+  getProjectExternalLinkCount,
   getProjectMediaTypes,
   getProjectThumbnail,
+  getProjectTimelineLabel,
   type Project,
 } from '@/lib/projects-data';
 import {
@@ -139,6 +141,7 @@ function SpotlightProjectCard({
   const thumbnail = getProjectThumbnail(project);
   const completionDate = formatProjectDate(project.dateCompleted);
   const mediaTypes = getProjectMediaTypes(project);
+  const externalLinkCount = getProjectExternalLinkCount(project);
 
   return (
     <m.div
@@ -182,7 +185,7 @@ function SpotlightProjectCard({
           <div className="mb-6 grid grid-cols-3 gap-3">
             <SectionStat label="Tech" value={`${project.technologies.length}`} />
             <SectionStat label="Media" value={`${mediaTypes.length || 0}`} />
-            <SectionStat label="Links" value={`${[project.links.github, project.links.liveDemo, project.links.docs].filter(Boolean).length}`} />
+            <SectionStat label="Links" value={`${externalLinkCount}`} />
           </div>
 
           <div className="mb-6 flex flex-wrap gap-2">
@@ -240,7 +243,7 @@ function CompactProjectCard({
   project: Project;
   onViewAll?: () => void;
 }) {
-  const completionDate = formatProjectDate(project.dateCompleted);
+  const timelineLabel = getProjectTimelineLabel(project);
   const mediaTypes = getProjectMediaTypes(project);
   const theme = PROJECT_CATEGORY_THEMES[project.category];
 
@@ -276,7 +279,7 @@ function CompactProjectCard({
 
       <div className="mt-auto flex items-center justify-between gap-4 border-t border-[var(--border)] pt-4">
         <div className="text-xs text-[var(--text-muted)]">
-          {completionDate ?? project.status} · {mediaTypes.length || 0} media surface{mediaTypes.length === 1 ? '' : 's'}
+          {timelineLabel} · {mediaTypes.length || 0} media surface{mediaTypes.length === 1 ? '' : 's'}
         </div>
         {onViewAll ? (
           <button

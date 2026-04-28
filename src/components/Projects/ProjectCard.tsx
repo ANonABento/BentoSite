@@ -5,6 +5,7 @@ import Image from 'next/image';
 import type { Project } from '@/lib/projects-data';
 import {
   formatProjectDate,
+  getProjectExternalLinkCount,
   getProjectMediaTypes,
   getProjectThumbnail,
   hasProjectViewerMedia,
@@ -48,6 +49,7 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
   const visibleTechs = project.technologies.slice(0, 4);
   const remainingCount = project.technologies.length - visibleTechs.length;
   const canView = hasProjectViewerMedia(project);
+  const externalLinkCount = getProjectExternalLinkCount(project);
 
   const handleViewProject = useCallback(() => {
     analytics.projectViewed(project.id, project.name);
@@ -138,7 +140,7 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
         <div className="mb-5 grid grid-cols-3 gap-2 text-left">
           <MetaCell label="Stack" value={`${project.technologies.length}`} />
           <MetaCell label="Media" value={`${mediaTypes.length || 0}`} />
-          <MetaCell label="Links" value={`${[project.links.github, project.links.liveDemo, project.links.docs].filter(Boolean).length}`} />
+          <MetaCell label="Links" value={`${externalLinkCount}`} />
         </div>
 
         <div className="mt-auto flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
