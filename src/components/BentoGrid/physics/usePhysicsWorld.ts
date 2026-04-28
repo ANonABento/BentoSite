@@ -1,205 +1,159 @@
 'use client';
 
-/**
- * React binding for the always-on BentoGrid Matter.js world.
- */
-
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   CardLayout,
+  CardPosition,
   PhysicsPosition,
-  Point,
-  TransitionPhase,
+  Position,
   UsePhysicsWorldReturn,
 } from '../BentoGrid.types';
-import {
-  PHYSICS,
-  PHYSICS_MOBILE,
-  PHYSICS_RUNTIME,
-  SEARCH_CARD,
-} from '../BentoGrid.constants';
-import {
-  createPhysicsEngine,
-  syncBodiesWithLayouts,
-  type PhysicsEngine,
-} from './engine';
-import {
-  applyDamping,
-  applyEntranceBurst,
-  applySettlingForces,
-  extractTargets,
-} from './forces';
+import { PHYSICS, PHYSICS_MOBILE } from '../BentoGrid.constants';
+import { createPhysicsEngine, syncBodiesWithLayouts, type PhysicsEngine } from './engine';
+import { applySettlingForces, extractTargets, toTopLeft } from './forces';
 
 interface UsePhysicsWorldOptions {
-  layouts: Map<string, CardLayout>;
+  layouts: Map<string, CardPosition>;
+  enabled: boolean;
   isMobile: boolean;
-  transitionPhase?: TransitionPhase;
-  searchCardId?: string;
-  entranceBurstCenter?: Point;
 }
-
-const DEFAULT_ENTRANCE_BURST_CENTER: Point = { x: 0, y: 0 };
 
 export function usePhysicsWorld({
   layouts,
+  enabled,
   isMobile,
-  transitionPhase = 'idle',
-  searchCardId = SEARCH_CARD.PHYSICS_ID,
-  entranceBurstCenter = DEFAULT_ENTRANCE_BURST_CENTER,
 }: UsePhysicsWorldOptions): UsePhysicsWorldReturn {
   const [positions, setPositions] = useState<Map<string, PhysicsPosition>>(new Map());
-  const [isReady, setIsReady] = useState(false);
-
   const engineRef = useRef<PhysicsEngine | null>(null);
-  const targetsRef = useRef<Map<string, Point>>(new Map());
-  const staticBodyIdsRef = useRef<Set<string>>(new Set());
+  const targetsRef = useRef<Map<string, Position>>(new Map());
   const settlingIntervalRef = useRef<number | null>(null);
-  const latestEntranceBurstCenterRef = useRef(entranceBurstCenter);
 
   useEffect(() => {
-    latestEntranceBurstCenterRef.current = entranceBurstCenter;
-  }, [entranceBurstCenter]);
+    if (!enabled) {
+      if (engineRef.current) {
+        engineRef.current.destroy();
+        engineRef.current = null;
+      }
+      return;
+    }
 
-  useEffect(() => {
-    const engine = createPhysicsEngine(isMobile, (bodies) => {
+    const engine = createPhysicsEngine(isMobile, (bodies, bodyLayouts) => {
       const nextPositions = new Map<string, PhysicsPosition>();
 
-      for (const [id, body] of bodies) {
+      bodies.forEach((body, id) => {
+        const layout = bodyLayouts.get(id);
+        if (!layout) return;
+
+        const topLeft = toTopLeft(body, layout);
         nextPositions.set(id, {
-          x: body.position.x,
-          y: body.position.y,
+          x: topLeft.x,
+          y: topLeft.y,
           angle: body.angle,
         });
-      }
+      });
 
       setPositions(nextPositions);
     });
 
     engineRef.current = engine;
     engine.start();
-    setIsReady(true);
 
     return () => {
-      if (settlingIntervalRef.current !== null) {
-        window.clearInterval(settlingIntervalRef.current);
+      if (settlingIntervalRef.current) {
+        clearInterval(settlingIntervalRef.current);
         settlingIntervalRef.current = null;
       }
-
       engine.destroy();
       engineRef.current = null;
-      setIsReady(false);
     };
-  }, [isMobile]);
+  }, [enabled, isMobile]);
 
   useEffect(() => {
     const engine = engineRef.current;
-    if (!engine) return;
+    if (!engine || !enabled) return;
 
-    const syncResult = syncBodiesWithLayouts(
-      engine,
-      layouts,
-      (id) => staticBodyIdsRef.current.has(id),
-    );
-
+    syncBodiesWithLayouts(engine, layouts, false);
     targetsRef.current = extractTargets(layouts);
-
-    if (syncResult.added.length > 0) {
-      const config = isMobile ? PHYSICS_MOBILE : PHYSICS;
-      applyEntranceBurst(
-        engine.bodies,
-        latestEntranceBurstCenterRef.current.x,
-        latestEntranceBurstCenterRef.current.y,
-        config.entranceBurstStrength,
-        { includeIds: syncResult.added },
-      );
-    }
-  }, [isMobile, layouts]);
+  }, [enabled, layouts]);
 
   useEffect(() => {
     const engine = engineRef.current;
-    if (!engine) return;
+    if (!engine || !enabled) return;
 
-    if (settlingIntervalRef.current !== null) {
-      window.clearInterval(settlingIntervalRef.current);
+    if (settlingIntervalRef.current) {
+      clearInterval(settlingIntervalRef.current);
       settlingIntervalRef.current = null;
     }
 
     const config = isMobile ? PHYSICS_MOBILE : PHYSICS;
-    const strength = transitionPhase === 'settling'
-      ? config.settlingStrength * 3
-      : config.settlingStrength;
-
     settlingIntervalRef.current = window.setInterval(() => {
-      applySettlingForces(engine.bodies, targetsRef.current, strength, {
-        maxForce: config.maxSettlingForce,
-      });
-      applyDamping(engine.bodies, config.damping);
-    }, PHYSICS_RUNTIME.FRAME_MS);
+      applySettlingForces(engine.bodies, targetsRef.current, config.settlingStrength);
+    }, 16);
 
     return () => {
-      if (settlingIntervalRef.current !== null) {
-        window.clearInterval(settlingIntervalRef.current);
+      if (settlingIntervalRef.current) {
+        clearInterval(settlingIntervalRef.current);
         settlingIntervalRef.current = null;
       }
     };
-  }, [isMobile, transitionPhase]);
+  }, [enabled, isMobile]);
 
-  const updateSearchClampedPosition = useCallback((
-    x: number,
-    y: number,
-    isStuck: boolean,
-  ) => {
+  const addCard = useCallback((cardId: string, position: CardPosition) => {
     const engine = engineRef.current;
-
-    if (isStuck) {
-      staticBodyIdsRef.current.add(searchCardId);
-    } else {
-      staticBodyIdsRef.current.delete(searchCardId);
-    }
-
     if (!engine) return;
 
-    const searchBody = engine.getBody(searchCardId);
-    if (!searchBody) return;
+    engine.addBody(cardId, position, false);
+    targetsRef.current.set(cardId, {
+      x: position.x + position.width / 2,
+      y: position.y + position.height / 2,
+    });
+  }, []);
 
-    engine.setStatic(searchCardId, isStuck);
+  const removeCard = useCallback((cardId: string) => {
+    engineRef.current?.removeBody(cardId);
+    targetsRef.current.delete(cardId);
+  }, []);
 
-    if (isStuck) {
-      engine.setPositionImmediate(searchCardId, x, y);
-      engine.wakeAllBodies();
+  const applyEntranceBurst = useCallback((cardId: string, center: Position = { x: 0, y: 0 }) => {
+    engineRef.current?.applyEntranceBurst(cardId, center);
+  }, []);
+
+  const updateSearchCard = useCallback((layout: CardLayout, isStatic: boolean) => {
+    const engine = engineRef.current;
+    if (!engine) return;
+
+    const existing = engine.getBody(layout.id);
+    if (!existing) {
+      engine.addBody(layout.id, layout, isStatic);
     } else {
-      engine.wakeBody(searchCardId);
-      engine.wakeAllBodies();
+      engine.layouts.set(layout.id, layout);
+      engine.setStatic(layout.id, isStatic);
+      engine.setPosition(layout.id, layout.x + layout.width / 2, layout.y + layout.height / 2);
     }
-  }, [searchCardId]);
 
-  const updateTargets = useCallback((newLayouts: Map<string, CardLayout>) => {
+    if (isStatic) {
+      targetsRef.current.delete(layout.id);
+    } else {
+      targetsRef.current.set(layout.id, {
+        x: layout.x + layout.width / 2,
+        y: layout.y + layout.height / 2,
+      });
+    }
+
+    engine.wakeAllBodies();
+  }, []);
+
+  const updateTargets = useCallback((newLayouts: Map<string, CardPosition>) => {
     targetsRef.current = extractTargets(newLayouts);
   }, []);
 
-  const applyEntranceBurstToCards = useCallback((
-    cardIds: Iterable<string>,
-    center: Point = latestEntranceBurstCenterRef.current,
-    strength?: number,
-  ) => {
-    const engine = engineRef.current;
-    if (!engine) return;
-
-    const config = isMobile ? PHYSICS_MOBILE : PHYSICS;
-    applyEntranceBurst(
-      engine.bodies,
-      center.x,
-      center.y,
-      strength ?? config.entranceBurstStrength,
-      { includeIds: cardIds },
-    );
-  }, [isMobile]);
-
   return {
     positions,
-    isReady,
-    updateSearchClampedPosition,
+    isReady: enabled && engineRef.current !== null,
+    addCard,
+    removeCard,
+    applyEntranceBurst,
+    updateSearchCard,
     updateTargets,
-    applyEntranceBurstToCards,
   };
 }

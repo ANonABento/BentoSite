@@ -1,24 +1,5 @@
 import type { CardSize, GridTheme, PhysicsConfig, ThemeConfig } from './BentoGrid.types';
 
-export const DEFAULT_CAMERA = {
-  x: 0,
-  y: 0,
-  zoom: 1,
-} as const;
-
-export const CAMERA = {
-  minZoom: 0.3,
-  maxZoom: 2.5,
-  defaultZoom: DEFAULT_CAMERA.zoom,
-  keyboardPanSpeed: 30,
-  wheelZoomInFactor: 1.05,
-  wheelZoomOutFactor: 0.95,
-  momentum: {
-    friction: 0.92,
-    minVelocity: 0.5,
-  },
-} as const;
-
 export const GRID = {
   CELL_SIZE: 180,
   GAP: 12,
@@ -35,12 +16,36 @@ export const CARD_SIZES: Record<CardSize, { cols: number; rows: number }> = {
 
 export function getCardDimensions(size: CardSize): { width: number; height: number } {
   const { cols, rows } = CARD_SIZES[size];
-
   return {
     width: cols * GRID.CELL_SIZE + (cols - 1) * GRID.GAP,
     height: rows * GRID.CELL_SIZE + (rows - 1) * GRID.GAP,
   };
 }
+
+export const QUEUE = {
+  SPAWN_DELAY: 100,
+  MAX_VISIBLE: 30,
+  INITIAL_SPAWN_COUNT: 12,
+  INITIAL_STAGGER: 50,
+} as const;
+
+export const CAMERA = {
+  DEFAULT: { x: 0, y: 0, zoom: 1 },
+  MIN_ZOOM: 0.4,
+  MAX_ZOOM: 2.0,
+  ZOOM_SENSITIVITY: 0.001,
+  PAN_SPEED: 15,
+  MOMENTUM_FRICTION: 0.92,
+  MIN_VELOCITY: 0.5,
+  SPRING_STIFFNESS: 200,
+  SPRING_DAMPING: 30,
+} as const;
+
+export const INTERACTION = {
+  DRAG_THRESHOLD: 5,
+  CLICK_MAX_DURATION: 200,
+  TOUCH_TARGET_MIN: 44,
+} as const;
 
 const SEARCH_CARD_DIMENSIONS = getCardDimensions('2x1');
 
@@ -54,6 +59,16 @@ export const SEARCH_CARD = {
   EXCLUSION_PADDING: 24,
 } as const;
 
+export const ANIMATION = {
+  CARD_ENTER: 300,
+  CARD_EXIT: 200,
+  STAGGER: 30,
+  SPRING: {
+    stiffness: 180,
+    damping: 25,
+  },
+} as const;
+
 export const PHYSICS: PhysicsConfig = {
   friction: 0.05,
   frictionAir: 0.01,
@@ -63,17 +78,14 @@ export const PHYSICS: PhysicsConfig = {
   settlingStrength: 0.002,
 };
 
-export const INTERACTION = {
-  dragThreshold: 5,
-  touchTargetMin: 44,
-} as const;
-
-export const QUEUE = {
-  SPAWN_DELAY: 100,
-  MAX_VISIBLE: 30,
-  INITIAL_SPAWN_COUNT: 12,
-  INITIAL_STAGGER: 50,
-} as const;
+export const PHYSICS_MOBILE: PhysicsConfig = {
+  friction: 0.08,
+  frictionAir: 0.02,
+  restitution: 0.6,
+  density: 0.001,
+  sleepThreshold: 80,
+  settlingStrength: 0.003,
+};
 
 export const THEME_PLAYFUL: ThemeConfig = {
   name: 'playful',
@@ -122,3 +134,28 @@ export const THEMES = {
   playful: THEME_PLAYFUL,
   premium: THEME_PREMIUM,
 } satisfies Record<GridTheme, ThemeConfig>;
+
+export const MOBILE = {
+  BREAKPOINT: 768,
+  CARD_WIDTH_PERCENT: 0.9,
+  CARD_MAX_WIDTH: 400,
+  SCROLL_GAP: 16,
+  SCROLL_PADDING: 24,
+} as const;
+
+export const KEYBOARD = {
+  PAN_UP: ['w', 'W'] as string[],
+  PAN_DOWN: ['s', 'S'] as string[],
+  PAN_LEFT: ['a', 'A'] as string[],
+  PAN_RIGHT: ['d', 'D'] as string[],
+  CARD_UP: ['ArrowUp'] as string[],
+  CARD_DOWN: ['ArrowDown'] as string[],
+  CARD_LEFT: ['ArrowLeft'] as string[],
+  CARD_RIGHT: ['ArrowRight'] as string[],
+  SELECT: ['Enter', ' '] as string[],
+  BLUR: ['Escape'] as string[],
+  RESET: ['r', 'R'] as string[],
+  BACK: ['Backspace'] as string[],
+  SEARCH: ['/', 'f', 'F'] as string[],
+  CYCLE: ['Tab'] as string[],
+} as const;
