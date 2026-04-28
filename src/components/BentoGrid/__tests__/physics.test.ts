@@ -83,6 +83,43 @@ describe('BentoGrid physics engine', () => {
 
     engine.destroy();
   });
+
+  it('preserves current position when resizing a stuck static body', () => {
+    const engine = createPhysicsEngine(false);
+    const layouts = new Map([
+      [SEARCH_CARD.PHYSICS_ID, createLayout(SEARCH_CARD.PHYSICS_ID, 0, 0)],
+    ]);
+
+    syncBodiesWithLayouts(
+      engine,
+      layouts,
+      (id) => id === SEARCH_CARD.PHYSICS_ID,
+    );
+    engine.setPositionImmediate(SEARCH_CARD.PHYSICS_ID, 320, 160);
+
+    const resizedLayouts = new Map([
+      [
+        SEARCH_CARD.PHYSICS_ID,
+        {
+          ...createLayout(SEARCH_CARD.PHYSICS_ID, 0, 0),
+          width: SEARCH_CARD.SQUASHED_SIDE_WIDTH,
+        },
+      ],
+    ]);
+
+    syncBodiesWithLayouts(
+      engine,
+      resizedLayouts,
+      (id) => id === SEARCH_CARD.PHYSICS_ID,
+    );
+
+    const body = engine.getBody(SEARCH_CARD.PHYSICS_ID);
+    expect(body?.isStatic).toBe(true);
+    expect(body?.position.x).toBe(320);
+    expect(body?.position.y).toBe(160);
+
+    engine.destroy();
+  });
 });
 
 describe('BentoGrid physics forces', () => {

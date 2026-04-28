@@ -158,11 +158,10 @@ export function createPhysicsEngine(
       const velocity = { ...existing.velocity };
       const angularVelocity = existing.angularVelocity;
       const angle = existing.angle;
-      const position = shouldBeStatic ? { x: layout.x, y: layout.y } : existing.position;
       const replacementLayout = {
         ...layout,
-        x: position.x,
-        y: position.y,
+        x: existing.position.x,
+        y: existing.position.y,
       };
       const replacement = addBody(id, replacementLayout, { isStatic: shouldBeStatic });
 
