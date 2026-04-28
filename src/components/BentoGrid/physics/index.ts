@@ -13,4 +13,4 @@ export {
   toBodyCenter,
   toTopLeft,
 } from './forces';
-export { usePhysicsWorld } from './usePhysicsWorld';
+export { usePhysicsWorld, type UsePhysicsWorldOptions } from './usePhysicsWorld';

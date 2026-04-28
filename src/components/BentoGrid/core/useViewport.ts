@@ -9,7 +9,7 @@ import type {
 } from '../BentoGrid.types';
 import { GRID } from '../BentoGrid.constants';
 
-interface UseViewportOptions {
+export interface UseViewportOptions {
   camera: Camera;
   buffer?: number;
 }

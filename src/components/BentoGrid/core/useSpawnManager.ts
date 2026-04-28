@@ -11,7 +11,7 @@ import type {
 import { GRID } from '../BentoGrid.constants';
 import { getCardDimensions, getCardSizeForIndex, getRandomRotation } from '../layout';
 
-interface UseSpawnManagerOptions {
+export interface UseSpawnManagerOptions {
   cardPool: UseCardPoolReturn;
   viewport: UseViewportReturn;
   camera: Camera;

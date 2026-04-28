@@ -12,7 +12,7 @@ import { PHYSICS, PHYSICS_MOBILE } from '../BentoGrid.constants';
 import { createPhysicsEngine, syncBodiesWithLayouts, type PhysicsEngine } from './engine';
 import { applySettlingForces, extractTargets, toTopLeft } from './forces';
 
-interface UsePhysicsWorldOptions {
+export interface UsePhysicsWorldOptions {
   layouts: Map<string, CardPosition>;
   enabled: boolean;
   isMobile: boolean;

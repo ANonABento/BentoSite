@@ -16,7 +16,7 @@ import { QUEUE } from '../BentoGrid.constants';
 import { calculateInitialPositions } from '../layout/positions';
 import { filterCards } from './cardPoolFilter';
 
-interface UseCardPoolOptions {
+export interface UseCardPoolOptions {
   cards: CardData[];
   maxVisible?: number;
   rotationRange?: number;

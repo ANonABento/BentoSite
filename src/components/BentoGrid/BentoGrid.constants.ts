@@ -89,35 +89,35 @@ export const PHYSICS_MOBILE: PhysicsConfig = {
 
 export const THEME_PLAYFUL: ThemeConfig = {
   name: 'playful',
-  background: 'radial-gradient(ellipse at center, #1a0a2e 0%, #0d0415 100%)',
+  background: 'radial-gradient(ellipse at center, var(--surface-deep) 0%, var(--background) 100%)',
   card: {
-    background: 'linear-gradient(135deg, rgba(255, 0, 255, 0.1) 0%, rgba(0, 255, 255, 0.05) 100%)',
-    border: '2px solid rgba(255, 0, 255, 0.25)',
+    background: 'linear-gradient(135deg, var(--purple-muted) 0%, var(--orange-muted) 100%)',
+    border: '2px solid var(--purple-muted)',
     borderRadius: 20,
-    shadow: '0 0 20px rgba(255, 0, 255, 0.15), 0 8px 32px rgba(0, 0, 0, 0.3)',
-    hoverShadow: '0 0 40px rgba(255, 0, 255, 0.3), 0 12px 48px rgba(0, 0, 0, 0.4)',
+    shadow: '0 0 20px var(--purple-muted), 0 8px 32px var(--shadow-color)',
+    hoverShadow: '0 0 40px var(--purple-muted), 0 12px 48px var(--shadow-color)',
     rotationRange: 3,
   },
   accent: {
-    primary: '#ff00ff',
-    secondary: '#00ffff',
-    tertiary: '#ffff00',
+    primary: 'var(--purple)',
+    secondary: 'var(--orange)',
+    tertiary: 'var(--purple-hover)',
   },
   searchCard: {
-    background: 'rgba(26, 10, 46, 0.95)',
-    border: '2px solid rgba(255, 0, 255, 0.3)',
+    background: 'var(--overlay-strong)',
+    border: '2px solid var(--purple-muted)',
   },
 };
 
 export const THEME_PREMIUM: ThemeConfig = {
   name: 'premium',
-  background: 'linear-gradient(180deg, #0a0a0a 0%, #111111 100%)',
+  background: 'linear-gradient(180deg, var(--background) 0%, var(--surface-deep) 100%)',
   card: {
-    background: 'rgba(20, 20, 20, 0.85)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    background: 'var(--glass-bg-strong)',
+    border: '1px solid var(--glass-border)',
     borderRadius: 8,
-    shadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
-    hoverShadow: '0 8px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 92, 246, 0.3)',
+    shadow: '0 4px 24px var(--shadow-color)',
+    hoverShadow: '0 8px 40px var(--shadow-color), 0 0 0 1px var(--purple-muted)',
     rotationRange: 0,
   },
   accent: {
@@ -125,8 +125,8 @@ export const THEME_PREMIUM: ThemeConfig = {
     secondary: 'var(--orange)',
   },
   searchCard: {
-    background: 'rgba(10, 10, 10, 0.95)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    background: 'var(--overlay-strong)',
+    border: '1px solid var(--glass-border)',
   },
 };
 
