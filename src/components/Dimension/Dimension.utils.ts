@@ -5,39 +5,16 @@ import {
   formatFileSize as sharedFormatFileSize,
   formatNumber,
   isMobileDevice as sharedIsMobileDevice,
-  getScreenSize as sharedGetScreenSize,
-  clamp as sharedClamp,
-  debounce as sharedDebounce,
-  isInputElement as sharedIsInputElement,
 } from '@/lib/utils';
-import { PERFORMANCE, ZOOM_LIMITS } from '@/lib/constants';
+import { PERFORMANCE } from '@/lib/constants';
 
-// Re-export shared utilities for backwards compatibility
 export const formatFileSize = sharedFormatFileSize;
 export const isMobileDevice = sharedIsMobileDevice;
-export const getScreenSize = sharedGetScreenSize;
-export const clamp = sharedClamp;
-export const debounce = sharedDebounce;
-export const isInputElement = sharedIsInputElement;
 
 /**
  * Format vertex count with commas
  */
 export const formatVertexCount = formatNumber;
-
-/**
- * Get CSS class for category color
- */
-export const getCategoryColor = (category: string): string => {
-  const colors: Record<string, string> = {
-    'Basic': 'bg-[var(--status-info-muted)] text-[var(--status-info)]',
-    'Furniture': 'bg-[var(--status-success-muted)] text-[var(--status-success)]',
-    'Decorative': 'bg-[var(--purple-muted)] text-[var(--purple)]',
-    'Architecture': 'bg-[var(--status-warning-muted)] text-[var(--status-warning)]',
-    'Art': 'bg-[var(--status-error-muted)] text-[var(--status-error)]'
-  };
-  return colors[category] || 'bg-[var(--glass-bg)] text-[var(--text-secondary)]';
-};
 
 /**
  * Calculate distance from camera to position
@@ -77,21 +54,6 @@ export const getLODScale = (baseScale: number, lodLevel: number): number => {
     case 1: return baseScale * 0.9; // Medium detail
     default: return baseScale; // High detail
   }
-};
-
-/**
- * Get appropriate damping factor for mobile vs desktop
- */
-export const getDampingFactor = (isMobile: boolean): number => {
-  return isMobile ? 0.1 : 0.05;
-};
-
-/**
- * Get appropriate zoom limits for mobile vs desktop
- * Uses centralized zoom limit constants
- */
-export const getZoomLimits = (isMobile: boolean) => {
-  return isMobile ? ZOOM_LIMITS.MOBILE : ZOOM_LIMITS.DESKTOP;
 };
 
 /**

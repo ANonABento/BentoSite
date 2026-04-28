@@ -1,48 +1,11 @@
-// Dimension.tsx - Enhanced UI Components with Improved Accessibility and Visual Design
-// REFACTORED: Now uses modular component structure for better maintainability
+export { ModelInfoDisplay } from './ui/widgets/model-info-display';
+export { CameraPresetsWidget } from './ui/widgets/camera-presets-widget';
+export { ControlPanel } from './ui/widgets/control-panel';
 
-// ============================================================================
-// LEGACY EXPORTS - Maintains backward compatibility
-// All components now sourced from modular ui/ structure
-// ============================================================================
+export { ModelSelector } from './ui/modals/model-selector';
 
-// Widget Components
-export {
-  CollapsibleWidget,
-  ModelInfoDisplay,
-  ControlPanel,
-  CameraPresetsWidget
-} from './ui';
-
-// Modal Components
-export {
-  ModelSelector,
-  KeyboardShortcutsHelp
-} from './ui/modals';
-
-// Feedback Components
 export {
   LoadingSpinner,
   LoadingProgress,
   ErrorMessage
 } from './ui/feedback';
-
-// Legacy compatibility exports (same as before)
-export type {
-  ModelInfo,
-  ModelError,
-  ControlPanelProps,
-  ModelSelectorProps,
-  ModelInfoDisplayProps,
-  LoadingProgressProps,
-  ErrorMessageProps,
-  KeyboardShortcutsHelpProps,
-  CollapsibleWidgetProps,
-  CameraPresetsWidgetProps
-} from './Dimension.types';
-
-export {
-  formatFileSize,
-  formatVertexCount,
-  formatPercentage
-} from './Dimension.utils';

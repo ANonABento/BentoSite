@@ -120,14 +120,6 @@ export interface ErrorMessageProps {
   isMobile: boolean;
 }
 
-export interface KeyboardShortcutsHelpProps {
-  isVisible: boolean;
-}
-
-export interface PerformanceHUDProps {
-  isMobile: boolean;
-}
-
 export interface CameraPresetsWidgetProps {
   presets: Record<string, readonly [number, number, number]>;
   onPresetSelect: (preset: string) => void;

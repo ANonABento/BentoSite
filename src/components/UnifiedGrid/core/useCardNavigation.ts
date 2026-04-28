@@ -271,5 +271,3 @@ export function useCardNavigation({
     clearFocus,
   };
 }
-
-export default useCardNavigation;
