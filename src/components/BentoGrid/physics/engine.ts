@@ -8,7 +8,7 @@ import type {
   CardLayout,
   PhysicsConfig,
 } from '../BentoGrid.types';
-import { PHYSICS, PHYSICS_MOBILE } from '../BentoGrid.constants';
+import { PHYSICS, PHYSICS_MOBILE, PHYSICS_RUNTIME } from '../BentoGrid.constants';
 
 const { Engine, World, Bodies, Body, Runner, Events, Sleeping } = Matter;
 
@@ -78,18 +78,17 @@ export function createPhysicsEngine(
   engine.gravity.y = 0;
 
   const runner = Runner.create({
-    delta: 1000 / 60,
+    delta: PHYSICS_RUNTIME.FRAME_MS,
   });
 
   const bodies = new Map<string, Matter.Body>();
   let isRunning = false;
   let lastUpdateTime = 0;
-  const updateInterval = 16;
 
   if (onUpdate) {
     Events.on(engine, 'afterUpdate', () => {
       const now = Date.now();
-      if (now - lastUpdateTime < updateInterval) return;
+      if (now - lastUpdateTime < PHYSICS_RUNTIME.FRAME_MS) return;
       lastUpdateTime = now;
 
       onUpdate(bodies);
@@ -115,7 +114,13 @@ export function createPhysicsEngine(
         restitution: isStatic ? 0 : config.restitution,
         density: config.density,
         sleepThreshold: config.sleepThreshold,
-        chamfer: { radius: Math.min(16, layout.width / 2, layout.height / 2) },
+        chamfer: {
+          radius: Math.min(
+            PHYSICS_RUNTIME.CARD_CHAMFER_RADIUS,
+            layout.width / 2,
+            layout.height / 2,
+          ),
+        },
       },
     );
 

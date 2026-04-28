@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SEARCH_CARD } from '../BentoGrid.constants';
+import { GRID, PHYSICS, SEARCH_CARD } from '../BentoGrid.constants';
 import type { CardLayout } from '../BentoGrid.types';
 import {
   createPhysicsEngine,
@@ -16,8 +16,8 @@ function createLayout(id: string, x = 0, y = 0): CardLayout {
     id,
     x,
     y,
-    width: 180,
-    height: 180,
+    width: GRID.CELL_SIZE,
+    height: GRID.CELL_SIZE,
     size: '1x1',
   };
 }
@@ -134,8 +134,8 @@ describe('BentoGrid physics forces', () => {
     engine.setPosition('card-a', -100, 0);
     engine.setPosition(SEARCH_CARD.PHYSICS_ID, -100, 0);
 
-    applySettlingForces(engine.bodies, extractTargets(layouts), 0.002, {
-      maxForce: 0.08,
+    applySettlingForces(engine.bodies, extractTargets(layouts), PHYSICS.settlingStrength, {
+      maxForce: PHYSICS.maxSettlingForce,
     });
 
     const cardBody = engine.getBody('card-a');
@@ -159,8 +159,8 @@ describe('BentoGrid physics forces', () => {
     );
 
     engine.setPositionImmediate(SEARCH_CARD.PHYSICS_ID, -100, 0);
-    applySettlingForces(engine.bodies, extractTargets(layouts), 0.002, {
-      maxForce: 0.08,
+    applySettlingForces(engine.bodies, extractTargets(layouts), PHYSICS.settlingStrength, {
+      maxForce: PHYSICS.maxSettlingForce,
     });
 
     expect(engine.getBody(SEARCH_CARD.PHYSICS_ID)?.force.x).toBe(0);

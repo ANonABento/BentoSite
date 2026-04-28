@@ -12,7 +12,12 @@ import type {
   TransitionPhase,
   UsePhysicsWorldReturn,
 } from '../BentoGrid.types';
-import { PHYSICS, PHYSICS_MOBILE, SEARCH_CARD } from '../BentoGrid.constants';
+import {
+  PHYSICS,
+  PHYSICS_MOBILE,
+  PHYSICS_RUNTIME,
+  SEARCH_CARD,
+} from '../BentoGrid.constants';
 import {
   createPhysicsEngine,
   syncBodiesWithLayouts,
@@ -33,12 +38,14 @@ interface UsePhysicsWorldOptions {
   entranceBurstCenter?: Point;
 }
 
+const DEFAULT_ENTRANCE_BURST_CENTER: Point = { x: 0, y: 0 };
+
 export function usePhysicsWorld({
   layouts,
   isMobile,
   transitionPhase = 'idle',
   searchCardId = SEARCH_CARD.PHYSICS_ID,
-  entranceBurstCenter = { x: 0, y: 0 },
+  entranceBurstCenter = DEFAULT_ENTRANCE_BURST_CENTER,
 }: UsePhysicsWorldOptions): UsePhysicsWorldReturn {
   const [positions, setPositions] = useState<Map<string, PhysicsPosition>>(new Map());
   const [isReady, setIsReady] = useState(false);
@@ -127,7 +134,7 @@ export function usePhysicsWorld({
         maxForce: config.maxSettlingForce,
       });
       applyDamping(engine.bodies, config.damping);
-    }, 16);
+    }, PHYSICS_RUNTIME.FRAME_MS);
 
     return () => {
       if (settlingIntervalRef.current !== null) {

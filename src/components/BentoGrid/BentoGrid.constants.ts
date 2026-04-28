@@ -71,6 +71,11 @@ export const PHYSICS_MOBILE: PhysicsConfig = {
   entranceBurstStrength: 5,
 };
 
+export const PHYSICS_RUNTIME = {
+  FRAME_MS: 1000 / 60,
+  CARD_CHAMFER_RADIUS: 16,
+} as const;
+
 // =============================================================================
 // Search Card
 // =============================================================================
