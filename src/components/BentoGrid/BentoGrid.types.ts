@@ -6,12 +6,7 @@
  */
 
 import type Matter from 'matter-js';
-import type {
-  CSSProperties,
-  PointerEventHandler,
-  ReactNode,
-  WheelEventHandler,
-} from 'react';
+import type { CSSProperties, PointerEventHandler, ReactNode, WheelEventHandler } from 'react';
 
 export type GridTheme = 'playful' | 'premium';
 
@@ -76,6 +71,8 @@ export interface Position {
   x: number;
   y: number;
 }
+
+export type Point = Position;
 
 export interface Size {
   width: number;
@@ -148,6 +145,7 @@ export interface NavigationState {
 }
 
 export type SearchCardEdge = 'none' | 'top' | 'bottom' | 'left' | 'right';
+export type StickyEdge = SearchCardEdge;
 
 export interface SearchCardState {
   expanded: boolean;
@@ -167,6 +165,12 @@ export interface GridConfig {
   onBack?: () => void;
   pageTitle?: string;
   breadcrumb?: string;
+}
+
+export interface GridLayoutConfig {
+  cellSize: number;
+  gap: number;
+  columns?: number;
 }
 
 export interface GridState {
@@ -219,12 +223,26 @@ export interface UseGridNavigationReturn {
   isAnimating: boolean;
 }
 
+export interface UseCameraReturn {
+  camera: Camera;
+  pan: (dx: number, dy: number) => void;
+  zoom: (delta: number, center?: Position) => void;
+  reset: () => void;
+  stopMomentum: () => void;
+  setCamera: (camera: Partial<Camera> | ((camera: Camera) => Camera)) => void;
+  isDragging: boolean;
+  isAnimating: boolean;
+  bind: () => CameraBindings;
+}
+
+export type CameraBindings = GridNavigationBindings;
+
 export interface GridNavigationBindings {
-  onPointerDown: PointerEventHandler<HTMLDivElement>;
-  onPointerMove: PointerEventHandler<HTMLDivElement>;
-  onPointerUp: PointerEventHandler<HTMLDivElement>;
-  onPointerLeave: PointerEventHandler<HTMLDivElement>;
-  onWheel: WheelEventHandler<HTMLDivElement>;
+  onPointerDown?: PointerEventHandler<EventTarget>;
+  onPointerMove?: PointerEventHandler<EventTarget>;
+  onPointerUp?: PointerEventHandler<EventTarget>;
+  onPointerLeave?: PointerEventHandler<EventTarget>;
+  onWheel?: WheelEventHandler<EventTarget>;
   style: CSSProperties;
 }
 

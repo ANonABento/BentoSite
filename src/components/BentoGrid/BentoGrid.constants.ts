@@ -1,6 +1,10 @@
 import type { CardSize, GridTheme, PhysicsConfig, ThemeConfig } from './BentoGrid.types';
 
 export const GRID = {
+  cellSize: 180,
+  gap: 12,
+  spawnBuffer: 100,
+  despawnBuffer: 200,
   CELL_SIZE: 180,
   GAP: 12,
   SPAWN_BUFFER: 100,
@@ -14,7 +18,10 @@ export const CARD_SIZES: Record<CardSize, { cols: number; rows: number }> = {
   '2x2': { cols: 2, rows: 2 },
 };
 
-export function getCardDimensions(size: CardSize): { width: number; height: number } {
+export function getCardDimensions(size: CardSize): {
+  width: number;
+  height: number;
+} {
   const { cols, rows } = CARD_SIZES[size];
   return {
     width: cols * GRID.CELL_SIZE + (cols - 1) * GRID.GAP,
@@ -23,11 +30,19 @@ export function getCardDimensions(size: CardSize): { width: number; height: numb
 }
 
 export const QUEUE = {
+  spawnDelay: 100,
+  maxVisible: 30,
+  initialSpawnCount: 12,
+  initialStagger: 50,
+  policy: 'FIFO',
   SPAWN_DELAY: 100,
   MAX_VISIBLE: 30,
   INITIAL_SPAWN_COUNT: 12,
   INITIAL_STAGGER: 50,
+  POLICY: 'FIFO',
 } as const;
+
+export const CARD_POOL = QUEUE;
 
 export const CAMERA = {
   DEFAULT: { x: 0, y: 0, zoom: 1 },
@@ -39,9 +54,30 @@ export const CAMERA = {
   MIN_VELOCITY: 0.5,
   SPRING_STIFFNESS: 200,
   SPRING_DAMPING: 30,
+  minZoom: 0.4,
+  maxZoom: 2.0,
+  defaultZoom: 1,
+  zoomSensitivity: 0.001,
+  panSpeed: 15,
+  keyboardPanSpeed: 30,
+  wheelZoomOutFactor: 0.9,
+  wheelZoomInFactor: 1.1,
+  momentum: {
+    friction: 0.92,
+    minVelocity: 0.5,
+  },
+  spring: {
+    stiffness: 200,
+    damping: 30,
+  },
 } as const;
 
+export const DEFAULT_CAMERA = CAMERA.DEFAULT;
+
 export const INTERACTION = {
+  dragThreshold: 5,
+  clickMaxDuration: 200,
+  touchTargetMin: 44,
   DRAG_THRESHOLD: 5,
   CLICK_MAX_DURATION: 200,
   TOUCH_TARGET_MIN: 44,
@@ -55,9 +91,23 @@ export const SEARCH_CARD = {
   COLLAPSED_HEIGHT: 56,
   SQUASHED_SIDE_WIDTH: 80,
   COMPRESSION_DISTANCE: 180,
+  STICKY_THRESHOLD: 60,
   EDGE_PADDING: 16,
   EXCLUSION_PADDING: 24,
+  expandedWidth: SEARCH_CARD_DIMENSIONS.width,
+  expandedHeight: SEARCH_CARD_DIMENSIONS.height,
+  collapsedHeight: 56,
+  squashedSideWidth: 80,
+  compressionDistance: 180,
+  stickyThreshold: 60,
+  threshold: 60,
+  edgePadding: 16,
+  cardWidth: SEARCH_CARD_DIMENSIONS.width,
+  cardHeight: SEARCH_CARD_DIMENSIONS.height,
+  exclusionPadding: 24,
 } as const;
+
+export const STICKY = SEARCH_CARD;
 
 export const ANIMATION = {
   CARD_ENTER: 300,
