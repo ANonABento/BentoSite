@@ -285,22 +285,18 @@ export function useCamera({
 
       switch (event.key.toLowerCase()) {
         case 'w':
-        case 'arrowup':
           event.preventDefault();
           pan(0, panAmount);
           break;
         case 's':
-        case 'arrowdown':
           event.preventDefault();
           pan(0, -panAmount);
           break;
         case 'a':
-        case 'arrowleft':
           event.preventDefault();
           pan(panAmount, 0);
           break;
         case 'd':
-        case 'arrowright':
           event.preventDefault();
           pan(-panAmount, 0);
           break;
