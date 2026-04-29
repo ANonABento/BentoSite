@@ -82,7 +82,11 @@ export interface Size {
   height: number;
 }
 
+export type Point = Position;
+
 export interface Rect extends Position, Size {}
+
+export interface Bounds extends Position, Size {}
 
 export interface CardPosition extends Rect {
   rotation: number;
@@ -128,6 +132,7 @@ export interface CardPoolState {
 }
 
 export type SpawnEdge = 'top' | 'bottom' | 'left' | 'right';
+export type StickyEdge = SearchCardEdge;
 
 export interface Camera {
   x: number;
@@ -152,12 +157,22 @@ export type SearchCardEdge = 'none' | 'top' | 'bottom' | 'left' | 'right';
 export interface SearchCardState {
   expanded: boolean;
   edge: SearchCardEdge;
+  stickyEdge: StickyEdge;
   compression: number;
+  canvasPosition: Position;
+  screenPosition: Position;
   width: number;
   height: number;
+  size: Size;
   searchTerm: string;
   category: string | null;
   categories: string[];
+}
+
+export interface GridLayoutConfig {
+  cellSize: number;
+  gap: number;
+  columns?: number;
 }
 
 export interface GridConfig {
@@ -226,6 +241,24 @@ export interface GridNavigationBindings {
   onPointerLeave: PointerEventHandler<HTMLDivElement>;
   onWheel: WheelEventHandler<HTMLDivElement>;
   style: CSSProperties;
+}
+
+export type CameraBindings = Partial<GridNavigationBindings>;
+
+export interface UseCameraReturn {
+  camera: Camera;
+  pan: (dx: number, dy: number) => void;
+  zoom: (delta: number, center?: Position) => void;
+  reset: () => void;
+  stopMomentum: () => void;
+  setCamera: (
+    camera:
+      | Partial<Camera>
+      | ((previous: Camera) => Camera),
+  ) => void;
+  isDragging: boolean;
+  isAnimating: boolean;
+  bind: () => CameraBindings;
 }
 
 export interface PhysicsPosition {

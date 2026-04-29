@@ -1,6 +1,10 @@
 import type { CardSize, GridTheme, PhysicsConfig, ThemeConfig } from './BentoGrid.types';
 
 export const GRID = {
+  cellSize: 180,
+  gap: 12,
+  spawnBuffer: 100,
+  despawnBuffer: 200,
   CELL_SIZE: 180,
   GAP: 12,
   SPAWN_BUFFER: 100,
@@ -23,11 +27,19 @@ export function getCardDimensions(size: CardSize): { width: number; height: numb
 }
 
 export const QUEUE = {
+  spawnDelay: 100,
+  maxVisible: 30,
+  initialSpawnCount: 12,
+  initialStagger: 50,
+  policy: 'FIFO',
   SPAWN_DELAY: 100,
   MAX_VISIBLE: 30,
   INITIAL_SPAWN_COUNT: 12,
   INITIAL_STAGGER: 50,
+  POLICY: 'FIFO',
 } as const;
+
+export const CARD_POOL = QUEUE;
 
 export const CAMERA = {
   DEFAULT: { x: 0, y: 0, zoom: 1 },
@@ -39,9 +51,31 @@ export const CAMERA = {
   MIN_VELOCITY: 0.5,
   SPRING_STIFFNESS: 200,
   SPRING_DAMPING: 30,
+  minZoom: 0.4,
+  maxZoom: 2.0,
+  defaultZoom: 1,
+  keyboardPanSpeed: 30,
+  wheelZoomInFactor: 1.08,
+  wheelZoomOutFactor: 0.92,
+  zoomSensitivity: 0.001,
+  panSpeed: 15,
+  momentum: {
+    friction: 0.92,
+    minVelocity: 0.5,
+  },
+  spring: {
+    stiffness: 200,
+    damping: 30,
+  },
+  animationDuration: 300,
 } as const;
 
+export const DEFAULT_CAMERA = CAMERA.DEFAULT;
+
 export const INTERACTION = {
+  dragThreshold: 5,
+  clickMaxDuration: 200,
+  touchTargetMin: 44,
   DRAG_THRESHOLD: 5,
   CLICK_MAX_DURATION: 200,
   TOUCH_TARGET_MIN: 44,
@@ -55,15 +89,43 @@ export const SEARCH_CARD = {
   COLLAPSED_HEIGHT: 56,
   SQUASHED_SIDE_WIDTH: 80,
   COMPRESSION_DISTANCE: 180,
+  STICKY_THRESHOLD: 60,
   EDGE_PADDING: 16,
   EXCLUSION_PADDING: 24,
+  expandedWidth: SEARCH_CARD_DIMENSIONS.width,
+  expandedHeight: SEARCH_CARD_DIMENSIONS.height,
+  collapsedHeight: 56,
+  squashedSideWidth: 80,
+  compressionDistance: 180,
+  stickyThreshold: 60,
+  edgePadding: 16,
+  exclusionPadding: 24,
+  cardWidth: SEARCH_CARD_DIMENSIONS.width,
+  cardHeight: SEARCH_CARD_DIMENSIONS.height,
+  threshold: 60,
+  spring: {
+    type: 'spring',
+    stiffness: 400,
+    damping: 35,
+  },
 } as const;
 
+export const STICKY = SEARCH_CARD;
+
 export const ANIMATION = {
+  cardEnter: 300,
+  cardExit: 200,
+  stagger: 30,
+  hoverScale: 1.02,
+  hoverDuration: 150,
   CARD_ENTER: 300,
   CARD_EXIT: 200,
   STAGGER: 30,
   SPRING: {
+    stiffness: 180,
+    damping: 25,
+  },
+  spring: {
     stiffness: 180,
     damping: 25,
   },
