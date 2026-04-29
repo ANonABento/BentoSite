@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { SEARCH_CARD } from '../BentoGrid.constants';
+import type { Camera } from '../BentoGrid.types';
 import { getSearchCardPhysicsState, getSearchCardPresentation } from '../search';
 
 const windowSize = { width: 1000, height: 800 };
 
-function cameraForScreenPosition(x: number, y: number, zoom = 1) {
+function cameraForScreenPosition(x: number, y: number, zoom = 1): Camera {
   return {
     x: (x - windowSize.width / 2) / zoom,
     y: (y - windowSize.height / 2) / zoom,

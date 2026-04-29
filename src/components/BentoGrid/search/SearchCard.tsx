@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowLeftIcon, ChevronDownIcon, CloseIcon, SearchIcon, SettingsIcon } from '@/components/ui/Icons';
-import type { ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import { SEARCH_CARD } from '../BentoGrid.constants';
 import type { Position, SearchCardEdge, ThemeConfig } from '../BentoGrid.types';
 import { BaseCard } from '../cards/BaseCard';
@@ -25,6 +25,13 @@ export interface SearchCardProps {
   totalCards?: number;
   filteredCards?: number;
   entranceIndex?: number;
+}
+
+interface IconButtonProps {
+  label: string;
+  children: ReactNode;
+  onClick?: () => void;
+  tabIndex?: number;
 }
 
 interface CategoryFilterButtonProps {
@@ -52,6 +59,8 @@ function CategoryFilterButton({
         background: active ? `${accentColor}30` : 'var(--glass-bg)',
         border: active ? `1px solid ${accentColor}66` : '1px solid transparent',
       }}
+      aria-pressed={active}
+      disabled={!interactive}
       tabIndex={interactive ? 0 : -1}
     >
       {children}
@@ -64,12 +73,7 @@ function IconButton({
   children,
   onClick,
   tabIndex,
-}: {
-  label: string;
-  children: ReactNode;
-  onClick?: () => void;
-  tabIndex?: number;
-}) {
+}: IconButtonProps) {
   return (
     <button
       type="button"
@@ -83,6 +87,12 @@ function IconButton({
       {children}
     </button>
   );
+}
+
+function blurOnEscape(event: KeyboardEvent<HTMLInputElement>) {
+  if (event.key === 'Escape') {
+    event.currentTarget.blur();
+  }
 }
 
 function SideSearchControl({
@@ -107,9 +117,7 @@ function SideSearchControl({
         type="text"
         value={searchTerm}
         onChange={(event) => onSearchChange(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') event.currentTarget.blur();
-        }}
+        onKeyDown={blurOnEscape}
         className="sr-only"
         aria-label="Search cards"
       />
@@ -254,9 +262,7 @@ export function SearchCard({
                 placeholder={compactSearch ? '' : 'Search...'}
                 value={searchTerm}
                 onChange={(event) => onSearchChange(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Escape') event.currentTarget.blur();
-                }}
+                onKeyDown={blurOnEscape}
                 className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-theme-muted"
                 style={{ color: 'var(--text-primary)' }}
                 aria-label="Search cards"

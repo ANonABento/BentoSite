@@ -110,8 +110,12 @@ function getMobilePresentation(
   windowSize: Size,
   expanded: boolean,
 ): SearchCardPresentation {
-  const width = Math.min(
+  const availableWidth = Math.max(
+    SEARCH_CARD.SQUASHED_SIDE_WIDTH,
     windowSize.width - SEARCH_CARD.EDGE_PADDING * 2,
+  );
+  const width = Math.min(
+    availableWidth,
     SEARCH_CARD.EXPANDED_WIDTH,
   );
   const height = expanded ? SEARCH_CARD.EXPANDED_HEIGHT : SEARCH_CARD.COLLAPSED_HEIGHT;
