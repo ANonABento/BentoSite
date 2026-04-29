@@ -52,8 +52,8 @@ export function BaseCard({
       exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
       transition={{
         type: 'spring',
-        stiffness: ANIMATION.spring.stiffness,
-        damping: ANIMATION.spring.damping,
+        stiffness: ANIMATION.SPRING.stiffness,
+        damping: ANIMATION.SPRING.damping,
         delay: prefersReducedMotion ? 0 : unifiedGridCardEntranceDelay(entranceIndex),
       }}
       whileHover={prefersReducedMotion ? undefined : { scale: 1.015, y: -2 }}

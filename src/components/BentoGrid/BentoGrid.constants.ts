@@ -143,14 +143,6 @@ export const ANIMATION = {
   },
 } as const;
 
-export const ANIMATION = {
-  ...ANIMATION_VALUES,
-  CARD_ENTER: ANIMATION_VALUES.cardEnter,
-  CARD_EXIT: ANIMATION_VALUES.cardExit,
-  STAGGER: ANIMATION_VALUES.stagger,
-  SPRING: ANIMATION_VALUES.spring,
-} as const;
-
 export const PHYSICS: PhysicsConfig = {
   friction: 0.05,
   frictionAir: 0.01,

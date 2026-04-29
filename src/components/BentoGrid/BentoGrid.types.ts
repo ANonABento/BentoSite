@@ -153,8 +153,6 @@ export interface Velocity {
 export type SearchCardEdge = 'none' | 'top' | 'bottom' | 'left' | 'right';
 export type StickyEdge = SearchCardEdge;
 
-export type StickyEdge = SearchCardEdge;
-
 export interface SearchCardState {
   expanded: boolean;
   edge: SearchCardEdge;

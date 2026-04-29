@@ -108,7 +108,7 @@ describe('BentoGrid cards', () => {
 
   it('keeps hover scaling separate from absolute card positioning', () => {
     render(
-      <BaseCard position={position} theme={theme}>
+      <BaseCard id="test-card" position={position} theme={theme}>
         Card content
       </BaseCard>
     );
