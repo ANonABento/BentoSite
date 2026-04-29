@@ -9,10 +9,6 @@ import type {
 } from '../BentoGrid.types';
 import { GRID } from '../BentoGrid.constants';
 
-export function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
-}
-
 export interface UseViewportOptions {
   camera: Camera;
   buffer?: number;

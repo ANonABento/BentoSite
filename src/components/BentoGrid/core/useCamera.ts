@@ -2,9 +2,16 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGesture } from '@use-gesture/react';
-import type { Camera, CameraBindings, Position, Size, UseCameraReturn, Velocity } from '../BentoGrid.types';
+import { clamp } from '@/lib/utils';
+import type {
+  Camera,
+  CameraBindings,
+  Position,
+  Size,
+  UseCameraReturn,
+  Velocity,
+} from '../BentoGrid.types';
 import { CAMERA, DEFAULT_CAMERA, INTERACTION } from '../BentoGrid.constants';
-import { clamp } from './useViewport';
 
 interface UseCameraOptions {
   enabled?: boolean;
@@ -68,13 +75,14 @@ export function useCamera({
 
   const setCamera = useCallback<UseCameraReturn['setCamera']>((next) => {
     setCameraState((prev) => {
-      const updated = typeof next === 'function'
-        ? next(prev)
-        : {
-            x: next.x ?? prev.x,
-            y: next.y ?? prev.y,
-            zoom: next.zoom ?? prev.zoom,
-          };
+      const updated =
+        typeof next === 'function'
+          ? next(prev)
+          : {
+              x: next.x ?? prev.x,
+              y: next.y ?? prev.y,
+              zoom: next.zoom ?? prev.zoom,
+            };
 
       return {
         x: updated.x,
@@ -84,62 +92,74 @@ export function useCamera({
     });
   }, []);
 
-  const applyMomentum = useCallback(function applyMomentumFrame() {
-    const { velocity } = momentumRef.current;
-    const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+  const applyMomentum = useCallback(
+    function applyMomentumFrame() {
+      const { velocity } = momentumRef.current;
+      const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
 
-    if (speed < CAMERA.momentum.minVelocity) {
-      stopMomentum();
-      return;
-    }
-
-    setCamera((prev) => ({
-      ...prev,
-      x: prev.x + velocity.x,
-      y: prev.y + velocity.y,
-    }));
-
-    momentumRef.current.velocity = {
-      x: velocity.x * CAMERA.momentum.friction,
-      y: velocity.y * CAMERA.momentum.friction,
-    };
-    momentumRef.current.animationId = requestAnimationFrame(applyMomentumFrame);
-  }, [setCamera, stopMomentum]);
-
-  const startMomentum = useCallback((velocity: Velocity) => {
-    stopMomentum();
-    momentumRef.current.velocity = velocity;
-    setIsAnimating(true);
-    momentumRef.current.animationId = requestAnimationFrame(applyMomentum);
-  }, [applyMomentum, stopMomentum]);
-
-  const pan = useCallback((dx: number, dy: number) => {
-    setCamera((prev) => ({
-      ...prev,
-      x: prev.x + dx / prev.zoom,
-      y: prev.y + dy / prev.zoom,
-    }));
-  }, [setCamera]);
-
-  const zoom = useCallback((delta: number, center?: Position) => {
-    stopMomentum();
-
-    setCamera((prev) => {
-      const newZoom = clamp(prev.zoom * (1 + delta), CAMERA.minZoom, CAMERA.maxZoom);
-
-      if (!center || newZoom === prev.zoom) {
-        return { ...prev, zoom: newZoom };
+      if (speed < CAMERA.momentum.minVelocity) {
+        stopMomentum();
+        return;
       }
 
-      const zoomDelta = newZoom / prev.zoom;
+      setCamera((prev) => ({
+        ...prev,
+        x: prev.x + velocity.x,
+        y: prev.y + velocity.y,
+      }));
 
-      return {
-        x: prev.x - (center.x / prev.zoom) * (1 - 1 / zoomDelta),
-        y: prev.y - (center.y / prev.zoom) * (1 - 1 / zoomDelta),
-        zoom: newZoom,
+      momentumRef.current.velocity = {
+        x: velocity.x * CAMERA.momentum.friction,
+        y: velocity.y * CAMERA.momentum.friction,
       };
-    });
-  }, [setCamera, stopMomentum]);
+      momentumRef.current.animationId = requestAnimationFrame(applyMomentumFrame);
+    },
+    [setCamera, stopMomentum],
+  );
+
+  const startMomentum = useCallback(
+    (velocity: Velocity) => {
+      stopMomentum();
+      momentumRef.current.velocity = velocity;
+      setIsAnimating(true);
+      momentumRef.current.animationId = requestAnimationFrame(applyMomentum);
+    },
+    [applyMomentum, stopMomentum],
+  );
+
+  const pan = useCallback(
+    (dx: number, dy: number) => {
+      setCamera((prev) => ({
+        ...prev,
+        x: prev.x + dx / prev.zoom,
+        y: prev.y + dy / prev.zoom,
+      }));
+    },
+    [setCamera],
+  );
+
+  const zoom = useCallback(
+    (delta: number, center?: Position) => {
+      stopMomentum();
+
+      setCamera((prev) => {
+        const newZoom = clamp(prev.zoom * (1 + delta), CAMERA.minZoom, CAMERA.maxZoom);
+
+        if (!center || newZoom === prev.zoom) {
+          return { ...prev, zoom: newZoom };
+        }
+
+        const zoomDelta = newZoom / prev.zoom;
+
+        return {
+          x: prev.x - (center.x / prev.zoom) * (1 - 1 / zoomDelta),
+          y: prev.y - (center.y / prev.zoom) * (1 - 1 / zoomDelta),
+          zoom: newZoom,
+        };
+      });
+    },
+    [setCamera, stopMomentum],
+  );
 
   const reset = useCallback(() => {
     stopMomentum();
@@ -150,7 +170,14 @@ export function useCamera({
 
   const bindGesture = useGesture(
     {
-      onDrag: ({ down, movement: [mx, my], velocity: [vx, vy], direction: [dx, dy], first, last }) => {
+      onDrag: ({
+        down,
+        movement: [mx, my],
+        velocity: [vx, vy],
+        direction: [dx, dy],
+        first,
+        last,
+      }) => {
         if (!enabled) return;
 
         if (first) {
@@ -186,8 +213,7 @@ export function useCamera({
             y: (dy * vy * 10) / currentZoom,
           };
           const speed = Math.sqrt(
-            momentumVelocity.x * momentumVelocity.x +
-            momentumVelocity.y * momentumVelocity.y,
+            momentumVelocity.x * momentumVelocity.x + momentumVelocity.y * momentumVelocity.y,
           );
 
           if (speed > CAMERA.momentum.minVelocity) {
@@ -234,9 +260,8 @@ export function useCamera({
         stopMomentum();
 
         const target = event.currentTarget;
-        const rect = target instanceof HTMLElement
-          ? target.getBoundingClientRect()
-          : { left: 0, top: 0 };
+        const rect =
+          target instanceof HTMLElement ? target.getBoundingClientRect() : { left: 0, top: 0 };
         const cursor = {
           x: event.clientX - rect.left - windowSize.width / 2,
           y: event.clientY - rect.top - windowSize.height / 2,
@@ -325,13 +350,16 @@ export function useCamera({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [enabled, pan, reset, zoom]);
 
-  const bind = useCallback((): CameraBindings => ({
-    ...bindGesture(),
-    style: {
-      cursor: isDragging ? 'grabbing' : 'grab',
-      touchAction: 'none',
-    },
-  }), [bindGesture, isDragging]);
+  const bind = useCallback(
+    (): CameraBindings => ({
+      ...bindGesture(),
+      style: {
+        cursor: isDragging ? 'grabbing' : 'grab',
+        touchAction: 'none',
+      },
+    }),
+    [bindGesture, isDragging],
+  );
 
   return {
     camera,
