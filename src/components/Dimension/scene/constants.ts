@@ -1,5 +1,3 @@
-import * as THREE from 'three';
-
 export const SCENE_COLORS = {
   error: '#dc2626',
   errorText: '#ef4444',
@@ -17,5 +15,3 @@ export const GRID_STYLE = {
   sectionColor: 'rgba(138, 138, 138, 1)',
   fadeStrength: 3,
 } as const;
-
-export const ORIGIN = new THREE.Vector3(0, 0, 0);

@@ -1,1 +1,0 @@
-export { TransparentHeader } from './TransparentHeader';

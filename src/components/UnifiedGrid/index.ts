@@ -29,7 +29,6 @@
 
 // Main component
 export { UnifiedGrid, type UnifiedGridProps } from './UnifiedGrid';
-export { default } from './UnifiedGrid';
 
 // Types
 export type {

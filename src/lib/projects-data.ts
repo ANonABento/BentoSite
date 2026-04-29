@@ -2,7 +2,6 @@
 // Used by ProjectsModal for the portfolio showcase
 
 import portfolioContent from '@/content/portfolio.json';
-import type { ProjectMedia } from '@/components/MediaViewer/MediaViewer.types';
 
 export type ProjectCategory =
   | 'Robotics'
@@ -14,6 +13,21 @@ export type ProjectCategory =
   | 'Accessibility'
   | 'Games';
 export type ProjectStatus = 'Completed' | 'In Progress' | 'Archived';
+
+export interface ProjectMedia {
+  images?: string[];
+  pdf?: string;
+  video?: string;
+  website?: string;
+  game?: {
+    type: 'unity-webgl' | 'itch';
+    url: string;
+  };
+  map?: {
+    locations: string[];
+    highlightedIds?: string[];
+  };
+}
 
 export interface Project {
   id: string;

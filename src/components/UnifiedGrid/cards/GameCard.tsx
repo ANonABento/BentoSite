@@ -273,5 +273,3 @@ export function GameCard({
     </motion.div>
   );
 }
-
-export default GameCard;

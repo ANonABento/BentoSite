@@ -280,5 +280,3 @@ export function SearchMenuCard({
     </motion.div>
   );
 }
-
-export default SearchMenuCard;

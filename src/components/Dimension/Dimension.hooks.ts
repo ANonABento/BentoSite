@@ -1,7 +1,6 @@
 // Dimension.tsx - Custom Hooks
 
-import { useRef, useState, useEffect, useMemo } from 'react';
-import type { ModelInfo } from './Dimension.types';
+import { useRef, useState, useEffect } from 'react';
 import { isMobileDevice } from './Dimension.utils';
 
 // Keyboard shortcuts callbacks interface
@@ -119,37 +118,3 @@ export const useKeyboardShortcuts = (callbacks: KeyboardCallbacks) => {
 
 // Note: Touch gestures (pinch zoom) are handled natively by OrbitControls
 // Note: Keyboard help ('?') and Performance HUD ('P') were removed as unused
-
-/**
- * Hook for model search and filtering
- */
-export const useModelSearch = (models: ModelInfo[]) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-
-  // Memoize categories to avoid recalculating on every render
-  const categories = useMemo(() => {
-    const uniqueCategories = new Set(models.map((model) => model.category));
-    return ['All', ...Array.from(uniqueCategories)];
-  }, [models]);
-
-  // Memoize filtered models
-  const filteredModels = useMemo(() => {
-    const searchLower = searchTerm.toLowerCase();
-    return models.filter((model) => {
-      const matchesSearch = model.name.toLowerCase().includes(searchLower) ||
-                           model.description.toLowerCase().includes(searchLower);
-      const matchesCategory = selectedCategory === 'All' || model.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
-  }, [models, searchTerm, selectedCategory]);
-
-  return {
-    searchTerm,
-    setSearchTerm,
-    selectedCategory,
-    setSelectedCategory,
-    categories,
-    filteredModels,
-  };
-};

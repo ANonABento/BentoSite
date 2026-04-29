@@ -84,5 +84,3 @@ export function UnifiedGrid({
     />
   );
 }
-
-export default UnifiedGrid;
