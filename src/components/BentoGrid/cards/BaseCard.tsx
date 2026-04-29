@@ -83,7 +83,7 @@ export function BaseCard({
         damping: ANIMATION.SPRING.damping,
         delay: prefersReducedMotion ? 0 : unifiedGridCardEntranceDelay(entranceIndex),
       }}
-      whileHover={prefersReducedMotion ? undefined : { scale: 1.015, y: -2 }}
+      whileHover={prefersReducedMotion ? undefined : { scale: 1.015 }}
       whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
       onHoverStart={handleHoverStart}
       onHoverEnd={handleHoverEnd}

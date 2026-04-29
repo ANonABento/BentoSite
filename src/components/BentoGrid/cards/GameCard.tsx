@@ -63,7 +63,18 @@ const ACCENT_COLORS: Record<
 
 function getAccentColor(index: number): AccentColor {
   const colors: AccentColor[] = ['rose', 'purple', 'cyan'];
-  return colors[index % colors.length];
+  const normalizedIndex = ((index % colors.length) + colors.length) % colors.length;
+  return colors[normalizedIndex];
+}
+
+function getStoredBestScore(cardId: string): string | null {
+  if (typeof window === 'undefined' || !cardId) return null;
+
+  try {
+    return localStorage.getItem(`bestScore_${cardId}`);
+  } catch {
+    return null;
+  }
 }
 
 export interface GameCardProps {
@@ -87,13 +98,13 @@ export function GameCard({
 }: GameCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [bestScore] = useState<string | null>(() => {
-    if (typeof window === 'undefined' || !card.id) return null;
-    return localStorage.getItem(`bestScore_${card.id}`);
+    return getStoredBestScore(card.id);
   });
 
   const colors = ACCENT_COLORS[getAccentColor(index)];
   const icon = GAME_ICONS[card.id] || GAME_ICONS[card.icon || 'default'] || GAME_ICONS.default;
   const isHighlighted = isHovered || isFocused;
+  const displayedBestScore = bestScore ?? (card.bestScore != null ? String(card.bestScore) : null);
 
   return (
     <BaseCard
@@ -164,7 +175,7 @@ export function GameCard({
         <div className="flex-1" />
 
         <div className="mt-2 flex items-center justify-between">
-          {bestScore || card.bestScore ? (
+          {displayedBestScore ? (
             <div className="flex items-center gap-2">
               <span
                 className="text-xs uppercase tracking-wider"
@@ -173,7 +184,7 @@ export function GameCard({
                 Best
               </span>
               <span className="font-mono text-sm font-semibold" style={{ color: colors.color }}>
-                {bestScore || card.bestScore}
+                {displayedBestScore}
               </span>
             </div>
           ) : (
