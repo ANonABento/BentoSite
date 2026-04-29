@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { SEARCH_CARD, THEME_PREMIUM } from '../BentoGrid.constants';
-import { SearchCard, type SearchCardProps } from '../search/SearchCard';
+import { SearchMenuCard, type SearchMenuCardProps } from '../cards/SearchMenuCard';
 
 vi.mock('framer-motion', () => ({
   motion: {
@@ -11,22 +11,31 @@ vi.mock('framer-motion', () => ({
       children?: ReactNode;
       exit?: unknown;
       initial?: unknown;
+      layoutId?: string;
+      onHoverEnd?: () => void;
+      onHoverStart?: () => void;
       transition?: unknown;
       whileHover?: unknown;
+      whileTap?: unknown;
     }) => {
       const domProps = { ...props };
       delete domProps.animate;
       delete domProps.exit;
       delete domProps.initial;
+      delete domProps.layoutId;
+      delete domProps.onHoverEnd;
+      delete domProps.onHoverStart;
       delete domProps.transition;
       delete domProps.whileHover;
+      delete domProps.whileTap;
 
       return <div {...domProps}>{children}</div>;
     },
   },
+  useReducedMotion: () => false,
 }));
 
-const baseProps: SearchCardProps = {
+const baseProps: SearchMenuCardProps = {
   theme: THEME_PREMIUM,
   expanded: true,
   edge: 'none',
@@ -44,8 +53,8 @@ const baseProps: SearchCardProps = {
   filteredCards: 8,
 };
 
-function renderSearchCard(overrides: Partial<SearchCardProps> = {}) {
-  return render(<SearchCard {...baseProps} {...overrides} />);
+function renderSearchCard(overrides: Partial<SearchMenuCardProps> = {}) {
+  return render(<SearchMenuCard {...baseProps} {...overrides} />);
 }
 
 describe('SearchCard', () => {

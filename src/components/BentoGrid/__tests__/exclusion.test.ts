@@ -1,59 +1,67 @@
 import { describe, expect, it } from 'vitest';
-import type { CardData } from '../BentoGrid.types';
-import { calculateLayoutWithExclusion, rectsOverlap } from '../layout';
+import type { CardPosition } from '../BentoGrid.types';
+import {
+  preserveLayoutWithExclusion,
+  rectsOverlap,
+} from '../layout';
 
-const cards: CardData[] = Array.from({ length: 8 }, (_, index) => ({
-  id: `project-${index}`,
-  type: 'project' as const,
-  title: `Project ${index}`,
-}));
+describe('preserveLayoutWithExclusion', () => {
+  const basePosition: CardPosition = {
+    x: 0,
+    y: 0,
+    width: 180,
+    height: 180,
+    rotation: 0,
+    size: '1x1',
+  };
 
-describe('calculateLayoutWithExclusion', () => {
-  it('places cards outside the padded exclusion zone', () => {
+  it('keeps cards that do not overlap the exclusion zone in place', () => {
+    const currentPositions = new Map<string, CardPosition>([
+      ['safe', { ...basePosition, x: 500, y: 0 }],
+      ['blocked', { ...basePosition, x: 0, y: 0 }],
+    ]);
     const exclusionZone = {
-      x: -190,
-      y: -90,
-      width: 380,
-      height: 180,
-      padding: 24,
-    };
-    const positions = calculateLayoutWithExclusion(cards, exclusionZone, 0);
-    const paddedExclusion = {
-      x: exclusionZone.x - exclusionZone.padding,
-      y: exclusionZone.y - exclusionZone.padding,
-      width: exclusionZone.width + exclusionZone.padding * 2,
-      height: exclusionZone.height + exclusionZone.padding * 2,
-    };
-
-    expect(positions.size).toBe(cards.length);
-
-    positions.forEach((position) => {
-      expect(rectsOverlap(position, paddedExclusion, 0)).toBe(false);
-    });
-  });
-
-  it('keeps fallback placements non-overlapping when the exclusion zone is huge', () => {
-    const exclusionZone = {
-      x: -5000,
-      y: -5000,
-      width: 10000,
-      height: 10000,
+      x: -20,
+      y: -20,
+      width: 220,
+      height: 220,
       padding: 0,
     };
-    const positions = Array.from(
-      calculateLayoutWithExclusion(cards, exclusionZone, 0).values(),
-    );
 
-    expect(positions).toHaveLength(cards.length);
+    const positions = preserveLayoutWithExclusion(currentPositions, exclusionZone);
 
-    positions.forEach((position) => {
-      expect(rectsOverlap(position, exclusionZone, 0)).toBe(false);
+    expect(positions.get('safe')).toMatchObject(currentPositions.get('safe')!);
+    expect(rectsOverlap(positions.get('blocked')!, exclusionZone, 0)).toBe(false);
+  });
+
+  it('preserves size and rotation while resolving card-card overlaps', () => {
+    const currentPositions = new Map<string, CardPosition>([
+      ['first', { ...basePosition, x: 0, y: 0, rotation: 3, size: '1x1' }],
+      ['second', { ...basePosition, x: 0, y: 0, rotation: -2, size: '1x1' }],
+    ]);
+    const exclusionZone = {
+      x: 500,
+      y: 500,
+      width: 100,
+      height: 100,
+      padding: 0,
+    };
+    const positions = preserveLayoutWithExclusion(currentPositions, exclusionZone);
+    const first = positions.get('first')!;
+    const second = positions.get('second')!;
+
+    expect(first).toMatchObject({
+      width: basePosition.width,
+      height: basePosition.height,
+      rotation: 3,
+      size: '1x1',
     });
-
-    for (let i = 0; i < positions.length; i++) {
-      for (let j = i + 1; j < positions.length; j++) {
-        expect(rectsOverlap(positions[i], positions[j])).toBe(false);
-      }
-    }
+    expect(second).toMatchObject({
+      width: basePosition.width,
+      height: basePosition.height,
+      rotation: -2,
+      size: '1x1',
+    });
+    expect(rectsOverlap(first, second)).toBe(false);
   });
 });

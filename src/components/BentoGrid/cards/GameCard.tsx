@@ -12,7 +12,7 @@
  */
 
 import { useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Zap,
   Keyboard,
@@ -26,8 +26,7 @@ import {
   Gamepad2,
 } from 'lucide-react';
 import type { GameCardData, CardPosition, ThemeConfig } from '../BentoGrid.types';
-import { ANIMATION } from '../BentoGrid.constants';
-import { unifiedGridCardEntranceDelay } from '@/lib/animations';
+import { BaseCard } from './BaseCard';
 
 // =============================================================================
 // ICON MAPPING
@@ -124,7 +123,6 @@ export function GameCard({
   entranceIndex = 0,
 }: GameCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const prefersReducedMotion = useReducedMotion() ?? false;
   // Load best score from localStorage lazily (synchronous on first render).
   // SSR is disabled for this page, so window is available when this renders.
   const [bestScore] = useState<string | null>(() => {
@@ -142,45 +140,26 @@ export function GameCard({
   const icon = GAME_ICONS[card.id] || GAME_ICONS[card.icon || 'default'] || GAME_ICONS.default;
 
   return (
-    <motion.div
-      className="absolute cursor-pointer select-none"
-      style={{
-        width: position.width,
-        height: position.height,
-      }}
-      initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.92, rotate: position.rotation }}
-      animate={{
-        opacity: 1,
-        scale: 1,
-        x: position.x,
-        y: position.y,
-        rotate: position.rotation,
-      }}
-      exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
-      transition={{
-        type: 'spring',
-        stiffness: ANIMATION.SPRING.stiffness,
-        damping: ANIMATION.SPRING.damping,
-        delay: prefersReducedMotion ? 0 : unifiedGridCardEntranceDelay(entranceIndex),
-      }}
-      whileHover={prefersReducedMotion ? undefined : { scale: 1.015, y: -2 }}
-      whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+    <BaseCard
+      id={card.id}
+      position={position}
+      theme={theme}
+      isFocused={isFocused}
+      entranceIndex={entranceIndex}
+      onClick={onClick}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
-      onClick={onClick}
+      shellClassName="rounded-xl bg-[#1a1a1a]/95 backdrop-blur-sm group relative"
+      shellStyle={{
+        background: '#1a1a1a',
+        border: `2px solid ${isHighlighted ? colors.borderColor : 'rgba(255, 255, 255, 0.08)'}`,
+        boxShadow: isFocused
+          ? `0 0 0 3px ${colors.borderColor}, ${colors.neonGlow}`
+          : isHovered
+            ? colors.neonGlow
+            : theme.card.shadow,
+      }}
     >
-      <div
-        className="w-full h-full rounded-xl overflow-hidden bg-[#1a1a1a]/95 backdrop-blur-sm transition-all duration-300 ease-out group relative"
-        style={{
-          border: `2px solid ${isHighlighted ? colors.borderColor : 'rgba(255, 255, 255, 0.08)'}`,
-          boxShadow: isFocused
-            ? `0 0 0 3px ${colors.borderColor}, ${colors.neonGlow}`
-            : isHovered
-              ? colors.neonGlow
-              : undefined,
-          borderRadius: theme.card.borderRadius,
-        }}
-      >
         {/* Pixel corner accents */}
         <div
           className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 rounded-tl-sm transition-opacity duration-200"
@@ -273,7 +252,6 @@ export function GameCard({
             background: `linear-gradient(to right, ${colors.borderColor}, transparent)`,
           }}
         />
-      </div>
-    </motion.div>
+    </BaseCard>
   );
 }

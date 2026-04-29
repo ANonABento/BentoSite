@@ -10,4 +10,6 @@ export {
   getRandomRotation,
   rectsOverlap,
 } from './positions';
-export { calculateLayoutWithExclusion } from './exclusion';
+export {
+  preserveLayoutWithExclusion,
+} from './exclusion';

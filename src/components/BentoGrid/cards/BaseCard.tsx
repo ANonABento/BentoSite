@@ -1,6 +1,11 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type {
+  CSSProperties,
+  PointerEventHandler,
+  ReactNode,
+  WheelEventHandler,
+} from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import type { CardPosition, ThemeConfig } from '../BentoGrid.types';
 import { ANIMATION } from '../BentoGrid.constants';
@@ -13,10 +18,17 @@ interface BaseCardProps {
   isFocused?: boolean;
   entranceIndex?: number;
   className?: string;
+  shellClassName?: string;
+  shellStyle?: CSSProperties;
+  positionMode?: 'absolute' | 'fixed';
+  hoverEnabled?: boolean;
+  ariaLabel?: string;
   children: ReactNode;
   onClick?: () => void;
   onHoverStart?: () => void;
   onHoverEnd?: () => void;
+  onPointerDown?: PointerEventHandler<HTMLDivElement>;
+  onWheel?: WheelEventHandler<HTMLDivElement>;
 }
 
 export function BaseCard({
@@ -26,17 +38,29 @@ export function BaseCard({
   isFocused = false,
   entranceIndex = 0,
   className,
+  shellClassName,
+  shellStyle,
+  positionMode = 'absolute',
+  hoverEnabled = true,
+  ariaLabel,
   children,
   onClick,
   onHoverStart,
   onHoverEnd,
+  onPointerDown,
+  onWheel,
 }: BaseCardProps) {
   const prefersReducedMotion = useReducedMotion() ?? false;
 
   return (
     <motion.div
       layoutId={id}
-      className={['absolute cursor-pointer select-none', className].filter(Boolean).join(' ')}
+      className={[
+        positionMode,
+        onClick ? 'cursor-pointer' : 'cursor-default',
+        'select-none',
+        className,
+      ].filter(Boolean).join(' ')}
       style={{
         width: position.width,
         height: position.height,
@@ -56,14 +80,20 @@ export function BaseCard({
         damping: ANIMATION.SPRING.damping,
         delay: prefersReducedMotion ? 0 : unifiedGridCardEntranceDelay(entranceIndex),
       }}
-      whileHover={prefersReducedMotion ? undefined : { scale: 1.015, y: -2 }}
-      whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+      whileHover={prefersReducedMotion || !hoverEnabled ? undefined : { scale: 1.015, y: -2 }}
+      whileTap={prefersReducedMotion || !hoverEnabled ? undefined : { scale: 0.98 }}
       onHoverStart={onHoverStart}
       onHoverEnd={onHoverEnd}
       onClick={onClick}
+      onPointerDown={onPointerDown}
+      onWheel={onWheel}
+      aria-label={ariaLabel}
     >
       <div
-        className="h-full w-full overflow-hidden transition-all duration-300 ease-out"
+        className={[
+          'h-full w-full overflow-hidden transition-all duration-300 ease-out',
+          shellClassName,
+        ].filter(Boolean).join(' ')}
         style={{
           background: theme.card.background,
           border: isFocused ? `1px solid ${theme.accent.primary}66` : theme.card.border,
@@ -71,6 +101,7 @@ export function BaseCard({
           boxShadow: isFocused
             ? `0 0 0 3px ${theme.accent.primary}, ${theme.card.hoverShadow}`
             : theme.card.shadow,
+          ...shellStyle,
         }}
       >
         {children}

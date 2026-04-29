@@ -4,9 +4,9 @@ These are the owner's requirements from the design discussion. Any spec or imple
 
 ## Current Implementation Status
 
-BentoGrid is now the active shared grid for `/projects` and `/playground`. The old `InfiniteGrid/` and `UnifiedGrid/` packages have been removed, and the current system lives under `src/components/BentoGrid/` with separate `core/`, `layout/`, `physics/`, `cards/`, `search/`, and `views/` areas.
+BentoGrid is now the active shared grid for `/projects` and `/playground`. The old `InfiniteGrid/` and `UnifiedGrid/` packages have been removed, and the current system lives under `src/components/BentoGrid/` with separate `core/`, `layout/`, `physics/`, `cards/`, and `views/` areas.
 
-Still treat this file as an in-progress drift checklist. The major consolidation work is done, but search-card polish and duplicate search-card cleanup are still open.
+Still treat this file as an in-progress drift checklist. The major consolidation work is done, and duplicate search-card cleanup is complete; search-card polish and flow-around tuning are still open.
 
 ## Search Card Behavior
 
