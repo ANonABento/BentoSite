@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { SearchMenuCard, useSearchCardState } from '../cards';
 import {
   getCameraTransform,
+  isEditableTarget,
   screenToCanvas,
   useCamera,
   useCardNavigation,
@@ -170,14 +171,14 @@ export function DesktopCanvasView({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === '/' || event.key === 'f') {
-        if (!(event.target instanceof HTMLInputElement)) {
+        if (!isEditableTarget(event.target)) {
           event.preventDefault();
           searchState.setExpanded(true);
         }
       }
 
       if (event.key === 'Backspace' && onBack) {
-        if (!(event.target instanceof HTMLInputElement)) {
+        if (!isEditableTarget(event.target)) {
           event.preventDefault();
           onBack();
         }
