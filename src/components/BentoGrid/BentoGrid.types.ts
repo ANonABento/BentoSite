@@ -164,6 +164,7 @@ export interface SearchCardState {
   searchTerm: string;
   category: string | null;
   categories: string[];
+  screenPosition: Position;
 }
 
 export interface GridConfig {

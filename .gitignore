@@ -47,3 +47,4 @@ next-env.d.ts
 # AI context (personal overrides)
 CLAUDE.local.md
 null
+.worktrees/
