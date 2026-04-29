@@ -1,4 +1,5 @@
 export { filterCards } from './cardPoolFilter';
+export { isEditableTarget } from './keyboard';
 export {
   useCardNavigation,
   type UseCardNavigationOptions,

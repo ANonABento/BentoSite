@@ -8,7 +8,7 @@ import type {
   SearchCardState,
 } from '../BentoGrid.types';
 import { SEARCH_CARD } from '../BentoGrid.constants';
-import { canvasToScreen } from '../core/useViewport';
+import { canvasToScreen, clamp } from '../core/useViewport';
 
 interface UseSearchCardStateOptions {
   camera: Camera;
@@ -33,11 +33,6 @@ interface SearchCardPresentation {
   screenPosition: Position;
   width: number;
   height: number;
-}
-
-function clamp(value: number, min: number, max: number): number {
-  if (min > max) return (min + max) / 2;
-  return Math.min(Math.max(value, min), max);
 }
 
 function lerp(from: number, to: number, progress: number): number {

@@ -4,6 +4,7 @@ import { Fragment, useCallback, useEffect, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import {
   getCameraTransform,
+  isEditableTarget,
   screenToCanvas,
   useCamera,
   useCardNavigation,
@@ -150,12 +151,7 @@ export function DesktopCanvasView({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.target instanceof HTMLInputElement ||
-        event.target instanceof HTMLTextAreaElement ||
-        event.target instanceof HTMLSelectElement ||
-        (event.target instanceof HTMLElement && event.target.isContentEditable)
-      ) {
+      if (isEditableTarget(event.target)) {
         return;
       }
 

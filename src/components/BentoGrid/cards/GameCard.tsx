@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import {
   BarChart2,
+  ChevronRight,
   Crosshair,
   Gamepad2,
   Grid3X3,
@@ -15,7 +17,7 @@ import {
 import type { CardPosition, GameCardData, ThemeConfig } from '../BentoGrid.types';
 import { BaseCard } from './BaseCard';
 
-const GAME_ICONS: Record<string, React.ReactNode> = {
+const GAME_ICONS: Record<string, ReactNode> = {
   reaction: <Zap className="w-6 h-6" />,
   typing: <Keyboard className="w-6 h-6" />,
   rhythm: <Music className="w-6 h-6" />,
@@ -137,9 +139,7 @@ export function GameCard({
                 color: accent,
               }}
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              <ChevronRight className="w-3.5 h-3.5" />
             </div>
           </div>
         </div>

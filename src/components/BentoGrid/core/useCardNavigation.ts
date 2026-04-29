@@ -6,6 +6,7 @@ import type {
   CardPosition,
   UseCardNavigationReturn,
 } from '../BentoGrid.types';
+import { isEditableTarget } from './keyboard';
 
 export interface UseCardNavigationOptions {
   visible: Map<string, CardPosition>;
@@ -15,17 +16,6 @@ export interface UseCardNavigationOptions {
 }
 
 type Direction = 'up' | 'down' | 'left' | 'right';
-
-function isEditableTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-
-  return (
-    target instanceof HTMLInputElement ||
-    target instanceof HTMLTextAreaElement ||
-    target instanceof HTMLSelectElement ||
-    target.isContentEditable
-  );
-}
 
 function getDirection(key: string): Direction | null {
   switch (key) {
