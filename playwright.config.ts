@@ -42,15 +42,20 @@ const port = process.env.PORT
   ? Number(process.env.PORT)
   : getAvailablePort(3000);
 const baseURL = `http://127.0.0.1:${port}`;
+const shouldUseDevServer = process.env.PLAYWRIGHT_USE_DEV_SERVER === 'true';
+const webServerCommand = shouldUseDevServer
+  ? `npm run dev -- -p ${port}`
+  : process.env.CI
+    ? `npm run start -- -p ${port}`
+    : `npm run build && npm run start -- -p ${port}`;
 
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,
-  // E2E should exercise a production build. Running the full multi-browser
-  // suite against `next dev` can kill the dev server during cold compiles,
-  // which cascades into ERR_CONNECTION_REFUSED failures.
+  // Keep CI parallelism modest because cold Next.js compiles can otherwise
+  // cascade into transient connection failures.
   workers: process.env.CI ? 2 : 1,
   reporter: process.env.CI ? 'github' : 'html',
   expect: {
@@ -87,9 +92,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: process.env.CI
-      ? `npm run start -- -p ${port}`
-      : `npm run build && npm run start -- -p ${port}`,
+    command: webServerCommand,
     url: baseURL,
     reuseExistingServer: false,
     timeout: 120 * 1000,

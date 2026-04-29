@@ -84,6 +84,8 @@ export interface Size {
 
 export interface Rect extends Position, Size {}
 
+export type Point = Position;
+
 export interface CardPosition extends Rect {
   rotation: number;
   size: CardSize;
@@ -113,6 +115,13 @@ export interface ViewportBounds {
   bottom: number;
   width: number;
   height: number;
+}
+
+export interface GridLayoutConfig {
+  cellSize: number;
+  gap: number;
+  /** @deprecated Column count is removed from BentoGrid layout planning. */
+  columns?: number;
 }
 
 export interface QueuedCard {
@@ -148,6 +157,7 @@ export interface NavigationState {
 }
 
 export type SearchCardEdge = 'none' | 'top' | 'bottom' | 'left' | 'right';
+export type StickyEdge = SearchCardEdge;
 
 export interface SearchCardState {
   expanded: boolean;
@@ -214,19 +224,28 @@ export interface UseGridNavigationReturn {
   pan: (dx: number, dy: number) => void;
   zoom: (delta: number, center?: Position) => void;
   reset: () => void;
-  setCamera: (camera: Partial<Camera>) => void;
+  setCamera: (camera: CameraUpdate) => void;
   bind: () => GridNavigationBindings;
   isAnimating: boolean;
 }
 
+export type CameraUpdate = Partial<Camera> | ((camera: Camera) => Camera);
+
+export interface UseCameraReturn extends UseGridNavigationReturn {
+  stopMomentum: () => void;
+  isDragging: boolean;
+}
+
 export interface GridNavigationBindings {
-  onPointerDown: PointerEventHandler<HTMLDivElement>;
-  onPointerMove: PointerEventHandler<HTMLDivElement>;
-  onPointerUp: PointerEventHandler<HTMLDivElement>;
-  onPointerLeave: PointerEventHandler<HTMLDivElement>;
-  onWheel: WheelEventHandler<HTMLDivElement>;
+  onPointerDown?: PointerEventHandler<EventTarget>;
+  onPointerMove?: PointerEventHandler<EventTarget>;
+  onPointerUp?: PointerEventHandler<EventTarget>;
+  onPointerLeave?: PointerEventHandler<EventTarget>;
+  onWheel?: WheelEventHandler<EventTarget>;
   style: CSSProperties;
 }
+
+export type CameraBindings = GridNavigationBindings;
 
 export interface PhysicsPosition {
   x: number;

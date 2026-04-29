@@ -5,6 +5,10 @@ export const GRID = {
   GAP: 12,
   SPAWN_BUFFER: 100,
   DESPAWN_BUFFER: 200,
+  cellSize: 180,
+  gap: 12,
+  spawnBuffer: 100,
+  despawnBuffer: 200,
 } as const;
 
 export const CARD_SIZES: Record<CardSize, { cols: number; rows: number }> = {
@@ -27,7 +31,15 @@ export const QUEUE = {
   MAX_VISIBLE: 30,
   INITIAL_SPAWN_COUNT: 12,
   INITIAL_STAGGER: 50,
+  POLICY: 'FIFO',
+  spawnDelay: 100,
+  maxVisible: 30,
+  initialSpawnCount: 12,
+  initialStagger: 50,
+  policy: 'FIFO',
 } as const;
+
+export const CARD_POOL = QUEUE;
 
 export const CAMERA = {
   DEFAULT: { x: 0, y: 0, zoom: 1 },
@@ -39,12 +51,37 @@ export const CAMERA = {
   MIN_VELOCITY: 0.5,
   SPRING_STIFFNESS: 200,
   SPRING_DAMPING: 30,
+  minZoom: 0.4,
+  maxZoom: 2.0,
+  defaultZoom: 1,
+  keyboardPanSpeed: 30,
+  wheelZoomOutFactor: 0.9,
+  wheelZoomInFactor: 1.1,
+  zoomSensitivity: 0.001,
+  panSpeed: 15,
+  momentum: {
+    friction: 0.92,
+    minVelocity: 0.5,
+  },
+  spring: {
+    stiffness: 200,
+    damping: 30,
+  },
+} as const;
+
+export const DEFAULT_CAMERA = {
+  x: CAMERA.DEFAULT.x,
+  y: CAMERA.DEFAULT.y,
+  zoom: CAMERA.defaultZoom,
 } as const;
 
 export const INTERACTION = {
   DRAG_THRESHOLD: 5,
   CLICK_MAX_DURATION: 200,
   TOUCH_TARGET_MIN: 44,
+  dragThreshold: 5,
+  clickMaxDuration: 200,
+  touchTargetMin: 44,
 } as const;
 
 const SEARCH_CARD_DIMENSIONS = getCardDimensions('2x1');
@@ -55,9 +92,23 @@ export const SEARCH_CARD = {
   COLLAPSED_HEIGHT: 56,
   SQUASHED_SIDE_WIDTH: 80,
   COMPRESSION_DISTANCE: 180,
+  STICKY_THRESHOLD: 60,
   EDGE_PADDING: 16,
   EXCLUSION_PADDING: 24,
+  expandedWidth: SEARCH_CARD_DIMENSIONS.width,
+  expandedHeight: SEARCH_CARD_DIMENSIONS.height,
+  collapsedHeight: 56,
+  squashedSideWidth: 80,
+  compressionDistance: 180,
+  stickyThreshold: 60,
+  threshold: 60,
+  edgePadding: 16,
+  exclusionPadding: 24,
+  cardWidth: SEARCH_CARD_DIMENSIONS.width,
+  cardHeight: SEARCH_CARD_DIMENSIONS.height,
 } as const;
+
+export const STICKY = SEARCH_CARD;
 
 export const ANIMATION = {
   CARD_ENTER: 300,
