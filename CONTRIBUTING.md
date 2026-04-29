@@ -7,7 +7,7 @@
 - Prefer explicit feature boundaries. Public imports should come from root barrels like `@/components/Dimension`, not internal implementation paths.
 - Use CSS variables and shared token helpers for colors. Avoid hardcoded Tailwind palette classes like `red-500`, `violet-400`, or `orange-500`.
 - Follow the styling source order already used in this repo:
-  1. global utility classes from [src/app/globals.css](/Users/bentomac/conductor/repos/bentosite/src/app/globals.css)
+  1. global utility classes from `src/app/globals.css`
   2. feature or design token modules
   3. non-color Tailwind utilities
   4. inline styles for genuinely dynamic values only

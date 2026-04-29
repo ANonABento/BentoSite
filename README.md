@@ -1,9 +1,10 @@
 # Kevin Jiang Portfolio
 
-Next.js 16 portfolio site for Kevin Jiang with three main surfaces:
+Next.js 16 portfolio site for Kevin Jiang with four main route surfaces:
 - `Dashboard`: bentOS-style landing page with a 3D viewfinder, terminal chat, skills panel, and project links
 - `Scrollable`: long-form portfolio view with lazy-loaded sections, featured project filtering, timeline, skills, and chat
-- `Projects` and `Playground`: BentoGrid-powered archive views for portfolio work and interactive games
+- `Projects`: BentoGrid-powered portfolio archive
+- `Playground`: BentoGrid-powered interactive game and experiment hub
 
 ## Stack
 
