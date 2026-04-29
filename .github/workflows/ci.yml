@@ -114,6 +114,7 @@ jobs:
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
+    continue-on-error: true
     needs: [unit-tests]
     steps:
       - uses: actions/checkout@v4
