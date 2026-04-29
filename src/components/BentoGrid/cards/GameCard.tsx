@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import {
+  ArrowRight,
   BarChart2,
   Crosshair,
   Gamepad2,
@@ -31,6 +32,13 @@ const GAME_ICONS: Record<string, ReactNode> = {
   pacman: <Ghost className="h-6 w-6" />,
   default: <Gamepad2 className="h-6 w-6" />,
 };
+
+const CORNER_ACCENTS = [
+  'left-0 top-0 rounded-tl-sm border-l-2 border-t-2',
+  'right-0 top-0 rounded-tr-sm border-r-2 border-t-2',
+  'bottom-0 left-0 rounded-bl-sm border-b-2 border-l-2',
+  'bottom-0 right-0 rounded-br-sm border-b-2 border-r-2',
+] as const;
 
 type AccentColor = 'rose' | 'purple' | 'cyan';
 
@@ -122,22 +130,13 @@ export function GameCard({
       focusShadow={`0 0 0 3px ${colors.color}, ${colors.neonGlow}`}
       contentClassName="backdrop-blur-sm"
     >
-      <div
-        className="absolute left-0 top-0 h-3 w-3 rounded-tl-sm border-l-2 border-t-2 transition-opacity duration-200"
-        style={{ borderColor: colors.color, opacity: isHighlighted ? 0.8 : 0.4 }}
-      />
-      <div
-        className="absolute right-0 top-0 h-3 w-3 rounded-tr-sm border-r-2 border-t-2 transition-opacity duration-200"
-        style={{ borderColor: colors.color, opacity: isHighlighted ? 0.8 : 0.4 }}
-      />
-      <div
-        className="absolute bottom-0 left-0 h-3 w-3 rounded-bl-sm border-b-2 border-l-2 transition-opacity duration-200"
-        style={{ borderColor: colors.color, opacity: isHighlighted ? 0.8 : 0.4 }}
-      />
-      <div
-        className="absolute bottom-0 right-0 h-3 w-3 rounded-br-sm border-b-2 border-r-2 transition-opacity duration-200"
-        style={{ borderColor: colors.color, opacity: isHighlighted ? 0.8 : 0.4 }}
-      />
+      {CORNER_ACCENTS.map((className) => (
+        <div
+          key={className}
+          className={`absolute h-3 w-3 transition-opacity duration-200 ${className}`}
+          style={{ borderColor: colors.color, opacity: isHighlighted ? 0.8 : 0.4 }}
+        />
+      ))}
 
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.03]"
@@ -198,9 +197,7 @@ export function GameCard({
             style={{ background: colors.muted, color: colors.color }}
             aria-hidden="true"
           >
-            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            <ArrowRight className="h-3.5 w-3.5" />
           </div>
         </div>
       </div>
