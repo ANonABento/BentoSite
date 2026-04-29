@@ -4,8 +4,8 @@ export {
   type UseCardNavigationOptions,
   type UseCardNavigationReturn,
 } from './useCardNavigation';
+export { useCamera } from './useCamera';
 export { useCardPool, type UseCardPoolOptions } from './useCardPool';
-export { useGridNavigation } from './useGridNavigation';
 export {
   clamp,
   canvasToScreen,

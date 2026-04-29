@@ -5,15 +5,24 @@ import { AnimatePresence } from 'framer-motion';
 import { SearchMenuCard, useSearchCardState } from '../cards';
 import {
   getCameraTransform,
+  screenToCanvas,
+  useCamera,
   useCardNavigation,
   useCardPool,
-  useGridNavigation,
   useSpawnManager,
   useViewport,
   useWindowSize,
 } from '../core';
+import { calculateLayoutWithExclusion } from '../layout';
+import { usePhysicsWorld } from '../physics';
 import { GRID, SEARCH_CARD } from '../BentoGrid.constants';
-import type { CardData, RenderCard, ThemeConfig } from '../BentoGrid.types';
+import type {
+  CardData,
+  CardLayout,
+  CardPosition,
+  RenderCard,
+  ThemeConfig,
+} from '../BentoGrid.types';
 import { DefaultCard } from './DefaultCard';
 
 interface DesktopCanvasViewProps {
@@ -39,9 +48,9 @@ export function DesktopCanvasView({
 }: DesktopCanvasViewProps) {
   const windowSize = useWindowSize();
 
-  const navigation = useGridNavigation({
+  const navigation = useCamera({
     enabled: true,
-    persistKey: `bento-grid-camera-${theme.name}`,
+    windowSize,
   });
 
   const cardPool = useCardPool({
@@ -54,13 +63,6 @@ export function DesktopCanvasView({
     buffer: GRID.SPAWN_BUFFER,
   });
 
-  useSpawnManager({
-    cardPool,
-    viewport,
-    camera: navigation.camera,
-    rotationRange: theme.card.rotationRange,
-  });
-
   const searchState = useSearchCardState({
     camera: navigation.camera,
     windowSize,
@@ -68,8 +70,102 @@ export function DesktopCanvasView({
     onFilterChange: cardPool.applyFilter,
   });
 
+  const searchLayout = useMemo<CardLayout>(() => {
+    const isCompressed = searchState.edge !== 'none' && searchState.compression > 0;
+    const center = isCompressed
+      ? screenToCanvas(
+          searchState.screenPosition.x,
+          searchState.screenPosition.y,
+          navigation.camera,
+          windowSize,
+        )
+      : { x: 0, y: 0 };
+    const width = isCompressed
+      ? searchState.width / navigation.camera.zoom
+      : SEARCH_CARD.EXPANDED_WIDTH;
+    const height = isCompressed
+      ? searchState.height / navigation.camera.zoom
+      : SEARCH_CARD.EXPANDED_HEIGHT;
+
+    return {
+      id: '__search__',
+      x: center.x - width / 2,
+      y: center.y - height / 2,
+      width,
+      height,
+      rotation: 0,
+      size: '2x1',
+    };
+  }, [
+    navigation.camera,
+    searchState.compression,
+    searchState.edge,
+    searchState.height,
+    searchState.screenPosition.x,
+    searchState.screenPosition.y,
+    searchState.width,
+    windowSize,
+  ]);
+
+  const isSearchStuck = searchState.edge !== 'none' && searchState.compression > 0;
+
+  const displayLayouts = useMemo(() => {
+    if (!isSearchStuck) return cardPool.visible;
+
+    const visibleCards = Array.from(cardPool.visible.keys())
+      .map((cardId) => cardPool.cardDataMap.get(cardId))
+      .filter((card): card is CardData => Boolean(card));
+
+    return calculateLayoutWithExclusion(
+      visibleCards,
+      {
+        x: searchLayout.x,
+        y: searchLayout.y,
+        width: searchLayout.width,
+        height: searchLayout.height,
+        padding: SEARCH_CARD.EXCLUSION_PADDING,
+      },
+      theme.card.rotationRange
+    );
+  }, [
+    cardPool.cardDataMap,
+    cardPool.visible,
+    isSearchStuck,
+    searchLayout,
+    theme.card.rotationRange,
+  ]);
+
+  const {
+    positions,
+    updateSearchCard,
+    addCard,
+    removeCard,
+    applyEntranceBurst,
+  } = usePhysicsWorld({
+    layouts: displayLayouts,
+    enabled: true,
+    isMobile: false,
+  });
+
+  const physicsBridge = useMemo(
+    () => ({ addCard, removeCard, applyEntranceBurst }),
+    [addCard, removeCard, applyEntranceBurst],
+  );
+
+  useEffect(() => {
+    updateSearchCard(searchLayout, isSearchStuck);
+  }, [isSearchStuck, searchLayout, updateSearchCard]);
+
+  useSpawnManager({
+    cardPool,
+    viewport,
+    camera: navigation.camera,
+    rotationRange: theme.card.rotationRange,
+    physics: physicsBridge,
+  });
+
   const cardNavigation = useCardNavigation({
-    visible: cardPool.visible,
+    visible: displayLayouts,
     cards,
     onSelect: onCardSelect,
     enabled: true,
@@ -145,11 +241,20 @@ export function DesktopCanvasView({
         />
 
         <AnimatePresence mode="popLayout">
-          {Array.from(cardPool.visible.entries()).map(([cardId, position], index) => {
+          {Array.from(displayLayouts.entries()).map(([cardId, layout], index) => {
             const cardData = cards.find((card) => card.id === cardId);
             if (!cardData) return null;
 
             const isFocused = cardNavigation.focusedCardId === cardId;
+            const physicsPosition = positions.get(cardId);
+            const position: CardPosition = physicsPosition
+              ? {
+                  ...layout,
+                  x: physicsPosition.x,
+                  y: physicsPosition.y,
+                  rotation: (physicsPosition.angle * 180) / Math.PI,
+                }
+              : layout;
 
             if (renderCard) {
               return (
@@ -160,7 +265,7 @@ export function DesktopCanvasView({
                     theme,
                     isFocused,
                     () => handleCardClick(cardData),
-                    index
+                    index,
                   )}
                 </Fragment>
               );
