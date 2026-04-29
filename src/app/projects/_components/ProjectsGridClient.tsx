@@ -12,7 +12,6 @@ import type {
   ProjectCardData,
   ThemeConfig,
 } from '@/components/BentoGrid';
-import { ProjectCard } from '@/components/BentoGrid/cards';
 
 const BentoGrid = dynamic(
   () => import('@/components/BentoGrid').then((mod) => mod.BentoGrid),

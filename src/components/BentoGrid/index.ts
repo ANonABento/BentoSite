@@ -1,6 +1,15 @@
-export { BentoGrid } from './BentoGrid';
-export * from './BentoGrid.types';
 export { BentoGrid, type BentoGridProps } from './BentoGrid';
+export type {
+  BaseCardData,
+  Camera,
+  CardData,
+  GameCardData,
+  Position,
+  ProjectCardData,
+  SearchCardEdge,
+  SearchCardState,
+  ThemeConfig,
+} from './BentoGrid.types';
 export {
   ANIMATION,
   CAMERA,
@@ -21,9 +30,7 @@ export {
   THEMES,
   getCardDimensions,
 } from './BentoGrid.constants';
-export * from './core';
-export * from './layout';
-export * from './physics';
-export * from './search';
-export * from './cards';
-export * from './views';
+export { ProjectCard, type ProjectCardProps } from './cards/ProjectCard';
+export { GameCard, type GameCardProps } from './cards/GameCard';
+export { BaseCard, type BaseCardProps } from './cards/BaseCard';
+export { DefaultCard } from './cards/DefaultCard';
