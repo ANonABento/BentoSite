@@ -64,7 +64,9 @@ describe('SearchCard', () => {
       height: SEARCH_CARD.COLLAPSED_HEIGHT,
     });
 
-    expect(screen.queryByText('bentOS')).not.toBeInTheDocument();
+    // Breadcrumb stays visible for top/bottom edges (only side squash hides it)
+    expect(screen.getByText('bentOS')).toBeInTheDocument();
+    // Category filters hidden at full compression (detailsOpacity drops to 0)
     expect(screen.queryByRole('button', { name: 'Projects' })).not.toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Search cards' })).toBeInTheDocument();
   });
@@ -76,7 +78,9 @@ describe('SearchCard', () => {
       width: SEARCH_CARD.SQUASHED_SIDE_WIDTH,
     });
 
-    expect(screen.queryByText('bentOS')).not.toBeInTheDocument();
+    // Side squash visually hides the breadcrumb header (opacity:0, height:0, aria-hidden)
+    const breadcrumb = screen.getByText('bentOS');
+    expect(breadcrumb.closest('[aria-hidden="true"]')).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Search cards' })).toBeInTheDocument();
   });
 });

@@ -23,7 +23,7 @@ describe('useCamera keyboard controls', () => {
     expect(result.current.camera.zoom).toBe(CAMERA.minZoom);
   });
 
-  it('pans with WASD using the current zoom and leaves arrow keys for card focus', () => {
+  it('pans with WASD and arrow keys using the current zoom', () => {
     const { result } = renderHook(() => useCamera({
       windowSize,
       initialCamera: { x: 0, y: 0, zoom: 2 },
@@ -34,13 +34,13 @@ describe('useCamera keyboard controls', () => {
     expect(result.current.camera.y).toBe(panStep);
 
     act(() => keyDown('ArrowDown'));
-    expect(result.current.camera.y).toBe(panStep);
+    expect(result.current.camera.y).toBe(0);
 
     act(() => keyDown('ArrowLeft'));
-    expect(result.current.camera.x).toBe(0);
+    expect(result.current.camera.x).toBe(panStep);
 
     act(() => keyDown('d'));
-    expect(result.current.camera.x).toBe(-panStep);
+    expect(result.current.camera.x).toBe(0);
   });
 
   it('ignores keyboard shortcuts while typing in editable fields', () => {
