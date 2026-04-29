@@ -6,7 +6,7 @@ import type { Camera, CameraBindings, Position, Size, UseCameraReturn, Velocity 
 import { CAMERA, DEFAULT_CAMERA, INTERACTION } from '../BentoGrid.constants';
 import { clamp } from './useViewport';
 
-interface UseCameraOptions {
+export interface UseCameraOptions {
   enabled?: boolean;
   windowSize: Size;
   initialCamera?: Camera;
