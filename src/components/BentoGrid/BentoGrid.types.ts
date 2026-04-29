@@ -150,14 +150,9 @@ export interface Velocity {
   y: number;
 }
 
-export interface NavigationState {
-  camera: Camera;
-  velocity: Velocity;
-  isDragging: boolean;
-  isPanning: boolean;
-}
-
 export type SearchCardEdge = 'none' | 'top' | 'bottom' | 'left' | 'right';
+export type StickyEdge = SearchCardEdge;
+
 export type StickyEdge = SearchCardEdge;
 
 export interface SearchCardState {
@@ -178,19 +173,6 @@ export interface GridConfig {
   onBack?: () => void;
   pageTitle?: string;
   breadcrumb?: string;
-}
-
-export interface BentoGridProps extends GridConfig {
-  className?: string;
-  renderCard?: RenderCard;
-}
-
-export interface GridState {
-  visibleCards: Map<string, CardPosition>;
-  queuedCards: QueuedCard[];
-  search: SearchCardState;
-  navigation: NavigationState;
-  isMobile: boolean;
 }
 
 export interface UseCardPoolReturn {
@@ -225,22 +207,7 @@ export interface UseSpawnManagerReturn {
   forceSpawn: (edge: SpawnEdge) => void;
 }
 
-export interface UseGridNavigationReturn {
-  camera: Camera;
-  pan: (dx: number, dy: number) => void;
-  zoom: (delta: number, center?: Position) => void;
-  reset: () => void;
-  setCamera: (camera: Partial<Camera> | ((camera: Camera) => Camera)) => void;
-  bind: () => GridNavigationBindings;
-  isAnimating: boolean;
-}
-
-export interface UseCameraReturn extends UseGridNavigationReturn {
-  stopMomentum: () => void;
-  isDragging: boolean;
-}
-
-export interface GridNavigationBindings {
+export interface CameraBindings {
   onPointerDown?: PointerEventHandler<HTMLDivElement>;
   onPointerMove?: PointerEventHandler<HTMLDivElement>;
   onPointerUp?: PointerEventHandler<HTMLDivElement>;
@@ -249,12 +216,16 @@ export interface GridNavigationBindings {
   style: CSSProperties;
 }
 
-export type CameraBindings = GridNavigationBindings;
-
-export interface UseCardNavigationReturn {
-  focusedCardId: string | null;
-  setFocusedCardId: (cardId: string | null) => void;
-  clearFocus: () => void;
+export interface UseCameraReturn {
+  camera: Camera;
+  pan: (dx: number, dy: number) => void;
+  zoom: (delta: number, center?: Position) => void;
+  reset: () => void;
+  stopMomentum: () => void;
+  setCamera: (camera: Partial<Camera> | ((camera: Camera) => Camera)) => void;
+  isDragging: boolean;
+  isAnimating: boolean;
+  bind: () => CameraBindings;
 }
 
 export interface PhysicsPosition {

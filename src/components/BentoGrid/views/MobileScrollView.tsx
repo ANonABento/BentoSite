@@ -1,13 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { CSSProperties } from 'react';
 import { motion } from 'framer-motion';
+import { SearchMenuCard, useSearchCardState } from '../cards';
 import { filterCards, useWindowSize } from '../core';
 import { MOBILE } from '../BentoGrid.constants';
 import type { CardData, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
-import { DefaultCard } from '../cards';
-import { SearchCard, useSearchCardState } from '../search';
+import { DefaultCard } from './DefaultCard';
 
 interface MobileScrollViewProps {
   className?: string;
@@ -34,9 +33,9 @@ export function MobileScrollView({
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState<string | null>(null);
 
-  const filteredCards = useMemo(
+  const localFilteredCards = useMemo(
     () => filterCards(cards, searchTerm, category),
-    [cards, category, searchTerm],
+    [cards, searchTerm, category]
   );
 
   const searchState = useSearchCardState({
@@ -57,7 +56,7 @@ export function MobileScrollView({
       tabIndex={-1}
       style={{ background: theme.background }}
     >
-      <SearchCard
+      <SearchMenuCard
         theme={theme}
         expanded={searchState.expanded}
         edge={searchState.edge}
@@ -74,7 +73,7 @@ export function MobileScrollView({
         onCategoryChange={searchState.setCategory}
         onBack={onBack}
         totalCards={cards.length}
-        filteredCards={filteredCards.length}
+        filteredCards={localFilteredCards.length}
       />
 
       <div
@@ -85,10 +84,10 @@ export function MobileScrollView({
           className="flex flex-col gap-4 max-w-md mx-auto"
           style={{ padding: MOBILE.SCROLL_PADDING }}
         >
-          {filteredCards.map((card, index) => {
+          {localFilteredCards.map((card, index) => {
             const cardWidth = Math.min(
               windowSize.width * MOBILE.CARD_WIDTH_PERCENT,
-              MOBILE.CARD_MAX_WIDTH,
+              MOBILE.CARD_MAX_WIDTH
             );
             const cardHeight = 160;
             const position: CardPosition = {
@@ -99,7 +98,8 @@ export function MobileScrollView({
               width: cardWidth,
               height: cardHeight,
             };
-            const wrapperStyle: CSSProperties = {
+
+            const wrapperStyle: React.CSSProperties = {
               position: 'relative',
               width: cardWidth,
               height: cardHeight,
@@ -126,14 +126,13 @@ export function MobileScrollView({
                   position={position}
                   theme={theme}
                   onClick={() => onCardSelect?.(card)}
-                  entranceIndex={index}
                 />
               </motion.div>
             );
           })}
 
-          {filteredCards.length === 0 && (
-            <div className="text-center text-[var(--muted-foreground)] py-12">
+          {localFilteredCards.length === 0 && (
+            <div className="text-center text-white/50 py-12">
               No items found
             </div>
           )}

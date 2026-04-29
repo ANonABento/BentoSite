@@ -1,10 +1,9 @@
 'use client';
 
-import { Fragment, useCallback, useEffect, useMemo } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { useCallback, useEffect, useMemo } from 'react';
+import { SearchMenuCard, useSearchCardState } from '../cards';
 import {
   getCameraTransform,
-  isEditableTarget,
   screenToCanvas,
   useCamera,
   useCardNavigation,
@@ -13,11 +12,11 @@ import {
   useViewport,
   useWindowSize,
 } from '../core';
-import { SEARCH_CARD } from '../BentoGrid.constants';
-import type { CardData, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
+import { calculateLayoutWithExclusion } from '../layout';
 import { usePhysicsWorld } from '../physics';
-import { SearchCard, useSearchCardState } from '../search';
-import { DefaultCard } from '../cards';
+import { GRID, SEARCH_CARD } from '../BentoGrid.constants';
+import type { CardData, CardLayout, RenderCard, ThemeConfig } from '../BentoGrid.types';
+import { DesktopCardLayer } from './DesktopCardLayer';
 
 interface DesktopCanvasViewProps {
   className?: string;
@@ -28,22 +27,6 @@ interface DesktopCanvasViewProps {
   onCardSelect?: (card: CardData) => void;
   renderCard?: RenderCard;
   onBack?: () => void;
-}
-
-const SEARCH_BODY_ID = '__search__';
-
-function getPhysicsRenderPosition(
-  position: CardPosition,
-  physicsPosition: { x: number; y: number; angle: number } | undefined,
-): CardPosition {
-  if (!physicsPosition) return position;
-
-  return {
-    ...position,
-    x: physicsPosition.x,
-    y: physicsPosition.y,
-    rotation: (physicsPosition.angle * 180) / Math.PI,
-  };
 }
 
 export function DesktopCanvasView({
@@ -57,6 +40,7 @@ export function DesktopCanvasView({
   onBack,
 }: DesktopCanvasViewProps) {
   const windowSize = useWindowSize();
+
   const navigation = useCamera({
     enabled: true,
     windowSize,
@@ -67,22 +51,9 @@ export function DesktopCanvasView({
     rotationRange: theme.card.rotationRange,
   });
 
-  const physics = usePhysicsWorld({
-    layouts: cardPool.visible,
-    enabled: true,
-    isMobile: false,
-  });
-
   const viewport = useViewport({
     camera: navigation.camera,
-  });
-
-  useSpawnManager({
-    cardPool,
-    viewport,
-    camera: navigation.camera,
-    rotationRange: theme.card.rotationRange,
-    physics,
+    buffer: GRID.SPAWN_BUFFER,
   });
 
   const searchState = useSearchCardState({
@@ -92,40 +63,36 @@ export function DesktopCanvasView({
     onFilterChange: cardPool.applyFilter,
   });
 
-  const cardNavigation = useCardNavigation({
-    visible: cardPool.visible,
-    cards,
-    onSelect: onCardSelect,
-    enabled: true,
-  });
-
-  const cardDataById = useMemo(() => {
-    const next = new Map<string, CardData>();
-    cards.forEach((card) => next.set(card.id, card));
-    return next;
-  }, [cards]);
-
-  const filteredCount = cardPool.visible.size + cardPool.queue.length;
-
-  const searchCanvasLayout = useMemo(() => {
-    const topLeft = screenToCanvas(
-      searchState.screenPosition.x - searchState.width / 2,
-      searchState.screenPosition.y - searchState.height / 2,
-      navigation.camera,
-      windowSize,
-    );
+  const searchLayout = useMemo<CardLayout>(() => {
+    const isCompressed = searchState.edge !== 'none' && searchState.compression > 0;
+    const center = isCompressed
+      ? screenToCanvas(
+          searchState.screenPosition.x,
+          searchState.screenPosition.y,
+          navigation.camera,
+          windowSize,
+        )
+      : { x: 0, y: 0 };
+    const width = isCompressed
+      ? searchState.width / navigation.camera.zoom
+      : SEARCH_CARD.EXPANDED_WIDTH;
+    const height = isCompressed
+      ? searchState.height / navigation.camera.zoom
+      : SEARCH_CARD.EXPANDED_HEIGHT;
 
     return {
-      id: SEARCH_BODY_ID,
-      x: topLeft.x,
-      y: topLeft.y,
-      width: searchState.width / navigation.camera.zoom,
-      height: searchState.height / navigation.camera.zoom,
+      id: '__search__',
+      x: center.x - width / 2,
+      y: center.y - height / 2,
+      width,
+      height,
       rotation: 0,
-      size: '2x1' as const,
+      size: '2x1',
     };
   }, [
     navigation.camera,
+    searchState.compression,
+    searchState.edge,
     searchState.height,
     searchState.screenPosition.x,
     searchState.screenPosition.y,
@@ -133,36 +100,87 @@ export function DesktopCanvasView({
     windowSize,
   ]);
 
-  useEffect(() => {
-    physics.updateSearchCard(searchCanvasLayout, searchState.compression > 0.01);
-  }, [physics, searchCanvasLayout, searchState.compression]);
+  const isSearchStuck = searchState.edge !== 'none' && searchState.compression > 0;
+
+  const displayLayouts = useMemo(() => {
+    if (!isSearchStuck) return cardPool.visible;
+
+    const visibleCards = Array.from(cardPool.visible.keys())
+      .map((cardId) => cardPool.cardDataMap.get(cardId))
+      .filter((card): card is CardData => Boolean(card));
+
+    return calculateLayoutWithExclusion(
+      visibleCards,
+      {
+        x: searchLayout.x,
+        y: searchLayout.y,
+        width: searchLayout.width,
+        height: searchLayout.height,
+        padding: SEARCH_CARD.EXCLUSION_PADDING,
+      },
+      theme.card.rotationRange
+    );
+  }, [
+    cardPool.cardDataMap,
+    cardPool.visible,
+    isSearchStuck,
+    searchLayout,
+    theme.card.rotationRange,
+  ]);
+
+  const { positions, updateSearchCard, addCard, removeCard, applyEntranceBurst } = usePhysicsWorld({
+    layouts: displayLayouts,
+    enabled: true,
+    isMobile: false,
+  });
+
+  const physicsBridge = useMemo(
+    () => ({ addCard, removeCard, applyEntranceBurst }),
+    [addCard, removeCard, applyEntranceBurst],
+  );
 
   useEffect(() => {
-    physics.updateTargets(cardPool.visible);
-  }, [cardPool.visible, physics]);
+    updateSearchCard(searchLayout, isSearchStuck);
+  }, [isSearchStuck, searchLayout, updateSearchCard]);
+
+  useSpawnManager({
+    cardPool,
+    viewport,
+    camera: navigation.camera,
+    rotationRange: theme.card.rotationRange,
+    physics: physicsBridge,
+  });
+
+  const cardNavigation = useCardNavigation({
+    visible: displayLayouts,
+    cards,
+    onSelect: onCardSelect,
+    enabled: true,
+  });
+  const { focusedCardId, setFocusedCardId } = cardNavigation;
 
   const handleCardClick = useCallback(
     (card: CardData) => {
-      cardNavigation.setFocusedCardId(card.id);
+      setFocusedCardId(card.id);
       onCardSelect?.(card);
     },
-    [cardNavigation, onCardSelect],
+    [onCardSelect, setFocusedCardId],
   );
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (isEditableTarget(event.target)) {
-        return;
-      }
-
-      if (event.key === '/' || event.key.toLowerCase() === 'f') {
-        event.preventDefault();
-        searchState.setExpanded(true);
+      if (event.key === '/' || event.key === 'f') {
+        if (!(event.target instanceof HTMLInputElement)) {
+          event.preventDefault();
+          searchState.setExpanded(true);
+        }
       }
 
       if (event.key === 'Backspace' && onBack) {
-        event.preventDefault();
-        onBack();
+        if (!(event.target instanceof HTMLInputElement)) {
+          event.preventDefault();
+          onBack();
+        }
       }
     };
 
@@ -172,8 +190,9 @@ export function DesktopCanvasView({
 
   const transform = useMemo(
     () => getCameraTransform(navigation.camera, windowSize),
-    [navigation.camera, windowSize],
+    [navigation.camera, windowSize]
   );
+
   const navBindings = navigation.bind();
 
   return (
@@ -209,48 +228,18 @@ export function DesktopCanvasView({
           }}
         />
 
-        <AnimatePresence mode="popLayout">
-          {Array.from(cardPool.visible.entries()).map(([cardId, position], index) => {
-            const cardData = cardDataById.get(cardId);
-            if (!cardData) return null;
-
-            const renderPosition = getPhysicsRenderPosition(
-              position,
-              physics.positions.get(cardId),
-            );
-            const isFocused = cardNavigation.focusedCardId === cardId;
-
-            if (renderCard) {
-              return (
-                <Fragment key={cardId}>
-                  {renderCard(
-                    cardData,
-                    renderPosition,
-                    theme,
-                    isFocused,
-                    () => handleCardClick(cardData),
-                    index,
-                  )}
-                </Fragment>
-              );
-            }
-
-            return (
-              <DefaultCard
-                key={cardId}
-                card={cardData}
-                position={renderPosition}
-                theme={theme}
-                onClick={() => handleCardClick(cardData)}
-                isFocused={isFocused}
-                entranceIndex={index}
-              />
-            );
-          })}
-        </AnimatePresence>
+        <DesktopCardLayer
+          layouts={displayLayouts}
+          cardDataMap={cardPool.cardDataMap}
+          physicsPositions={positions}
+          theme={theme}
+          focusedCardId={focusedCardId}
+          renderCard={renderCard}
+          onCardClick={handleCardClick}
+        />
       </div>
 
-      <SearchCard
+      <SearchMenuCard
         theme={theme}
         expanded={searchState.expanded}
         edge={searchState.edge}
@@ -267,7 +256,7 @@ export function DesktopCanvasView({
         onCategoryChange={searchState.setCategory}
         onBack={onBack}
         totalCards={cards.length}
-        filteredCards={filteredCount}
+        filteredCards={cardPool.visible.size + cardPool.queue.length}
       />
 
       <button
@@ -284,15 +273,14 @@ export function DesktopCanvasView({
       </button>
 
       {process.env.NODE_ENV === 'development' && (
-        <div className="fixed bottom-4 left-4 text-xs text-[var(--muted-foreground)] font-mono">
-          Camera: ({navigation.camera.x.toFixed(0)}, {navigation.camera.y.toFixed(0)}) z:
-          {navigation.camera.zoom.toFixed(2)}
+        <div className="fixed bottom-4 left-4 text-xs text-white/50 font-mono">
+          Camera: ({navigation.camera.x.toFixed(0)}, {navigation.camera.y.toFixed(0)}) z:{navigation.camera.zoom.toFixed(2)}
           <br />
           Visible: {cardPool.visible.size} | Queue: {cardPool.queue.length}
-          {cardNavigation.focusedCardId && (
+          {focusedCardId && (
             <>
               <br />
-              Focus: {cardNavigation.focusedCardId}
+              Focus: {focusedCardId}
             </>
           )}
         </div>

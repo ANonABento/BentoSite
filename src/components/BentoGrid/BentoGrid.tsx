@@ -1,10 +1,38 @@
 'use client';
 
+/**
+ * BentoGrid - Infinite Grid Component
+ *
+ * A shared infinite grid system used by both /playground and /projects.
+ * Features:
+ * - FIFO pool-based card recycling
+ * - Pan/zoom navigation with momentum
+ * - Keyboard navigation (WASD/arrows)
+ * - Morphing search card (collapses to edge bar)
+ * - Responsive: infinite canvas on desktop, scroll on mobile
+ */
+
 import { useMemo } from 'react';
-import { MOBILE, THEMES } from './BentoGrid.constants';
-import type { BentoGridProps } from './BentoGrid.types';
 import { useWindowSize } from './core';
-import { DesktopCanvasView, MobileScrollView } from './views';
+import { THEMES, MOBILE } from './BentoGrid.constants';
+import type { GridConfig, RenderCard } from './BentoGrid.types';
+import { DesktopCanvasView } from './views/DesktopCanvasView';
+import { MobileScrollView } from './views/MobileScrollView';
+
+// =============================================================================
+// PROPS
+// =============================================================================
+
+export interface BentoGridProps extends GridConfig {
+  /** CSS class for the container */
+  className?: string;
+  /** Custom card renderer (isFocused indicates keyboard focus for accessibility) */
+  renderCard?: RenderCard;
+}
+
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
 
 export function BentoGrid({
   className,
@@ -19,12 +47,13 @@ export function BentoGrid({
   const isMobile = windowSize.width < MOBILE.BREAKPOINT;
   const themeConfig = THEMES[theme];
 
+  // Extract unique categories from cards
   const categories = useMemo(() => {
-    const next = new Set<string>();
+    const cats = new Set<string>();
     cards.forEach((card) => {
-      if (card.category) next.add(card.category);
+      if (card.category) cats.add(card.category);
     });
-    return Array.from(next).sort();
+    return Array.from(cats).sort();
   }, [cards]);
 
   if (isMobile) {
@@ -50,8 +79,8 @@ export function BentoGrid({
       categories={categories}
       breadcrumb={breadcrumb}
       onCardSelect={onCardSelect}
-      onBack={onBack}
       renderCard={renderCard}
+      onBack={onBack}
     />
   );
 }

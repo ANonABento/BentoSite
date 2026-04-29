@@ -1,12 +1,13 @@
 export { filterCards } from './cardPoolFilter';
-export { isEditableTarget } from './keyboard';
 export {
   useCardNavigation,
   type UseCardNavigationOptions,
+  type UseCardNavigationReturn,
 } from './useCardNavigation';
+export { useCamera } from './useCamera';
 export { useCardPool, type UseCardPoolOptions } from './useCardPool';
-export { useCamera, type UseCameraOptions } from './useCamera';
 export {
+  clamp,
   canvasToScreen,
   getCameraTransform,
   screenToCanvas,

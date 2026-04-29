@@ -8,11 +8,14 @@ const GRID_VALUES = {
 } as const;
 
 export const GRID = {
-  ...GRID_VALUES,
-  CELL_SIZE: GRID_VALUES.cellSize,
-  GAP: GRID_VALUES.gap,
-  SPAWN_BUFFER: GRID_VALUES.spawnBuffer,
-  DESPAWN_BUFFER: GRID_VALUES.despawnBuffer,
+  cellSize: 180,
+  gap: 12,
+  spawnBuffer: 100,
+  despawnBuffer: 200,
+  CELL_SIZE: 180,
+  GAP: 12,
+  SPAWN_BUFFER: 100,
+  DESPAWN_BUFFER: 200,
 } as const;
 
 export const CARD_SIZES: Record<CardSize, { cols: number; rows: number }> = {
@@ -39,25 +42,40 @@ const QUEUE_VALUES = {
 } as const;
 
 export const QUEUE = {
-  ...QUEUE_VALUES,
-  SPAWN_DELAY: QUEUE_VALUES.spawnDelay,
-  MAX_VISIBLE: QUEUE_VALUES.maxVisible,
-  INITIAL_SPAWN_COUNT: QUEUE_VALUES.initialSpawnCount,
-  INITIAL_STAGGER: QUEUE_VALUES.initialStagger,
-  POLICY: QUEUE_VALUES.policy,
+  spawnDelay: 100,
+  maxVisible: 30,
+  initialSpawnCount: 12,
+  initialStagger: 50,
+  policy: 'FIFO',
+  SPAWN_DELAY: 100,
+  MAX_VISIBLE: 30,
+  INITIAL_SPAWN_COUNT: 12,
+  INITIAL_STAGGER: 50,
+  POLICY: 'FIFO',
 } as const;
 
 export const CARD_POOL = QUEUE;
 
-const CAMERA_VALUES = {
-  default: { x: 0, y: 0, zoom: 1 },
+export const CAMERA = {
+  DEFAULT: { x: 0, y: 0, zoom: 1 },
+  MIN_ZOOM: 0.4,
+  MAX_ZOOM: 2.0,
+  ZOOM_SENSITIVITY: 0.001,
+  PAN_SPEED: 15,
+  MOMENTUM_FRICTION: 0.92,
+  MIN_VELOCITY: 0.5,
+  SPRING_STIFFNESS: 200,
+  SPRING_DAMPING: 30,
   minZoom: 0.4,
   maxZoom: 2.0,
+  defaultZoom: 1,
+  keyboardPanSpeed: 30,
+  wheelZoomOutFactor: 0.9,
+  wheelZoomInFactor: 1.1,
+  wheelPanMultiplier: 1.5,
+  pinchZoomSensitivity: 0.01,
   zoomSensitivity: 0.001,
   panSpeed: 15,
-  keyboardPanSpeed: 30,
-  wheelZoomOutFactor: 0.92,
-  wheelZoomInFactor: 1.08,
   momentum: {
     friction: 0.92,
     minVelocity: 0.5,
@@ -66,28 +84,7 @@ const CAMERA_VALUES = {
     stiffness: 200,
     damping: 30,
   },
-} as const;
-
-export const CAMERA = {
-  DEFAULT: CAMERA_VALUES.default,
-  MIN_ZOOM: CAMERA_VALUES.minZoom,
-  MAX_ZOOM: CAMERA_VALUES.maxZoom,
-  ZOOM_SENSITIVITY: CAMERA_VALUES.zoomSensitivity,
-  PAN_SPEED: CAMERA_VALUES.panSpeed,
-  MOMENTUM_FRICTION: CAMERA_VALUES.momentum.friction,
-  MIN_VELOCITY: CAMERA_VALUES.momentum.minVelocity,
-  SPRING_STIFFNESS: CAMERA_VALUES.spring.stiffness,
-  SPRING_DAMPING: CAMERA_VALUES.spring.damping,
-  minZoom: CAMERA_VALUES.minZoom,
-  maxZoom: CAMERA_VALUES.maxZoom,
-  defaultZoom: CAMERA_VALUES.default.zoom,
-  zoomSensitivity: CAMERA_VALUES.zoomSensitivity,
-  panSpeed: CAMERA_VALUES.panSpeed,
-  keyboardPanSpeed: CAMERA_VALUES.keyboardPanSpeed,
-  wheelZoomOutFactor: CAMERA_VALUES.wheelZoomOutFactor,
-  wheelZoomInFactor: CAMERA_VALUES.wheelZoomInFactor,
-  momentum: CAMERA_VALUES.momentum,
-  spring: CAMERA_VALUES.spring,
+  animationDuration: 300,
 } as const;
 
 export const DEFAULT_CAMERA = {
@@ -96,54 +93,51 @@ export const DEFAULT_CAMERA = {
   zoom: CAMERA.defaultZoom,
 } as const;
 
-const INTERACTION_VALUES = {
+export const INTERACTION = {
   dragThreshold: 5,
   clickMaxDuration: 200,
   touchTargetMin: 44,
-} as const;
-
-export const INTERACTION = {
-  ...INTERACTION_VALUES,
-  DRAG_THRESHOLD: INTERACTION_VALUES.dragThreshold,
-  CLICK_MAX_DURATION: INTERACTION_VALUES.clickMaxDuration,
-  TOUCH_TARGET_MIN: INTERACTION_VALUES.touchTargetMin,
+  DRAG_THRESHOLD: 5,
+  CLICK_MAX_DURATION: 200,
+  TOUCH_TARGET_MIN: 44,
 } as const;
 
 const SEARCH_CARD_DIMENSIONS = getCardDimensions('2x1');
 
-const SEARCH_CARD_VALUES = {
+export const SEARCH_CARD = {
+  EXPANDED_WIDTH: SEARCH_CARD_DIMENSIONS.width,
+  EXPANDED_HEIGHT: SEARCH_CARD_DIMENSIONS.height,
+  COLLAPSED_HEIGHT: 56,
+  SQUASHED_SIDE_WIDTH: 80,
+  COMPRESSION_DISTANCE: 180,
+  EDGE_PADDING: 16,
+  EXCLUSION_PADDING: 24,
+  STICKY_THRESHOLD: 60,
   expandedWidth: SEARCH_CARD_DIMENSIONS.width,
   expandedHeight: SEARCH_CARD_DIMENSIONS.height,
-  cardWidth: SEARCH_CARD_DIMENSIONS.width,
-  cardHeight: SEARCH_CARD_DIMENSIONS.height,
   collapsedHeight: 56,
   squashedSideWidth: 80,
   compressionDistance: 180,
-  stickyThreshold: 60,
-  threshold: 60,
   edgePadding: 16,
   exclusionPadding: 24,
-} as const;
-
-export const SEARCH_CARD = {
-  ...SEARCH_CARD_VALUES,
-  EXPANDED_WIDTH: SEARCH_CARD_VALUES.expandedWidth,
-  EXPANDED_HEIGHT: SEARCH_CARD_VALUES.expandedHeight,
-  COLLAPSED_HEIGHT: SEARCH_CARD_VALUES.collapsedHeight,
-  SQUASHED_SIDE_WIDTH: SEARCH_CARD_VALUES.squashedSideWidth,
-  COMPRESSION_DISTANCE: SEARCH_CARD_VALUES.compressionDistance,
-  STICKY_THRESHOLD: SEARCH_CARD_VALUES.stickyThreshold,
-  EDGE_PADDING: SEARCH_CARD_VALUES.edgePadding,
-  EXCLUSION_PADDING: SEARCH_CARD_VALUES.exclusionPadding,
+  stickyThreshold: 60,
+  cardWidth: SEARCH_CARD_DIMENSIONS.width,
+  cardHeight: SEARCH_CARD_DIMENSIONS.height,
+  threshold: 60,
+  spring: {
+    type: 'spring' as const,
+    stiffness: 400,
+    damping: 35,
+  },
 } as const;
 
 export const STICKY = SEARCH_CARD;
 
-const ANIMATION_VALUES = {
-  cardEnter: 300,
-  cardExit: 200,
-  stagger: 30,
-  spring: {
+export const ANIMATION = {
+  CARD_ENTER: 300,
+  CARD_EXIT: 200,
+  STAGGER: 30,
+  SPRING: {
     stiffness: 180,
     damping: 25,
   },

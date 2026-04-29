@@ -1,5 +1,6 @@
 export { BentoGrid } from './BentoGrid';
 export * from './BentoGrid.types';
+export { BentoGrid, type BentoGridProps } from './BentoGrid';
 export {
   ANIMATION,
   CAMERA,
