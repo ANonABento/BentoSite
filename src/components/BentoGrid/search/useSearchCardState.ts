@@ -1,55 +1,52 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import { SEARCH_CARD } from '../BentoGrid.constants';
 import type {
   Camera,
   Position,
   SearchCardEdge,
   SearchCardState,
-  Size,
 } from '../BentoGrid.types';
-import { canvasToScreen, clamp } from '../core/useViewport';
+import { SEARCH_CARD } from '../BentoGrid.constants';
+import { canvasToScreen } from '../core/useViewport';
 
-export interface UseSearchCardStateOptions {
+interface UseSearchCardStateOptions {
   camera: Camera;
-  windowSize: Size;
+  windowSize: { width: number; height: number };
   categories: string[];
   isMobile?: boolean;
   onFilterChange?: (searchTerm: string, category: string | null) => void;
 }
 
-export interface UseSearchCardStateReturn extends SearchCardState {
+interface UseSearchCardStateReturn extends SearchCardState {
   toggleExpanded: () => void;
   setExpanded: (expanded: boolean) => void;
   setSearchTerm: (term: string) => void;
   setCategory: (category: string | null) => void;
   clearFilters: () => void;
+  screenPosition: Position;
 }
 
-export interface SearchCardPresentation {
+interface SearchCardPresentation {
   edge: SearchCardEdge;
-  stickyEdge: SearchCardEdge;
   compression: number;
-  canvasPosition: Position;
   screenPosition: Position;
   width: number;
   height: number;
-  size: Size;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  if (min > max) return (min + max) / 2;
+  return Math.min(Math.max(value, min), max);
 }
 
 function lerp(from: number, to: number, progress: number): number {
   return from + (to - from) * progress;
 }
 
-/**
- * Calculates the search card's rendered presentation from its regular 2x1
- * canvas slot. Compression is proportional to the amount that slot crosses a
- * viewport edge, so the card eases from a normal card into the sticky edge UI.
- */
 export function getSearchCardPresentation(
   camera: Camera,
-  windowSize: Size,
+  windowSize: { width: number; height: number },
 ): SearchCardPresentation {
   const regularPosition = canvasToScreen(0, 0, camera, windowSize);
   const cardWidth = SEARCH_CARD.EXPANDED_WIDTH * camera.zoom;
@@ -89,49 +86,38 @@ export function getSearchCardPresentation(
   const maxX = windowSize.width - padding - width / 2;
   const minY = padding + height / 2;
   const maxY = windowSize.height - padding - height / 2;
-  const screenPosition = {
-    x: compression > 0 ? clamp(regularPosition.x, minX, maxX) : regularPosition.x,
-    y: compression > 0 ? clamp(regularPosition.y, minY, maxY) : regularPosition.y,
-  };
 
   return {
     edge,
-    stickyEdge: edge,
     compression,
-    canvasPosition: { x: 0, y: 0 },
-    screenPosition,
     width,
     height,
-    size: { width, height },
+    screenPosition: {
+      x: compression > 0 ? clamp(regularPosition.x, minX, maxX) : regularPosition.x,
+      y: compression > 0 ? clamp(regularPosition.y, minY, maxY) : regularPosition.y,
+    },
   };
 }
 
 function getMobilePresentation(
-  windowSize: Size,
+  windowSize: { width: number; height: number },
   expanded: boolean,
 ): SearchCardPresentation {
-  const availableWidth = Math.max(
-    SEARCH_CARD.SQUASHED_SIDE_WIDTH,
-    windowSize.width - SEARCH_CARD.EDGE_PADDING * 2,
-  );
   const width = Math.min(
-    availableWidth,
+    windowSize.width - SEARCH_CARD.EDGE_PADDING * 2,
     SEARCH_CARD.EXPANDED_WIDTH,
   );
   const height = expanded ? SEARCH_CARD.EXPANDED_HEIGHT : SEARCH_CARD.COLLAPSED_HEIGHT;
 
   return {
     edge: 'top',
-    stickyEdge: 'top',
     compression: expanded ? 0 : 1,
-    canvasPosition: { x: 0, y: 0 },
+    width,
+    height,
     screenPosition: {
       x: windowSize.width / 2,
       y: SEARCH_CARD.EDGE_PADDING + height / 2,
     },
-    width,
-    height,
-    size: { width, height },
   };
 }
 
@@ -154,18 +140,24 @@ export function useSearchCardState({
   );
 
   const toggleExpanded = useCallback(() => {
-    setUserExpanded((expanded) => !expanded);
+    setUserExpanded((previous) => !previous);
   }, []);
 
-  const setSearchTerm = useCallback((term: string) => {
-    setSearchTermState(term);
-    onFilterChange?.(term, category);
-  }, [category, onFilterChange]);
+  const setSearchTerm = useCallback(
+    (term: string) => {
+      setSearchTermState(term);
+      onFilterChange?.(term, category);
+    },
+    [category, onFilterChange],
+  );
 
-  const setCategory = useCallback((nextCategory: string | null) => {
-    setCategoryState(nextCategory);
-    onFilterChange?.(searchTerm, nextCategory);
-  }, [onFilterChange, searchTerm]);
+  const setCategory = useCallback(
+    (nextCategory: string | null) => {
+      setCategoryState(nextCategory);
+      onFilterChange?.(searchTerm, nextCategory);
+    },
+    [onFilterChange, searchTerm],
+  );
 
   const clearFilters = useCallback(() => {
     setSearchTermState('');
@@ -176,13 +168,9 @@ export function useSearchCardState({
   return {
     expanded: userExpanded,
     edge: presentation.edge,
-    stickyEdge: presentation.stickyEdge,
     compression: presentation.compression,
-    canvasPosition: presentation.canvasPosition,
-    screenPosition: presentation.screenPosition,
     width: presentation.width,
     height: presentation.height,
-    size: presentation.size,
     searchTerm,
     category,
     categories,
@@ -191,5 +179,6 @@ export function useSearchCardState({
     setSearchTerm,
     setCategory,
     clearFilters,
+    screenPosition: presentation.screenPosition,
   };
 }

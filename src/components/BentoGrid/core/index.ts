@@ -1,9 +1,12 @@
 export { filterCards } from './cardPoolFilter';
-export { useCamera, type UseCameraOptions } from './useCamera';
+export {
+  useCardNavigation,
+  type UseCardNavigationOptions,
+} from './useCardNavigation';
 export { useCardPool, type UseCardPoolOptions } from './useCardPool';
+export { useCamera, type UseCameraOptions } from './useCamera';
 export {
   canvasToScreen,
-  clamp,
   getCameraTransform,
   screenToCanvas,
   useViewport,

@@ -14,6 +14,10 @@ export interface UseViewportOptions {
   buffer?: number;
 }
 
+export function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
 export function screenToCanvas(
   screenX: number,
   screenY: number,
@@ -84,6 +88,8 @@ export function useViewport(options: UseViewportOptions): UseViewportReturn {
     const bottomRight = screenToCanvas(windowSize.width, windowSize.height, camera, windowSize);
 
     return {
+      x: topLeft.x,
+      y: topLeft.y,
       left: topLeft.x,
       top: topLeft.y,
       right: bottomRight.x,

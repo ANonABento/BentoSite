@@ -1,8 +1,11 @@
+export { BentoGrid } from './BentoGrid';
 export * from './BentoGrid.types';
 export {
   ANIMATION,
   CAMERA,
+  CARD_POOL,
   CARD_SIZES,
+  DEFAULT_CAMERA,
   GRID,
   INTERACTION,
   KEYBOARD,
@@ -11,6 +14,7 @@ export {
   PHYSICS_MOBILE,
   QUEUE,
   SEARCH_CARD,
+  STICKY,
   THEME_PLAYFUL,
   THEME_PREMIUM,
   THEMES,
@@ -19,4 +23,6 @@ export {
 export * from './core';
 export * from './layout';
 export * from './physics';
+export * from './search';
 export * from './cards';
+export * from './views';
