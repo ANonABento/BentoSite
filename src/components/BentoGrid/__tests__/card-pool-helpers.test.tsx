@@ -52,6 +52,8 @@ function cardRectsOverlap(a: CardPosition, b: CardPosition): boolean {
 
 const viewport: UseViewportReturn = {
   bounds: {
+    x: -500,
+    y: -300,
     left: -500,
     top: -300,
     right: 500,

@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGesture } from '@use-gesture/react';
+import { clamp } from '@/lib/utils';
 import type { Camera, CameraBindings, Position, Size, UseCameraReturn, Velocity } from '../BentoGrid.types';
 import { CAMERA, DEFAULT_CAMERA, INTERACTION } from '../BentoGrid.constants';
 import { isEditableTarget } from './keyboard';
-import { clamp } from './useViewport';
 
-export interface UseCameraOptions {
+interface UseCameraOptions {
   enabled?: boolean;
   windowSize: Size;
   initialCamera?: Camera;

@@ -35,14 +35,20 @@ npm test         # Run unit tests
 ```
 src/
 ├── app/
-│   ├── layout.tsx          # Root layout with Geist fonts, metadata
+│   ├── layout.tsx          # Root layout with Geist fonts, metadata, providers, JSON-LD
 │   ├── page.tsx            # Main page with boot sequence + dashboard
-│   └── globals.css         # Tailwind base + CSS variables (dark theme)
+│   ├── projects/           # BentoGrid-powered portfolio archive route
+│   ├── playground/         # BentoGrid-powered games and experiments routes
+│   ├── scrollable/         # Long-form portfolio route
+│   ├── robots.ts           # Robots metadata route
+│   ├── sitemap.ts          # Generated sitemap route
+│   └── globals.css         # Tailwind base + CSS variables
 │
 ├── lib/                    # Shared utilities and constants
 │   ├── constants.ts        # Centralized constants (breakpoints, timeouts, etc.)
 │   ├── utils.ts            # Shared utility functions
-│   ├── design-tokens.ts    # Unified design system tokens
+│   ├── colors.ts           # Theme color helpers and class maps
+│   ├── seo.ts              # Sitemap and JSON-LD builders
 │   ├── animations.ts       # Framer Motion animation configs
 │   └── __tests__/          # Unit tests for lib functions
 │
@@ -54,7 +60,15 @@ src/
     │   ├── Toast.tsx           # Toast notifications
     │   └── index.ts            # Barrel exports
     │
-    ├── Chat.tsx            # AI chatbot with terminal-style UI
+    ├── Chat.tsx            # AI chatbot entrypoint
+    ├── Chat/               # Chat storage, hooks, types, and presentation parts
+    │
+    ├── BentoGrid/          # Shared projects/playground infinite grid
+    │   ├── core/               # Camera, viewport, card pool, spawn/navigation hooks
+    │   ├── physics/            # Matter.js engine, forces, world binding
+    │   ├── search/             # Search card state, UI, and physics helpers
+    │   ├── cards/              # Shared card shell and card renderers
+    │   └── views/              # Desktop canvas and mobile scroll views
     │
     ├── Dashboard/          # Main dashboard layout
     │   ├── DashboardLayout.tsx # Responsive grid layout
@@ -69,11 +83,14 @@ src/
     │   ├── Dimension.types.ts      # TypeScript interfaces
     │   ├── Dimension.config.ts     # Model definitions, thresholds
     │   ├── Dimension.hooks.ts      # Custom React hooks
-    │   ├── Dimension.3d.tsx        # Compatibility scene barrel
     │   ├── scene/                  # Three.js scene primitives
+    │   ├── ui/                     # Viewer controls, feedback, widgets
     │   └── Dimension.utils.ts      # Utilities (re-exports shared utils)
     │
+    ├── seo/                # JSON-LD script component
+    │
     └── Playground/         # Interactive games collection
+        ├── RhythmGame/         # Split rhythm game, audio analysis, Taiko/Mania modes
         ├── design/tokens.ts    # Playground-specific design tokens
         └── shared/             # Shared game components
 
@@ -135,7 +152,7 @@ import { CheckIcon, CopyIcon, SendIcon, SearchIcon } from '@/components/ui/Icons
 ```typescript
 import { LoadingSpinner, LoadingOverlay, LoadingSkeleton } from '@/components/ui';
 
-<LoadingSpinner size="lg" variant="violet" message="Loading..." />
+<LoadingSpinner size="lg" variant="purple" message="Loading..." />
 <LoadingOverlay message="Processing..." />
 <LoadingSkeleton width={200} height={20} />
 ```
@@ -154,7 +171,8 @@ ComponentName.types.ts   # TypeScript interfaces
 ComponentName.hooks.ts   # Custom hooks
 ComponentName.config.ts  # Constants and configuration
 ComponentName.utils.ts   # Utility functions
-ComponentName.3d.tsx     # Three.js specific components
+scene/                   # Three.js primitives and loaders
+ui/                      # Feature-local controls, feedback, and widgets
 ```
 
 **Why**: Keeps concerns separated, files under 300 lines, easy to navigate.
@@ -185,13 +203,15 @@ ComponentName.3d.tsx     # Three.js specific components
 
 ### Design System
 
-Two design systems exist:
-- **`src/lib/design-tokens.ts`** - Unified tokens for the whole app
+Shared and feature-local token layers exist:
+- **`src/app/globals.css`** - CSS variables and global utility classes
+- **`src/lib/colors.ts`** - color helper constants and class maps
+- **`src/components/Dimension/ui/shared/design-system.ts`** - Dimension viewer tokens
 - **`src/components/Playground/design/tokens.ts`** - Playground-specific tokens
 
-Use the unified tokens when possible:
+Use CSS variables and color helpers when possible:
 ```typescript
-import { colors, spacing, classes } from '@/lib/design-tokens';
+import { CSS_VARS, COLORS, BUTTON_CLASSES } from '@/lib/colors';
 ```
 
 ### Mobile Optimization
@@ -225,10 +245,10 @@ const Dimension = dynamic(() => import('@/components/Dimension'), {
 ```
 
 ### Styling
-- Use Tailwind utilities as primary approach
-- Use design tokens from `@/lib/design-tokens`
-- Avoid inline style objects unless dynamic
-- CSS variables defined in `globals.css`
+- Prefer CSS utility classes from `src/app/globals.css`
+- Use feature or color token modules for shared variants
+- Use Tailwind utilities for non-color layout and spacing
+- Avoid inline style objects unless the value is genuinely dynamic
 
 ### Component Organization
 - Extract complex logic into custom hooks
@@ -267,7 +287,7 @@ dynamic(() => import('./Component'), { ssr: false })
 ```
 
 ### 2. Model Files Location
-STL models are served from `/public/models/`. The path in config should be `/models/filename.stl` (no `/public` prefix).
+STL and GLTF/GLB models are served from `/public/models/`. The path in config should be `/models/filename.stl` or `/models/filename.glb` (no `/public` prefix).
 
 ### 3. Mobile Detection Affects Rendering
 The `isMobile` flag changes:
@@ -296,7 +316,7 @@ When adding new models to `Dimension.config.ts`:
 {
   id: string,           // Unique identifier
   name: string,         // Display name
-  path: string,         // Path to .stl file (e.g., '/models/model.stl')
+  path: string,         // Path to .stl/.gltf/.glb file (e.g., '/models/model.glb')
   thumbnail: string,    // Preview image path
   fileSize: number,     // In bytes
   dimensions: { width: number, height: number, depth: number },
@@ -315,7 +335,8 @@ When adding new models to `Dimension.config.ts`:
 | Main page | `src/app/page.tsx` |
 | Shared constants | `src/lib/constants.ts` |
 | Shared utilities | `src/lib/utils.ts` |
-| Design tokens | `src/lib/design-tokens.ts` |
+| Color helpers | `src/lib/colors.ts` |
+| SEO helpers | `src/lib/seo.ts` |
 | Icon library | `src/components/ui/Icons.tsx` |
 | Loading components | `src/components/ui/LoadingSpinner.tsx` |
 | Error boundary | `src/components/ui/ErrorBoundary.tsx` |

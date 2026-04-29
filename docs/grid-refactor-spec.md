@@ -2,6 +2,8 @@
 
 Reference: [grid-refactor-requirements.md](grid-refactor-requirements.md) (drift check)
 
+Status: BentoGrid is now the active shared grid for `/projects` and `/playground`. This spec remains as the implementation reference and drift checklist while search-card polish and cleanup continue.
+
 ## Goal
 
 Consolidate `InfiniteGrid/` and `UnifiedGrid/` into a single `BentoGrid/` system that combines the best of both:
@@ -55,13 +57,8 @@ src/components/BentoGrid/
 │   ├── exclusion.ts            # Layout with exclusion zone around stuck search card
 │   └── cardSizes.ts            # Size pattern logic (1x1, 2x1, etc.)
 │
-├── search/
-│   ├── useSearchCardState.ts   # Edge detection + compression (from UnifiedGrid)
-│   ├── SearchCard.tsx           # Consolidated search card component
-│   └── searchPhysics.ts        # Search card as static body when stuck, 
-│                                # dynamic when free (from InfiniteGrid)
-│
 ├── cards/
+│   ├── SearchMenuCard.tsx       # Search UI + edge-compression presentation
 │   ├── ProjectCard.tsx          # Merge best of both (UnifiedGrid version + InfiniteGrid hover)
 │   ├── GameCard.tsx             # From UnifiedGrid (playful theme)
 │   ├── BaseCard.tsx             # Shared card shell (border, shadow, hover, entrance anim)
@@ -112,7 +109,7 @@ Min size increased: `SQUASHED_SIDE_WIDTH: 64 → 80px`, `COLLAPSED_HEIGHT: 48 �
 ### 5. Collision Flow-Around
 When search card is stuck at an edge:
 1. Search card body set to `isStatic: true` at its clamped position
-2. `calculateLayoutWithExclusion()` recomputes grid positions avoiding the search card's footprint
+2. `preserveLayoutWithExclusion()` keeps existing card slots when possible and pushes only overlapping cards around the search footprint
 3. Physics settling forces pull cards toward new positions
 4. Cards smoothly flow around the stuck search card
 5. Cards pushed off-screen by this process despawn and re-enter the queue

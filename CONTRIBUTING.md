@@ -7,7 +7,7 @@
 - Prefer explicit feature boundaries. Public imports should come from root barrels like `@/components/Dimension`, not internal implementation paths.
 - Use CSS variables and shared token helpers for colors. Avoid hardcoded Tailwind palette classes like `red-500`, `violet-400`, or `orange-500`.
 - Follow the styling source order already used in this repo:
-  1. global utility classes from [src/app/globals.css](/Users/bentomac/conductor/workspaces/bentosite/salvador-v4/src/app/globals.css)
+  1. global utility classes from `src/app/globals.css`
   2. feature or design token modules
   3. non-color Tailwind utilities
   4. inline styles for genuinely dynamic values only
@@ -23,6 +23,7 @@
 ## Feature Patterns
 
 - For `Dimension`, keep scene primitives, viewer state, and UI overlays in separate modules. Avoid importing internal scene files outside the feature.
+- For `BentoGrid`, keep camera/card-pool/search/physics/layout concerns in their existing subdirectories and route custom cards through the `renderCard` prop.
 - For route-heavy pages like `src/app/scrollable`, keep the route file mostly about composition and move route-specific state into hooks or private `_components`.
 - For chat-like features, keep storage, session logic, and rendering separate so persistence and request flow can be verified independently.
 - For Playground modes, separate game rules from presentation. Hook code should own timers, collisions, scoring, and persistence boundaries; route/components should mostly own layout and feedback.

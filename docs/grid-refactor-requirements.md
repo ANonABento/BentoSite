@@ -2,6 +2,12 @@
 
 These are the owner's requirements from the design discussion. Any spec or implementation MUST satisfy all of these. Use this as a checklist before finalizing.
 
+## Current Implementation Status
+
+BentoGrid is now the active shared grid for `/projects` and `/playground`. The old `InfiniteGrid/` and `UnifiedGrid/` packages have been removed, and the current system lives under `src/components/BentoGrid/` with separate `core/`, `layout/`, `physics/`, `cards/`, and `views/` areas.
+
+Still treat this file as an in-progress drift checklist. The major consolidation work is done, and duplicate search-card cleanup is complete; search-card polish and flow-around tuning are still open.
+
 ## Search Card Behavior
 
 ### When on-screen (not at edge)
@@ -32,12 +38,12 @@ These are the owner's requirements from the design discussion. Any spec or imple
 - [ ] No squashing behavior — only search card squashes at edges
 
 ## Grid System
-- [ ] Single consolidated grid system (not two separate ones)
-- [ ] Rename from "UnifiedGrid" to something clearer (CardPool / BentoFlow / GridEngine)
-- [ ] Delete old InfiniteGrid — merge any unique logic
+- [x] Single consolidated grid system (not two separate ones)
+- [x] Rename from "UnifiedGrid" to something clearer (`BentoGrid`)
+- [x] Delete old InfiniteGrid — merge any unique logic
 - [ ] No duplicated code between grid components
 - [ ] Shared components between search card and regular cards where possible
-- [ ] Physics-based card flow (the InfiniteGrid approach)
+- [x] Physics-based card flow (the InfiniteGrid approach)
 
 ## Animation & Polish
 - [ ] All cards have consistent entrance/exit animations
