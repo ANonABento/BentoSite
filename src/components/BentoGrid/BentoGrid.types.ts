@@ -84,9 +84,13 @@ export interface Size {
 
 export type Point = Position;
 
-export interface Rect extends Position, Size {}
+export interface GridLayoutConfig {
+  cellSize: number;
+  gap: number;
+  columns?: number;
+}
 
-export interface Bounds extends Position, Size {}
+export interface Rect extends Position, Size {}
 
 export interface CardPosition extends Rect {
   rotation: number;
@@ -111,6 +115,8 @@ export type RenderCard = (
 ) => ReactNode;
 
 export interface ViewportBounds {
+  x?: number;
+  y?: number;
   left: number;
   top: number;
   right: number;
@@ -132,7 +138,6 @@ export interface CardPoolState {
 }
 
 export type SpawnEdge = 'top' | 'bottom' | 'left' | 'right';
-export type StickyEdge = SearchCardEdge;
 
 export interface Camera {
   x: number;
@@ -153,26 +158,17 @@ export interface NavigationState {
 }
 
 export type SearchCardEdge = 'none' | 'top' | 'bottom' | 'left' | 'right';
+export type StickyEdge = SearchCardEdge;
 
 export interface SearchCardState {
   expanded: boolean;
   edge: SearchCardEdge;
-  stickyEdge: StickyEdge;
   compression: number;
-  canvasPosition: Position;
-  screenPosition: Position;
   width: number;
   height: number;
-  size: Size;
   searchTerm: string;
   category: string | null;
   categories: string[];
-}
-
-export interface GridLayoutConfig {
-  cellSize: number;
-  gap: number;
-  columns?: number;
 }
 
 export interface GridConfig {
@@ -229,35 +225,25 @@ export interface UseGridNavigationReturn {
   pan: (dx: number, dy: number) => void;
   zoom: (delta: number, center?: Position) => void;
   reset: () => void;
-  setCamera: (camera: Partial<Camera>) => void;
+  setCamera: (camera: Partial<Camera> | ((previous: Camera) => Camera)) => void;
   bind: () => GridNavigationBindings;
   isAnimating: boolean;
 }
 
 export interface GridNavigationBindings {
-  onPointerDown: PointerEventHandler<HTMLDivElement>;
-  onPointerMove: PointerEventHandler<HTMLDivElement>;
-  onPointerUp: PointerEventHandler<HTMLDivElement>;
-  onPointerLeave: PointerEventHandler<HTMLDivElement>;
-  onWheel: WheelEventHandler<HTMLDivElement>;
+  onPointerDown?: PointerEventHandler<HTMLDivElement>;
+  onPointerMove?: PointerEventHandler<HTMLDivElement>;
+  onPointerUp?: PointerEventHandler<HTMLDivElement>;
+  onPointerLeave?: PointerEventHandler<HTMLDivElement>;
+  onWheel?: WheelEventHandler<HTMLDivElement>;
   style: CSSProperties;
 }
 
-export type CameraBindings = Partial<GridNavigationBindings>;
+export type CameraBindings = GridNavigationBindings;
 
-export interface UseCameraReturn {
-  camera: Camera;
-  pan: (dx: number, dy: number) => void;
-  zoom: (delta: number, center?: Position) => void;
-  reset: () => void;
+export interface UseCameraReturn extends UseGridNavigationReturn {
   stopMomentum: () => void;
-  setCamera: (
-    camera:
-      | Partial<Camera>
-      | ((previous: Camera) => Camera),
-  ) => void;
   isDragging: boolean;
-  isAnimating: boolean;
   bind: () => CameraBindings;
 }
 

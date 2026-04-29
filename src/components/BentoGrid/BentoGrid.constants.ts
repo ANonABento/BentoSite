@@ -28,12 +28,12 @@ export const CARD_SIZES: Record<CardSize, { cols: number; rows: number }> = {
 export function getCardDimensions(size: CardSize): { width: number; height: number } {
   const { cols, rows } = CARD_SIZES[size];
   return {
-    width: cols * GRID.CELL_SIZE + (cols - 1) * GRID.GAP,
-    height: rows * GRID.CELL_SIZE + (rows - 1) * GRID.GAP,
+    width: cols * GRID.cellSize + (cols - 1) * GRID.gap,
+    height: rows * GRID.cellSize + (rows - 1) * GRID.gap,
   };
 }
 
-const QUEUE_VALUES = {
+const CARD_POOL_VALUES = {
   spawnDelay: 100,
   maxVisible: 30,
   initialSpawnCount: 12,
@@ -41,20 +41,21 @@ const QUEUE_VALUES = {
   policy: 'FIFO',
 } as const;
 
-export const QUEUE = {
-  spawnDelay: QUEUE_VALUES.spawnDelay,
-  maxVisible: QUEUE_VALUES.maxVisible,
-  initialSpawnCount: QUEUE_VALUES.initialSpawnCount,
-  initialStagger: QUEUE_VALUES.initialStagger,
-  policy: QUEUE_VALUES.policy,
-  SPAWN_DELAY: QUEUE_VALUES.spawnDelay,
-  MAX_VISIBLE: QUEUE_VALUES.maxVisible,
-  INITIAL_SPAWN_COUNT: QUEUE_VALUES.initialSpawnCount,
-  INITIAL_STAGGER: QUEUE_VALUES.initialStagger,
-  POLICY: QUEUE_VALUES.policy,
+export const CARD_POOL = {
+  spawnDelay: CARD_POOL_VALUES.spawnDelay,
+  maxVisible: CARD_POOL_VALUES.maxVisible,
+  initialSpawnCount: CARD_POOL_VALUES.initialSpawnCount,
+  initialStagger: CARD_POOL_VALUES.initialStagger,
+  policy: CARD_POOL_VALUES.policy,
+  SPAWN_DELAY: CARD_POOL_VALUES.spawnDelay,
+  MAX_VISIBLE: CARD_POOL_VALUES.maxVisible,
+  INITIAL_SPAWN_COUNT: CARD_POOL_VALUES.initialSpawnCount,
+  INITIAL_STAGGER: CARD_POOL_VALUES.initialStagger,
+  POLICY: CARD_POOL_VALUES.policy,
 } as const;
 
-export const CARD_POOL = QUEUE;
+/** @deprecated Use CARD_POOL. */
+export const QUEUE = CARD_POOL;
 
 const CAMERA_VALUES = {
   default: { x: 0, y: 0, zoom: 1 },
@@ -67,9 +68,8 @@ const CAMERA_VALUES = {
   springStiffness: 200,
   springDamping: 30,
   keyboardPanSpeed: 30,
-  wheelZoomInFactor: 1.08,
-  wheelZoomOutFactor: 0.92,
-  animationDuration: 300,
+  wheelZoomOutFactor: 0.9,
+  wheelZoomInFactor: 1.1,
 } as const;
 
 export const CAMERA = {
@@ -86,8 +86,8 @@ export const CAMERA = {
   maxZoom: CAMERA_VALUES.maxZoom,
   defaultZoom: CAMERA_VALUES.default.zoom,
   keyboardPanSpeed: CAMERA_VALUES.keyboardPanSpeed,
-  wheelZoomInFactor: CAMERA_VALUES.wheelZoomInFactor,
   wheelZoomOutFactor: CAMERA_VALUES.wheelZoomOutFactor,
+  wheelZoomInFactor: CAMERA_VALUES.wheelZoomInFactor,
   zoomSensitivity: CAMERA_VALUES.zoomSensitivity,
   panSpeed: CAMERA_VALUES.panSpeed,
   momentum: {
@@ -98,10 +98,13 @@ export const CAMERA = {
     stiffness: CAMERA_VALUES.springStiffness,
     damping: CAMERA_VALUES.springDamping,
   },
-  animationDuration: CAMERA_VALUES.animationDuration,
 } as const;
 
-export const DEFAULT_CAMERA = CAMERA.DEFAULT;
+export const DEFAULT_CAMERA = {
+  x: CAMERA.DEFAULT.x,
+  y: CAMERA.DEFAULT.y,
+  zoom: CAMERA.DEFAULT.zoom,
+} as const;
 
 const INTERACTION_VALUES = {
   dragThreshold: 5,
@@ -131,14 +134,6 @@ const SEARCH_CARD_VALUES = {
 } as const;
 
 export const SEARCH_CARD = {
-  EXPANDED_WIDTH: SEARCH_CARD_VALUES.expandedWidth,
-  EXPANDED_HEIGHT: SEARCH_CARD_VALUES.expandedHeight,
-  COLLAPSED_HEIGHT: SEARCH_CARD_VALUES.collapsedHeight,
-  SQUASHED_SIDE_WIDTH: SEARCH_CARD_VALUES.squashedSideWidth,
-  COMPRESSION_DISTANCE: SEARCH_CARD_VALUES.compressionDistance,
-  STICKY_THRESHOLD: SEARCH_CARD_VALUES.stickyThreshold,
-  EDGE_PADDING: SEARCH_CARD_VALUES.edgePadding,
-  EXCLUSION_PADDING: SEARCH_CARD_VALUES.exclusionPadding,
   expandedWidth: SEARCH_CARD_VALUES.expandedWidth,
   expandedHeight: SEARCH_CARD_VALUES.expandedHeight,
   collapsedHeight: SEARCH_CARD_VALUES.collapsedHeight,
@@ -150,21 +145,23 @@ export const SEARCH_CARD = {
   cardWidth: SEARCH_CARD_VALUES.expandedWidth,
   cardHeight: SEARCH_CARD_VALUES.expandedHeight,
   threshold: SEARCH_CARD_VALUES.stickyThreshold,
-  spring: {
-    type: 'spring',
-    stiffness: 400,
-    damping: 35,
-  },
+  EXPANDED_WIDTH: SEARCH_CARD_VALUES.expandedWidth,
+  EXPANDED_HEIGHT: SEARCH_CARD_VALUES.expandedHeight,
+  COLLAPSED_HEIGHT: SEARCH_CARD_VALUES.collapsedHeight,
+  SQUASHED_SIDE_WIDTH: SEARCH_CARD_VALUES.squashedSideWidth,
+  COMPRESSION_DISTANCE: SEARCH_CARD_VALUES.compressionDistance,
+  STICKY_THRESHOLD: SEARCH_CARD_VALUES.stickyThreshold,
+  EDGE_PADDING: SEARCH_CARD_VALUES.edgePadding,
+  EXCLUSION_PADDING: SEARCH_CARD_VALUES.exclusionPadding,
 } as const;
 
+/** @deprecated Use SEARCH_CARD. */
 export const STICKY = SEARCH_CARD;
 
 const ANIMATION_VALUES = {
   cardEnter: 300,
   cardExit: 200,
   stagger: 30,
-  hoverScale: 1.02,
-  hoverDuration: 150,
   springStiffness: 180,
   springDamping: 25,
 } as const;
@@ -173,16 +170,10 @@ export const ANIMATION = {
   cardEnter: ANIMATION_VALUES.cardEnter,
   cardExit: ANIMATION_VALUES.cardExit,
   stagger: ANIMATION_VALUES.stagger,
-  hoverScale: ANIMATION_VALUES.hoverScale,
-  hoverDuration: ANIMATION_VALUES.hoverDuration,
   CARD_ENTER: ANIMATION_VALUES.cardEnter,
   CARD_EXIT: ANIMATION_VALUES.cardExit,
   STAGGER: ANIMATION_VALUES.stagger,
   SPRING: {
-    stiffness: ANIMATION_VALUES.springStiffness,
-    damping: ANIMATION_VALUES.springDamping,
-  },
-  spring: {
     stiffness: ANIMATION_VALUES.springStiffness,
     damping: ANIMATION_VALUES.springDamping,
   },

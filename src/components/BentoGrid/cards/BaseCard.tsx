@@ -1,64 +1,111 @@
 'use client';
 
-import { motion, type HTMLMotionProps } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import type { CSSProperties, ReactNode } from 'react';
+import { useState } from 'react';
+import { unifiedGridCardEntranceDelay } from '@/lib/animations';
 import { ANIMATION } from '../BentoGrid.constants';
-import type { CardSize, ThemeConfig } from '../BentoGrid.types';
+import type { CardPosition, ThemeConfig } from '../BentoGrid.types';
 
-export interface BaseCardProps extends Omit<HTMLMotionProps<'div'>, 'children'> {
-  children: ReactNode;
+export interface BaseCardProps {
+  position: CardPosition;
   theme: ThemeConfig;
-  size?: CardSize;
-  interactive?: boolean;
-  entranceIndex?: number;
+  children: ReactNode;
+  onClick?: () => void;
   isFocused?: boolean;
-  isSticky?: boolean;
+  entranceIndex?: number;
   className?: string;
+  contentClassName?: string;
   style?: CSSProperties;
+  contentStyle?: CSSProperties;
+  background?: string;
+  border?: string;
+  highlightBorder?: string;
+  shadow?: string;
+  hoverShadow?: string;
+  focusShadow?: string;
+  onHoverChange?: (isHovered: boolean) => void;
 }
 
 export function BaseCard({
-  children,
+  position,
   theme,
-  size,
-  interactive = true,
-  entranceIndex = 0,
+  children,
+  onClick,
   isFocused = false,
-  isSticky = false,
+  entranceIndex = 0,
   className,
+  contentClassName,
   style,
-  ...motionProps
+  contentStyle,
+  background = theme.card.background,
+  border = theme.card.border,
+  highlightBorder = `1px solid ${theme.accent.primary}40`,
+  shadow = theme.card.shadow,
+  hoverShadow = theme.card.hoverShadow,
+  focusShadow = `0 0 0 3px ${theme.accent.primary}, ${hoverShadow}`,
+  onHoverChange,
 }: BaseCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  const prefersReducedMotion = useReducedMotion() ?? false;
+  const isHighlighted = isHovered || isFocused;
+
+  const handleHoverStart = () => {
+    setIsHovered(true);
+    onHoverChange?.(true);
+  };
+
+  const handleHoverEnd = () => {
+    setIsHovered(false);
+    onHoverChange?.(false);
+  };
+
   return (
     <motion.div
-      data-card-size={size}
-      className={[
-        'select-none overflow-hidden backdrop-blur-md',
-        interactive ? 'cursor-pointer' : '',
-        className,
-      ].filter(Boolean).join(' ')}
-      initial={{ opacity: 0, scale: 0.94, y: 12 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.96 }}
-      whileHover={interactive && !isSticky ? { scale: ANIMATION.hoverScale } : undefined}
-      transition={{
-        type: 'spring',
-        stiffness: ANIMATION.spring.stiffness,
-        damping: ANIMATION.spring.damping,
-        delay: entranceIndex * (ANIMATION.stagger / 1000),
-      }}
+      className={['absolute cursor-pointer select-none', className].filter(Boolean).join(' ')}
       style={{
-        background: isSticky ? theme.searchCard.background : theme.card.background,
-        border: isFocused ? `1px solid ${theme.accent.primary}` : (
-          isSticky ? theme.searchCard.border : theme.card.border
-        ),
-        borderRadius: theme.card.borderRadius,
-        boxShadow: isFocused || isSticky ? theme.card.hoverShadow : theme.card.shadow,
+        width: position.width,
+        height: position.height,
         ...style,
       }}
-      {...motionProps}
+      initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.92 }}
+      animate={{
+        opacity: 1,
+        scale: 1,
+        x: position.x,
+        y: position.y,
+        rotate: position.rotation,
+      }}
+      exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
+      transition={{
+        type: 'spring',
+        stiffness: ANIMATION.SPRING.stiffness,
+        damping: ANIMATION.SPRING.damping,
+        delay: prefersReducedMotion ? 0 : unifiedGridCardEntranceDelay(entranceIndex),
+      }}
+      whileHover={prefersReducedMotion ? undefined : { scale: 1.015 }}
+      whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+      onHoverStart={handleHoverStart}
+      onHoverEnd={handleHoverEnd}
+      onClick={onClick}
     >
-      {children}
+      <div
+        className={[
+          'group relative h-full w-full overflow-hidden transition-all duration-300 ease-out',
+          contentClassName,
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        style={{
+          ...contentStyle,
+          background,
+          border: isHighlighted ? highlightBorder : border,
+          borderRadius: theme.card.borderRadius,
+          boxShadow: isFocused ? focusShadow : isHovered ? hoverShadow : shadow,
+        }}
+      >
+        {children}
+      </div>
     </motion.div>
   );
 }

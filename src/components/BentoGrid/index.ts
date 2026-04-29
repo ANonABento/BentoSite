@@ -20,4 +20,3 @@ export * from './core';
 export * from './layout';
 export * from './physics';
 export * from './cards';
-export * from './search';
