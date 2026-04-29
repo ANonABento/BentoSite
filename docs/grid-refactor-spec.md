@@ -2,6 +2,8 @@
 
 Reference: [grid-refactor-requirements.md](grid-refactor-requirements.md) (drift check)
 
+Status: BentoGrid is now the active shared grid for `/projects` and `/playground`. This spec remains as the implementation reference and drift checklist while search-card polish and cleanup continue.
+
 ## Goal
 
 Consolidate `InfiniteGrid/` and `UnifiedGrid/` into a single `BentoGrid/` system that combines the best of both:

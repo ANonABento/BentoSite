@@ -69,8 +69,8 @@ src/
     │   ├── Dimension.types.ts      # TypeScript interfaces
     │   ├── Dimension.config.ts     # Model definitions, thresholds
     │   ├── Dimension.hooks.ts      # Custom React hooks
-    │   ├── Dimension.3d.tsx        # Compatibility scene barrel
     │   ├── scene/                  # Three.js scene primitives
+    │   ├── ui/                     # Viewer controls, feedback, widgets
     │   └── Dimension.utils.ts      # Utilities (re-exports shared utils)
     │
     └── Playground/         # Interactive games collection
