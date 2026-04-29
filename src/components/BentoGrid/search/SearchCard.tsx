@@ -85,6 +85,38 @@ function IconButton({
   );
 }
 
+function SideSearchControl({
+  searchTerm,
+  onSearchChange,
+}: {
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
+}) {
+  return (
+    <label
+      title="Search cards"
+      className={[
+        'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md',
+        'transition-colors hover:bg-theme-subtle',
+        'focus-within:ring-1 focus-within:ring-[var(--purple)]',
+      ].join(' ')}
+      style={{ color: 'var(--text-secondary)' }}
+    >
+      <SearchIcon className="h-4 w-4" />
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={(event) => onSearchChange(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') event.currentTarget.blur();
+        }}
+        className="sr-only"
+        aria-label="Search cards"
+      />
+    </label>
+  );
+}
+
 export function SearchCard({
   theme,
   expanded,
@@ -105,11 +137,13 @@ export function SearchCard({
   filteredCards,
   entranceIndex,
 }: SearchCardProps) {
-  const detailsOpacity = expanded ? Math.max(0, 1 - compression * 1.6) : 0;
-  const detailsInteractive = detailsOpacity > 0.7;
   const isSideSquashed = (edge === 'left' || edge === 'right') && compression > 0.45;
   const isTight = width < 220 || height < 120;
   const compactSearch = compression > 0.72 || isTight;
+  const isBarSquashed = (edge === 'top' || edge === 'bottom') && compactSearch;
+  const showDetails = expanded && !compactSearch;
+  const detailsOpacity = showDetails ? Math.max(0, 1 - compression * 1.6) : 0;
+  const detailsInteractive = showDetails && detailsOpacity > 0.7;
   const isSticky = compression > 0;
   const cardCount = filteredCards !== undefined && totalCards !== undefined && filteredCards !== totalCards
     ? `${filteredCards}/${totalCards}`
@@ -149,9 +183,7 @@ export function SearchCard({
               <ArrowLeftIcon className="h-4 w-4" />
             </IconButton>
           )}
-          <IconButton label="Search cards">
-            <SearchIcon className="h-4 w-4" />
-          </IconButton>
+          <SideSearchControl searchTerm={searchTerm} onSearchChange={onSearchChange} />
           <IconButton label={expanded ? 'Hide filters' : 'Show filters'} onClick={onToggleExpanded}>
             <SettingsIcon className="h-4 w-4" />
           </IconButton>
@@ -165,28 +197,35 @@ export function SearchCard({
           )}
         </div>
       ) : (
-        <div className="flex h-full min-w-0 flex-col gap-3 p-4">
-          <div className="flex min-w-0 items-center justify-between gap-2">
-            <span className="truncate font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
-              {breadcrumb || 'bentOS'}
-            </span>
-            <div className="flex flex-shrink-0 items-center gap-1">
-              {cardCount !== undefined && (
-                <span className="font-mono text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                  {cardCount}
-                </span>
-              )}
-              <IconButton label={expanded ? 'Hide filters' : 'Show filters'} onClick={onToggleExpanded}>
-                <ChevronDownIcon
-                  className="h-4 w-4 transition-transform"
-                  style={{
-                    color: theme.accent.primary,
-                    transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                  }}
-                />
-              </IconButton>
+        <div
+          className={[
+            'flex h-full min-w-0 flex-col',
+            isBarSquashed ? 'justify-center p-2' : 'gap-3 p-4',
+          ].join(' ')}
+        >
+          {!isBarSquashed && (
+            <div className="flex min-w-0 items-center justify-between gap-2">
+              <span className="truncate font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
+                {breadcrumb || 'bentOS'}
+              </span>
+              <div className="flex flex-shrink-0 items-center gap-1">
+                {cardCount !== undefined && (
+                  <span className="font-mono text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                    {cardCount}
+                  </span>
+                )}
+                <IconButton label={expanded ? 'Hide filters' : 'Show filters'} onClick={onToggleExpanded}>
+                  <ChevronDownIcon
+                    className="h-4 w-4 transition-transform"
+                    style={{
+                      color: theme.accent.primary,
+                      transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                    }}
+                  />
+                </IconButton>
+              </div>
             </div>
-          </div>
+          )}
 
           {onBack && !compactSearch && (
             <button
@@ -240,7 +279,7 @@ export function SearchCard({
             style={{
               opacity: detailsOpacity,
               pointerEvents: detailsInteractive ? 'auto' : 'none',
-              height: expanded ? 'auto' : 0,
+              height: showDetails ? 'auto' : 0,
             }}
             aria-hidden={!detailsInteractive}
           >
