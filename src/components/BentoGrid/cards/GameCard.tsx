@@ -91,7 +91,7 @@ const ACCENT_COLORS: Record<AccentColor, {
 // Rotate through colors based on card index
 function getAccentColor(index: number): AccentColor {
   const colors: AccentColor[] = ['pink', 'purple', 'cyan'];
-  return colors[index % colors.length];
+  return colors[((index % colors.length) + colors.length) % colors.length];
 }
 
 // =============================================================================
@@ -129,7 +129,11 @@ export function GameCard({
   // SSR is disabled for this page, so window is available when this renders.
   const [bestScore] = useState<string | null>(() => {
     if (typeof window === 'undefined' || !card.id) return null;
-    return localStorage.getItem(`bestScore_${card.id}`);
+    try {
+      return localStorage.getItem(`bestScore_${card.id}`);
+    } catch {
+      return null;
+    }
   });
   const isHighlighted = isHovered || isFocused;
 
@@ -240,11 +244,11 @@ export function GameCard({
 
           {/* Best score / Play prompt */}
           <div className="flex items-center justify-between mt-2">
-            {bestScore || card.bestScore ? (
+            {bestScore != null || card.bestScore != null ? (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-white/40 uppercase tracking-wider">Best</span>
                 <span className={`font-mono font-semibold text-sm ${colors.scoreText}`}>
-                  {bestScore || card.bestScore}
+                  {bestScore ?? card.bestScore}
                 </span>
               </div>
             ) : (
