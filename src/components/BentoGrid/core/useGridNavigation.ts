@@ -11,8 +11,8 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useMotionValue, useAnimationFrame } from 'framer-motion';
-import type { Camera, Position, UseGridNavigationReturn } from '../UnifiedGrid.types';
-import { CAMERA, KEYBOARD } from '../UnifiedGrid.constants';
+import type { Camera, Position, UseGridNavigationReturn } from '../BentoGrid.types';
+import { CAMERA, KEYBOARD } from '../BentoGrid.constants';
 
 interface UseGridNavigationOptions {
   /** Initial camera position */

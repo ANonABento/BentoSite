@@ -8,8 +8,8 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import type { Position, SearchCardState, SearchCardEdge, Camera } from '../UnifiedGrid.types';
-import { SEARCH_CARD } from '../UnifiedGrid.constants';
+import type { Position, SearchCardState, SearchCardEdge, Camera } from '../BentoGrid.types';
+import { SEARCH_CARD } from '../BentoGrid.constants';
 import { canvasToScreen } from '../core/useViewport';
 
 interface UseSearchCardStateOptions {

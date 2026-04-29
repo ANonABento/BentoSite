@@ -10,7 +10,7 @@
 
 import { motion } from 'framer-motion';
 import { ArrowLeftIcon, ChevronDownIcon, CloseIcon, SearchIcon } from '@/components/ui/Icons';
-import type { Position, ThemeConfig, SearchCardEdge } from '../UnifiedGrid.types';
+import type { Position, ThemeConfig, SearchCardEdge } from '../BentoGrid.types';
 
 // =============================================================================
 // PROPS

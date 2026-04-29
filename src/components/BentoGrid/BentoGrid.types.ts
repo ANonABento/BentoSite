@@ -160,6 +160,8 @@ export interface NavigationState {
 export type SearchCardEdge = 'none' | 'top' | 'bottom' | 'left' | 'right';
 export type StickyEdge = SearchCardEdge;
 
+export type StickyEdge = SearchCardEdge;
+
 export interface SearchCardState {
   expanded: boolean;
   edge: SearchCardEdge;
@@ -249,12 +251,30 @@ export interface GridNavigationBindings {
   style: CSSProperties;
 }
 
-export type CameraBindings = GridNavigationBindings;
+export interface CameraBindings {
+  onPointerDown?: PointerEventHandler<HTMLDivElement>;
+  onPointerMove?: PointerEventHandler<HTMLDivElement>;
+  onPointerUp?: PointerEventHandler<HTMLDivElement>;
+  onPointerLeave?: PointerEventHandler<HTMLDivElement>;
+  onWheel?: WheelEventHandler<HTMLDivElement>;
+  style: CSSProperties;
+}
 
-export interface UseCardNavigationReturn {
-  focusedCardId: string | null;
-  setFocusedCardId: (cardId: string | null) => void;
-  clearFocus: () => void;
+export interface UseCameraReturn {
+  camera: Camera;
+  pan: (dx: number, dy: number) => void;
+  zoom: (delta: number, center?: Position) => void;
+  reset: () => void;
+  stopMomentum: () => void;
+  setCamera: (camera: Partial<Camera> | ((camera: Camera) => Camera)) => void;
+  isDragging: boolean;
+  isAnimating: boolean;
+  bind: () => CameraBindings;
+}
+
+export interface GridLayoutConfig {
+  cellSize: number;
+  gap: number;
 }
 
 export interface PhysicsPosition {
