@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGesture } from '@use-gesture/react';
+import { clamp } from '@/lib/utils';
 import type { Camera, CameraBindings, Position, Size, UseCameraReturn, Velocity } from '../BentoGrid.types';
 import { CAMERA, DEFAULT_CAMERA, INTERACTION } from '../BentoGrid.constants';
-import { clamp } from './useViewport';
 
 interface UseCameraOptions {
   enabled?: boolean;

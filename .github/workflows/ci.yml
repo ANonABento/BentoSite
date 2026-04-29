@@ -106,7 +106,6 @@ jobs:
             !.next/cache
           include-hidden-files: true
           retention-days: 1
-          include-hidden-files: true
 
   # ============================================
   # PHASE 3: E2E Tests (depends on unit tests)
