@@ -109,6 +109,8 @@ export type RenderCard = (
 ) => ReactNode;
 
 export interface ViewportBounds {
+  x: number;
+  y: number;
   left: number;
   top: number;
   right: number;
@@ -165,6 +167,7 @@ export interface SearchCardState {
   compression: number;
   width: number;
   height: number;
+  screenPosition: Position;
   searchTerm: string;
   category: string | null;
   categories: string[];
