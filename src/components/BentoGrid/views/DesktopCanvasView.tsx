@@ -1,7 +1,6 @@
 'use client';
 
-import { Fragment, useCallback, useEffect, useMemo } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { useCallback, useEffect, useMemo } from 'react';
 import { SearchMenuCard, useSearchCardState } from '../cards';
 import {
   getCameraTransform,
@@ -16,14 +15,8 @@ import {
 import { calculateLayoutWithExclusion } from '../layout';
 import { usePhysicsWorld } from '../physics';
 import { GRID, SEARCH_CARD } from '../BentoGrid.constants';
-import type {
-  CardData,
-  CardLayout,
-  CardPosition,
-  RenderCard,
-  ThemeConfig,
-} from '../BentoGrid.types';
-import { DefaultCard } from './DefaultCard';
+import type { CardData, CardLayout, RenderCard, ThemeConfig } from '../BentoGrid.types';
+import { DesktopCardLayer } from './DesktopCardLayer';
 
 interface DesktopCanvasViewProps {
   className?: string;
@@ -135,13 +128,7 @@ export function DesktopCanvasView({
     theme.card.rotationRange,
   ]);
 
-  const {
-    positions,
-    updateSearchCard,
-    addCard,
-    removeCard,
-    applyEntranceBurst,
-  } = usePhysicsWorld({
+  const { positions, updateSearchCard, addCard, removeCard, applyEntranceBurst } = usePhysicsWorld({
     layouts: displayLayouts,
     enabled: true,
     isMobile: false,
@@ -170,13 +157,14 @@ export function DesktopCanvasView({
     onSelect: onCardSelect,
     enabled: true,
   });
+  const { focusedCardId, setFocusedCardId } = cardNavigation;
 
   const handleCardClick = useCallback(
     (card: CardData) => {
-      cardNavigation.setFocusedCardId(card.id);
+      setFocusedCardId(card.id);
       onCardSelect?.(card);
     },
-    [onCardSelect, cardNavigation]
+    [onCardSelect, setFocusedCardId],
   );
 
   useEffect(() => {
@@ -240,49 +228,15 @@ export function DesktopCanvasView({
           }}
         />
 
-        <AnimatePresence mode="popLayout">
-          {Array.from(displayLayouts.entries()).map(([cardId, layout], index) => {
-            const cardData = cards.find((card) => card.id === cardId);
-            if (!cardData) return null;
-
-            const isFocused = cardNavigation.focusedCardId === cardId;
-            const physicsPosition = positions.get(cardId);
-            const position: CardPosition = physicsPosition
-              ? {
-                  ...layout,
-                  x: physicsPosition.x,
-                  y: physicsPosition.y,
-                  rotation: (physicsPosition.angle * 180) / Math.PI,
-                }
-              : layout;
-
-            if (renderCard) {
-              return (
-                <Fragment key={cardId}>
-                  {renderCard(
-                    cardData,
-                    position,
-                    theme,
-                    isFocused,
-                    () => handleCardClick(cardData),
-                    index,
-                  )}
-                </Fragment>
-              );
-            }
-
-            return (
-              <DefaultCard
-                key={cardId}
-                card={cardData}
-                position={position}
-                theme={theme}
-                onClick={() => handleCardClick(cardData)}
-                isFocused={isFocused}
-              />
-            );
-          })}
-        </AnimatePresence>
+        <DesktopCardLayer
+          layouts={displayLayouts}
+          cardDataMap={cardPool.cardDataMap}
+          physicsPositions={positions}
+          theme={theme}
+          focusedCardId={focusedCardId}
+          renderCard={renderCard}
+          onCardClick={handleCardClick}
+        />
       </div>
 
       <SearchMenuCard
@@ -323,10 +277,10 @@ export function DesktopCanvasView({
           Camera: ({navigation.camera.x.toFixed(0)}, {navigation.camera.y.toFixed(0)}) z:{navigation.camera.zoom.toFixed(2)}
           <br />
           Visible: {cardPool.visible.size} | Queue: {cardPool.queue.length}
-          {cardNavigation.focusedCardId && (
+          {focusedCardId && (
             <>
               <br />
-              Focus: {cardNavigation.focusedCardId}
+              Focus: {focusedCardId}
             </>
           )}
         </div>

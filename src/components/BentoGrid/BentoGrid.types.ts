@@ -150,13 +150,6 @@ export interface Velocity {
   y: number;
 }
 
-export interface NavigationState {
-  camera: Camera;
-  velocity: Velocity;
-  isDragging: boolean;
-  isPanning: boolean;
-}
-
 export type SearchCardEdge = 'none' | 'top' | 'bottom' | 'left' | 'right';
 export type StickyEdge = SearchCardEdge;
 
@@ -180,19 +173,6 @@ export interface GridConfig {
   onBack?: () => void;
   pageTitle?: string;
   breadcrumb?: string;
-}
-
-export interface BentoGridProps extends GridConfig {
-  className?: string;
-  renderCard?: RenderCard;
-}
-
-export interface GridState {
-  visibleCards: Map<string, CardPosition>;
-  queuedCards: QueuedCard[];
-  search: SearchCardState;
-  navigation: NavigationState;
-  isMobile: boolean;
 }
 
 export interface UseCardPoolReturn {
@@ -227,30 +207,6 @@ export interface UseSpawnManagerReturn {
   forceSpawn: (edge: SpawnEdge) => void;
 }
 
-export interface UseGridNavigationReturn {
-  camera: Camera;
-  pan: (dx: number, dy: number) => void;
-  zoom: (delta: number, center?: Position) => void;
-  reset: () => void;
-  setCamera: (camera: Partial<Camera> | ((camera: Camera) => Camera)) => void;
-  bind: () => GridNavigationBindings;
-  isAnimating: boolean;
-}
-
-export interface UseCameraReturn extends UseGridNavigationReturn {
-  stopMomentum: () => void;
-  isDragging: boolean;
-}
-
-export interface GridNavigationBindings {
-  onPointerDown?: PointerEventHandler<HTMLDivElement>;
-  onPointerMove?: PointerEventHandler<HTMLDivElement>;
-  onPointerUp?: PointerEventHandler<HTMLDivElement>;
-  onPointerLeave?: PointerEventHandler<HTMLDivElement>;
-  onWheel?: WheelEventHandler<HTMLDivElement>;
-  style: CSSProperties;
-}
-
 export interface CameraBindings {
   onPointerDown?: PointerEventHandler<HTMLDivElement>;
   onPointerMove?: PointerEventHandler<HTMLDivElement>;
@@ -270,11 +226,6 @@ export interface UseCameraReturn {
   isDragging: boolean;
   isAnimating: boolean;
   bind: () => CameraBindings;
-}
-
-export interface GridLayoutConfig {
-  cellSize: number;
-  gap: number;
 }
 
 export interface PhysicsPosition {
