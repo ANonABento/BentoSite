@@ -1,4 +1,47 @@
 import { defineConfig, devices } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
+
+function getAvailablePort(preferredPort: number) {
+  const script = `
+const net = require('node:net');
+const preferredPort = Number(process.argv[1]);
+
+function isPortAvailable(port) {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+
+    server.once('error', () => resolve(false));
+    server.once('listening', () => {
+      server.close(() => resolve(true));
+    });
+    server.listen(port, '127.0.0.1');
+  });
+}
+
+(async () => {
+  for (let port = preferredPort; port < preferredPort + 100; port += 1) {
+    if (await isPortAvailable(port)) {
+      process.stdout.write(String(port));
+      return;
+    }
+  }
+
+  process.stderr.write('No available local port found');
+  process.exit(1);
+})();
+`;
+
+  return Number(
+    execFileSync(process.execPath, ['-e', script, String(preferredPort)], {
+      encoding: 'utf8',
+    }),
+  );
+}
+
+const port = process.env.PORT
+  ? Number(process.env.PORT)
+  : getAvailablePort(3000);
+const baseURL = `http://127.0.0.1:${port}`;
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -16,7 +59,7 @@ export default defineConfig({
     timeout: 15000,
   },
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     navigationTimeout: 60000,
@@ -44,8 +87,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: process.env.CI ? 'npm run start' : 'npm run build && npm run start',
-    url: 'http://localhost:3000',
+    command: process.env.CI
+      ? `npm run start -- -p ${port}`
+      : `npm run build && npm run start -- -p ${port}`,
+    url: baseURL,
     reuseExistingServer: false,
     timeout: 120 * 1000,
   },

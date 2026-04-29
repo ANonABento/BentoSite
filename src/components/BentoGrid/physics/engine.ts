@@ -1,136 +1,73 @@
-/**
- * Matter.js engine wrapper for BentoGrid.
- */
-
 import Matter from 'matter-js';
-import type {
-  BodySyncResult,
-  CardLayout,
-  PhysicsConfig,
-} from '../BentoGrid.types';
-import { PHYSICS, PHYSICS_MOBILE, PHYSICS_RUNTIME } from '../BentoGrid.constants';
+import type { CardPosition, PhysicsConfig, Position } from '../BentoGrid.types';
+import { PHYSICS, PHYSICS_MOBILE } from '../BentoGrid.constants';
+import { applyEntranceBurstToBody, toBodyCenter } from './forces';
 
-const { Engine, World, Bodies, Body, Runner, Events, Sleeping } = Matter;
-
-interface BodyMetadata {
-  width: number;
-  height: number;
-}
-
-export interface AddBodyOptions {
-  isStatic?: boolean;
-}
+const { Bodies, Body, Engine, Events, Runner, Sleeping, World } = Matter;
 
 export interface PhysicsEngine {
   engine: Matter.Engine;
   runner: Matter.Runner;
   bodies: Map<string, Matter.Body>;
-
-  addBody: (id: string, layout: CardLayout, options?: AddBodyOptions) => Matter.Body;
+  layouts: Map<string, CardPosition>;
+  addBody: (id: string, layout: CardPosition, isStatic?: boolean) => Matter.Body;
   removeBody: (id: string) => void;
   getBody: (id: string) => Matter.Body | undefined;
-  updateBodyLayout: (id: string, layout: CardLayout, options?: AddBodyOptions) => Matter.Body;
-
   setPosition: (id: string, x: number, y: number) => void;
-  setPositionImmediate: (id: string, x: number, y: number) => void;
   setVelocity: (id: string, vx: number, vy: number) => void;
   setStatic: (id: string, isStatic: boolean) => void;
+  applyEntranceBurst: (id: string, center: Position, strength?: number) => void;
   wakeBody: (id: string) => void;
   wakeAllBodies: () => void;
-
   start: () => void;
   stop: () => void;
   destroy: () => void;
 }
 
-function getBodyMetadata(body: Matter.Body): BodyMetadata | undefined {
-  return body.plugin?.bentoGrid as BodyMetadata | undefined;
-}
-
-function setBodyMetadata(body: Matter.Body, metadata: BodyMetadata): void {
-  body.plugin = {
-    ...body.plugin,
-    bentoGrid: metadata,
-  };
-}
-
-function dimensionsChanged(body: Matter.Body, layout: CardLayout): boolean {
-  const metadata = getBodyMetadata(body);
-
-  return (
-    !metadata ||
-    metadata.width !== layout.width ||
-    metadata.height !== layout.height
-  );
-}
-
 export function createPhysicsEngine(
   isMobile: boolean,
-  onUpdate?: (bodies: Map<string, Matter.Body>) => void,
+  onUpdate?: (bodies: Map<string, Matter.Body>, layouts: Map<string, CardPosition>) => void,
 ): PhysicsEngine {
   const config: PhysicsConfig = isMobile ? PHYSICS_MOBILE : PHYSICS;
-
-  const engine = Engine.create({
-    enableSleeping: true,
-  });
-
+  const engine = Engine.create({ enableSleeping: true });
   engine.gravity.x = 0;
   engine.gravity.y = 0;
 
-  const runner = Runner.create({
-    delta: PHYSICS_RUNTIME.FRAME_MS,
-  });
-
+  const runner = Runner.create({ delta: 1000 / 60 });
   const bodies = new Map<string, Matter.Body>();
-  let isRunning = false;
+  const layouts = new Map<string, CardPosition>();
   let lastUpdateTime = 0;
 
   if (onUpdate) {
     Events.on(engine, 'afterUpdate', () => {
       const now = Date.now();
-      if (now - lastUpdateTime < PHYSICS_RUNTIME.FRAME_MS) return;
+      if (now - lastUpdateTime < 16) return;
       lastUpdateTime = now;
-
-      onUpdate(bodies);
+      onUpdate(bodies, layouts);
     });
   }
 
-  function addBody(id: string, layout: CardLayout, options: AddBodyOptions = {}): Matter.Body {
+  function addBody(id: string, layout: CardPosition, isStatic = false): Matter.Body {
     if (bodies.has(id)) {
       removeBody(id);
     }
 
-    const isStatic = options.isStatic ?? false;
-    const body = Bodies.rectangle(
-      layout.x,
-      layout.y,
-      layout.width,
-      layout.height,
-      {
-        label: id,
-        isStatic,
-        friction: config.friction,
-        frictionAir: config.frictionAir,
-        restitution: isStatic ? 0 : config.restitution,
-        density: config.density,
-        sleepThreshold: config.sleepThreshold,
-        chamfer: {
-          radius: Math.min(
-            PHYSICS_RUNTIME.CARD_CHAMFER_RADIUS,
-            layout.width / 2,
-            layout.height / 2,
-          ),
-        },
-      },
-    );
-
-    setBodyMetadata(body, {
-      width: layout.width,
-      height: layout.height,
+    const center = toBodyCenter(layout);
+    const body = Bodies.rectangle(center.x, center.y, layout.width, layout.height, {
+      label: id,
+      isStatic,
+      angle: (layout.rotation * Math.PI) / 180,
+      friction: config.friction,
+      frictionAir: config.frictionAir,
+      restitution: isStatic ? 0 : config.restitution,
+      density: config.density,
+      sleepThreshold: config.sleepThreshold,
+      chamfer: { radius: 16 },
     });
 
     World.add(engine.world, body);
     bodies.set(id, body);
+    layouts.set(id, layout);
 
     return body;
   }
@@ -141,50 +78,11 @@ export function createPhysicsEngine(
 
     World.remove(engine.world, body);
     bodies.delete(id);
+    layouts.delete(id);
   }
 
   function getBody(id: string): Matter.Body | undefined {
     return bodies.get(id);
-  }
-
-  function updateBodyLayout(
-    id: string,
-    layout: CardLayout,
-    options: AddBodyOptions = {},
-  ): Matter.Body {
-    const existing = bodies.get(id);
-    const shouldBeStatic = options.isStatic ?? existing?.isStatic ?? false;
-
-    if (!existing) {
-      return addBody(id, layout, { isStatic: shouldBeStatic });
-    }
-
-    if (dimensionsChanged(existing, layout)) {
-      const velocity = { ...existing.velocity };
-      const angularVelocity = existing.angularVelocity;
-      const angle = existing.angle;
-      const replacementLayout = {
-        ...layout,
-        x: existing.position.x,
-        y: existing.position.y,
-      };
-      const replacement = addBody(id, replacementLayout, { isStatic: shouldBeStatic });
-
-      Body.setAngle(replacement, angle);
-      if (!shouldBeStatic) {
-        Body.setVelocity(replacement, velocity);
-        Body.setAngularVelocity(replacement, angularVelocity);
-      }
-
-      return replacement;
-    }
-
-    if (existing.isStatic !== shouldBeStatic) {
-      Body.setStatic(existing, shouldBeStatic);
-      existing.restitution = shouldBeStatic ? 0 : config.restitution;
-    }
-
-    return existing;
   }
 
   function setPosition(id: string, x: number, y: number): void {
@@ -192,16 +90,6 @@ export function createPhysicsEngine(
     if (!body) return;
 
     Body.setPosition(body, { x, y });
-    Sleeping.set(body, false);
-  }
-
-  function setPositionImmediate(id: string, x: number, y: number): void {
-    const body = bodies.get(id);
-    if (!body) return;
-
-    Body.setPosition(body, { x, y });
-    Body.setVelocity(body, { x: 0, y: 0 });
-    Body.setAngularVelocity(body, 0);
     Sleeping.set(body, false);
   }
 
@@ -215,38 +103,34 @@ export function createPhysicsEngine(
 
   function setStatic(id: string, isStatic: boolean): void {
     const body = bodies.get(id);
-    if (!body || body.isStatic === isStatic) return;
+    if (!body) return;
 
     Body.setStatic(body, isStatic);
-    body.restitution = isStatic ? 0 : config.restitution;
     Sleeping.set(body, false);
+  }
+
+  function applyBodyEntranceBurst(id: string, center: Position, strength?: number): void {
+    const body = bodies.get(id);
+    if (!body) return;
+
+    applyEntranceBurstToBody(body, center, strength);
   }
 
   function wakeBody(id: string): void {
     const body = bodies.get(id);
-    if (!body) return;
-
-    Sleeping.set(body, false);
+    if (body) Sleeping.set(body, false);
   }
 
   function wakeAllBodies(): void {
-    for (const body of bodies.values()) {
-      Sleeping.set(body, false);
-    }
+    bodies.forEach((body) => Sleeping.set(body, false));
   }
 
   function start(): void {
-    if (isRunning) return;
-
     Runner.run(runner, engine);
-    isRunning = true;
   }
 
   function stop(): void {
-    if (!isRunning) return;
-
     Runner.stop(runner);
-    isRunning = false;
   }
 
   function destroy(): void {
@@ -255,20 +139,21 @@ export function createPhysicsEngine(
     World.clear(engine.world, false);
     Engine.clear(engine);
     bodies.clear();
+    layouts.clear();
   }
 
   return {
     engine,
     runner,
     bodies,
+    layouts,
     addBody,
     removeBody,
     getBody,
-    updateBodyLayout,
     setPosition,
-    setPositionImmediate,
     setVelocity,
     setStatic,
+    applyEntranceBurst: applyBodyEntranceBurst,
     wakeBody,
     wakeAllBodies,
     start,
@@ -279,36 +164,35 @@ export function createPhysicsEngine(
 
 export function syncBodiesWithLayouts(
   physicsEngine: PhysicsEngine,
-  layouts: Map<string, CardLayout>,
-  getIsStatic: (id: string, layout: CardLayout) => boolean = () => false,
-): BodySyncResult {
-  const result: BodySyncResult = {
-    added: [],
-    removed: [],
-    updated: [],
-  };
+  layouts: Map<string, CardPosition>,
+  isStatic = false,
+): void {
   const layoutIds = new Set(layouts.keys());
   const bodyIds = new Set(physicsEngine.bodies.keys());
 
-  for (const id of bodyIds) {
-    if (!layoutIds.has(id)) {
+  bodyIds.forEach((id) => {
+    if (id !== '__search__' && !layoutIds.has(id)) {
       physicsEngine.removeBody(id);
-      result.removed.push(id);
     }
-  }
+  });
 
-  for (const [id, layout] of layouts) {
-    const hadBody = bodyIds.has(id);
-    physicsEngine.updateBodyLayout(id, layout, {
-      isStatic: getIsStatic(id, layout),
-    });
-
-    if (hadBody) {
-      result.updated.push(id);
-    } else {
-      result.added.push(id);
+  layouts.forEach((layout, id) => {
+    if (!bodyIds.has(id)) {
+      physicsEngine.addBody(id, layout, isStatic);
+      return;
     }
-  }
 
-  return result;
+    const existingLayout = physicsEngine.layouts.get(id);
+    if (
+      existingLayout &&
+      (existingLayout.width !== layout.width || existingLayout.height !== layout.height)
+    ) {
+      const existingBody = physicsEngine.getBody(id);
+      physicsEngine.removeBody(id);
+      physicsEngine.addBody(id, layout, existingBody?.isStatic ?? isStatic);
+      return;
+    }
+
+    physicsEngine.layouts.set(id, layout);
+  });
 }
