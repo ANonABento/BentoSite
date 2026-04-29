@@ -10,11 +10,11 @@ import type {
   CardPosition,
   GameCardData,
   ThemeConfig,
-} from '@/components/UnifiedGrid';
-import { GameCard } from '@/components/UnifiedGrid/cards';
+} from '@/components/BentoGrid';
+import { GameCard } from '@/components/BentoGrid/cards';
 
-const UnifiedGrid = dynamic(
-  () => import('@/components/UnifiedGrid').then((mod) => mod.UnifiedGrid),
+const BentoGrid = dynamic(
+  () => import('@/components/BentoGrid').then((mod) => mod.BentoGrid),
   { ssr: false }
 );
 
@@ -87,7 +87,7 @@ export function PlaygroundGridClient() {
   }, [router]);
 
   return (
-    <UnifiedGrid
+    <BentoGrid
       theme="playful"
       cards={gameCards}
       onCardSelect={handleCardSelect}

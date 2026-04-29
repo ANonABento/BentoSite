@@ -77,20 +77,20 @@ export interface Position {
   y: number;
 }
 
+export type Point = Position;
+
 export interface Size {
   width: number;
   height: number;
 }
 
-export type Point = Position;
+export interface Rect extends Position, Size {}
 
 export interface GridLayoutConfig {
   cellSize: number;
   gap: number;
   columns?: number;
 }
-
-export interface Rect extends Position, Size {}
 
 export interface CardPosition extends Rect {
   rotation: number;
@@ -180,6 +180,11 @@ export interface GridConfig {
   breadcrumb?: string;
 }
 
+export interface BentoGridProps extends GridConfig {
+  className?: string;
+  renderCard?: RenderCard;
+}
+
 export interface GridState {
   visibleCards: Map<string, CardPosition>;
   queuedCards: QueuedCard[];
@@ -225,9 +230,14 @@ export interface UseGridNavigationReturn {
   pan: (dx: number, dy: number) => void;
   zoom: (delta: number, center?: Position) => void;
   reset: () => void;
-  setCamera: (camera: Partial<Camera> | ((previous: Camera) => Camera)) => void;
+  setCamera: (camera: Partial<Camera> | ((camera: Camera) => Camera)) => void;
   bind: () => GridNavigationBindings;
   isAnimating: boolean;
+}
+
+export interface UseCameraReturn extends UseGridNavigationReturn {
+  stopMomentum: () => void;
+  isDragging: boolean;
 }
 
 export interface GridNavigationBindings {
@@ -241,10 +251,10 @@ export interface GridNavigationBindings {
 
 export type CameraBindings = GridNavigationBindings;
 
-export interface UseCameraReturn extends UseGridNavigationReturn {
-  stopMomentum: () => void;
-  isDragging: boolean;
-  bind: () => CameraBindings;
+export interface UseCardNavigationReturn {
+  focusedCardId: string | null;
+  setFocusedCardId: (cardId: string | null) => void;
+  clearFocus: () => void;
 }
 
 export interface PhysicsPosition {

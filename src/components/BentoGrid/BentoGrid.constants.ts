@@ -8,10 +8,7 @@ const GRID_VALUES = {
 } as const;
 
 export const GRID = {
-  cellSize: GRID_VALUES.cellSize,
-  gap: GRID_VALUES.gap,
-  spawnBuffer: GRID_VALUES.spawnBuffer,
-  despawnBuffer: GRID_VALUES.despawnBuffer,
+  ...GRID_VALUES,
   CELL_SIZE: GRID_VALUES.cellSize,
   GAP: GRID_VALUES.gap,
   SPAWN_BUFFER: GRID_VALUES.spawnBuffer,
@@ -28,12 +25,12 @@ export const CARD_SIZES: Record<CardSize, { cols: number; rows: number }> = {
 export function getCardDimensions(size: CardSize): { width: number; height: number } {
   const { cols, rows } = CARD_SIZES[size];
   return {
-    width: cols * GRID.cellSize + (cols - 1) * GRID.gap,
-    height: rows * GRID.cellSize + (rows - 1) * GRID.gap,
+    width: cols * GRID.CELL_SIZE + (cols - 1) * GRID.GAP,
+    height: rows * GRID.CELL_SIZE + (rows - 1) * GRID.GAP,
   };
 }
 
-const CARD_POOL_VALUES = {
+const QUEUE_VALUES = {
   spawnDelay: 100,
   maxVisible: 30,
   initialSpawnCount: 12,
@@ -41,21 +38,16 @@ const CARD_POOL_VALUES = {
   policy: 'FIFO',
 } as const;
 
-export const CARD_POOL = {
-  spawnDelay: CARD_POOL_VALUES.spawnDelay,
-  maxVisible: CARD_POOL_VALUES.maxVisible,
-  initialSpawnCount: CARD_POOL_VALUES.initialSpawnCount,
-  initialStagger: CARD_POOL_VALUES.initialStagger,
-  policy: CARD_POOL_VALUES.policy,
-  SPAWN_DELAY: CARD_POOL_VALUES.spawnDelay,
-  MAX_VISIBLE: CARD_POOL_VALUES.maxVisible,
-  INITIAL_SPAWN_COUNT: CARD_POOL_VALUES.initialSpawnCount,
-  INITIAL_STAGGER: CARD_POOL_VALUES.initialStagger,
-  POLICY: CARD_POOL_VALUES.policy,
+export const QUEUE = {
+  ...QUEUE_VALUES,
+  SPAWN_DELAY: QUEUE_VALUES.spawnDelay,
+  MAX_VISIBLE: QUEUE_VALUES.maxVisible,
+  INITIAL_SPAWN_COUNT: QUEUE_VALUES.initialSpawnCount,
+  INITIAL_STAGGER: QUEUE_VALUES.initialStagger,
+  POLICY: QUEUE_VALUES.policy,
 } as const;
 
-/** @deprecated Use CARD_POOL. */
-export const QUEUE = CARD_POOL;
+export const CARD_POOL = QUEUE;
 
 const CAMERA_VALUES = {
   default: { x: 0, y: 0, zoom: 1 },
@@ -63,13 +55,17 @@ const CAMERA_VALUES = {
   maxZoom: 2.0,
   zoomSensitivity: 0.001,
   panSpeed: 15,
-  momentumFriction: 0.92,
-  minVelocity: 0.5,
-  springStiffness: 200,
-  springDamping: 30,
   keyboardPanSpeed: 30,
-  wheelZoomOutFactor: 0.9,
-  wheelZoomInFactor: 1.1,
+  wheelZoomOutFactor: 0.92,
+  wheelZoomInFactor: 1.08,
+  momentum: {
+    friction: 0.92,
+    minVelocity: 0.5,
+  },
+  spring: {
+    stiffness: 200,
+    damping: 30,
+  },
 } as const;
 
 export const CAMERA = {
@@ -78,32 +74,26 @@ export const CAMERA = {
   MAX_ZOOM: CAMERA_VALUES.maxZoom,
   ZOOM_SENSITIVITY: CAMERA_VALUES.zoomSensitivity,
   PAN_SPEED: CAMERA_VALUES.panSpeed,
-  MOMENTUM_FRICTION: CAMERA_VALUES.momentumFriction,
-  MIN_VELOCITY: CAMERA_VALUES.minVelocity,
-  SPRING_STIFFNESS: CAMERA_VALUES.springStiffness,
-  SPRING_DAMPING: CAMERA_VALUES.springDamping,
+  MOMENTUM_FRICTION: CAMERA_VALUES.momentum.friction,
+  MIN_VELOCITY: CAMERA_VALUES.momentum.minVelocity,
+  SPRING_STIFFNESS: CAMERA_VALUES.spring.stiffness,
+  SPRING_DAMPING: CAMERA_VALUES.spring.damping,
   minZoom: CAMERA_VALUES.minZoom,
   maxZoom: CAMERA_VALUES.maxZoom,
   defaultZoom: CAMERA_VALUES.default.zoom,
+  zoomSensitivity: CAMERA_VALUES.zoomSensitivity,
+  panSpeed: CAMERA_VALUES.panSpeed,
   keyboardPanSpeed: CAMERA_VALUES.keyboardPanSpeed,
   wheelZoomOutFactor: CAMERA_VALUES.wheelZoomOutFactor,
   wheelZoomInFactor: CAMERA_VALUES.wheelZoomInFactor,
-  zoomSensitivity: CAMERA_VALUES.zoomSensitivity,
-  panSpeed: CAMERA_VALUES.panSpeed,
-  momentum: {
-    friction: CAMERA_VALUES.momentumFriction,
-    minVelocity: CAMERA_VALUES.minVelocity,
-  },
-  spring: {
-    stiffness: CAMERA_VALUES.springStiffness,
-    damping: CAMERA_VALUES.springDamping,
-  },
+  momentum: CAMERA_VALUES.momentum,
+  spring: CAMERA_VALUES.spring,
 } as const;
 
 export const DEFAULT_CAMERA = {
   x: CAMERA.DEFAULT.x,
   y: CAMERA.DEFAULT.y,
-  zoom: CAMERA.DEFAULT.zoom,
+  zoom: CAMERA.defaultZoom,
 } as const;
 
 const INTERACTION_VALUES = {
@@ -113,38 +103,30 @@ const INTERACTION_VALUES = {
 } as const;
 
 export const INTERACTION = {
-  dragThreshold: INTERACTION_VALUES.dragThreshold,
-  clickMaxDuration: INTERACTION_VALUES.clickMaxDuration,
-  touchTargetMin: INTERACTION_VALUES.touchTargetMin,
+  ...INTERACTION_VALUES,
   DRAG_THRESHOLD: INTERACTION_VALUES.dragThreshold,
   CLICK_MAX_DURATION: INTERACTION_VALUES.clickMaxDuration,
   TOUCH_TARGET_MIN: INTERACTION_VALUES.touchTargetMin,
 } as const;
 
 const SEARCH_CARD_DIMENSIONS = getCardDimensions('2x1');
+
 const SEARCH_CARD_VALUES = {
   expandedWidth: SEARCH_CARD_DIMENSIONS.width,
   expandedHeight: SEARCH_CARD_DIMENSIONS.height,
+  cardWidth: SEARCH_CARD_DIMENSIONS.width,
+  cardHeight: SEARCH_CARD_DIMENSIONS.height,
   collapsedHeight: 56,
   squashedSideWidth: 80,
   compressionDistance: 180,
   stickyThreshold: 60,
+  threshold: 60,
   edgePadding: 16,
   exclusionPadding: 24,
 } as const;
 
 export const SEARCH_CARD = {
-  expandedWidth: SEARCH_CARD_VALUES.expandedWidth,
-  expandedHeight: SEARCH_CARD_VALUES.expandedHeight,
-  collapsedHeight: SEARCH_CARD_VALUES.collapsedHeight,
-  squashedSideWidth: SEARCH_CARD_VALUES.squashedSideWidth,
-  compressionDistance: SEARCH_CARD_VALUES.compressionDistance,
-  stickyThreshold: SEARCH_CARD_VALUES.stickyThreshold,
-  edgePadding: SEARCH_CARD_VALUES.edgePadding,
-  exclusionPadding: SEARCH_CARD_VALUES.exclusionPadding,
-  cardWidth: SEARCH_CARD_VALUES.expandedWidth,
-  cardHeight: SEARCH_CARD_VALUES.expandedHeight,
-  threshold: SEARCH_CARD_VALUES.stickyThreshold,
+  ...SEARCH_CARD_VALUES,
   EXPANDED_WIDTH: SEARCH_CARD_VALUES.expandedWidth,
   EXPANDED_HEIGHT: SEARCH_CARD_VALUES.expandedHeight,
   COLLAPSED_HEIGHT: SEARCH_CARD_VALUES.collapsedHeight,
@@ -155,28 +137,24 @@ export const SEARCH_CARD = {
   EXCLUSION_PADDING: SEARCH_CARD_VALUES.exclusionPadding,
 } as const;
 
-/** @deprecated Use SEARCH_CARD. */
 export const STICKY = SEARCH_CARD;
 
 const ANIMATION_VALUES = {
   cardEnter: 300,
   cardExit: 200,
   stagger: 30,
-  springStiffness: 180,
-  springDamping: 25,
+  spring: {
+    stiffness: 180,
+    damping: 25,
+  },
 } as const;
 
 export const ANIMATION = {
-  cardEnter: ANIMATION_VALUES.cardEnter,
-  cardExit: ANIMATION_VALUES.cardExit,
-  stagger: ANIMATION_VALUES.stagger,
+  ...ANIMATION_VALUES,
   CARD_ENTER: ANIMATION_VALUES.cardEnter,
   CARD_EXIT: ANIMATION_VALUES.cardExit,
   STAGGER: ANIMATION_VALUES.stagger,
-  SPRING: {
-    stiffness: ANIMATION_VALUES.springStiffness,
-    damping: ANIMATION_VALUES.springDamping,
-  },
+  SPRING: ANIMATION_VALUES.spring,
 } as const;
 
 export const PHYSICS: PhysicsConfig = {

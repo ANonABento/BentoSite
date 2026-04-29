@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGesture } from '@use-gesture/react';
-import { clamp } from '@/lib/utils';
 import type { Camera, CameraBindings, Position, Size, UseCameraReturn, Velocity } from '../BentoGrid.types';
 import { CAMERA, DEFAULT_CAMERA, INTERACTION } from '../BentoGrid.constants';
+import { isEditableTarget } from './keyboard';
+import { clamp } from './useViewport';
 
 export interface UseCameraOptions {
   enabled?: boolean;
@@ -18,17 +19,6 @@ interface PinchMemo {
   initialDistance: number;
   initialX: number;
   initialY: number;
-}
-
-function isEditableTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-
-  return (
-    target instanceof HTMLInputElement ||
-    target instanceof HTMLTextAreaElement ||
-    target instanceof HTMLSelectElement ||
-    target.isContentEditable
-  );
 }
 
 export function useCamera({
@@ -285,22 +275,18 @@ export function useCamera({
 
       switch (event.key.toLowerCase()) {
         case 'w':
-        case 'arrowup':
           event.preventDefault();
           pan(0, panAmount);
           break;
         case 's':
-        case 'arrowdown':
           event.preventDefault();
           pan(0, -panAmount);
           break;
         case 'a':
-        case 'arrowleft':
           event.preventDefault();
           pan(panAmount, 0);
           break;
         case 'd':
-        case 'arrowright':
           event.preventDefault();
           pan(-panAmount, 0);
           break;

@@ -5,16 +5,16 @@ import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { PROJECTS } from '@/lib/projects-data';
+import { ProjectCard } from '@/components/BentoGrid/cards';
 import type {
   CardData,
   CardPosition,
   ProjectCardData,
   ThemeConfig,
-} from '@/components/UnifiedGrid';
-import { ProjectCard } from '@/components/UnifiedGrid/cards';
+} from '@/components/BentoGrid';
 
-const UnifiedGrid = dynamic(
-  () => import('@/components/UnifiedGrid').then((mod) => mod.UnifiedGrid),
+const BentoGrid = dynamic(
+  () => import('@/components/BentoGrid').then((mod) => mod.BentoGrid),
   { ssr: false }
 );
 
@@ -79,7 +79,7 @@ export function ProjectsGridClient() {
   }, [router]);
 
   return (
-    <UnifiedGrid
+    <BentoGrid
       theme="premium"
       cards={projectCards}
       onCardSelect={handleCardSelect}
