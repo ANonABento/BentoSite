@@ -1,12 +1,13 @@
-# BentoGrid Refactor — Feature Requirements (Drift Check)
+# BentoGrid Behavior Checklist
 
-These are the owner's requirements from the design discussion. Any spec or implementation MUST satisfy all of these. Use this as a checklist before finalizing.
+These are the behavior requirements for the active BentoGrid system. Checked
+items are implemented; unchecked items are remaining polish or tuning.
 
 ## Current Implementation Status
 
-BentoGrid is now the active shared grid for `/projects` and `/playground`. The old `InfiniteGrid/` and `UnifiedGrid/` packages have been removed, and the current system lives under `src/components/BentoGrid/` with separate `core/`, `layout/`, `physics/`, `cards/`, and `views/` areas.
-
-Still treat this file as an in-progress drift checklist. The major consolidation work is done, and duplicate search-card cleanup is complete; search-card polish and flow-around tuning are still open.
+BentoGrid is the active shared grid for `/projects` and `/playground`. The
+system lives under `src/components/BentoGrid/` with separate `core/`,
+`layout/`, `physics/`, `cards/`, and `views/` areas.
 
 ## Search Card Behavior
 
@@ -39,11 +40,9 @@ Still treat this file as an in-progress drift checklist. The major consolidation
 
 ## Grid System
 - [x] Single consolidated grid system (not two separate ones)
-- [x] Rename from "UnifiedGrid" to something clearer (`BentoGrid`)
-- [x] Delete old InfiniteGrid — merge any unique logic
 - [ ] No duplicated code between grid components
 - [ ] Shared components between search card and regular cards where possible
-- [x] Physics-based card flow (the InfiniteGrid approach)
+- [x] Physics-based card flow
 
 ## Animation & Polish
 - [ ] All cards have consistent entrance/exit animations

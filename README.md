@@ -40,7 +40,7 @@ public/                 Static assets
 ## Key Areas
 
 - `src/components/Dimension/`: 3D viewer shell, controller hook, canvas viewport, scene loaders, and viewer widgets
-- `src/components/BentoGrid/`: in-progress shared infinite grid system for `/projects` and `/playground`
+- `src/components/BentoGrid/`: active shared infinite grid system for `/projects` and `/playground`
 - `src/components/Projects/`: featured project cards, filtering, modal archive, and project media helpers
 - `src/components/Playground/`: game routes and split game modules, including `RhythmGame` audio analysis and mode-specific engines
 - `src/components/Chat/` and `src/components/Chat.tsx`: chatbot entrypoint, storage, request hooks, and presentational parts
@@ -52,7 +52,7 @@ public/                 Static assets
 
 - Route files stay thin where possible. Heavy browser-only surfaces such as the 3D viewer, chat, BentoGrid, and playground games load behind dynamic client boundaries with route-level fallbacks.
 - Projects use `src/lib/projects-data.ts` as the shared pipeline for featured cards, BentoGrid cards, archive browsing, thumbnails, dates, and media metadata.
-- BentoGrid consolidates the older grid experiments into one card pool/camera/physics system. Desktop uses an infinite pan/zoom canvas; mobile falls back to a filtered scroll view.
+- BentoGrid consolidates the older grid experiments into one card pool/camera/physics system under `core/`, `layout/`, `physics/`, `cards/`, and `views/`. Desktop uses an infinite pan/zoom canvas with keyboard navigation; mobile uses a filtered scroll view.
 - Dimension is split between the public shell (`Dimension.tsx`), controller state (`useDimensionController.ts`), canvas viewport (`Dimension.viewport.tsx`), scene primitives (`scene/`), and UI widgets (`ui/`).
 - Chat is split into storage, hooks, typed props, and memoized parts. Timestamps wait for client mount to avoid locale hydration drift.
 - RhythmGame is split across core osu-style play, audio upload/analysis, generated beatmaps, and Taiko/Mania mode engines.

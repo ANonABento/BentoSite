@@ -66,7 +66,7 @@ src/
     ├── BentoGrid/          # Shared projects/playground infinite grid
     │   ├── core/               # Camera, viewport, card pool, spawn/navigation hooks
     │   ├── physics/            # Matter.js engine, forces, world binding
-    │   ├── search/             # Search card state, UI, and physics helpers
+    │   ├── layout/             # Card sizing, initial placement, exclusion helpers
     │   ├── cards/              # Shared card shell and card renderers
     │   └── views/              # Desktop canvas and mobile scroll views
     │

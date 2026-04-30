@@ -5,8 +5,10 @@ Quick reference for AI agents working on this codebase.
 ## Project Overview
 
 This repo is a Next.js 16 portfolio site for Kevin Jiang with:
+- BentoGrid projects and Playground archive routes
 - 3D model viewer (Three.js + React Three Fiber)
 - Interactive chatbot
+- SEO routes and JSON-LD metadata
 - Dark/light theme support
 
 ## Quick Navigation
@@ -24,7 +26,9 @@ This repo is a Next.js 16 portfolio site for Kevin Jiang with:
 |---------|-----------|
 | 3D Viewer | `src/components/Dimension/` |
 | Chat | `src/components/Chat.tsx` |
+| BentoGrid | `src/components/BentoGrid/` |
 | Projects | `src/components/Projects/` |
+| Playground | `src/components/Playground/` |
 | Skills | `src/components/Skills/` |
 | Timeline | `src/components/Timeline/` |
 | About | `src/components/About/` |
@@ -155,6 +159,21 @@ const Component = dynamic(() => import('./Component'), { ssr: false })
 3. Import animation presets from `src/lib/animations.ts`
 4. Follow existing patterns in similar components
 
+### Modifying BentoGrid
+- Public API: `src/components/BentoGrid/index.ts`
+- Desktop orchestration: `src/components/BentoGrid/views/DesktopCanvasView.tsx`
+- Mobile fallback: `src/components/BentoGrid/views/MobileScrollView.tsx`
+- Card pool/camera/spawn: `src/components/BentoGrid/core/`
+- Physics: `src/components/BentoGrid/physics/`
+- Layout helpers: `src/components/BentoGrid/layout/`
+- Card renderers: `src/components/BentoGrid/cards/`
+
+### SEO and Route Metadata
+- Site config: `src/lib/site-config.ts`
+- JSON-LD builders: `src/lib/seo.ts`
+- JSON-LD component: `src/components/seo/JsonLd.tsx`
+- Sitemap and robots: `src/app/sitemap.ts`, `src/app/robots.ts`
+
 ---
 
 ## Commands
@@ -163,6 +182,8 @@ const Component = dynamic(() => import('./Component'), { ssr: false })
 npm run dev      # Dev server at localhost:3000
 npm run build    # Production build
 npm run lint     # ESLint check
+npm run type-check
+npm test
 ```
 
 ---
