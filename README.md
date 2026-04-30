@@ -30,11 +30,11 @@ npm test
 ## Project Structure
 
 ```text
-src/app/                App Router entrypoints and route layouts
-src/components/         Feature components and UI primitives
+src/app/                App Router entrypoints, metadata routes, and route layouts
+src/components/         Feature components, route surfaces, and UI primitives
 src/content/            Portfolio source content
-src/lib/                Shared helpers, tokens, constants, and data shaping
-public/                 Static assets
+src/lib/                Shared helpers, SEO builders, tokens, constants, and data shaping
+public/                 Static assets, project media, and model files
 ```
 
 ## Key Areas
@@ -43,16 +43,17 @@ public/                 Static assets
 - `src/components/BentoGrid/`: in-progress shared infinite grid system for `/projects` and `/playground`
 - `src/components/Projects/`: featured project cards, filtering, modal archive, and project media helpers
 - `src/components/Playground/`: game routes and split game modules, including `RhythmGame` audio analysis and mode-specific engines
-- `src/components/Chat/` and `src/components/Chat.tsx`: chatbot entrypoint, storage, request hooks, and presentational parts
+- `src/components/Chat/`: chatbot storage, request hooks, types, and presentational parts; `src/components/Chat.tsx` is the compatibility entrypoint
 - `src/components/ui/`: loading skeletons, route fallbacks, page transitions, scroll reveal, toast, and error primitives
-- `src/components/seo/` and `src/lib/seo.ts`: JSON-LD helpers, sitemap data, robots metadata, and SEO tests
+- `src/components/seo/`, `src/lib/seo.ts`, `src/app/sitemap.ts`, and `src/app/robots.ts`: JSON-LD helpers, sitemap data, robots metadata, and SEO tests
 - `src/app/styles/`: theme, utility, animation, and content CSS layers
+- `docs/bentogrid-handoff.md`: current BentoGrid rebuild notes and drift checklist
 
 ## Current Architecture Notes
 
 - Route files stay thin where possible. Heavy browser-only surfaces such as the 3D viewer, chat, BentoGrid, and playground games load behind dynamic client boundaries with route-level fallbacks.
 - Projects use `src/lib/projects-data.ts` as the shared pipeline for featured cards, BentoGrid cards, archive browsing, thumbnails, dates, and media metadata.
-- BentoGrid consolidates the older grid experiments into one card pool/camera/physics system. Desktop uses an infinite pan/zoom canvas; mobile falls back to a filtered scroll view.
+- BentoGrid consolidates the older grid experiments into one card pool/camera/physics system. Desktop uses an infinite pan/zoom canvas with Matter.js physics; mobile falls back to a filtered scroll view while the search-card behavior continues to be polished.
 - Dimension is split between the public shell (`Dimension.tsx`), controller state (`useDimensionController.ts`), canvas viewport (`Dimension.viewport.tsx`), scene primitives (`scene/`), and UI widgets (`ui/`).
 - Chat is split into storage, hooks, typed props, and memoized parts. Timestamps wait for client mount to avoid locale hydration drift.
 - RhythmGame is split across core osu-style play, audio upload/analysis, generated beatmaps, and Taiko/Mania mode engines.

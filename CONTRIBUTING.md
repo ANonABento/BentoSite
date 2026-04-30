@@ -17,6 +17,9 @@
 - When persisting high scores or run summaries, guard writes so a finished run is saved once. Avoid effects that can re-fire on derived score state and inflate counters.
 - Keep public APIs narrow. Prefer a few clear props over boolean prop piles or large “options” bags.
 - Reuse shared loading and error primitives instead of redefining spinners, overlays, and fallback shells inside routes.
+- Keep route transitions, scroll reveal, and animated UI paths wired through shared utilities so reduced-motion behavior remains consistent.
+- Preserve SEO routes and structured data when changing route names, project URLs, or content fields. Update `src/lib/seo.ts`, `src/app/sitemap.ts`, and tests together when needed.
+- Preserve accessibility affordances when refactoring interactive surfaces: skip links, focus traps, ARIA state, keyboard navigation, and visible focus styles are part of the feature contract.
 - Write tests around behavior that should survive refactors: loading states, retry paths, token-backed variants, persistence helpers, and critical interactions.
 - API routes should fail closed on bad input. Parse JSON defensively and return `400` for malformed request bodies instead of converting client mistakes into generic `500`s.
 
@@ -27,6 +30,7 @@
 - For route-heavy pages like `src/app/scrollable`, keep the route file mostly about composition and move route-specific state into hooks or private `_components`.
 - For chat-like features, keep storage, session logic, and rendering separate so persistence and request flow can be verified independently.
 - For Playground modes, separate game rules from presentation. Hook code should own timers, collisions, scoring, and persistence boundaries; route/components should mostly own layout and feedback.
+- For RhythmGame specifically, keep upload/audio analysis, generated beatmaps, and mode-specific engines separate from the main shell.
 
 ## Before You Merge
 

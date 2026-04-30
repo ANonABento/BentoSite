@@ -7,7 +7,9 @@ Quick reference for AI agents working on this codebase.
 This repo is a Next.js 16 portfolio site for Kevin Jiang with:
 - 3D model viewer (Three.js + React Three Fiber)
 - Interactive chatbot
+- BentoGrid project/playground browsing
 - Dark/light theme support
+- SEO metadata routes and JSON-LD helpers
 
 ## Quick Navigation
 
@@ -23,7 +25,9 @@ This repo is a Next.js 16 portfolio site for Kevin Jiang with:
 | Feature | Directory |
 |---------|-----------|
 | 3D Viewer | `src/components/Dimension/` |
-| Chat | `src/components/Chat.tsx` |
+| Chat | `src/components/Chat/` (`src/components/Chat.tsx` re-exports it) |
+| BentoGrid | `src/components/BentoGrid/` |
+| Playground games | `src/components/Playground/` |
 | Projects | `src/components/Projects/` |
 | Skills | `src/components/Skills/` |
 | Timeline | `src/components/Timeline/` |
@@ -114,6 +118,7 @@ className={BUTTON_CLASSES.cta}
 - Keep files under 300 lines
 - Use barrel exports (`index.ts`)
 - Dimension component pattern: `.tsx`, `.types.ts`, `.hooks.ts`, `.config.ts`
+- Keep split features organized by responsibility: hooks/state, types, config, views, cards, scene primitives, and UI parts should stay in their feature folders.
 
 ### Three.js Components
 Always disable SSR:
@@ -149,6 +154,32 @@ const Component = dynamic(() => import('./Component'), { ssr: false })
 - Types: `src/components/Dimension/Dimension.types.ts`
 - UI widgets: `src/components/Dimension/ui/widgets/`
 
+### Modifying Chat
+- Public import path: `@/components/Chat`
+- Compatibility entrypoint: `src/components/Chat.tsx`
+- Shell and request wiring: `src/components/Chat/Chat.tsx`
+- Storage and hydration helpers: `src/components/Chat/chat-storage.ts`
+- Presentational pieces: `src/components/Chat/parts/`
+
+### Modifying BentoGrid
+- Entry point: `src/components/BentoGrid/BentoGrid.tsx`
+- Desktop/mobile views: `src/components/BentoGrid/views/`
+- Card pool, camera, and keyboard logic: `src/components/BentoGrid/core/`
+- Layout and Matter.js integration: `src/components/BentoGrid/layout/` and `src/components/BentoGrid/physics/`
+- Current rebuild handoff: `docs/bentogrid-handoff.md`
+
+### Modifying RhythmGame
+- Main shell: `src/components/Playground/RhythmGame/RhythmGame.tsx`
+- Audio upload/analysis UI: `src/components/Playground/RhythmGame/AudioUploader.tsx`
+- Core hooks/config: `src/components/Playground/RhythmGame/RhythmGame.hooks.ts` and `.config.ts`
+- Mode-specific engines: `src/components/Playground/RhythmGame/modes/`
+
+### SEO, Loading, and Accessibility
+- Sitemap and robots routes: `src/app/sitemap.ts`, `src/app/robots.ts`
+- JSON-LD component and builders: `src/components/seo/`, `src/lib/seo.ts`
+- Shared skeletons/fallbacks/transitions: `src/components/ui/`
+- Preserve skip-to-content, focus traps, keyboard navigation, ARIA labels, and reduced-motion paths when changing interactive surfaces.
+
 ### Adding New Components
 1. Create in appropriate `src/components/` subdirectory
 2. Use CSS variables for colors
@@ -163,6 +194,8 @@ const Component = dynamic(() => import('./Component'), { ssr: false })
 npm run dev      # Dev server at localhost:3000
 npm run build    # Production build
 npm run lint     # ESLint check
+npm run type-check
+npm test
 ```
 
 ---
