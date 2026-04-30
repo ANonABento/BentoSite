@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import {
   getProjectCaseStudyBySlug,
+  getProjectCaseStudyPath,
   getProjectCaseStudySlugs,
 } from '@/lib/project-case-studies';
 import {
@@ -36,18 +37,20 @@ export async function generateMetadata({
 
   const project = getProjectById(caseStudy.projectId);
   const image = caseStudy.heroImage ?? (project ? getProjectThumbnail(project) : undefined);
+  const path = getProjectCaseStudyPath(caseStudy);
 
   return {
     title: `${caseStudy.title} | bentOS`,
     description: caseStudy.summary,
     alternates: {
-      canonical: `/projects/${caseStudy.slug}`,
+      canonical: path,
     },
     openGraph: {
       title: caseStudy.title,
       description: caseStudy.summary,
       type: 'article',
-      url: getAbsoluteUrl(`/projects/${caseStudy.slug}`),
+      url: getAbsoluteUrl(path),
+      publishedTime: caseStudy.publishedAt,
       images: image ? [{ url: getAbsoluteUrl(image), alt: caseStudy.title }] : undefined,
     },
   };

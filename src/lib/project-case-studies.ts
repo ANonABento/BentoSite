@@ -12,6 +12,7 @@ export interface ProjectCaseStudy {
 }
 
 type CaseStudyFrontmatter = Partial<Omit<ProjectCaseStudy, 'slug' | 'body'>>;
+export type ProjectCaseStudyPathMap = Record<string, string>;
 
 const CASE_STUDY_DIRECTORY = path.join(process.cwd(), 'content', 'projects');
 const FRONTMATTER_PATTERN = /^---\n([\s\S]*?)\n---\n?/;
@@ -61,14 +62,18 @@ export function getProjectCaseStudyBySlug(slug: string): ProjectCaseStudy | null
 
 export function getCaseStudyPathForProject(projectId: string): string | null {
   const caseStudy = getAllProjectCaseStudies().find((entry) => entry.projectId === projectId);
-  return caseStudy ? `/projects/${caseStudy.slug}` : null;
+  return caseStudy ? getProjectCaseStudyPath(caseStudy) : null;
 }
 
-export function getCaseStudyPathsByProjectId(): Record<string, string> {
-  return getAllProjectCaseStudies().reduce<Record<string, string>>((paths, caseStudy) => {
-    paths[caseStudy.projectId] = `/projects/${caseStudy.slug}`;
+export function getCaseStudyPathsByProjectId(): ProjectCaseStudyPathMap {
+  return getAllProjectCaseStudies().reduce<ProjectCaseStudyPathMap>((paths, caseStudy) => {
+    paths[caseStudy.projectId] = getProjectCaseStudyPath(caseStudy);
     return paths;
   }, {});
+}
+
+export function getProjectCaseStudyPath(caseStudy: Pick<ProjectCaseStudy, 'slug'>): string {
+  return `/projects/${caseStudy.slug}`;
 }
 
 function parseCaseStudySource(source: string): {

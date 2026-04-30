@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { PROJECTS } from '@/lib/projects-data';
+import type { ProjectCaseStudyPathMap } from '@/lib/project-case-studies';
 import { ProjectCard } from '@/components/BentoGrid/cards';
 import type {
   CardData,
@@ -20,7 +21,7 @@ const BentoGrid = dynamic(
 
 function mapProjectToCardData(
   project: typeof PROJECTS[number],
-  caseStudyPathsByProjectId: Record<string, string>
+  caseStudyPathsByProjectId: ProjectCaseStudyPathMap
 ): ProjectCardData {
   return {
     id: project.id,
@@ -66,7 +67,7 @@ function renderProjectCard(
 }
 
 interface ProjectsGridClientProps {
-  caseStudyPathsByProjectId: Record<string, string>;
+  caseStudyPathsByProjectId: ProjectCaseStudyPathMap;
 }
 
 export function ProjectsGridClient({

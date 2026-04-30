@@ -2,7 +2,8 @@ import type { MetadataRoute } from 'next';
 import { getGameCards } from '@/components/Playground/BentoHub/BentoHub.config';
 import {
   getAllProjectCaseStudies,
-  getCaseStudyPathForProject,
+  getCaseStudyPathsByProjectId,
+  getProjectCaseStudyPath,
 } from '@/lib/project-case-studies';
 import { PROJECTS, getProjectThumbnail } from '@/lib/projects-data';
 import { siteConfig } from '@/lib/site-config';
@@ -47,9 +48,9 @@ export function getSitemapEntries(): MetadataRoute.Sitemap {
       path: card.href as string,
       changeFrequency: 'monthly',
       priority: 0.5,
-    }));
+  }));
   const caseStudyRoutes = getAllProjectCaseStudies().map<SitemapEntry>((caseStudy) => ({
-    path: `/projects/${caseStudy.slug}`,
+    path: getProjectCaseStudyPath(caseStudy),
     changeFrequency: 'monthly',
     priority: 0.6,
   }));
@@ -95,6 +96,8 @@ export function buildPortfolioPageJsonLd(): JsonLdObject {
 }
 
 export function buildProjectsPageJsonLd(): JsonLdObject {
+  const caseStudyPathsByProjectId = getCaseStudyPathsByProjectId();
+
   return {
     '@context': 'https://schema.org',
     '@graph': [
@@ -115,8 +118,8 @@ export function buildProjectsPageJsonLd(): JsonLdObject {
           itemListElement: PROJECTS.map((project, index) => ({
             '@type': 'ListItem',
             position: index + 1,
-            url: getAbsoluteUrl(getProjectUrl(project)),
-            item: buildProjectCreativeWorkJsonLd(project),
+            url: getAbsoluteUrl(getProjectUrl(project, caseStudyPathsByProjectId)),
+            item: buildProjectCreativeWorkJsonLd(project, caseStudyPathsByProjectId),
           })),
         },
       },
@@ -159,9 +162,12 @@ function buildWebSiteJsonLd(): JsonLdObject {
   };
 }
 
-function buildProjectCreativeWorkJsonLd(project: PortfolioProject): JsonLdObject {
+function buildProjectCreativeWorkJsonLd(
+  project: PortfolioProject,
+  caseStudyPathsByProjectId: Record<string, string>
+): JsonLdObject {
   const image = getProjectThumbnail(project);
-  const url = getAbsoluteUrl(getProjectUrl(project));
+  const url = getAbsoluteUrl(getProjectUrl(project, caseStudyPathsByProjectId));
 
   return {
     '@type': 'CreativeWork',
@@ -179,8 +185,11 @@ function buildProjectCreativeWorkJsonLd(project: PortfolioProject): JsonLdObject
   };
 }
 
-function getProjectUrl(project: PortfolioProject): string {
-  return getCaseStudyPathForProject(project.id) ?? `/?project=${encodeURIComponent(project.id)}`;
+function getProjectUrl(
+  project: PortfolioProject,
+  caseStudyPathsByProjectId: Record<string, string>
+): string {
+  return caseStudyPathsByProjectId[project.id] ?? `/?project=${encodeURIComponent(project.id)}`;
 }
 
 function getSchemaDate(dateCompleted?: string): string | undefined {
