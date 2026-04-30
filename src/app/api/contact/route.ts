@@ -49,6 +49,10 @@ function parseContactPayload(body: unknown): ContactPayload | null {
   return { name, email, message, company };
 }
 
+function hasHoneypotValue(body: unknown): boolean {
+  return isRecord(body) && normalizeString(body.company, MAX_NAME_LENGTH).length > 0;
+}
+
 function escapeHtml(value: string): string {
   return value
     .replaceAll('&', '&amp;')
@@ -137,14 +141,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
+    if (hasHoneypotValue(body)) {
+      return NextResponse.json({ success: true, sent: false }, { status: 200 });
+    }
+
     const payload = parseContactPayload(body);
 
     if (!payload) {
       return NextResponse.json({ error: 'Invalid contact payload' }, { status: 400 });
-    }
-
-    if (payload.company) {
-      return NextResponse.json({ success: true, sent: false }, { status: 200 });
     }
 
     const result = await sendContactEmail(payload);
