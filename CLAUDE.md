@@ -66,8 +66,8 @@ src/
     ├── BentoGrid/          # Shared projects/playground infinite grid
     │   ├── core/               # Camera, viewport, card pool, spawn/navigation hooks
     │   ├── physics/            # Matter.js engine, forces, world binding
-    │   ├── search/             # Search card state, UI, and physics helpers
     │   ├── cards/              # Shared card shell and card renderers
+    │   │   └── useSearchCardState.ts # Search/filter state and edge behavior
     │   └── views/              # Desktop canvas and mobile scroll views
     │
     ├── Dashboard/          # Main dashboard layout
@@ -199,7 +199,6 @@ ui/                      # Feature-local controls, feedback, and widgets
 | `StationaryBackground` | Grid floor and walls environment |
 | `BillboardText` | Always-facing-camera text labels |
 | `FallbackModel` | Red wireframe cube shown on load failure |
-| `SkeletonLoader` | Placeholder while model loads |
 
 ### Design System
 
@@ -341,14 +340,14 @@ When adding new models to `Dimension.config.ts`:
 | Loading components | `src/components/ui/LoadingSpinner.tsx` |
 | Error boundary | `src/components/ui/ErrorBoundary.tsx` |
 | 3D viewer entry | `src/components/Dimension/Dimension.tsx` |
-| Chatbot | `src/components/Chat.tsx` |
+| Chatbot | `src/components/Chat/` (`src/components/Chat.tsx` re-exports it) |
 | Global styles | `src/app/globals.css` |
 
 ---
 
 ## Testing
 
-Tests are in `src/lib/__tests__/` using Vitest:
+Tests live beside features and under `src/lib/__tests__/` using Vitest:
 
 ```bash
 npm test           # Run all tests
@@ -356,7 +355,9 @@ npm test -- --run  # Run once without watch
 ```
 
 Current test coverage:
-- `constants.test.ts` - 29 tests for all constants
-- `utils.test.ts` - 44 tests for utility functions
-- `colors.test.ts` - 11 tests for color utilities
-- `animations.test.ts` - 29 tests for animation configs
+- `src/lib/__tests__/` - constants, utilities, colors, animations, SEO, clipboard, image helpers, boot session, and focus-trap behavior.
+- `src/components/BentoGrid/__tests__/` and `src/components/BentoGrid/cards/cards.test.tsx` - card pool filtering, search card presentation, layout exclusions, physics helpers, viewport/camera behavior, and card renderers.
+- `src/components/ui/` tests - loading spinner, error boundary, page transitions, and scroll reveal reduced-motion behavior.
+- `src/components/seo/JsonLd.test.tsx` - structured data script escaping and rendering.
+- `src/components/Playground/RhythmGame/modes/shared/` tests - shared rhythm engine and high-score persistence behavior.
+- `src/components/Projects/FeaturedProjects.utils.test.ts` - featured-project filtering and display helpers.

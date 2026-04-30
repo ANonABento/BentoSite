@@ -209,5 +209,6 @@ npm test
 | `W` | Toggle wireframe |
 | `S` | Screenshot |
 | `F` | Fullscreen |
+| `C` | Camera presets |
 | `Z` | Zoom to fit |
 | `?` | Help modal |

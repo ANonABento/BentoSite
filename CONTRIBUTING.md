@@ -26,7 +26,7 @@
 ## Feature Patterns
 
 - For `Dimension`, keep scene primitives, viewer state, and UI overlays in separate modules. Avoid importing internal scene files outside the feature.
-- For `BentoGrid`, keep camera/card-pool/search/physics/layout concerns in their existing subdirectories and route custom cards through the `renderCard` prop.
+- For `BentoGrid`, keep camera/card-pool behavior in `core/`, search UI and state in `cards/`, physics in `physics/`, and layout helpers in `layout/`. Route custom cards through the `renderCard` prop.
 - For route-heavy pages like `src/app/scrollable`, keep the route file mostly about composition and move route-specific state into hooks or private `_components`.
 - For chat-like features, keep storage, session logic, and rendering separate so persistence and request flow can be verified independently.
 - For Playground modes, separate game rules from presentation. Hook code should own timers, collisions, scoring, and persistence boundaries; route/components should mostly own layout and feedback.
