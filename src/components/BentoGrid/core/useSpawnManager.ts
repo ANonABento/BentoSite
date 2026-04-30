@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type {
   Camera,
-  CardSize,
   SpawnEdge,
   SpawnPhysicsBridge,
   CardPosition,
@@ -40,10 +39,6 @@ export function getMovementDirectionFromDelta(
   return null;
 }
 
-function getCardSizeForSpawn(spawnIndex: number): CardSize {
-  return getCardSizeForIndex(spawnIndex);
-}
-
 export function useSpawnManager(options: UseSpawnManagerOptions): UseSpawnManagerReturn {
   const {
     cardPool,
@@ -74,7 +69,7 @@ export function useSpawnManager(options: UseSpawnManagerOptions): UseSpawnManage
       const queuedCard = cardPool.dequeue();
       if (!queuedCard) return false;
 
-      const size = getCardSizeForSpawn(spawnCountRef.current);
+      const size = getCardSizeForIndex(spawnCountRef.current);
       const dimensions = getCardDimensions(size);
       const basePosition = viewport.getSpawnPosition(edge);
       let x = basePosition.x;

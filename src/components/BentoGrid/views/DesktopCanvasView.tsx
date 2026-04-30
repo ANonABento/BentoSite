@@ -227,9 +227,8 @@ export function DesktopCanvasView({
         }}
       >
         <DesktopCardLayer
-          layouts={displayLayouts}
+          layouts={currentLayouts}
           cardDataMap={cardPool.cardDataMap}
-          physicsPositions={positions}
           theme={theme}
           focusedCardId={focusedCardId}
           renderCard={renderCard}
