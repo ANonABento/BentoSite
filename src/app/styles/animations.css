@@ -90,10 +90,22 @@
   }
 }
 
+.animate-not-found-float {
+  animation: not-found-float 6s ease-in-out infinite;
+}
+
+.animate-not-found-orbit {
+  animation: not-found-orbit 8s linear infinite;
+}
+
+.animate-not-found-sweep {
+  animation: not-found-sweep 5s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-\[not-found-float_6s_ease-in-out_infinite\],
-  .animate-\[not-found-orbit_8s_linear_infinite\],
-  .animate-\[not-found-sweep_5s_ease-in-out_infinite\] {
+  .animate-not-found-float,
+  .animate-not-found-orbit,
+  .animate-not-found-sweep {
     animation: none;
   }
 }

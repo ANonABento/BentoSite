@@ -38,10 +38,10 @@ export default function NotFound() {
 
           <div className="relative mx-auto grid aspect-square w-full max-w-[280px] place-items-center">
             <div className="absolute inset-4 rounded-full border border-[var(--purple-muted)]" />
-            <div className="absolute inset-10 rounded-full border border-[var(--orange-muted)] animate-[not-found-orbit_8s_linear_infinite]" />
-            <div className="absolute h-3/4 w-px bg-gradient-to-b from-transparent via-[var(--purple)] to-transparent opacity-60 animate-[not-found-sweep_5s_ease-in-out_infinite]" />
-            <div className="absolute w-3/4 h-px bg-gradient-to-r from-transparent via-[var(--orange)] to-transparent opacity-60 animate-[not-found-sweep_5s_ease-in-out_infinite]" />
-            <div className="glass grid h-28 w-28 place-items-center rounded-[var(--radius-bento-inner)] border-[var(--border)] animate-[not-found-float_6s_ease-in-out_infinite]">
+            <div className="animate-not-found-orbit absolute inset-10 rounded-full border border-[var(--orange-muted)]" />
+            <div className="animate-not-found-sweep absolute h-3/4 w-px bg-gradient-to-b from-transparent via-[var(--purple)] to-transparent opacity-60" />
+            <div className="animate-not-found-sweep absolute h-px w-3/4 bg-gradient-to-r from-transparent via-[var(--orange)] to-transparent opacity-60" />
+            <div className="glass animate-not-found-float grid h-28 w-28 place-items-center rounded-[var(--radius-bento-inner)] border-[var(--border)]">
               <SearchX size={44} className="text-[var(--purple)]" aria-hidden="true" />
             </div>
           </div>
