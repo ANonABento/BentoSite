@@ -1,0 +1,64 @@
+{
+  "photos": [
+    {
+      "id": "lab-after-hours",
+      "src": "/photos/lab-after-hours.jpg",
+      "alt": "A warm workbench scene with layered equipment silhouettes",
+      "title": "Lab After Hours",
+      "location": "Waterloo",
+      "year": "2026",
+      "width": 1600,
+      "height": 2000
+    },
+    {
+      "id": "signal-path",
+      "src": "/photos/signal-path.jpg",
+      "alt": "Abstract diagonal light crossing a dark technical surface",
+      "title": "Signal Path",
+      "location": "Toronto",
+      "year": "2026",
+      "width": 1800,
+      "height": 1350
+    },
+    {
+      "id": "calibration",
+      "src": "/photos/calibration.jpg",
+      "alt": "A precise grid-like composition with purple and orange highlights",
+      "title": "Calibration",
+      "location": "Montreal",
+      "year": "2025",
+      "width": 1600,
+      "height": 2000
+    },
+    {
+      "id": "night-bus",
+      "src": "/photos/night-bus.jpg",
+      "alt": "A cinematic night transit window with reflected city color",
+      "title": "Night Bus",
+      "location": "Vancouver",
+      "year": "2025",
+      "width": 1800,
+      "height": 1350
+    },
+    {
+      "id": "machine-quiet",
+      "src": "/photos/machine-quiet.jpg",
+      "alt": "A quiet close-up of machined forms in low light",
+      "title": "Machine Quiet",
+      "location": "Kitchener",
+      "year": "2025",
+      "width": 1600,
+      "height": 2000
+    },
+    {
+      "id": "orange-hour",
+      "src": "/photos/orange-hour.jpg",
+      "alt": "A minimal orange horizon line over a deep evening field",
+      "title": "Orange Hour",
+      "location": "Ottawa",
+      "year": "2024",
+      "width": 1800,
+      "height": 1350
+    }
+  ]
+}

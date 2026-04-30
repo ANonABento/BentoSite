@@ -7,6 +7,7 @@ import { analytics } from '@/lib/analytics';
 import { BentoIcon } from '@/components/BentoOS/BentoIcon';
 import {
   CheckIcon,
+  CameraIcon,
   GitHubIcon,
   GridIcon,
   LinkedInIcon,
@@ -152,6 +153,14 @@ export default function Header({
           >
             <GridIcon size={16} />
             <span className="hidden sm:inline">View Projects</span>
+          </Link>
+          <Link
+            href="/photography"
+            className="interactive-hover flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]"
+            aria-label="View Photography"
+          >
+            <CameraIcon size={16} />
+            <span className="hidden lg:inline">Photography</span>
           </Link>
         </div>
 
