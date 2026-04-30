@@ -22,7 +22,7 @@ Keep one shared grid system that supports:
 | Physics | Matter.js engine and settling forces are under `physics/` |
 | Card pool | FIFO visible/waiting membership is under `core/useCardPool.ts` |
 | Spawn/despawn | Edge-based recycling is under `core/useSpawnManager.ts` |
-| Camera | Desktop pan/zoom and keyboard panning are under `core/useCamera.ts` |
+| Camera | Desktop drag, wheel/pinch zoom, WASD panning, and reset/zoom shortcuts are under `core/useCamera.ts` |
 | Search | `cards/SearchMenuCard.tsx` renders through the shared card shell |
 | Layout | Spiral bento placement plus exclusion helpers live under `layout/` |
 | Desktop view | `views/DesktopCanvasView.tsx` wires camera, pool, physics, and cards |
@@ -39,7 +39,7 @@ src/components/BentoGrid/
 ├── BentoGrid.constants.ts      # Consolidated constants
 │
 ├── core/
-│   ├── useCamera.ts            # Pan/zoom, keyboard panning, camera state
+│   ├── useCamera.ts            # Drag, wheel/pinch zoom, WASD panning, camera state
 │   ├── useCardPool.ts          # Card queue: visible + waiting membership
 │   ├── useViewport.ts          # Viewport bounds and coordinate transforms
 │   ├── useSpawnManager.ts      # Tick loop: despawn off-screen, spawn on edge
@@ -87,7 +87,8 @@ src/components/BentoGrid/
 ### 3. Card Pool
 - FIFO queue for visible and waiting cards
 - Spawn/despawn driven by camera movement + viewport bounds
-- Filter changes: fade out non-matching, fade in matching, physics settles the rest
+- Filter changes currently reset the visible pool immediately; animated enter/exit
+  transitions remain polish work
 
 ### 4. Edge Compression
 Search card compression states:

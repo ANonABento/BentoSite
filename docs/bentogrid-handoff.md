@@ -7,8 +7,8 @@ BentoGrid is the active shared browsing surface for `/projects` and
 shared `CardData` model, then pass route-specific renderers through
 `renderCard`.
 
-Desktop uses an infinite 2D canvas with drag, wheel/pinch zoom, WASD/arrow
-panning, keyboard card focus, Matter.js collision, and edge-based card
+Desktop uses an infinite 2D canvas with drag, wheel/pinch zoom, WASD camera
+panning, arrow-key card focus, Matter.js collision, and edge-based card
 recycling. Mobile uses the same content and search/filter model in a vertical
 scroll fallback without desktop physics.
 
