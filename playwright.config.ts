@@ -1,46 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { execFileSync } from 'node:child_process';
-
-function getAvailablePort(preferredPort: number) {
-  const script = `
-const net = require('node:net');
-const preferredPort = Number(process.argv[1]);
-
-function isPortAvailable(port) {
-  return new Promise((resolve) => {
-    const server = net.createServer();
-
-    server.once('error', () => resolve(false));
-    server.once('listening', () => {
-      server.close(() => resolve(true));
-    });
-    server.listen(port, '127.0.0.1');
-  });
-}
-
-(async () => {
-  for (let port = preferredPort; port < preferredPort + 100; port += 1) {
-    if (await isPortAvailable(port)) {
-      process.stdout.write(String(port));
-      return;
-    }
-  }
-
-  process.stderr.write('No available local port found');
-  process.exit(1);
-})();
-`;
-
-  return Number(
-    execFileSync(process.execPath, ['-e', script, String(preferredPort)], {
-      encoding: 'utf8',
-    }),
-  );
-}
-
-const port = process.env.PORT
-  ? Number(process.env.PORT)
-  : getAvailablePort(3000);
+const port = Number(process.env.E2E_PORT || process.env.PORT || 3000);
 const baseURL = `http://127.0.0.1:${port}`;
 const shouldUseDevServer = process.env.PLAYWRIGHT_USE_DEV_SERVER === 'true';
 const webServerCommand = shouldUseDevServer
@@ -94,7 +53,7 @@ export default defineConfig({
   webServer: {
     command: webServerCommand,
     url: baseURL,
-    reuseExistingServer: false,
+    reuseExistingServer: true,
     timeout: 120 * 1000,
   },
 });
