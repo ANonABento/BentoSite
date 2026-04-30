@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import bundleAnalyzer from '@next/bundle-analyzer';
+import path from 'path';
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
@@ -103,8 +104,11 @@ const nextConfig: NextConfig = {
   // Compression
   compress: true,
 
-  // Silence Turbopack warning (Next.js 16 default)
-  turbopack: {},
+  // Point Turbopack at the directory that actually contains node_modules.
+  // In a git worktree the packages live in the parent repo, not in __dirname.
+  turbopack: {
+    root: path.dirname(path.dirname(path.dirname(require.resolve('next/package.json')))),
+  },
 };
 
 export default withBundleAnalyzer(nextConfig);

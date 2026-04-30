@@ -43,6 +43,7 @@ const port = process.env.PORT
   : getAvailablePort(3000);
 const baseURL = `http://127.0.0.1:${port}`;
 const shouldUseDevServer = process.env.PLAYWRIGHT_USE_DEV_SERVER === 'true';
+const reuseExistingServer = process.env.PLAYWRIGHT_REUSE_SERVER === 'true';
 const webServerCommand = shouldUseDevServer
   ? `npm run dev -- -p ${port}`
   : process.env.CI
@@ -94,7 +95,7 @@ export default defineConfig({
   webServer: {
     command: webServerCommand,
     url: baseURL,
-    reuseExistingServer: false,
-    timeout: 120 * 1000,
+    reuseExistingServer,
+    timeout: 180 * 1000,
   },
 });
