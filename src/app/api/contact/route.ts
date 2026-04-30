@@ -1,24 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
+import {
+  CONTACT_EMAIL_PATTERN,
+  CONTACT_FIELD_LIMITS,
+  CONTACT_HONEYPOT_FIELD,
+} from '@/lib/contact';
 import { siteConfig } from '@/lib/site-config';
 
-const MAX_NAME_LENGTH = 120;
-const MAX_EMAIL_LENGTH = 254;
-const MAX_MESSAGE_LENGTH = 4000;
-const MIN_MESSAGE_LENGTH = 10;
 const RESEND_API_URL = 'https://api.resend.com/emails';
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface ContactPayload {
   name: string;
   email: string;
   message: string;
-  company?: string;
 }
 
 interface ResendErrorResponse {
   message?: string;
   name?: string;
 }
+
+type SendContactEmailResult =
+  | { sent: true; configured: true }
+  | { sent: false; configured: false };
+
+type ContactConfig =
+  | {
+      isConfigured: true;
+      apiKey: string;
+      to: string;
+      from: string;
+    }
+  | {
+      isConfigured: false;
+      apiKey?: string;
+      to?: string;
+      from?: string;
+    };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -33,24 +50,26 @@ function parseContactPayload(body: unknown): ContactPayload | null {
     return null;
   }
 
-  const name = normalizeString(body.name, MAX_NAME_LENGTH);
-  const email = normalizeString(body.email, MAX_EMAIL_LENGTH).toLowerCase();
-  const message = normalizeString(body.message, MAX_MESSAGE_LENGTH);
-  const company = normalizeString(body.company, MAX_NAME_LENGTH);
+  const name = normalizeString(body.name, CONTACT_FIELD_LIMITS.nameMax);
+  const email = normalizeString(body.email, CONTACT_FIELD_LIMITS.emailMax).toLowerCase();
+  const message = normalizeString(body.message, CONTACT_FIELD_LIMITS.messageMax);
 
   if (
-    name.length < 2 ||
-    !EMAIL_PATTERN.test(email) ||
-    message.length < MIN_MESSAGE_LENGTH
+    name.length < CONTACT_FIELD_LIMITS.nameMin ||
+    !CONTACT_EMAIL_PATTERN.test(email) ||
+    message.length < CONTACT_FIELD_LIMITS.messageMin
   ) {
     return null;
   }
 
-  return { name, email, message, company };
+  return { name, email, message };
 }
 
 function hasHoneypotValue(body: unknown): boolean {
-  return isRecord(body) && normalizeString(body.company, MAX_NAME_LENGTH).length > 0;
+  return (
+    isRecord(body) &&
+    normalizeString(body[CONTACT_HONEYPOT_FIELD], CONTACT_FIELD_LIMITS.nameMax).length > 0
+  );
 }
 
 function escapeHtml(value: string): string {
@@ -76,20 +95,29 @@ function buildContactEmailHtml(payload: ContactPayload): string {
   `;
 }
 
-function getContactConfig() {
+function getContactConfig(): ContactConfig {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.CONTACT_TO_EMAIL || siteConfig.links.email;
   const from = process.env.CONTACT_FROM_EMAIL;
+
+  if (apiKey && to && from) {
+    return {
+      apiKey,
+      to,
+      from,
+      isConfigured: true,
+    };
+  }
 
   return {
     apiKey,
     to,
     from,
-    isConfigured: Boolean(apiKey && to && from),
+    isConfigured: false,
   };
 }
 
-async function sendContactEmail(payload: ContactPayload) {
+async function sendContactEmail(payload: ContactPayload): Promise<SendContactEmailResult> {
   const config = getContactConfig();
 
   if (!config.isConfigured) {
@@ -131,7 +159,7 @@ async function sendContactEmail(payload: ContactPayload) {
   return { sent: true, configured: true };
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     let body: unknown;
 
@@ -169,7 +197,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(): Promise<NextResponse> {
   return NextResponse.json(
     { error: 'Method not allowed. Use POST.' },
     { status: 405 }

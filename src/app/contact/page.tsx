@@ -5,6 +5,11 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { useMemo, useState } from 'react';
 import { ArrowLeftIcon, SendIcon } from '@/components/ui/Icons';
 import { useToast } from '@/components/ui/Toast';
+import {
+  CONTACT_EMAIL_PATTERN,
+  CONTACT_FIELD_LIMITS,
+  CONTACT_HONEYPOT_FIELD,
+} from '@/lib/contact';
 import { siteConfig } from '@/lib/site-config';
 
 type ContactStatus = 'idle' | 'submitting';
@@ -23,22 +28,31 @@ const initialFormState: ContactFormState = {
   company: '',
 };
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 function validateForm(form: ContactFormState): string | null {
-  if (form.name.trim().length < 2) {
+  if (form.name.trim().length < CONTACT_FIELD_LIMITS.nameMin) {
     return 'Enter your name.';
   }
 
-  if (!EMAIL_PATTERN.test(form.email.trim())) {
+  if (!CONTACT_EMAIL_PATTERN.test(form.email.trim())) {
     return 'Enter a valid email address.';
   }
 
-  if (form.message.trim().length < 10) {
+  if (form.message.trim().length < CONTACT_FIELD_LIMITS.messageMin) {
     return 'Write a message with at least 10 characters.';
   }
 
   return null;
+}
+
+function getResponseErrorMessage(body: unknown): string | null {
+  return (
+    typeof body === 'object' &&
+    body !== null &&
+    'error' in body &&
+    typeof body.error === 'string'
+  )
+    ? body.error
+    : null;
 }
 
 export default function ContactPage() {
@@ -76,13 +90,13 @@ export default function ContactPage() {
           name: form.name.trim(),
           email: form.email.trim(),
           message: form.message.trim(),
-          company: form.company.trim(),
+          [CONTACT_HONEYPOT_FIELD]: form.company.trim(),
         }),
       });
 
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error || 'Unable to send message right now.');
+        throw new Error(getResponseErrorMessage(body) || 'Unable to send message right now.');
       }
 
       setForm(initialFormState);
@@ -130,7 +144,7 @@ export default function ContactPage() {
               </p>
             </div>
 
-            <div className="glass-panel rounded-xl p-5">
+            <div className="glass-panel rounded-lg p-5">
               <p className="text-sm font-medium text-[var(--text-secondary)]">
                 Direct email
               </p>
@@ -145,7 +159,7 @@ export default function ContactPage() {
 
           <form
             onSubmit={handleSubmit}
-            className="glass-panel rounded-xl p-5 shadow-soft sm:p-6"
+            className="glass-panel rounded-lg p-5 shadow-soft sm:p-6"
             noValidate
           >
             <div className="grid gap-5">
@@ -164,8 +178,8 @@ export default function ContactPage() {
                   value={form.name}
                   onChange={updateField('name')}
                   required
-                  minLength={2}
-                  maxLength={120}
+                  minLength={CONTACT_FIELD_LIMITS.nameMin}
+                  maxLength={CONTACT_FIELD_LIMITS.nameMax}
                   className="rounded-lg border border-[var(--border)] bg-[var(--glass-bg)] px-4 py-3 text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--purple)] focus:ring-2 focus:ring-[var(--purple-muted)]"
                   placeholder="Your name"
                 />
@@ -186,7 +200,7 @@ export default function ContactPage() {
                   value={form.email}
                   onChange={updateField('email')}
                   required
-                  maxLength={254}
+                  maxLength={CONTACT_FIELD_LIMITS.emailMax}
                   className="rounded-lg border border-[var(--border)] bg-[var(--glass-bg)] px-4 py-3 text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--purple)] focus:ring-2 focus:ring-[var(--purple-muted)]"
                   placeholder="you@example.com"
                 />
@@ -218,8 +232,8 @@ export default function ContactPage() {
                   value={form.message}
                   onChange={updateField('message')}
                   required
-                  minLength={10}
-                  maxLength={4000}
+                  minLength={CONTACT_FIELD_LIMITS.messageMin}
+                  maxLength={CONTACT_FIELD_LIMITS.messageMax}
                   rows={8}
                   className="resize-y rounded-lg border border-[var(--border)] bg-[var(--glass-bg)] px-4 py-3 text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--purple)] focus:ring-2 focus:ring-[var(--purple-muted)]"
                   placeholder="What are you building?"
