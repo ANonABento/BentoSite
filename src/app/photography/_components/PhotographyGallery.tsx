@@ -46,11 +46,12 @@ export function PhotographyGallery({ photos }: PhotographyGalleryProps) {
       if (event.key === 'ArrowRight') showNext();
     };
 
+    const previousBodyOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = previousBodyOverflow;
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [activeIndex, closeLightbox, showNext, showPrevious]);
