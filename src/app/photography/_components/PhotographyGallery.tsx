@@ -41,9 +41,19 @@ export function PhotographyGallery({ photos }: PhotographyGalleryProps) {
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeLightbox();
-      if (event.key === 'ArrowLeft') showPrevious();
-      if (event.key === 'ArrowRight') showNext();
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeLightbox();
+        return;
+      }
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        showPrevious();
+      }
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        showNext();
+      }
     };
 
     const previousBodyOverflow = document.body.style.overflow;
@@ -107,7 +117,7 @@ export function PhotographyGallery({ photos }: PhotographyGalleryProps) {
               />
               <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[var(--overlay-strong)] via-[var(--overlay)] to-transparent p-4 text-[var(--text-on-overlay)] opacity-100 transition md:opacity-0 md:group-hover:opacity-100">
                 <span className="block text-base font-semibold">{photo.title}</span>
-                <span className="mt-1 block text-sm text-white/75">
+                <span className="mt-1 block text-sm text-[var(--text-on-overlay)]">
                   {photo.location} / {photo.year}
                 </span>
               </span>
@@ -152,17 +162,17 @@ function Lightbox({
       aria-modal="true"
       aria-label={`${photo.title} lightbox`}
     >
-      <div className="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3 sm:px-6">
+      <div className="flex items-center justify-between gap-4 border-b border-[var(--border)] px-4 py-3 sm:px-6">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{photo.title}</p>
-          <p className="truncate text-xs text-white/60">
+          <p className="truncate text-xs text-[var(--text-secondary)]">
             {photo.location} / {photo.year} / {position} of {total}
           </p>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="interactive-hover rounded-lg border border-white/15 bg-white/10 p-2 text-white hover:bg-white/20 focus-ring"
+          className="interactive-hover rounded-lg border border-[var(--border)] bg-[var(--overlay-weak)] p-2 text-[var(--text-on-overlay)] hover:bg-[var(--overlay)] focus-ring"
           aria-label="Close lightbox"
         >
           <CloseIcon size={20} />
@@ -186,7 +196,7 @@ function Lightbox({
             <button
               type="button"
               onClick={onPrevious}
-              className="interactive-hover absolute left-3 top-1/2 -translate-y-1/2 rounded-lg border border-white/15 bg-black/35 p-3 text-white hover:bg-black/55 focus-ring sm:left-6"
+              className="interactive-hover absolute left-3 top-1/2 -translate-y-1/2 rounded-lg border border-[var(--border)] bg-[var(--overlay-weak)] p-3 text-[var(--text-on-overlay)] hover:bg-[var(--overlay)] focus-ring sm:left-6"
               aria-label="Previous photo"
             >
               <ChevronLeftIcon size={24} />
@@ -194,7 +204,7 @@ function Lightbox({
             <button
               type="button"
               onClick={onNext}
-              className="interactive-hover absolute right-3 top-1/2 -translate-y-1/2 rounded-lg border border-white/15 bg-black/35 p-3 text-white hover:bg-black/55 focus-ring sm:right-6"
+              className="interactive-hover absolute right-3 top-1/2 -translate-y-1/2 rounded-lg border border-[var(--border)] bg-[var(--overlay-weak)] p-3 text-[var(--text-on-overlay)] hover:bg-[var(--overlay)] focus-ring sm:right-6"
               aria-label="Next photo"
             >
               <ChevronRightIcon size={24} />

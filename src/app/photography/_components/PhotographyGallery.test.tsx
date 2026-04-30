@@ -109,6 +109,19 @@ describe('PhotographyGallery', () => {
     expect(document.body.style.overflow).toBe('');
   });
 
+  it('supports single-image galleries without showing previous/next controls', () => {
+    render(<PhotographyGallery photos={[photos[0]]} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open Lab After Hours' }));
+
+    expect(screen.getByRole('dialog', { name: 'Lab After Hours lightbox' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Next photo' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Previous photo' })).not.toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    expect(screen.getByText('Waterloo / 2026 / 1 of 1')).toBeInTheDocument();
+  });
+
   it('restores the previous body overflow when the lightbox closes', () => {
     document.body.style.overflow = 'clip';
 
@@ -117,5 +130,13 @@ describe('PhotographyGallery', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Close lightbox' }));
 
     expect(document.body.style.overflow).toBe('clip');
+  });
+
+  it('renders empty-state message for zero photos', () => {
+    render(<PhotographyGallery photos={[]} />);
+
+    expect(screen.getByText('0 frames', { exact: false })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Open / })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });
