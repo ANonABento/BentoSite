@@ -28,6 +28,7 @@ describe('seo helpers', () => {
 
     expect(urls).toContain(siteUrl);
     expect(urls).toContain(`${siteUrl}/projects`);
+    expect(urls).toContain(`${siteUrl}/projects/robotic-arm-puppeteer`);
     expect(urls).toContain(`${siteUrl}/scrollable`);
     expect(urls).toContain(`${siteUrl}/playground`);
     expect(urls).toContain(`${siteUrl}/playground/reaction`);
@@ -62,7 +63,7 @@ describe('seo helpers', () => {
     expect(items[0]).toMatchObject({
       '@type': 'ListItem',
       position: 1,
-      url: `${siteUrl}/?project=${encodeURIComponent(PROJECTS[0].id)}`,
+      url: `${siteUrl}/projects/robotic-arm-puppeteer`,
     });
 
     const firstProject = items[0].item as Record<string, unknown>;
@@ -70,6 +71,7 @@ describe('seo helpers', () => {
       '@type': 'CreativeWork',
       '@id': `${siteUrl}/projects#${PROJECTS[0].id}`,
       name: PROJECTS[0].name,
+      url: `${siteUrl}/projects/robotic-arm-puppeteer`,
       creator: { '@id': `${siteUrl}#person` },
     });
     expect(firstProject.datePublished).toMatch(/^\d{4}-\d{2}-01$/);

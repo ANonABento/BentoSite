@@ -1,5 +1,9 @@
 import type { MetadataRoute } from 'next';
 import { getGameCards } from '@/components/Playground/BentoHub/BentoHub.config';
+import {
+  getAllProjectCaseStudies,
+  getCaseStudyPathForProject,
+} from '@/lib/project-case-studies';
 import { PROJECTS, getProjectThumbnail } from '@/lib/projects-data';
 import { siteConfig } from '@/lib/site-config';
 
@@ -44,8 +48,13 @@ export function getSitemapEntries(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.5,
     }));
+  const caseStudyRoutes = getAllProjectCaseStudies().map<SitemapEntry>((caseStudy) => ({
+    path: `/projects/${caseStudy.slug}`,
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }));
 
-  return [...CORE_ROUTES, ...playgroundRoutes].map((route) => ({
+  return [...CORE_ROUTES, ...caseStudyRoutes, ...playgroundRoutes].map((route) => ({
     url: getAbsoluteUrl(route.path),
     lastModified,
     changeFrequency: route.changeFrequency,
@@ -106,7 +115,7 @@ export function buildProjectsPageJsonLd(): JsonLdObject {
           itemListElement: PROJECTS.map((project, index) => ({
             '@type': 'ListItem',
             position: index + 1,
-            url: getAbsoluteUrl(`/?project=${encodeURIComponent(project.id)}`),
+            url: getAbsoluteUrl(getProjectUrl(project)),
             item: buildProjectCreativeWorkJsonLd(project),
           })),
         },
@@ -152,13 +161,14 @@ function buildWebSiteJsonLd(): JsonLdObject {
 
 function buildProjectCreativeWorkJsonLd(project: PortfolioProject): JsonLdObject {
   const image = getProjectThumbnail(project);
+  const url = getAbsoluteUrl(getProjectUrl(project));
 
   return {
     '@type': 'CreativeWork',
     '@id': `${PROJECTS_URL}#${project.id}`,
     name: project.name,
     description: project.description ?? project.shortDescription,
-    url: getAbsoluteUrl(`/?project=${encodeURIComponent(project.id)}`),
+    url,
     creator: { '@id': PERSON_ID },
     genre: project.category,
     keywords: project.technologies,
@@ -167,6 +177,10 @@ function buildProjectCreativeWorkJsonLd(project: PortfolioProject): JsonLdObject
     codeRepository: project.links.github,
     sameAs: [project.links.liveDemo, project.links.docs].filter(Boolean),
   };
+}
+
+function getProjectUrl(project: PortfolioProject): string {
+  return getCaseStudyPathForProject(project.id) ?? `/?project=${encodeURIComponent(project.id)}`;
 }
 
 function getSchemaDate(dateCompleted?: string): string | undefined {

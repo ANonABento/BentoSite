@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * /projects - Projects showcase page
  *
@@ -7,23 +5,13 @@
  * dynamic boundary so the page module does not eagerly import them.
  */
 
-import dynamic from 'next/dynamic';
-import { RouteLoadingFallback } from '@/components/ui';
-
-const ProjectsGridClient = dynamic(
-  () => import('./_components/ProjectsGridClient').then((mod) => mod.ProjectsGridClient),
-  {
-    ssr: false,
-    loading: () => (
-      <RouteLoadingFallback
-        label="loading projects..."
-        spinnerVariant="purple"
-        showIcon
-      />
-    ),
-  }
-);
+import { getCaseStudyPathsByProjectId } from '@/lib/project-case-studies';
+import { ProjectsGridClient } from './_components/ProjectsGridClient';
 
 export default function ProjectsPage() {
-  return <ProjectsGridClient />;
+  return (
+    <ProjectsGridClient
+      caseStudyPathsByProjectId={getCaseStudyPathsByProjectId()}
+    />
+  );
 }

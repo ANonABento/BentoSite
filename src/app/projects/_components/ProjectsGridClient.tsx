@@ -13,18 +13,15 @@ import type {
   ThemeConfig,
 } from '@/components/BentoGrid';
 
-const CASE_STUDY_SLUGS_BY_PROJECT_ID: Record<string, string> = {
-  'robotic-arm-puppeteer': 'robotic-arm-puppeteer',
-};
-
 const BentoGrid = dynamic(
   () => import('@/components/BentoGrid').then((mod) => mod.BentoGrid),
   { ssr: false }
 );
 
-function mapProjectToCardData(project: typeof PROJECTS[number]): ProjectCardData {
-  const caseStudySlug = CASE_STUDY_SLUGS_BY_PROJECT_ID[project.id];
-
+function mapProjectToCardData(
+  project: typeof PROJECTS[number],
+  caseStudyPathsByProjectId: Record<string, string>
+): ProjectCardData {
   return {
     id: project.id,
     type: 'project',
@@ -38,7 +35,7 @@ function mapProjectToCardData(project: typeof PROJECTS[number]): ProjectCardData
       github: project.links.github,
       demo: project.links.liveDemo,
       modelPath: project.links.modelPath,
-      caseStudy: caseStudySlug ? `/projects/${caseStudySlug}` : undefined,
+      caseStudy: caseStudyPathsByProjectId[project.id],
     },
     featured: project.featured,
   };
@@ -68,9 +65,18 @@ function renderProjectCard(
   );
 }
 
-export function ProjectsGridClient() {
+interface ProjectsGridClientProps {
+  caseStudyPathsByProjectId: Record<string, string>;
+}
+
+export function ProjectsGridClient({
+  caseStudyPathsByProjectId,
+}: ProjectsGridClientProps) {
   const router = useRouter();
-  const projectCards = useMemo(() => PROJECTS.map(mapProjectToCardData), []);
+  const projectCards = useMemo(
+    () => PROJECTS.map((project) => mapProjectToCardData(project, caseStudyPathsByProjectId)),
+    [caseStudyPathsByProjectId]
+  );
 
   const handleCardSelect = useCallback(
     (card: CardData) => {

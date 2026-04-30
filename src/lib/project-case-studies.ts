@@ -64,6 +64,13 @@ export function getCaseStudyPathForProject(projectId: string): string | null {
   return caseStudy ? `/projects/${caseStudy.slug}` : null;
 }
 
+export function getCaseStudyPathsByProjectId(): Record<string, string> {
+  return getAllProjectCaseStudies().reduce<Record<string, string>>((paths, caseStudy) => {
+    paths[caseStudy.projectId] = `/projects/${caseStudy.slug}`;
+    return paths;
+  }, {});
+}
+
 function parseCaseStudySource(source: string): {
   frontmatter: CaseStudyFrontmatter;
   body: string;
