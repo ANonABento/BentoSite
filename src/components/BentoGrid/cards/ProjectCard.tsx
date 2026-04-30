@@ -246,7 +246,7 @@ export function ProjectCard({
           )}
 
           {/* Quick links on hover - only on large cards */}
-          {isHovered && isLargeCard && (card.links?.github || card.links?.demo) && (
+          {isHovered && isLargeCard && (card.links?.github || card.links?.caseStudy || card.links?.demo) && (
             <motion.div
               className="flex gap-2 mt-2"
               initial={{ opacity: 0, y: 5 }}
@@ -263,6 +263,20 @@ export function ProjectCard({
                 >
                   <GitHubIcon size={10} />
                   <span>Code</span>
+                </a>
+              )}
+              {card.links.caseStudy && (
+                <a
+                  href={card.links.caseStudy}
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center gap-1 px-2 py-1 text-[9px] font-medium rounded transition-colors"
+                  style={{
+                    background: theme.accent.primary,
+                    color: 'white',
+                  }}
+                >
+                  <ExternalLinkIcon size={10} />
+                  <span>Study</span>
                 </a>
               )}
               {card.links.demo && (

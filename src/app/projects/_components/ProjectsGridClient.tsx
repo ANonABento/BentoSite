@@ -13,12 +13,18 @@ import type {
   ThemeConfig,
 } from '@/components/BentoGrid';
 
+const CASE_STUDY_SLUGS_BY_PROJECT_ID: Record<string, string> = {
+  'robotic-arm-puppeteer': 'robotic-arm-puppeteer',
+};
+
 const BentoGrid = dynamic(
   () => import('@/components/BentoGrid').then((mod) => mod.BentoGrid),
   { ssr: false }
 );
 
 function mapProjectToCardData(project: typeof PROJECTS[number]): ProjectCardData {
+  const caseStudySlug = CASE_STUDY_SLUGS_BY_PROJECT_ID[project.id];
+
   return {
     id: project.id,
     type: 'project',
@@ -32,6 +38,7 @@ function mapProjectToCardData(project: typeof PROJECTS[number]): ProjectCardData
       github: project.links.github,
       demo: project.links.liveDemo,
       modelPath: project.links.modelPath,
+      caseStudy: caseStudySlug ? `/projects/${caseStudySlug}` : undefined,
     },
     featured: project.featured,
   };
@@ -68,7 +75,7 @@ export function ProjectsGridClient() {
   const handleCardSelect = useCallback(
     (card: CardData) => {
       if (card.type === 'project') {
-        router.push(`/?project=${card.id}`);
+        router.push(card.links?.caseStudy ?? `/?project=${card.id}`);
       }
     },
     [router]

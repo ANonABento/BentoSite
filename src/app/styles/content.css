@@ -110,6 +110,13 @@
   font-style: italic;
 }
 
+.markdown-content img {
+  width: 100%;
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  margin: 1rem 0;
+}
+
 .markdown-content hr {
   border: none;
   border-top: 1px solid var(--glass-border);

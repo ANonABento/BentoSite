@@ -64,6 +64,7 @@ export interface ProjectCardData extends BaseCardData {
     github?: string;
     demo?: string;
     modelPath?: string;
+    caseStudy?: string;
   };
   featured?: boolean;
 }

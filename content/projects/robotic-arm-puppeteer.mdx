@@ -1,0 +1,41 @@
+---
+projectId: robotic-arm-puppeteer
+title: Robotic Arm Puppeteer
+summary: A ROS2 control and calibration toolkit for OpenArm that combines joint range calibration, AprilTag perception, and a web-based 3D inspection workflow.
+heroImage: https://picsum.photos/seed/robot1/1200/675
+publishedAt: 2025-08
+---
+
+## Problem
+
+OpenArm needed a practical way to move from rough mechanical assembly to repeatable manipulation. The hard part was not a single control loop; it was the handoff between measured wrist positions, calibrated motion limits, and perception data from multiple cameras.
+
+The goal was to make calibration legible enough for fast iteration while keeping the output compatible with ROS2 simulation and control workflows.
+
+## Approach
+
+I built a Python and ROS2 toolkit around three working loops:
+
+- Read and normalize wrist joint positions from the OpenArm platform.
+- Calibrate joint ranges with repeatable bounds instead of one-off constants.
+- Fuse multi-camera AprilTag observations and reject low-confidence detections with covariance-based filtering.
+
+The 3D inspection view used Three.js to make calibration state visible. That made it easier to catch swapped axes, stale transforms, and outlier camera observations before they reached the robot control layer.
+
+## Technical Details
+
+The calibration pipeline treated each sensor update as a candidate measurement rather than a fact. AprilTag observations were scored by covariance, then passed into the ROS2 graph only when the confidence threshold was met. That reduced noisy corrections and improved the accuracy of the final pose estimate by roughly 20%.
+
+The toolkit also kept robot-specific constants separate from runtime calibration output. That made it possible to re-run calibration after mechanical changes without touching the main control code.
+
+## Screenshots
+
+![OpenArm calibration view](https://picsum.photos/seed/robot2/1200/675)
+
+![Multi-camera tracking pass](https://picsum.photos/seed/robot3/1200/675)
+
+## Lessons
+
+The biggest lesson was that calibration tools need interfaces, not just scripts. A small visual layer paid for itself quickly because debugging robotics data is much faster when transforms, outliers, and confidence are visible at the same time.
+
+The project also reinforced a useful robotics pattern: make the uncertain parts explicit. Treating perception as scored evidence made the rest of the control stack easier to reason about.
