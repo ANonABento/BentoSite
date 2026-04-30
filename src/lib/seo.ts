@@ -11,6 +11,15 @@ type SitemapEntry = {
 
 type JsonLdObject = Record<string, unknown>;
 type PortfolioProject = (typeof PROJECTS)[number];
+type PhotographyJsonLdPhoto = {
+  src: string;
+  title: string;
+  alt: string;
+  location: string;
+  year: string;
+  width: number;
+  height: number;
+};
 
 const SITE_NAME = 'bentOS';
 const LANGUAGE = 'en-US';
@@ -120,13 +129,7 @@ export function buildProjectsPageJsonLd(): JsonLdObject {
 }
 
 export function buildPhotographyPageJsonLd(
-  photos: Array<{
-    src: string;
-    title: string;
-    alt: string;
-    location: string;
-    year: string;
-  }>
+  photos: readonly PhotographyJsonLdPhoto[]
 ): JsonLdObject {
   return {
     '@context': 'https://schema.org',
@@ -150,6 +153,8 @@ export function buildPhotographyPageJsonLd(
             contentUrl: getAbsoluteUrl(photo.src),
             name: photo.title,
             description: photo.alt,
+            width: photo.width,
+            height: photo.height,
             locationCreated: photo.location,
             dateCreated: photo.year,
             creator: { '@id': PERSON_ID },

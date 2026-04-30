@@ -13,7 +13,7 @@ import {
 import type { PhotoItem } from './PhotographyGallery.types';
 
 type PhotographyGalleryProps = {
-  photos: PhotoItem[];
+  photos: readonly PhotoItem[];
 };
 
 export function PhotographyGallery({ photos }: PhotographyGalleryProps) {

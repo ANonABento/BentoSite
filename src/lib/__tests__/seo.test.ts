@@ -85,6 +85,8 @@ describe('seo helpers', () => {
         alt: 'Warm workbench scene',
         location: 'Waterloo',
         year: '2026',
+        width: 1600,
+        height: 2000,
       },
       {
         src: '/photos/signal-path.jpg',
@@ -92,6 +94,8 @@ describe('seo helpers', () => {
         alt: 'Diagonal light across a technical surface',
         location: 'Toronto',
         year: '2026',
+        width: 1800,
+        height: 1350,
       },
     ];
     const jsonLd = buildPhotographyPageJsonLd(photos);
@@ -116,6 +120,8 @@ describe('seo helpers', () => {
       '@type': 'ImageObject',
       contentUrl: `${siteUrl}/photos/lab-after-hours.jpg`,
       name: 'Lab After Hours',
+      width: 1600,
+      height: 2000,
       creator: { '@id': `${siteUrl}#person` },
     });
   });
