@@ -64,6 +64,7 @@ export function BaseCard({
       style={{
         width: position.width,
         height: position.height,
+        ...(positionMode === 'fixed' ? { left: 0, top: 0 } : null),
       }}
       initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.92 }}
       animate={{

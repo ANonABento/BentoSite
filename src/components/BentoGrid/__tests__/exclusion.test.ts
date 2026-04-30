@@ -34,6 +34,26 @@ describe('preserveLayoutWithExclusion', () => {
     expect(rectsOverlap(positions.get('blocked')!, exclusionZone, 0)).toBe(false);
   });
 
+  it('does not displace a safe card when moving an overlapping card', () => {
+    const currentPositions = new Map<string, CardPosition>([
+      ['blocked', { ...basePosition, x: 0, y: 0 }],
+      ['safe', { ...basePosition, x: 220, y: 0 }],
+    ]);
+    const exclusionZone = {
+      x: -20,
+      y: -20,
+      width: 220,
+      height: 220,
+      padding: 0,
+    };
+
+    const positions = preserveLayoutWithExclusion(currentPositions, exclusionZone);
+
+    expect(positions.get('safe')).toMatchObject(currentPositions.get('safe')!);
+    expect(rectsOverlap(positions.get('blocked')!, exclusionZone, 0)).toBe(false);
+    expect(rectsOverlap(positions.get('blocked')!, positions.get('safe')!)).toBe(false);
+  });
+
   it('preserves size and rotation while resolving card-card overlaps', () => {
     const currentPositions = new Map<string, CardPosition>([
       ['first', { ...basePosition, x: 0, y: 0, rotation: 3, size: '1x1' }],

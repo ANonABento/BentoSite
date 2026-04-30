@@ -73,8 +73,8 @@ export function preserveLayoutWithExclusion(
   const paddedExclusion = getPaddedExclusion(exclusionZone);
   const nextPositions = new Map<string, CardPosition>();
   const entries = Array.from(currentPositions.entries()).sort(([, a], [, b]) => {
-    const aOverlaps = rectsOverlap(a, paddedExclusion, 0) ? 0 : 1;
-    const bOverlaps = rectsOverlap(b, paddedExclusion, 0) ? 0 : 1;
+    const aOverlaps = rectsOverlap(a, paddedExclusion, 0) ? 1 : 0;
+    const bOverlaps = rectsOverlap(b, paddedExclusion, 0) ? 1 : 0;
     return aOverlaps - bOverlaps;
   });
   const placed: CardPosition[] = [];
