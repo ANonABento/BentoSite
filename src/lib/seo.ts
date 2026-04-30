@@ -27,6 +27,7 @@ const CORE_ROUTES: SitemapEntry[] = [
   { path: '/projects', changeFrequency: 'monthly', priority: 0.9 },
   { path: '/scrollable', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/playground', changeFrequency: 'monthly', priority: 0.7 },
+  { path: '/contact', changeFrequency: 'yearly', priority: 0.6 },
 ];
 
 export function getAbsoluteUrl(path = '/'): string {
