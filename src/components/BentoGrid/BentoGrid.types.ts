@@ -77,8 +77,6 @@ export interface Position {
   y: number;
 }
 
-export type Point = Position;
-
 export interface Size {
   width: number;
   height: number;
@@ -86,11 +84,7 @@ export interface Size {
 
 export interface Rect extends Position, Size {}
 
-export interface GridLayoutConfig {
-  cellSize: number;
-  gap: number;
-  columns?: number;
-}
+export type Point = Position;
 
 export interface CardPosition extends Rect {
   rotation: number;
@@ -115,14 +109,21 @@ export type RenderCard = (
 ) => ReactNode;
 
 export interface ViewportBounds {
-  x?: number;
-  y?: number;
+  x: number;
+  y: number;
   left: number;
   top: number;
   right: number;
   bottom: number;
   width: number;
   height: number;
+}
+
+export interface GridLayoutConfig {
+  cellSize: number;
+  gap: number;
+  /** @deprecated Column count is removed from BentoGrid layout planning. */
+  columns?: number;
 }
 
 export interface QueuedCard {
@@ -150,6 +151,13 @@ export interface Velocity {
   y: number;
 }
 
+export interface NavigationState {
+  camera: Camera;
+  velocity: Velocity;
+  isDragging: boolean;
+  isPanning: boolean;
+}
+
 export type SearchCardEdge = 'none' | 'top' | 'bottom' | 'left' | 'right';
 export type StickyEdge = SearchCardEdge;
 
@@ -159,10 +167,10 @@ export interface SearchCardState {
   compression: number;
   width: number;
   height: number;
+  screenPosition: Position;
   searchTerm: string;
   category: string | null;
   categories: string[];
-  screenPosition: Position;
 }
 
 export interface GridConfig {
@@ -172,6 +180,14 @@ export interface GridConfig {
   onBack?: () => void;
   pageTitle?: string;
   breadcrumb?: string;
+}
+
+export interface GridState {
+  visibleCards: Map<string, CardPosition>;
+  queuedCards: QueuedCard[];
+  search: SearchCardState;
+  navigation: NavigationState;
+  isMobile: boolean;
 }
 
 export interface UseCardPoolReturn {
@@ -206,26 +222,33 @@ export interface UseSpawnManagerReturn {
   forceSpawn: (edge: SpawnEdge) => void;
 }
 
-export interface CameraBindings {
-  onPointerDown?: PointerEventHandler<HTMLDivElement>;
-  onPointerMove?: PointerEventHandler<HTMLDivElement>;
-  onPointerUp?: PointerEventHandler<HTMLDivElement>;
-  onPointerLeave?: PointerEventHandler<HTMLDivElement>;
-  onWheel?: WheelEventHandler<HTMLDivElement>;
-  style: CSSProperties;
-}
-
-export interface UseCameraReturn {
+export interface UseGridNavigationReturn {
   camera: Camera;
   pan: (dx: number, dy: number) => void;
   zoom: (delta: number, center?: Position) => void;
   reset: () => void;
-  stopMomentum: () => void;
-  setCamera: (camera: Partial<Camera> | ((camera: Camera) => Camera)) => void;
-  isDragging: boolean;
+  setCamera: (camera: CameraUpdate) => void;
+  bind: () => GridNavigationBindings;
   isAnimating: boolean;
-  bind: () => CameraBindings;
 }
+
+export type CameraUpdate = Partial<Camera> | ((camera: Camera) => Camera);
+
+export interface UseCameraReturn extends UseGridNavigationReturn {
+  stopMomentum: () => void;
+  isDragging: boolean;
+}
+
+export interface GridNavigationBindings {
+  onPointerDown?: PointerEventHandler<EventTarget>;
+  onPointerMove?: PointerEventHandler<EventTarget>;
+  onPointerUp?: PointerEventHandler<EventTarget>;
+  onPointerLeave?: PointerEventHandler<EventTarget>;
+  onWheel?: WheelEventHandler<EventTarget>;
+  style: CSSProperties;
+}
+
+export type CameraBindings = GridNavigationBindings;
 
 export interface PhysicsPosition {
   x: number;

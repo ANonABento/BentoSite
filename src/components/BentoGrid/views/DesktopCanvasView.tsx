@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { SearchMenuCard, useSearchCardState } from '../cards';
 import {
   getCameraTransform,
+  isEditableTarget,
   screenToCanvas,
   useCamera,
   useCardNavigation,
@@ -12,10 +13,10 @@ import {
   useViewport,
   useWindowSize,
 } from '../core';
-import { calculateLayoutWithExclusion } from '../layout';
+import { preserveLayoutWithExclusion } from '../layout';
 import { usePhysicsWorld } from '../physics';
 import { GRID, SEARCH_CARD } from '../BentoGrid.constants';
-import type { CardData, CardLayout, RenderCard, ThemeConfig } from '../BentoGrid.types';
+import type { CardData, CardLayout, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
 interface DesktopCanvasViewProps {
@@ -105,12 +106,8 @@ export function DesktopCanvasView({
   const displayLayouts = useMemo(() => {
     if (!isSearchStuck) return cardPool.visible;
 
-    const visibleCards = Array.from(cardPool.visible.keys())
-      .map((cardId) => cardPool.cardDataMap.get(cardId))
-      .filter((card): card is CardData => Boolean(card));
-
-    return calculateLayoutWithExclusion(
-      visibleCards,
+    return preserveLayoutWithExclusion(
+      cardPool.visible,
       {
         x: searchLayout.x,
         y: searchLayout.y,
@@ -118,14 +115,11 @@ export function DesktopCanvasView({
         height: searchLayout.height,
         padding: SEARCH_CARD.EXCLUSION_PADDING,
       },
-      theme.card.rotationRange
     );
   }, [
-    cardPool.cardDataMap,
     cardPool.visible,
     isSearchStuck,
     searchLayout,
-    theme.card.rotationRange,
   ]);
 
   const { positions, updateSearchCard, addCard, removeCard, applyEntranceBurst } = usePhysicsWorld({
@@ -139,6 +133,25 @@ export function DesktopCanvasView({
     [addCard, removeCard, applyEntranceBurst],
   );
 
+  const currentLayouts = useMemo(() => {
+    const layouts = new Map<string, CardPosition>();
+
+    displayLayouts.forEach((layout, cardId) => {
+      const physicsPosition = positions.get(cardId);
+      layouts.set(cardId, physicsPosition
+        ? {
+            ...layout,
+            x: physicsPosition.x,
+            y: physicsPosition.y,
+            rotation: (physicsPosition.angle * 180) / Math.PI,
+          }
+        : layout,
+      );
+    });
+
+    return layouts;
+  }, [displayLayouts, positions]);
+
   useEffect(() => {
     updateSearchCard(searchLayout, isSearchStuck);
   }, [isSearchStuck, searchLayout, updateSearchCard]);
@@ -149,6 +162,7 @@ export function DesktopCanvasView({
     camera: navigation.camera,
     rotationRange: theme.card.rotationRange,
     physics: physicsBridge,
+    currentLayouts,
   });
 
   const cardNavigation = useCardNavigation({
@@ -170,14 +184,14 @@ export function DesktopCanvasView({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === '/' || event.key === 'f') {
-        if (!(event.target instanceof HTMLInputElement)) {
+        if (!isEditableTarget(event.target)) {
           event.preventDefault();
           searchState.setExpanded(true);
         }
       }
 
       if (event.key === 'Backspace' && onBack) {
-        if (!(event.target instanceof HTMLInputElement)) {
+        if (!isEditableTarget(event.target)) {
           event.preventDefault();
           onBack();
         }
@@ -212,22 +226,6 @@ export function DesktopCanvasView({
           transformOrigin: '0 0',
         }}
       >
-        <div
-          aria-hidden="true"
-          className="absolute pointer-events-none"
-          style={{
-            left: -SEARCH_CARD.EXPANDED_WIDTH / 2,
-            top: -SEARCH_CARD.EXPANDED_HEIGHT / 2,
-            width: SEARCH_CARD.EXPANDED_WIDTH,
-            height: SEARCH_CARD.EXPANDED_HEIGHT,
-            background: theme.card.background,
-            border: theme.card.border,
-            borderRadius: theme.card.borderRadius,
-            opacity: searchState.compression * 0.35,
-            boxShadow: theme.card.shadow,
-          }}
-        />
-
         <DesktopCardLayer
           layouts={displayLayouts}
           cardDataMap={cardPool.cardDataMap}

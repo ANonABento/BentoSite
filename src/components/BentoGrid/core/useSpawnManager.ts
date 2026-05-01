@@ -4,6 +4,7 @@ import type {
   CardSize,
   SpawnEdge,
   SpawnPhysicsBridge,
+  CardPosition,
   UseCardPoolReturn,
   UseSpawnManagerReturn,
   UseViewportReturn,
@@ -18,6 +19,7 @@ export interface UseSpawnManagerOptions {
   rotationRange?: number;
   enabled?: boolean;
   physics?: SpawnPhysicsBridge;
+  currentLayouts?: Map<string, CardPosition>;
 }
 
 export const MOVEMENT_THRESHOLD = 5;
@@ -50,6 +52,7 @@ export function useSpawnManager(options: UseSpawnManagerOptions): UseSpawnManage
     rotationRange = 0,
     enabled = true,
     physics,
+    currentLayouts,
   } = options;
 
   const lastCameraRef = useRef<Camera>({ ...camera });
@@ -110,7 +113,12 @@ export function useSpawnManager(options: UseSpawnManagerOptions): UseSpawnManage
   const checkDespawns = useCallback((): boolean => {
     const toRemove: string[] = [];
 
-    cardPool.visible.forEach((position, cardId) => {
+    const layoutsForDespawn = currentLayouts ?? cardPool.visible;
+
+    cardPool.visible.forEach((_position, cardId) => {
+      const position = layoutsForDespawn.get(cardId);
+      if (!position) return;
+
       if (!viewport.isCardInViewport(position, GRID.DESPAWN_BUFFER)) {
         toRemove.push(cardId);
       }
@@ -122,7 +130,7 @@ export function useSpawnManager(options: UseSpawnManagerOptions): UseSpawnManage
     });
 
     return toRemove.length > 0;
-  }, [cardPool, physics, viewport]);
+  }, [cardPool, currentLayouts, physics, viewport]);
 
   const checkSpawns = useCallback(() => {
     if (cardPool.queue.length === 0) return;

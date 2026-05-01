@@ -7,6 +7,7 @@ import { analytics } from '@/lib/analytics';
 import { BentoIcon } from '@/components/BentoOS/BentoIcon';
 import {
   CheckIcon,
+  CameraIcon,
   GitHubIcon,
   GridIcon,
   LinkedInIcon,
@@ -14,6 +15,15 @@ import {
   PlayCircleIcon,
 } from '@/components/ui/Icons';
 import { HeaderSocialLink, ResumeButton, TaskbarClock, ThemeToggle } from './Header.parts';
+
+type CompactNavLink = {
+  href: string;
+  label: string;
+  text: string;
+  visibleLabelClassName: string;
+  icon: React.ReactNode;
+  onClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
+};
 
 interface HeaderProps {
   name?: string;
@@ -116,6 +126,35 @@ export default function Header({
       icon: copiedEmail ? <CheckIcon size={20} /> : <MailIcon size={20} />,
     },
   ];
+  const compactNavLinks: CompactNavLink[] = [
+    {
+      href: '/playground',
+      label: 'Open playground',
+      text: 'Playground',
+      visibleLabelClassName: 'hidden sm:inline',
+      icon: <PlayCircleIcon size={16} />,
+    },
+    {
+      href: '/projects',
+      label: 'View Projects',
+      text: 'View Projects',
+      visibleLabelClassName: 'hidden sm:inline',
+      icon: <GridIcon size={16} />,
+      onClick: onProjectsClick
+        ? (event) => {
+            event.preventDefault();
+            onProjectsClick();
+          }
+        : undefined,
+    },
+    {
+      href: '/photography',
+      label: 'View Photography',
+      text: 'Photography',
+      visibleLabelClassName: 'hidden lg:inline',
+      icon: <CameraIcon size={16} />,
+    },
+  ];
 
   if (compact) {
     return (
@@ -129,30 +168,18 @@ export default function Header({
             </h1>
           </div>
           <div className="hidden sm:block w-px h-5 bg-gradient-to-b from-transparent via-[var(--border)] to-transparent" />
-          <Link
-            href="/playground"
-            className="interactive-hover flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]"
-            aria-label="Open playground"
-          >
-            <PlayCircleIcon size={16} />
-            <span className="hidden sm:inline">Playground</span>
-          </Link>
-          <Link
-            href="/projects"
-            onClick={
-              onProjectsClick
-                ? (event) => {
-                    event.preventDefault();
-                    onProjectsClick();
-                  }
-                : undefined
-            }
-            className="interactive-hover flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]"
-            aria-label="View Projects"
-          >
-            <GridIcon size={16} />
-            <span className="hidden sm:inline">View Projects</span>
-          </Link>
+          {compactNavLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={link.onClick}
+              className="interactive-hover flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]"
+              aria-label={link.label}
+            >
+              {link.icon}
+              <span className={link.visibleLabelClassName}>{link.text}</span>
+            </Link>
+          ))}
         </div>
 
         <nav aria-label="Main navigation" className="flex items-center gap-1">

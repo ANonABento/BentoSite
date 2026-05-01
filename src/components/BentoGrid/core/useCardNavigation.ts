@@ -10,6 +10,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { CardPosition, CardData } from '../BentoGrid.types';
+import { isEditableTarget } from './keyboard';
 
 // =============================================================================
 // TYPES
@@ -200,20 +201,16 @@ export function useCardNavigation({
   // Handle keyboard events
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      // Skip if typing in an input (unless Escape)
-      const target = e.target as HTMLElement;
-      const isInput =
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.isContentEditable;
+      // Skip if typing in an editable field (unless Escape)
+      const isInput = isEditableTarget(e.target);
 
       if (isInput && e.key !== BLUR_KEY) return;
 
       // Handle Escape - clear focus and blur any input
       if (e.key === BLUR_KEY) {
         clearFocus();
-        if (isInput && target instanceof HTMLElement) {
-          target.blur();
+        if (isInput && e.target instanceof HTMLElement) {
+          e.target.blur();
         }
         return;
       }

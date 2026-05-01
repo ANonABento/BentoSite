@@ -15,13 +15,14 @@ src/components/Dimension/
 ├── Dimension.hooks.ts          # Small responsive and shortcut hooks
 ├── Dimension.utils.ts          # Utility functions
 ├── Dimension.ui.tsx            # UI implementation barrel
-├── Dimension.3d.tsx            # Compatibility barrel for scene exports
 ├── scene/                      # Three.js scene primitives and model loaders
 │   ├── index.ts
+│   ├── constants.ts
 │   ├── model-format.ts
 │   ├── ModelWrapper.tsx
 │   ├── LODModel.tsx
 │   ├── GLTFModel.tsx
+│   ├── BillboardText.tsx
 │   ├── SkeletonLoader.tsx
 │   ├── SceneErrorBoundary.tsx
 │   ├── FallbackModel.tsx
@@ -69,7 +70,7 @@ const DimensionViewer = dynamic(() => import('@/components/Dimension'), {
 - `useDimensionController.ts` owns selected model state, fullscreen, screenshot, zoom, camera presets, keyboard shortcuts, mobile defaults, and refs.
 - `Dimension.viewport.tsx` owns the `<Canvas>` configuration, loading fallback, error canvas, lights, controls, and model wrapper placement.
 - `scene/` contains focused Three.js primitives. `ModelWrapper` keeps Suspense and chooses between STL and GLTF/GLB loaders.
-- `Dimension.3d.tsx` remains only as a compatibility barrel. New internal imports should prefer `./scene`.
+- `ui/` contains model selector, loading/error feedback, camera controls, shared design tokens, and viewer widgets.
 
 ## Adding Models
 

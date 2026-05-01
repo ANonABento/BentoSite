@@ -1,7 +1,6 @@
-import type { CardData, CardPosition, ExclusionZone, Rect } from '../BentoGrid.types';
+import type { CardPosition, ExclusionZone, Rect } from '../BentoGrid.types';
 import { GRID, SEARCH_CARD } from '../BentoGrid.constants';
-import { getCardDimensions, getCardSizeForIndex } from './cardSizes';
-import { generateSpiralPositions, getRandomRotation, rectsOverlap } from './positions';
+import { rectsOverlap } from './positions';
 
 function withPadding(rect: Rect, padding: number): Rect {
   return {
@@ -12,78 +11,86 @@ function withPadding(rect: Rect, padding: number): Rect {
   };
 }
 
-export function calculateLayoutWithExclusion(
-  cards: CardData[],
-  exclusionZone: ExclusionZone,
-  rotationRange: number,
-): Map<string, CardPosition> {
-  const positions = new Map<string, CardPosition>();
-  const placed: Rect[] = [];
-  const paddedExclusion = withPadding(
+function getPaddedExclusion(exclusionZone: ExclusionZone): Rect {
+  return withPadding(
     exclusionZone,
     exclusionZone.padding ?? SEARCH_CARD.EXCLUSION_PADDING,
   );
-  const spiralPositions = generateSpiralPositions(cards.length * 10 + 48);
-  let spiralIndex = 0;
+}
 
-  cards.forEach((card, cardIndex) => {
-    const size = getCardSizeForIndex(cardIndex, card);
-    const dimensions = getCardDimensions(size);
-    let placedPosition: CardPosition | null = null;
+function pushRectOutOfRect(rect: CardPosition, obstacle: Rect): CardPosition {
+  if (!rectsOverlap(rect, obstacle, 0)) return rect;
 
-    while (spiralIndex < spiralPositions.length && !placedPosition) {
-      const spiralPos = spiralPositions[spiralIndex];
-      spiralIndex++;
-
-      const x = spiralPos.col * (GRID.CELL_SIZE + GRID.GAP);
-      const y = spiralPos.row * (GRID.CELL_SIZE + GRID.GAP);
-      const rect = { x, y, width: dimensions.width, height: dimensions.height };
-
-      if (rectsOverlap(rect, paddedExclusion, 0)) continue;
-      if (placed.some((placedRect) => rectsOverlap(rect, placedRect))) continue;
-
-      placedPosition = {
-        x,
-        y,
-        rotation: getRandomRotation(rotationRange),
-        size,
-        width: dimensions.width,
-        height: dimensions.height,
-      };
-      placed.push(rect);
-    }
-
-    if (!placedPosition) {
-      const rowStep = GRID.CELL_SIZE + GRID.GAP;
-      const fallbackY = paddedExclusion.y + paddedExclusion.height + rowStep;
-      let row = 0;
-
-      while (!placedPosition) {
-        const rect = {
-          x: 0,
-          y: fallbackY + row * rowStep,
-          width: dimensions.width,
-          height: dimensions.height,
-        };
-
-        if (
-          !rectsOverlap(rect, paddedExclusion, 0) &&
-          !placed.some((placedRect) => rectsOverlap(rect, placedRect))
-        ) {
-          placedPosition = {
-            ...rect,
-            rotation: getRandomRotation(rotationRange),
-            size,
-          };
-          placed.push(rect);
-        }
-
-        row++;
-      }
-    }
-
-    positions.set(card.id, placedPosition);
+  const moves = [
+    { x: obstacle.x - (rect.x + rect.width), y: 0 },
+    { x: obstacle.x + obstacle.width - rect.x, y: 0 },
+    { x: 0, y: obstacle.y - (rect.y + rect.height) },
+    { x: 0, y: obstacle.y + obstacle.height - rect.y },
+  ];
+  const bestMove = moves.reduce((best, move) => {
+    const distance = Math.abs(move.x) + Math.abs(move.y);
+    const bestDistance = Math.abs(best.x) + Math.abs(best.y);
+    return distance < bestDistance ? move : best;
   });
 
-  return positions;
+  return {
+    ...rect,
+    x: rect.x + bestMove.x,
+    y: rect.y + bestMove.y,
+  };
+}
+
+function pushMovingRectOutOfPlacedRects(
+  moving: CardPosition,
+  placed: CardPosition[],
+): CardPosition {
+  return placed.reduce((next, placedRect) => {
+    if (!rectsOverlap(next, placedRect)) return next;
+
+    const nextCenterX = next.x + next.width / 2;
+    const nextCenterY = next.y + next.height / 2;
+    const placedCenterX = placedRect.x + placedRect.width / 2;
+    const placedCenterY = placedRect.y + placedRect.height / 2;
+    const overlapLeft = next.x + next.width + GRID.GAP - placedRect.x;
+    const overlapRight = placedRect.x + placedRect.width + GRID.GAP - next.x;
+    const overlapTop = next.y + next.height + GRID.GAP - placedRect.y;
+    const overlapBottom = placedRect.y + placedRect.height + GRID.GAP - next.y;
+    const pushX = nextCenterX < placedCenterX ? -overlapLeft : overlapRight;
+    const pushY = nextCenterY < placedCenterY ? -overlapTop : overlapBottom;
+
+    if (Math.abs(pushX) < Math.abs(pushY)) {
+      return { ...next, x: next.x + pushX };
+    }
+
+    return { ...next, y: next.y + pushY };
+  }, moving);
+}
+
+export function preserveLayoutWithExclusion(
+  currentPositions: Map<string, CardPosition>,
+  exclusionZone: ExclusionZone,
+): Map<string, CardPosition> {
+  const paddedExclusion = getPaddedExclusion(exclusionZone);
+  const nextPositions = new Map<string, CardPosition>();
+  const entries = Array.from(currentPositions.entries()).sort(([, a], [, b]) => {
+    const aOverlaps = rectsOverlap(a, paddedExclusion, 0) ? 0 : 1;
+    const bOverlaps = rectsOverlap(b, paddedExclusion, 0) ? 0 : 1;
+    return aOverlaps - bOverlaps;
+  });
+  const placed: CardPosition[] = [];
+
+  entries.forEach(([cardId, original]) => {
+    let next = pushRectOutOfRect(original, paddedExclusion);
+
+    for (let iteration = 0; iteration < currentPositions.size + 2; iteration++) {
+      const resolved = pushMovingRectOutOfPlacedRects(next, placed);
+      if (resolved.x === next.x && resolved.y === next.y) break;
+      next = pushRectOutOfRect(resolved, paddedExclusion);
+    }
+
+    nextPositions.set(cardId, next);
+    placed.push(next);
+  });
+
+  return nextPositions;
 }
