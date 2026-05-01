@@ -11,6 +11,15 @@ type SitemapEntry = {
 
 type JsonLdObject = Record<string, unknown>;
 type PortfolioProject = (typeof PROJECTS)[number];
+type PhotographyJsonLdPhoto = {
+  src: string;
+  title: string;
+  alt: string;
+  location: string;
+  year: string;
+  width: number;
+  height: number;
+};
 
 const SITE_NAME = 'bentOS';
 const LANGUAGE = 'en-US';
@@ -21,10 +30,13 @@ const PORTFOLIO_PAGE_ID = `${SITE_URL}#portfolio`;
 const PROJECTS_URL = `${SITE_URL}/projects`;
 const PROJECTS_PAGE_ID = `${PROJECTS_URL}#projects`;
 const PLAYGROUND_PAGE_ID = `${SITE_URL}/playground#playground`;
+const PHOTOGRAPHY_URL = `${SITE_URL}/photography`;
+const PHOTOGRAPHY_PAGE_ID = `${PHOTOGRAPHY_URL}#photography`;
 
 const CORE_ROUTES: SitemapEntry[] = [
   { path: '/', changeFrequency: 'monthly', priority: 1 },
   { path: '/projects', changeFrequency: 'monthly', priority: 0.9 },
+  { path: '/photography', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/scrollable', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/playground', changeFrequency: 'monthly', priority: 0.7 },
 ];
@@ -79,6 +91,7 @@ export function buildPortfolioPageJsonLd(): JsonLdObject {
         hasPart: [
           { '@id': PROJECTS_PAGE_ID },
           { '@id': PLAYGROUND_PAGE_ID },
+          { '@id': PHOTOGRAPHY_PAGE_ID },
         ],
       },
     ],
@@ -108,6 +121,43 @@ export function buildProjectsPageJsonLd(): JsonLdObject {
             position: index + 1,
             url: getAbsoluteUrl(`/?project=${encodeURIComponent(project.id)}`),
             item: buildProjectCreativeWorkJsonLd(project),
+          })),
+        },
+      },
+    ],
+  };
+}
+
+export function buildPhotographyPageJsonLd(
+  photos: readonly PhotographyJsonLdPhoto[]
+): JsonLdObject {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      buildPersonJsonLd(),
+      buildWebSiteJsonLd(),
+      {
+        '@type': 'CollectionPage',
+        '@id': PHOTOGRAPHY_PAGE_ID,
+        url: PHOTOGRAPHY_URL,
+        name: `${siteConfig.name} Photography`,
+        description: 'A responsive photography portfolio gallery.',
+        inLanguage: LANGUAGE,
+        isPartOf: { '@id': WEBSITE_ID },
+        about: { '@id': PERSON_ID },
+        mainEntity: {
+          '@type': 'ImageGallery',
+          numberOfItems: photos.length,
+          associatedMedia: photos.map((photo) => ({
+            '@type': 'ImageObject',
+            contentUrl: getAbsoluteUrl(photo.src),
+            name: photo.title,
+            description: photo.alt,
+            width: photo.width,
+            height: photo.height,
+            locationCreated: photo.location,
+            dateCreated: photo.year,
+            creator: { '@id': PERSON_ID },
           })),
         },
       },

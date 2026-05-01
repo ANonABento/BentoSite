@@ -144,7 +144,8 @@ const Component = dynamic(() => import('./Component'), { ssr: false })
 
 ### Modifying the 3D Viewer
 - Main logic: `src/components/Dimension/Dimension.tsx`
-- Three.js scene: `src/components/Dimension/Dimension.3d.tsx`
+- Canvas viewport: `src/components/Dimension/Dimension.viewport.tsx`
+- Three.js scene primitives: `src/components/Dimension/scene/`
 - Types: `src/components/Dimension/Dimension.types.ts`
 - UI widgets: `src/components/Dimension/ui/widgets/`
 

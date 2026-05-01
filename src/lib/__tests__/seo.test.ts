@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildPhotographyPageJsonLd,
   buildPortfolioPageJsonLd,
   buildProjectsPageJsonLd,
   getAbsoluteUrl,
@@ -28,6 +29,7 @@ describe('seo helpers', () => {
 
     expect(urls).toContain(siteUrl);
     expect(urls).toContain(`${siteUrl}/projects`);
+    expect(urls).toContain(`${siteUrl}/photography`);
     expect(urls).toContain(`${siteUrl}/scrollable`);
     expect(urls).toContain(`${siteUrl}/playground`);
     expect(urls).toContain(`${siteUrl}/playground/reaction`);
@@ -73,5 +75,54 @@ describe('seo helpers', () => {
       creator: { '@id': `${siteUrl}#person` },
     });
     expect(firstProject.datePublished).toMatch(/^\d{4}-\d{2}-01$/);
+  });
+
+  it('describes the photography page as an image gallery', () => {
+    const photos = [
+      {
+        src: '/photos/lab-after-hours.jpg',
+        title: 'Lab After Hours',
+        alt: 'Warm workbench scene',
+        location: 'Waterloo',
+        year: '2026',
+        width: 1600,
+        height: 2000,
+      },
+      {
+        src: '/photos/signal-path.jpg',
+        title: 'Signal Path',
+        alt: 'Diagonal light across a technical surface',
+        location: 'Toronto',
+        year: '2026',
+        width: 1800,
+        height: 1350,
+      },
+    ];
+    const jsonLd = buildPhotographyPageJsonLd(photos);
+    const graph = getGraph(jsonLd);
+    const collection = graph.find(
+      (item) => item['@id'] === `${siteUrl}/photography#photography`
+    ) as Record<string, unknown>;
+    const gallery = collection.mainEntity as Record<string, unknown>;
+    const associatedMedia = gallery.associatedMedia as Record<string, unknown>[];
+
+    expect(collection).toMatchObject({
+      '@type': 'CollectionPage',
+      url: `${siteUrl}/photography`,
+      about: { '@id': `${siteUrl}#person` },
+    });
+    expect(gallery).toMatchObject({
+      '@type': 'ImageGallery',
+      numberOfItems: photos.length,
+    });
+    expect(associatedMedia).toHaveLength(photos.length);
+    expect(associatedMedia[0]).toMatchObject({
+      '@type': 'ImageObject',
+      contentUrl: `${siteUrl}/photos/lab-after-hours.jpg`,
+      name: 'Lab After Hours',
+      width: 1600,
+      height: 2000,
+      creator: { '@id': `${siteUrl}#person` },
+    });
   });
 });

@@ -8,9 +8,9 @@
  * compresses smoothly as the slot moves farther off-screen.
  */
 
-import { motion } from 'framer-motion';
 import { ArrowLeftIcon, ChevronDownIcon, CloseIcon, SearchIcon } from '@/components/ui/Icons';
-import type { Position, ThemeConfig, SearchCardEdge } from '../BentoGrid.types';
+import type { CardPosition, Position, ThemeConfig, SearchCardEdge } from '../BentoGrid.types';
+import { BaseCard } from './BaseCard';
 
 // =============================================================================
 // PROPS
@@ -114,34 +114,32 @@ export function SearchMenuCard({
   const isTight = width < 220 || height < 120;
   const compactSearch = compression > 0.72 || isTight;
   const headerInteractive = !isSideSquashed;
+  const cardPosition: CardPosition = {
+    x: position.x - width / 2,
+    y: position.y - height / 2,
+    width,
+    height,
+    rotation: 0,
+    size: '2x1',
+  };
 
   return (
-    <motion.div
-      className="fixed z-50 select-none overflow-hidden backdrop-blur-md"
-      style={{
-        left: position.x - width / 2,
-        top: position.y - height / 2,
-        width,
-        height,
-        background: theme.card.background,
-        border: theme.card.border,
-        borderRadius: theme.card.borderRadius,
+    <BaseCard
+      id="__search__"
+      position={cardPosition}
+      theme={theme}
+      positionMode="fixed"
+      className="z-50"
+      shellClassName="backdrop-blur-md"
+      shellStyle={{
         boxShadow: compression > 0
           ? `0 0 0 1px ${theme.accent.primary}33, ${theme.card.hoverShadow}`
           : theme.card.shadow,
       }}
-      animate={{
-        left: position.x - width / 2,
-        top: position.y - height / 2,
-        width,
-        height,
-      }}
-      transition={{
-        type: 'spring',
-        stiffness: 220,
-        damping: 30,
-      }}
-      aria-label="Search and filter cards"
+      hoverEnabled={compression === 0}
+      onPointerDown={(event) => event.stopPropagation()}
+      onWheel={(event) => event.stopPropagation()}
+      ariaLabel="Search and filter cards"
     >
       <div className="h-full min-w-0 p-4 flex flex-col gap-3">
         <div
@@ -277,6 +275,6 @@ export function SearchMenuCard({
           </div>
         </div>
       </div>
-    </motion.div>
+    </BaseCard>
   );
 }

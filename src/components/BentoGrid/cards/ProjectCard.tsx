@@ -12,16 +12,15 @@
  */
 
 import { useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import type { ProjectCardData, CardPosition, ThemeConfig } from '../BentoGrid.types';
-import { ANIMATION } from '../BentoGrid.constants';
-import { unifiedGridCardEntranceDelay } from '@/lib/animations';
 import {
   Model3DIcon,
   GitHubIcon,
   ExternalLinkIcon,
 } from '@/components/ui/Icons';
+import { BaseCard } from './BaseCard';
 
 // =============================================================================
 // PROPS
@@ -131,55 +130,34 @@ export function ProjectCard({
 }: ProjectCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const prefersReducedMotion = useReducedMotion() ?? false;
   const isHighlighted = isHovered || isFocused;
 
   const isLargeCard = position.size === '2x2' || position.size === '2x1';
 
   return (
-    <motion.div
-      className="absolute cursor-pointer select-none"
-      style={{
-        width: position.width,
-        height: position.height,
-      }}
-      initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.92 }}
-      animate={{
-        opacity: 1,
-        scale: 1,
-        x: position.x,
-        y: position.y,
-        rotate: position.rotation,
-      }}
-      exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
-      transition={{
-        type: 'spring',
-        stiffness: ANIMATION.SPRING.stiffness,
-        damping: ANIMATION.SPRING.damping,
-        delay: prefersReducedMotion ? 0 : unifiedGridCardEntranceDelay(entranceIndex),
-      }}
-      whileHover={prefersReducedMotion ? undefined : { scale: 1.015, y: -2 }}
+    <BaseCard
+      id={card.id}
+      position={position}
+      theme={theme}
+      isFocused={isFocused}
+      entranceIndex={entranceIndex}
+      onClick={onClick}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
-      onClick={onClick}
+      shellClassName="group"
+      shellStyle={{
+        border: isHighlighted
+          ? `1px solid ${theme.accent.primary}40`
+          : theme.card.border,
+        boxShadow: isFocused
+          ? `0 0 0 3px ${theme.accent.primary}, ${theme.card.hoverShadow}`
+          : isHovered
+            ? `${theme.card.hoverShadow}, 0 0 20px ${theme.accent.primary}10`
+            : theme.card.shadow,
+      }}
     >
-      <div
-        className="group h-full w-full overflow-hidden transition-all duration-300 ease-out"
-        style={{
-          background: theme.card.background,
-          border: isHighlighted
-            ? `1px solid ${theme.accent.primary}40`
-            : theme.card.border,
-          borderRadius: theme.card.borderRadius,
-          boxShadow: isFocused
-            ? `0 0 0 3px ${theme.accent.primary}, ${theme.card.hoverShadow}`
-            : isHovered
-              ? `${theme.card.hoverShadow}, 0 0 20px ${theme.accent.primary}10`
-              : theme.card.shadow,
-        }}
-      >
-        {/* Thumbnail */}
-        <div className="relative w-full h-1/2 bg-black/20 overflow-hidden">
+      {/* Thumbnail */}
+      <div className="relative w-full h-1/2 bg-black/20 overflow-hidden">
           {card.thumbnail ? (
             <>
               {!imageLoaded && (
@@ -215,10 +193,10 @@ export function ProjectCard({
 
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        </div>
+      </div>
 
-        {/* Content */}
-        <div className="p-3 flex flex-col h-[calc(50%-0px)]">
+      {/* Content */}
+      <div className="p-3 flex flex-col h-[calc(50%-0px)]">
           {/* Title */}
           <h3
             className={`font-semibold text-white line-clamp-1 ${
@@ -305,8 +283,7 @@ export function ProjectCard({
               )}
             </motion.div>
           )}
-        </div>
       </div>
-    </motion.div>
+    </BaseCard>
   );
 }

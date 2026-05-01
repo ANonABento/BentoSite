@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * /playground - Games/Fidgets showcase page
+ * /playground - Games and experiments showcase page
  *
  * Thin route shell. The grid and card renderer live behind a route-level
  * dynamic boundary so the page module does not eagerly import them.
