@@ -14,16 +14,21 @@ interface UseCameraOptions {
   onCameraChange?: (camera: Camera) => void;
 }
 
-interface PinchMemo {
-  initialZoom: number;
-  initialDistance: number;
-  initialX: number;
-  initialY: number;
+function normalizeWheelDelta(delta: number, deltaMode: number): number {
+  if (deltaMode === WheelEvent.DOM_DELTA_LINE) {
+    return delta * 16;
+  }
+
+  if (deltaMode === WheelEvent.DOM_DELTA_PAGE) {
+    return delta * 320;
+  }
+
+  return delta;
 }
 
 export function useCamera({
   enabled = true,
-  windowSize,
+  windowSize: _windowSize,
   initialCamera = { ...DEFAULT_CAMERA },
   onCameraChange,
 }: UseCameraOptions): UseCameraReturn {
@@ -111,24 +116,24 @@ export function useCamera({
     }));
   }, [setCamera]);
 
-  const zoom = useCallback((delta: number, center?: Position) => {
+  const zoom = useCallback((_delta: number, _center?: Position) => {
     stopMomentum();
+    setCamera((prev) => ({
+      ...prev,
+      zoom: DEFAULT_CAMERA.zoom,
+    }));
+  }, [setCamera, stopMomentum]);
 
-    setCamera((prev) => {
-      const newZoom = clamp(prev.zoom * (1 + delta), CAMERA.minZoom, CAMERA.maxZoom);
+  const handleWheelPan = useCallback((dx: number, dy: number, deltaMode: number) => {
+    stopMomentum();
+    const normalizedX = normalizeWheelDelta(dx, deltaMode);
+    const normalizedY = normalizeWheelDelta(dy, deltaMode);
 
-      if (!center || newZoom === prev.zoom) {
-        return { ...prev, zoom: newZoom };
-      }
-
-      const zoomDelta = newZoom / prev.zoom;
-
-      return {
-        x: prev.x - (center.x / prev.zoom) * (1 - 1 / zoomDelta),
-        y: prev.y - (center.y / prev.zoom) * (1 - 1 / zoomDelta),
-        zoom: newZoom,
-      };
-    });
+    setCamera((prev) => ({
+      ...prev,
+      x: prev.x - normalizedX / prev.zoom,
+      y: prev.y - normalizedY / prev.zoom,
+    }));
   }, [setCamera, stopMomentum]);
 
   const reset = useCallback(() => {
@@ -185,75 +190,24 @@ export function useCamera({
           }
         }
       },
-      onPinch: ({ origin: [originX, originY], da: [distanceValue], memo }) => {
-        if (!enabled) return memo as PinchMemo | undefined;
-
+      onPinch: ({ event, memo }) => {
+        if (!enabled) return memo;
+        event.preventDefault();
         stopMomentum();
-
-        const pinchMemo = memo as PinchMemo | undefined;
-        if (!pinchMemo) {
-          const currentCamera = cameraRef.current;
-
-          return {
-            initialZoom: currentCamera.zoom,
-            initialDistance: distanceValue || 1,
-            initialX: currentCamera.x,
-            initialY: currentCamera.y,
-          } satisfies PinchMemo;
-        }
-
-        const safeInitialDistance = pinchMemo.initialDistance || 1;
-        const scale = distanceValue / safeInitialDistance;
-        const newZoom = clamp(pinchMemo.initialZoom * scale, CAMERA.minZoom, CAMERA.maxZoom);
-        const zoomDelta = newZoom / pinchMemo.initialZoom;
-        const centerX = originX - windowSize.width / 2;
-        const centerY = originY - windowSize.height / 2;
-
-        setCamera({
-          x: pinchMemo.initialX - (centerX / pinchMemo.initialZoom) * (1 - 1 / zoomDelta),
-          y: pinchMemo.initialY - (centerY / pinchMemo.initialZoom) * (1 - 1 / zoomDelta),
-          zoom: newZoom,
-        });
-
-        return pinchMemo;
+        return memo;
       },
-      onWheel: ({ event, delta: [, dy] }) => {
+      onWheel: ({ event, delta: [dx, dy] }) => {
         if (!enabled) return;
 
         event.preventDefault();
-        stopMomentum();
-
-        const target = event.currentTarget;
-        const rect = target instanceof HTMLElement
-          ? target.getBoundingClientRect()
-          : { left: 0, top: 0 };
-        const cursor = {
-          x: event.clientX - rect.left - windowSize.width / 2,
-          y: event.clientY - rect.top - windowSize.height / 2,
-        };
-        const factor = dy > 0 ? CAMERA.wheelZoomOutFactor : CAMERA.wheelZoomInFactor;
-
-        setCamera((prev) => {
-          const newZoom = clamp(prev.zoom * factor, CAMERA.minZoom, CAMERA.maxZoom);
-          const zoomDelta = newZoom / prev.zoom;
-
-          if (newZoom === prev.zoom) {
-            return prev;
-          }
-
-          return {
-            x: prev.x - (cursor.x / prev.zoom) * (1 - 1 / zoomDelta),
-            y: prev.y - (cursor.y / prev.zoom) * (1 - 1 / zoomDelta),
-            zoom: newZoom,
-          };
-        });
+        handleWheelPan(dx, dy, event.deltaMode);
       },
     },
     {
       drag: {
         from: () => [0, 0],
         filterTaps: true,
-        pointer: { touch: true },
+        pointer: { touch: true, buttons: [1, 4] },
       },
       pinch: {
         scaleBounds: { min: CAMERA.minZoom, max: CAMERA.maxZoom },
@@ -294,25 +248,25 @@ export function useCamera({
           event.preventDefault();
           reset();
           break;
-        case '=':
-        case '+':
-          event.preventDefault();
-          zoom(0.1);
-          break;
-        case '-':
-        case '_':
-          event.preventDefault();
-          zoom(-0.1);
-          break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [enabled, pan, reset, zoom]);
+  }, [enabled, pan, reset]);
 
   const bind = useCallback((): CameraBindings => ({
     ...bindGesture(),
+    onAuxClick: (event) => {
+      if (event.button === 1) {
+        event.preventDefault();
+      }
+    },
+    onMouseDown: (event) => {
+      if (event.button === 1) {
+        event.preventDefault();
+      }
+    },
     style: {
       cursor: isDragging ? 'grabbing' : 'grab',
       touchAction: 'none',

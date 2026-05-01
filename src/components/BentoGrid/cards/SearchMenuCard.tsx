@@ -61,6 +61,12 @@ interface CategoryFilterButtonProps {
   onClick: () => void;
 }
 
+function isInteractiveTarget(target: EventTarget | null): boolean {
+  return target instanceof HTMLElement && Boolean(
+    target.closest('button, input, select, textarea, a, [role="button"], [contenteditable="true"]')
+  );
+}
+
 function CategoryFilterButton({
   active,
   accentColor,
@@ -129,6 +135,7 @@ export function SearchMenuCard({
       position={cardPosition}
       theme={theme}
       positionMode="fixed"
+      motionMode="instant"
       className="z-50"
       shellClassName="backdrop-blur-md"
       shellStyle={{
@@ -137,8 +144,11 @@ export function SearchMenuCard({
           : theme.card.shadow,
       }}
       hoverEnabled={compression === 0}
-      onPointerDown={(event) => event.stopPropagation()}
-      onWheel={(event) => event.stopPropagation()}
+      onPointerDown={(event) => {
+        if (isInteractiveTarget(event.target)) {
+          event.stopPropagation();
+        }
+      }}
       ariaLabel="Search and filter cards"
     >
       <div className="h-full min-w-0 p-4 flex flex-col gap-3">

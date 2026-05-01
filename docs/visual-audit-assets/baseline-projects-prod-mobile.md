@@ -1,0 +1,48 @@
+- generic [active] [ref=e1] [box=0,0,390,1812]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer] [box=-9999,0,184,56]:
+    - /url: "#main-content"
+  - generic [ref=e14] [box=0,0,390,1812]:
+    - generic "Search and filter cards" [ref=e15] [box=16,16,358,180]:
+      - generic [ref=e17] [box=17,17,356,178]:
+        - generic [ref=e18] [box=31,31,328,24]
+        - button "Back to Dashboard" [ref=e25] [box=31,63,147,20]
+        - generic [ref=e30] [box=31,91,328,38]
+        - generic [ref=e35] [box=27,137,336,40]
+    - generic [ref=e46] [box=0,196,390,1616]:
+      - generic [ref=e51] [cursor=pointer] [box=25,221,349,158]:
+        - generic [ref=e52] [box=65,237,293,27]
+        - heading "Robotic Arm Puppeteer" [level=3] [ref=e57] [box=65,297,293,19]
+        - generic [ref=e59] [box=65,350,293,14]
+      - generic [ref=e66] [cursor=pointer] [box=25,397,349,158]:
+        - generic [ref=e67] [box=65,413,293,27]
+        - heading "Expressive AI Robot Head" [level=3] [ref=e72] [box=65,473,293,19]
+        - generic [ref=e74] [box=65,526,293,14]
+      - generic [ref=e81] [cursor=pointer] [box=25,573,349,158]:
+        - generic [ref=e82] [box=65,589,293,27]
+        - heading "AR Gesture Controlled Robot" [level=3] [ref=e87] [box=65,649,293,19]
+        - generic [ref=e89] [box=65,702,293,14]
+      - generic [ref=e96] [cursor=pointer] [box=25,749,349,158]:
+        - generic [ref=e97] [box=65,765,293,27]
+        - heading "One Handed Keyboard" [level=3] [ref=e102] [box=65,825,293,19]
+        - generic [ref=e104] [box=65,878,293,14]
+      - generic [ref=e111] [cursor=pointer] [box=25,925,349,158]:
+        - generic [ref=e112] [box=65,941,293,27]
+        - heading "VR Haptic Gloves" [level=3] [ref=e117] [box=65,1001,293,19]
+        - generic [ref=e119] [box=65,1054,293,14]
+      - generic [ref=e126] [cursor=pointer] [box=25,1101,349,158]:
+        - generic [ref=e127] [box=65,1117,293,27]
+        - heading "FIRST Tech Challenge Robot" [level=3] [ref=e132] [box=65,1177,293,19]
+        - generic [ref=e134] [box=65,1230,293,14]
+      - generic [ref=e141] [cursor=pointer] [box=25,1277,349,158]:
+        - generic [ref=e142] [box=65,1293,293,27]
+        - heading "PCB Design & Assembly" [level=3] [ref=e147] [box=65,1353,293,19]
+        - generic [ref=e149] [box=65,1406,293,14]
+      - generic [ref=e156] [cursor=pointer] [box=25,1453,349,158]:
+        - generic [ref=e157] [box=65,1469,293,27]
+        - heading "Unity Game Development" [level=3] [ref=e162] [box=65,1529,293,19]
+        - generic [ref=e164] [box=65,1582,293,14]
+      - generic [ref=e171] [cursor=pointer] [box=25,1629,349,158]:
+        - generic [ref=e172] [box=65,1645,293,27]
+        - heading "Java & Android Applications" [level=3] [ref=e177] [box=65,1705,293,19]
+        - generic [ref=e179] [box=65,1758,293,14]
+  - alert [ref=e13] [box=-1,1811,1,1]

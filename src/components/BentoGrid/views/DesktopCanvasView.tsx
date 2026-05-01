@@ -5,7 +5,6 @@ import { SearchMenuCard, useSearchCardState } from '../cards';
 import {
   getCameraTransform,
   isEditableTarget,
-  screenToCanvas,
   useCamera,
   useCardNavigation,
   useCardPool,
@@ -13,10 +12,9 @@ import {
   useViewport,
   useWindowSize,
 } from '../core';
-import { preserveLayoutWithExclusion } from '../layout';
 import { usePhysicsWorld } from '../physics';
-import { GRID, SEARCH_CARD } from '../BentoGrid.constants';
-import type { CardData, CardLayout, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
+import { GRID } from '../BentoGrid.constants';
+import type { CardData, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
 interface DesktopCanvasViewProps {
@@ -64,65 +62,9 @@ export function DesktopCanvasView({
     onFilterChange: cardPool.applyFilter,
   });
 
-  const searchLayout = useMemo<CardLayout>(() => {
-    const isCompressed = searchState.edge !== 'none' && searchState.compression > 0;
-    const center = isCompressed
-      ? screenToCanvas(
-          searchState.screenPosition.x,
-          searchState.screenPosition.y,
-          navigation.camera,
-          windowSize,
-        )
-      : { x: 0, y: 0 };
-    const width = isCompressed
-      ? searchState.width / navigation.camera.zoom
-      : SEARCH_CARD.EXPANDED_WIDTH;
-    const height = isCompressed
-      ? searchState.height / navigation.camera.zoom
-      : SEARCH_CARD.EXPANDED_HEIGHT;
+  const displayLayouts = cardPool.visible;
 
-    return {
-      id: '__search__',
-      x: center.x - width / 2,
-      y: center.y - height / 2,
-      width,
-      height,
-      rotation: 0,
-      size: '2x1',
-    };
-  }, [
-    navigation.camera,
-    searchState.compression,
-    searchState.edge,
-    searchState.height,
-    searchState.screenPosition.x,
-    searchState.screenPosition.y,
-    searchState.width,
-    windowSize,
-  ]);
-
-  const isSearchStuck = searchState.edge !== 'none' && searchState.compression > 0;
-
-  const displayLayouts = useMemo(() => {
-    if (!isSearchStuck) return cardPool.visible;
-
-    return preserveLayoutWithExclusion(
-      cardPool.visible,
-      {
-        x: searchLayout.x,
-        y: searchLayout.y,
-        width: searchLayout.width,
-        height: searchLayout.height,
-        padding: SEARCH_CARD.EXCLUSION_PADDING,
-      },
-    );
-  }, [
-    cardPool.visible,
-    isSearchStuck,
-    searchLayout,
-  ]);
-
-  const { positions, updateSearchCard, addCard, removeCard, applyEntranceBurst } = usePhysicsWorld({
+  const { positions, addCard, removeCard, applyEntranceBurst } = usePhysicsWorld({
     layouts: displayLayouts,
     enabled: true,
     isMobile: false,
@@ -151,10 +93,6 @@ export function DesktopCanvasView({
 
     return layouts;
   }, [displayLayouts, positions]);
-
-  useEffect(() => {
-    updateSearchCard(searchLayout, isSearchStuck);
-  }, [isSearchStuck, searchLayout, updateSearchCard]);
 
   useSpawnManager({
     cardPool,

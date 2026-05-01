@@ -1,0 +1,12 @@
+- generic [active] [ref=e1] [box=0,0,1440,1000]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer] [box=-9999,0,184,56]:
+    - /url: "#main-content"
+  - main [ref=e4] [box=0,0,1440,1000]:
+    - generic [ref=e5] [box=0,0,1440,1000]:
+      - generic [ref=e7] [box=24,24,1392,68]:
+        - generic [ref=e8] [box=41,42,409,32]
+        - navigation "Main navigation" [ref=e25] [box=1076,37,323,42]
+      - generic [ref=e43] [box=0,116,1440,884]:
+        - generic [ref=e71] [box=25,117,684,858]
+        - generic [ref=e53] [box=730,116,686,860]
+  - alert [ref=e70] [box=-1,999,1,1]

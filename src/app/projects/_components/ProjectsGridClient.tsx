@@ -2,10 +2,11 @@
 
 import { useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { PROJECTS } from '@/lib/projects-data';
 import { ProjectCard } from '@/components/BentoGrid/cards';
+import { createSeedProjectCards, shouldUseBentoGridSeed } from '@/components/BentoGrid/debugSeed';
 import type {
   CardData,
   CardPosition,
@@ -63,11 +64,16 @@ function renderProjectCard(
 
 export function ProjectsGridClient() {
   const router = useRouter();
-  const projectCards = useMemo(() => PROJECTS.map(mapProjectToCardData), []);
+  const searchParams = useSearchParams();
+  const projectCards = useMemo(() => {
+    const cards = PROJECTS.map(mapProjectToCardData);
+    return shouldUseBentoGridSeed(searchParams) ? createSeedProjectCards(cards) : cards;
+  }, [searchParams]);
 
   const handleCardSelect = useCallback(
     (card: CardData) => {
       if (card.type === 'project') {
+        if (card.id.startsWith('seed-project-')) return;
         router.push(`/?project=${card.id}`);
       }
     },

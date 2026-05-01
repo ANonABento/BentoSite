@@ -1,0 +1,15 @@
+- generic [active] [ref=e1] [box=0,0,390,844]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer] [box=-9999,0,184,56]:
+    - /url: "#main-content"
+  - main [ref=e4] [box=0,0,390,844]:
+    - generic [ref=e5] [box=0,0,390,844]:
+      - generic [ref=e7] [box=16,16,358,64]:
+        - generic [ref=e8] [box=33,34,106,28]
+        - navigation "Main navigation" [ref=e22] [box=151,29,206,38]
+      - tablist "Dashboard panels" [ref=e39] [box=16,96,358,58]:
+        - tab "Show 3D viewfinder tab" [selected] [ref=e40] [box=23,103,170,44]
+        - tab "Show terminal chat tab" [ref=e47] [box=197,103,170,44]
+      - generic [ref=e53] [box=0,170,390,674]:
+        - generic [ref=e64] [box=17,171,356,656]
+        - text: $ $ $ $
+  - alert [ref=e63] [box=-1,843,1,1]

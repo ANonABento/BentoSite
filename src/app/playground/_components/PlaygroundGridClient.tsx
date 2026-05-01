@@ -2,9 +2,10 @@
 
 import { useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { BENTO_CARDS } from '@/components/Playground/BentoHub/BentoHub.config';
+import { BENTO_CARDS, getGameCards } from '@/components/Playground/BentoHub/BentoHub.config';
+import { createSeedGameCards, shouldUseBentoGridSeed } from '@/components/BentoGrid/debugSeed';
 import type {
   CardData,
   CardPosition,
@@ -54,7 +55,7 @@ function renderGameCard(
     return null;
   }
 
-  const index = BENTO_CARDS.findIndex((candidate) => candidate.id === card.id);
+  const index = BENTO_CARDS.findIndex((candidate) => candidate.id === (card.icon ?? card.id));
 
   return (
     <GameCard
@@ -71,7 +72,11 @@ function renderGameCard(
 
 export function PlaygroundGridClient() {
   const router = useRouter();
-  const gameCards = useMemo(() => BENTO_CARDS.map(mapBentoCardToGameData), []);
+  const searchParams = useSearchParams();
+  const gameCards = useMemo(() => {
+    const cards = getGameCards().map(mapBentoCardToGameData);
+    return shouldUseBentoGridSeed(searchParams) ? createSeedGameCards(cards) : cards;
+  }, [searchParams]);
 
   const handleCardSelect = useCallback(
     (card: CardData) => {

@@ -22,6 +22,7 @@ interface BaseCardProps {
   shellStyle?: CSSProperties;
   positionMode?: 'absolute' | 'fixed';
   hoverEnabled?: boolean;
+  motionMode?: 'spring' | 'instant';
   ariaLabel?: string;
   children: ReactNode;
   onClick?: () => void;
@@ -42,6 +43,7 @@ export function BaseCard({
   shellStyle,
   positionMode = 'absolute',
   hoverEnabled = true,
+  motionMode = 'spring',
   ariaLabel,
   children,
   onClick,
@@ -51,10 +53,11 @@ export function BaseCard({
   onWheel,
 }: BaseCardProps) {
   const prefersReducedMotion = useReducedMotion() ?? false;
+  const useInstantMotion = prefersReducedMotion || motionMode === 'instant';
 
   return (
     <motion.div
-      layoutId={id}
+      layoutId={motionMode === 'instant' ? undefined : id}
       className={[
         positionMode,
         onClick ? 'cursor-pointer' : 'cursor-default',
@@ -65,7 +68,7 @@ export function BaseCard({
         width: position.width,
         height: position.height,
       }}
-      initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.92 }}
+      initial={useInstantMotion ? false : { opacity: 0, scale: 0.92 }}
       animate={{
         opacity: 1,
         scale: 1,
@@ -73,15 +76,17 @@ export function BaseCard({
         y: position.y,
         rotate: position.rotation,
       }}
-      exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
-      transition={{
-        type: 'spring',
-        stiffness: ANIMATION.SPRING.stiffness,
-        damping: ANIMATION.SPRING.damping,
-        delay: prefersReducedMotion ? 0 : unifiedGridCardEntranceDelay(entranceIndex),
-      }}
-      whileHover={prefersReducedMotion || !hoverEnabled ? undefined : { scale: 1.015, y: -2 }}
-      whileTap={prefersReducedMotion || !hoverEnabled ? undefined : { scale: 0.98 }}
+      exit={useInstantMotion ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
+      transition={useInstantMotion
+        ? { duration: 0 }
+        : {
+            type: 'spring',
+            stiffness: ANIMATION.SPRING.stiffness,
+            damping: ANIMATION.SPRING.damping,
+            delay: unifiedGridCardEntranceDelay(entranceIndex),
+          }}
+      whileHover={useInstantMotion || !hoverEnabled ? undefined : { scale: 1.015, y: -2 }}
+      whileTap={useInstantMotion || !hoverEnabled ? undefined : { scale: 0.98 }}
       onHoverStart={onHoverStart}
       onHoverEnd={onHoverEnd}
       onClick={onClick}

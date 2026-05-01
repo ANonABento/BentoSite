@@ -10,17 +10,19 @@ function keyDown(key: string, target: Window | HTMLElement = window): void {
 }
 
 describe('useCamera keyboard controls', () => {
-  it('zooms around a provided center and clamps to configured limits', () => {
-    const { result } = renderHook(() => useCamera({ windowSize }));
+  it('keeps zoom fixed when zoom is requested', () => {
+    const { result } = renderHook(() => useCamera({
+      windowSize,
+      initialCamera: { x: 20, y: -10, zoom: 1.5 },
+    }));
 
     act(() => result.current.zoom(10, { x: 100, y: 0 }));
 
-    expect(result.current.camera.zoom).toBe(CAMERA.maxZoom);
-    expect((100 / result.current.camera.zoom) - result.current.camera.x).toBeCloseTo(100);
+    expect(result.current.camera).toEqual({ x: 20, y: -10, zoom: 1 });
 
     act(() => result.current.zoom(-10));
 
-    expect(result.current.camera.zoom).toBe(CAMERA.minZoom);
+    expect(result.current.camera).toEqual({ x: 20, y: -10, zoom: 1 });
   });
 
   it('pans with WASD using the current zoom', () => {
@@ -64,5 +66,17 @@ describe('useCamera keyboard controls', () => {
 
     expect(result.current.camera).toEqual({ x: 0, y: 0, zoom: 1 });
     input.remove();
+  });
+
+  it('does not zoom with plus or minus keys', () => {
+    const { result } = renderHook(() => useCamera({
+      windowSize,
+      initialCamera: { x: 0, y: 0, zoom: 1 },
+    }));
+
+    act(() => keyDown('+'));
+    act(() => keyDown('-'));
+
+    expect(result.current.camera).toEqual({ x: 0, y: 0, zoom: 1 });
   });
 });
