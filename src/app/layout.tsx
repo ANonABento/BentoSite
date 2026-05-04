@@ -2,9 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { JsonLd } from '@/components/seo/JsonLd';
 import { siteConfig } from '@/lib/site-config';
-import { buildSiteJsonLd } from '@/lib/seo';
 import { ThemeProvider } from '@/lib/theme-context';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { ToastProvider } from '@/components/ui/Toast';
@@ -95,7 +93,6 @@ export default function RootLayout({
             `,
           }}
         />
-        <JsonLd id="site-json-ld" data={buildSiteJsonLd()} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
