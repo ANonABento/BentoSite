@@ -34,7 +34,7 @@ export const NUMBER_COLORS: Record<number, string> = {
   1: '#3b82f6', // blue
   2: '#22c55e', // green
   3: '#ef4444', // red
-  4: '#8b5cf6', // purple
+  4: '#e07b3c', // primary
   5: '#a855f7', // pink-ish
   6: '#06b6d4', // cyan
   7: '#1f2937', // dark

@@ -23,7 +23,7 @@ export default async function Image() {
           justifyContent: 'center',
           backgroundColor: '#0a0a0f',
           backgroundImage:
-            'radial-gradient(circle at 25% 25%, rgba(99, 102, 241, 0.15) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.15) 0%, transparent 50%)',
+            'radial-gradient(circle at 25% 25%, rgba(224, 123, 60, 0.15) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(224, 123, 60, 0.15) 0%, transparent 50%)',
         }}
       >
         {/* Grid pattern overlay */}
@@ -52,7 +52,7 @@ export default async function Image() {
             style={{
               fontSize: 72,
               fontWeight: 700,
-              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%)',
+              background: 'linear-gradient(135deg, #e07b3c 0%, #e07b3c 50%, #06b6d4 100%)',
               backgroundClip: 'text',
               color: 'transparent',
               margin: 0,
@@ -110,7 +110,7 @@ export default async function Image() {
               width: 8,
               height: 8,
               borderRadius: '50%',
-              backgroundColor: 'rgba(139, 92, 246, 0.6)',
+              backgroundColor: 'rgba(224, 123, 60, 0.6)',
             }}
           />
           <div

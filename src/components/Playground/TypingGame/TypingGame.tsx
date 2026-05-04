@@ -66,10 +66,10 @@ export function TypingGame() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <span className="pg-label">WPM</span>
-              <span className="font-mono font-semibold text-[var(--purple)]">{liveWPM}</span>
+              <span className="font-mono font-semibold text-[var(--primary)]">{liveWPM}</span>
             </div>
             <div className="pg-divider" />
-            <span className="font-mono text-[var(--pg-accent-gold)]">{formattedTime}</span>
+            <span className="font-mono text-[var(--pg-accent-primary)]">{formattedTime}</span>
           </div>
         ) : null
       }
@@ -104,7 +104,7 @@ export function TypingGame() {
             >
               {/* Icon */}
               <motion.div
-                className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[var(--purple)]/10 text-[var(--purple)] mb-6"
+                className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[var(--primary)]/10 text-[var(--primary)] mb-6"
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 transition={springs.bouncy}
@@ -134,7 +134,7 @@ export function TypingGame() {
                         px-5 py-2.5 rounded-xl font-mono font-medium transition-all duration-200
                         ${
                           duration === d
-                            ? 'bg-[var(--purple)] text-[var(--text-on-accent)] shadow-lg shadow-[var(--purple)]/25'
+                            ? 'bg-[var(--primary)] text-[var(--text-on-accent)] shadow-lg shadow-[var(--primary)]/25'
                             : 'pg-surface-panel text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]'
                         }
                       `}
@@ -161,7 +161,7 @@ export function TypingGame() {
                         px-5 py-2.5 rounded-xl font-medium capitalize transition-all duration-200
                         ${
                           difficulty === d
-                            ? 'bg-[var(--purple)] text-[var(--text-on-accent)] shadow-lg shadow-[var(--purple)]/25'
+                            ? 'bg-[var(--primary)] text-[var(--text-on-accent)] shadow-lg shadow-[var(--primary)]/25'
                             : 'pg-surface-panel text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]'
                         }
                       `}
@@ -183,7 +183,7 @@ export function TypingGame() {
                   transition={{ delay: 0.2 }}
                 >
                   <span className="pg-label">Your Best</span>
-                  <span className="font-mono font-semibold text-[var(--purple)]">
+                  <span className="font-mono font-semibold text-[var(--primary)]">
                     {scores.bestWPM} WPM
                   </span>
                 </motion.div>
@@ -219,7 +219,7 @@ export function TypingGame() {
                 <div className="flex gap-8">
                   <div className="text-center">
                     <span className="pg-label block mb-1">WPM</span>
-                    <div className="pg-score-medium font-mono text-[var(--purple)]">
+                    <div className="pg-score-medium font-mono text-[var(--primary)]">
                       {liveWPM}
                     </div>
                   </div>
@@ -232,7 +232,7 @@ export function TypingGame() {
                 </div>
                 <div className="text-center">
                   <span className="pg-label block mb-1">Time</span>
-                  <div className="pg-score-medium font-mono text-[var(--pg-accent-gold)]">
+                  <div className="pg-score-medium font-mono text-[var(--pg-accent-primary)]">
                     {formattedTime}
                   </div>
                 </div>

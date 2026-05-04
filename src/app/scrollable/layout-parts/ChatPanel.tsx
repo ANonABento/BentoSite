@@ -33,7 +33,7 @@ export function ChatPanel({
     <>
       <m.button
         onClick={onToggle}
-        className="fixed bottom-6 right-4 sm:right-6 z-40 w-14 h-14 bg-[var(--interactive)] hover:bg-[var(--interactive-hover)] rounded-full shadow-lg shadow-[0_0_20px_var(--purple-muted)] flex items-center justify-center text-[var(--text-on-accent)] transition-colors"
+        className="fixed bottom-6 right-4 sm:right-6 z-40 w-14 h-14 bg-[var(--ai)] hover:bg-[var(--ai-hover)] rounded-full shadow-lg shadow-[0_0_20px_var(--ai-muted)] flex items-center justify-center text-[var(--text-on-accent)] transition-colors"
         whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
         whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }}
         initial={prefersReducedMotion ? false : { scale: 0 }}
@@ -65,7 +65,7 @@ export function ChatPanel({
             <div className="h-full flex flex-col">
               <div className="flex-shrink-0 px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[var(--interactive)] animate-pulse" />
+                  <div className="w-2 h-2 rounded-full bg-[var(--ai)] animate-pulse" />
                   <span className="text-sm font-medium text-[var(--text-primary)]">Servant</span>
                 </div>
                 <button

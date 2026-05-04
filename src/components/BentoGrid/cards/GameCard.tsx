@@ -51,7 +51,7 @@ const GAME_ICONS: Record<string, React.ReactNode> = {
 // SYNTHWAVE COLORS
 // =============================================================================
 
-type AccentColor = 'pink' | 'purple' | 'cyan';
+type AccentColor = 'pink' | 'primary' | 'cyan';
 
 const ACCENT_COLORS: Record<AccentColor, {
   iconBg: string;
@@ -69,13 +69,13 @@ const ACCENT_COLORS: Record<AccentColor, {
     glowColor: 'rgba(255, 0, 127, 0.35)',
     neonGlow: '0 0 15px rgba(255, 0, 127, 0.5), 0 0 30px rgba(255, 0, 127, 0.25)',
   },
-  purple: {
-    iconBg: 'bg-[#bf00ff]/15',
-    iconText: 'text-[#bf00ff]',
-    scoreText: 'text-[#bf00ff]',
-    borderColor: '#bf00ff',
-    glowColor: 'rgba(191, 0, 255, 0.35)',
-    neonGlow: '0 0 15px rgba(191, 0, 255, 0.5), 0 0 30px rgba(191, 0, 255, 0.25)',
+  primary: {
+    iconBg: 'bg-[#e07b3c]/15',
+    iconText: 'text-[#e07b3c]',
+    scoreText: 'text-[#e07b3c]',
+    borderColor: '#e07b3c',
+    glowColor: 'rgba(224, 123, 60, 0.35)',
+    neonGlow: '0 0 15px rgba(224, 123, 60, 0.5), 0 0 30px rgba(224, 123, 60, 0.25)',
   },
   cyan: {
     iconBg: 'bg-[#00ffff]/15',
@@ -89,7 +89,7 @@ const ACCENT_COLORS: Record<AccentColor, {
 
 // Rotate through colors based on card index
 function getAccentColor(index: number): AccentColor {
-  const colors: AccentColor[] = ['pink', 'purple', 'cyan'];
+  const colors: AccentColor[] = ['pink', 'primary', 'cyan'];
   return colors[((index % colors.length) + colors.length) % colors.length];
 }
 

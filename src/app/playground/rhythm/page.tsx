@@ -53,7 +53,7 @@ const modes = [
     name: 'osu! Style',
     description: 'Click circles in time with the music',
     icon: Music,
-    color: 'var(--pg-accent-gold)',
+    color: 'var(--pg-accent-primary)',
     available: true,
   },
   {
@@ -69,7 +69,7 @@ const modes = [
     name: 'Mania',
     description: 'Falling notes - 4K/6K/7K keyboard',
     icon: Piano,
-    color: 'var(--purple)',
+    color: 'var(--primary)',
     available: true,
   },
 ];
@@ -112,7 +112,7 @@ export default function RhythmPage() {
             >
               {/* Icon */}
               <motion.div
-                className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[var(--pg-accent-gold)]/10 text-[var(--pg-accent-gold)] mb-6"
+                className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[var(--pg-accent-primary)]/10 text-[var(--pg-accent-primary)] mb-6"
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}

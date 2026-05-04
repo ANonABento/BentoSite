@@ -55,7 +55,7 @@ function SocialActions({
             className={`interactive-hover flex items-center gap-2 px-4 py-2.5 rounded-lg transform border focus-ring ${
               copiedEmail
                 ? 'bg-[var(--status-success)] text-[var(--text-on-accent)] scale-105 shadow-[0_0_20px_var(--status-success-muted)] border-[var(--status-success)]'
-                : 'glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--interactive)] hover:scale-105 hover:shadow-[0_0_20px_var(--purple-muted)] hover:border-[var(--purple-muted)] border-[var(--border)]'
+                : 'glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--interactive)] hover:scale-105 hover:shadow-[0_0_20px_var(--primary-muted)] hover:border-[var(--primary-muted)] border-[var(--border)]'
             }`}
             aria-label={copiedEmail ? 'Email copied!' : 'Copy email'}
           >
@@ -68,7 +68,7 @@ function SocialActions({
             href={link.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="interactive-hover flex items-center gap-2 px-4 py-2.5 rounded-lg transform border focus-ring glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--interactive)] hover:text-[var(--text-on-accent)] hover:scale-105 hover:shadow-[0_0_20px_var(--purple-muted)] hover:border-[var(--purple-muted)] border-[var(--border)]"
+            className="interactive-hover flex items-center gap-2 px-4 py-2.5 rounded-lg transform border focus-ring glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--interactive)] hover:text-[var(--text-on-accent)] hover:scale-105 hover:shadow-[0_0_20px_var(--primary-muted)] hover:border-[var(--primary-muted)] border-[var(--border)]"
             aria-label={link.label}
           >
             {link.icon}
@@ -164,7 +164,7 @@ export default function Header({
             <BentoIcon size={20} />
             <h1 className="text-base font-bold font-mono tracking-tight">
               <span className="text-[var(--orange)]">bent</span>
-              <span className="text-[var(--purple)]">OS</span>
+              <span className="text-[var(--primary)]">OS</span>
             </h1>
           </div>
           <div className="hidden sm:block w-px h-5 bg-gradient-to-b from-transparent via-[var(--border)] to-transparent" />
@@ -239,7 +239,7 @@ export default function Header({
         </div>
       </div>
 
-      <div className="h-px bg-[var(--purple-muted)]" />
+      <div className="h-px bg-[var(--primary-muted)]" />
     </header>
   );
 }

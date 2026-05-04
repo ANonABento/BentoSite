@@ -30,7 +30,7 @@ export const MessageItem = memo(function MessageItem({
   if (message.role === 'user') {
     return (
       <div className="group flex items-start gap-2">
-        <span className="text-[var(--orange)] font-mono text-xs shrink-0 pt-0.5 select-none">
+        <span className="text-[var(--ai)] font-mono text-xs shrink-0 pt-0.5 select-none">
           <span className="text-[var(--text-muted)]">[{timeStr}]</span> anon@bentOS ~$
         </span>
         <p className="text-sm font-mono text-[var(--text-primary)] whitespace-pre-wrap">
@@ -44,7 +44,7 @@ export const MessageItem = memo(function MessageItem({
   }
 
   return (
-    <div className="group pl-4 border-l-2 border-[var(--purple-muted)]">
+    <div className="group pl-4 border-l-2 border-[var(--ai-muted)]">
       <div className="flex items-center gap-2 mb-1">
         <span className="text-[10px] font-mono text-[var(--text-muted)] select-none">
           [{timeStr}] sys:

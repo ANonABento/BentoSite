@@ -182,21 +182,21 @@ export const THEME_PLAYFUL: ThemeConfig = {
   name: 'playful',
   background: 'radial-gradient(ellipse at center, var(--surface-deep) 0%, var(--background) 100%)',
   card: {
-    background: 'linear-gradient(135deg, var(--purple-muted) 0%, var(--orange-muted) 100%)',
-    border: '2px solid var(--purple-muted)',
+    background: 'linear-gradient(135deg, var(--primary-muted) 0%, var(--orange-muted) 100%)',
+    border: '2px solid var(--primary-muted)',
     borderRadius: 20,
-    shadow: '0 0 20px var(--purple-muted), 0 8px 32px var(--shadow-color)',
-    hoverShadow: '0 0 40px var(--purple-muted), 0 12px 48px var(--shadow-color)',
+    shadow: '0 0 20px var(--primary-muted), 0 8px 32px var(--shadow-color)',
+    hoverShadow: '0 0 40px var(--primary-muted), 0 12px 48px var(--shadow-color)',
     rotationRange: 0,
   },
   accent: {
-    primary: 'var(--purple)',
+    primary: 'var(--primary)',
     secondary: 'var(--orange)',
-    tertiary: 'var(--purple-hover)',
+    tertiary: 'var(--primary-hover)',
   },
   searchCard: {
     background: 'var(--overlay-strong)',
-    border: '2px solid var(--purple-muted)',
+    border: '2px solid var(--primary-muted)',
   },
 };
 
@@ -208,11 +208,11 @@ export const THEME_PREMIUM: ThemeConfig = {
     border: '1px solid var(--glass-border)',
     borderRadius: 8,
     shadow: '0 4px 24px var(--shadow-color)',
-    hoverShadow: '0 8px 40px var(--shadow-color), 0 0 0 1px var(--purple-muted)',
+    hoverShadow: '0 8px 40px var(--shadow-color), 0 0 0 1px var(--primary-muted)',
     rotationRange: 0,
   },
   accent: {
-    primary: 'var(--purple)',
+    primary: 'var(--primary)',
     secondary: 'var(--orange)',
   },
   searchCard: {

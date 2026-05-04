@@ -53,7 +53,7 @@ function ActiveCountdownOverlay({ from, onComplete }: ActiveCountdownOverlayProp
     >
       {/* Background pulse */}
       <motion.div
-        className="absolute w-[400px] h-[400px] rounded-full bg-[var(--pg-accent-gold)]/5"
+        className="absolute w-[400px] h-[400px] rounded-full bg-[var(--pg-accent-primary)]/5"
         animate={{
           scale: [1, 1.2, 1],
           opacity: [0.3, 0.1, 0.3],
@@ -83,7 +83,7 @@ function ActiveCountdownOverlay({ from, onComplete }: ActiveCountdownOverlayProp
             cy="70"
             r="60"
             fill="none"
-            stroke="var(--pg-accent-gold)"
+            stroke="var(--pg-accent-primary)"
             strokeWidth="4"
             strokeLinecap="round"
             strokeDasharray={circumference}
@@ -91,7 +91,7 @@ function ActiveCountdownOverlay({ from, onComplete }: ActiveCountdownOverlayProp
             animate={{ strokeDashoffset: circumference * (1 - progress) }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
             style={{
-              filter: 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.5))',
+              filter: 'drop-shadow(0 0 10px rgba(224, 123, 60, 0.5))',
             }}
           />
         </svg>
@@ -106,9 +106,9 @@ function ActiveCountdownOverlay({ from, onComplete }: ActiveCountdownOverlayProp
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 1.5, opacity: 0 }}
                 transition={springs.bouncy}
-                className="text-7xl font-bold text-[var(--pg-accent-gold)] font-mono"
+                className="text-7xl font-bold text-[var(--pg-accent-primary)] font-mono"
                 style={{
-                  textShadow: '0 0 40px rgba(251, 191, 36, 0.5)',
+                  textShadow: '0 0 40px rgba(224, 123, 60, 0.5)',
                 }}
               >
                 {count}

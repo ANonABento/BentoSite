@@ -250,13 +250,13 @@ export const cardHover = {
 // Glow pulse animation for attention
 export const glowPulse: Variants = {
   initial: {
-    boxShadow: '0 0 0 rgba(167, 139, 250, 0)',
+    boxShadow: '0 0 0 rgba(224, 123, 60, 0)',
   },
   animate: {
     boxShadow: [
-      '0 0 0 rgba(167, 139, 250, 0)',
-      '0 0 20px rgba(167, 139, 250, 0.4)',
-      '0 0 0 rgba(167, 139, 250, 0)',
+      '0 0 0 rgba(224, 123, 60, 0)',
+      '0 0 20px rgba(224, 123, 60, 0.4)',
+      '0 0 0 rgba(224, 123, 60, 0)',
     ],
     transition: {
       duration: 2,

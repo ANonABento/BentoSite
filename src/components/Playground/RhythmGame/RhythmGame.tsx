@@ -219,7 +219,7 @@ export function RhythmGame() {
               </motion.button>
             )}
             <div className="flex items-center gap-2">
-              <span className="font-mono text-lg font-semibold text-[var(--pg-accent-gold)]">
+              <span className="font-mono text-lg font-semibold text-[var(--pg-accent-primary)]">
                 {formatNumber(score)}
               </span>
             </div>
@@ -230,7 +230,7 @@ export function RhythmGame() {
                   key={combo}
                   initial={{ scale: 1.2 }}
                   animate={{ scale: 1 }}
-                  className="font-mono text-[var(--purple)] font-semibold"
+                  className="font-mono text-[var(--primary)] font-semibold"
                 >
                   {combo}x
                 </motion.span>
@@ -266,7 +266,7 @@ export function RhythmGame() {
             >
               {/* Icon */}
               <motion.div
-                className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[var(--pg-accent-gold)]/10 text-[var(--pg-accent-gold)] mb-6"
+                className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[var(--pg-accent-primary)]/10 text-[var(--pg-accent-primary)] mb-6"
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 transition={springs.bouncy}
@@ -296,7 +296,7 @@ export function RhythmGame() {
               <div className="flex justify-center gap-2 mb-8">
                 <motion.button
                   onClick={() => setViewMode('presets')}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-[var(--pg-accent-gold)] text-black"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-[var(--pg-accent-primary)] text-black"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -324,7 +324,7 @@ export function RhythmGame() {
                       w-full p-4 rounded-xl text-left transition-all duration-200
                       ${
                         selectedMap.id === customBeatmap.id
-                          ? 'bg-[var(--purple)]/20 border-[var(--purple)]/40 shadow-lg shadow-[var(--purple)]/10'
+                          ? 'bg-[var(--primary)]/20 border-[var(--primary)]/40 shadow-lg shadow-[var(--primary)]/10'
                           : 'pg-surface-panel hover:bg-[var(--pg-bg-hover)]'
                       }
                       border
@@ -337,7 +337,7 @@ export function RhythmGame() {
                     <div className="flex justify-between items-center">
                       <div>
                         <div className="flex items-center gap-2">
-                          <Upload className="w-4 h-4 text-[var(--purple)]" />
+                          <Upload className="w-4 h-4 text-[var(--primary)]" />
                           <span className="font-semibold text-[var(--pg-text-primary)]">
                             {customBeatmap.name}
                           </span>
@@ -367,7 +367,7 @@ export function RhythmGame() {
                       w-full p-4 rounded-xl text-left transition-all duration-200
                       ${
                         selectedMap.id === map.id
-                          ? 'bg-[var(--pg-accent-gold)]/10 border-[var(--pg-accent-gold)]/40 shadow-lg shadow-[var(--pg-accent-gold)]/10'
+                          ? 'bg-[var(--pg-accent-primary)]/10 border-[var(--pg-accent-primary)]/40 shadow-lg shadow-[var(--pg-accent-primary)]/10'
                           : 'pg-surface-panel hover:bg-[var(--pg-bg-hover)]'
                       }
                       border
@@ -396,10 +396,10 @@ export function RhythmGame() {
                     {scores?.[map.id] && (
                       <div className="pg-border-subtle mt-2 flex gap-4 border-t pt-2 text-xs">
                         <span className="text-[var(--pg-text-muted)]">
-                          Best: <span className="text-[var(--pg-accent-gold)] font-mono">{formatNumber(scores[map.id].score)}</span>
+                          Best: <span className="text-[var(--pg-accent-primary)] font-mono">{formatNumber(scores[map.id].score)}</span>
                         </span>
                         <span className="text-[var(--pg-text-muted)]">
-                          Combo: <span className="text-[var(--purple)] font-mono">{scores[map.id].maxCombo}x</span>
+                          Combo: <span className="text-[var(--primary)] font-mono">{scores[map.id].maxCombo}x</span>
                         </span>
                       </div>
                     )}
@@ -431,7 +431,7 @@ export function RhythmGame() {
               <div className="mb-4">
                 <div className="pg-progress-track h-1.5 rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-[var(--purple)] to-[var(--pg-accent-gold)]"
+                    className="h-full bg-gradient-to-r from-[var(--primary)] to-[var(--pg-accent-primary)]"
                     style={{ width: `${progress * 100}%` }}
                     transition={{ duration: 0.1 }}
                   />
@@ -453,7 +453,7 @@ export function RhythmGame() {
                     Perfect <span className="font-mono text-[var(--pg-game-success)]">{perfects}</span>
                   </span>
                   <span className="text-[var(--pg-text-muted)]">
-                    Good <span className="font-mono text-[var(--pg-accent-gold)]">{goods}</span>
+                    Good <span className="font-mono text-[var(--pg-accent-primary)]">{goods}</span>
                   </span>
                   <span className="text-[var(--pg-text-muted)]">
                     Miss <span className="font-mono text-[var(--pg-game-error)]">{misses}</span>
@@ -468,7 +468,7 @@ export function RhythmGame() {
                 className="pg-border-subtle relative w-full aspect-[16/10] rounded-2xl overflow-hidden cursor-pointer border"
                 style={{
                   background:
-                    'radial-gradient(ellipse at center, rgba(167, 139, 250, 0.08) 0%, var(--pg-bg-surface) 100%)',
+                    'radial-gradient(ellipse at center, rgba(224, 123, 60, 0.08) 0%, var(--pg-bg-surface) 100%)',
                 }}
               >
                 {/* Subtle grid pattern */}
@@ -476,7 +476,7 @@ export function RhythmGame() {
                   className="absolute inset-0 opacity-10"
                   style={{
                     backgroundImage:
-                      'linear-gradient(rgba(167, 139, 250, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(167, 139, 250, 0.15) 1px, transparent 1px)',
+                      'linear-gradient(rgba(224, 123, 60, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(224, 123, 60, 0.15) 1px, transparent 1px)',
                     backgroundSize: '50px 50px',
                   }}
                 />
@@ -504,7 +504,7 @@ export function RhythmGame() {
                     animate={{ scale: 1 }}
                     key={Math.floor(combo / 5)}
                   >
-                    <span className="font-mono text-4xl font-bold text-[var(--purple)]" style={{ textShadow: '0 0 20px rgba(167, 139, 250, 0.5)' }}>
+                    <span className="font-mono text-4xl font-bold text-[var(--primary)]" style={{ textShadow: '0 0 20px rgba(224, 123, 60, 0.5)' }}>
                       {combo}x
                     </span>
                   </motion.div>

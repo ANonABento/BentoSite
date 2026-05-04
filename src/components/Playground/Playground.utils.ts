@@ -35,7 +35,7 @@ export function getReactionRatingColor(rating: ReturnType<typeof getReactionRati
     case 'excellent':
       return 'var(--status-success)';
     case 'good':
-      return 'var(--purple)';
+      return 'var(--primary)';
     case 'average':
       return 'var(--orange)';
     case 'slow':

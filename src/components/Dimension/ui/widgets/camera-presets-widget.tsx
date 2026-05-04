@@ -144,7 +144,7 @@ export function CameraPresetsWidget({
       <div className={`
         glass rounded-2xl
         ${isMobile ? 'w-48' : 'w-72'}
-        shadow-lg border border-[var(--purple-muted)]
+        shadow-lg border border-[var(--primary-muted)]
       `}>
         {/* Header with drag hint and close button */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
@@ -178,7 +178,7 @@ export function CameraPresetsWidget({
                 <button
                   key={name}
                   onClick={() => onPresetSelect(name as keyof typeof presets)}
-                  className="px-3 py-2 text-xs rounded-sm transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50 bg-[var(--glass-bg)] border border-[var(--border)] hover:bg-[var(--purple-muted)] hover:border-[var(--purple)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  className="px-3 py-2 text-xs rounded-sm transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50 bg-[var(--glass-bg)] border border-[var(--border)] hover:bg-[var(--primary-muted)] hover:border-[var(--primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                   aria-label={`Move camera to ${name} preset`}
                 >
                   <div className="capitalize font-medium">{name}</div>

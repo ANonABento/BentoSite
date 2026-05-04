@@ -17,7 +17,7 @@ const ProjectsGridClient = dynamic(
     loading: () => (
       <RouteLoadingFallback
         label="loading projects..."
-        spinnerVariant="purple"
+        spinnerVariant="primary"
         showIcon
       />
     ),

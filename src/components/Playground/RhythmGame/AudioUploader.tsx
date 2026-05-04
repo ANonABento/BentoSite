@@ -20,7 +20,7 @@ const DIFFICULTY_OPTIONS: {
   color: string;
 }[] = [
   { value: 'easy', label: 'Easy', color: 'bg-[var(--pg-game-success)]' },
-  { value: 'medium', label: 'Medium', color: 'bg-[var(--pg-accent-gold)]' },
+  { value: 'medium', label: 'Medium', color: 'bg-[var(--pg-accent-primary)]' },
   { value: 'hard', label: 'Hard', color: 'bg-[var(--pg-game-error)]' },
 ];
 
@@ -121,7 +121,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
         className={`
           relative p-8 rounded-xl border-2 border-dashed cursor-pointer transition-all
           ${dragActive
-            ? 'border-[var(--pg-accent-gold)] bg-[var(--pg-accent-gold)]/5'
+            ? 'border-[var(--pg-accent-primary)] bg-[var(--pg-accent-primary)]/5'
             : file
               ? 'border-[var(--pg-game-success)]/50 bg-[var(--pg-game-success)]/5'
               : 'pg-surface-panel pg-border-soft hover:pg-border-strong'
@@ -177,7 +177,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
               type="text"
               value={songName}
               onChange={(e) => setSongName(e.target.value)}
-              className="pg-input w-full mt-1 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--pg-accent-gold)]/50"
+              className="pg-input w-full mt-1 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--pg-accent-primary)]/50"
               placeholder="Song name"
             />
           </div>
@@ -191,7 +191,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
               type="text"
               value={artist}
               onChange={(e) => setArtist(e.target.value)}
-              className="pg-input w-full mt-1 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--pg-accent-gold)]/50"
+              className="pg-input w-full mt-1 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--pg-accent-primary)]/50"
               placeholder="Artist name"
             />
           </div>
@@ -235,7 +235,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
           className="pg-surface-panel pg-border-soft mt-4 rounded-xl p-4"
         >
           <div className="flex items-center gap-3">
-            <Loader2 className="w-5 h-5 text-[var(--pg-accent-gold)] animate-spin" />
+            <Loader2 className="w-5 h-5 text-[var(--pg-accent-primary)] animate-spin" />
             <div>
               <p className="text-sm font-medium text-[var(--pg-text-primary)]">
                 Analyzing audio...
@@ -263,13 +263,13 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
           </div>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-2xl font-mono font-bold text-[var(--pg-accent-gold)]">
+              <p className="text-2xl font-mono font-bold text-[var(--pg-accent-primary)]">
                 {analysis.bpm}
               </p>
               <p className="text-xs text-[var(--pg-text-muted)]">BPM</p>
             </div>
             <div>
-              <p className="text-2xl font-mono font-bold text-[var(--purple)]">
+              <p className="text-2xl font-mono font-bold text-[var(--primary)]">
                 {Math.round(analysis.duration)}s
               </p>
               <p className="text-xs text-[var(--pg-text-muted)]">Duration</p>
@@ -308,7 +308,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
           w-full mt-6 py-3 rounded-xl font-medium transition-all
           ${!file || isAnalyzing
             ? 'bg-white/5 text-[var(--pg-text-muted)] cursor-not-allowed'
-            : 'bg-[var(--pg-accent-gold)] text-black hover:bg-[var(--pg-accent-gold-hover)]'
+            : 'bg-[var(--pg-accent-primary)] text-black hover:bg-[var(--pg-accent-primary-hover)]'
           }
         `}
         whileHover={file && !isAnalyzing ? { scale: 1.01 } : {}}

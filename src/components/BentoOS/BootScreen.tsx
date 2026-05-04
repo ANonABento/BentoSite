@@ -125,10 +125,10 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
                     bent
                   </span>
                   <span
-                    className="text-[var(--purple)]"
+                    className="text-[var(--primary)]"
                     style={{
                       textShadow:
-                        '0 0 12px rgba(167, 139, 250, 0.8), 0 0 24px rgba(167, 139, 250, 0.3)',
+                        '0 0 12px rgba(224, 123, 60, 0.8), 0 0 24px rgba(224, 123, 60, 0.3)',
                     }}
                   >
                     OS

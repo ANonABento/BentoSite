@@ -172,7 +172,7 @@ export function ControlPanel({
                     min-h-[60px] transition-all duration-200
                     ${button.active
                       ? 'bg-[var(--orange)] text-[var(--text-on-accent)] shadow-lg shadow-[var(--orange-muted)] ring-1 ring-[var(--orange)] ring-opacity-30'
-                      : 'bg-[var(--glass-bg)] backdrop-blur border border-[var(--border)] hover:bg-[var(--glass-bg-strong)] hover:border-[var(--purple)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                      : 'bg-[var(--glass-bg)] backdrop-blur border border-[var(--border)] hover:bg-[var(--glass-bg-strong)] hover:border-[var(--primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                     }
                   `}
                   title={`${button.label} (${button.shortcut}) - ${button.description}`}
@@ -201,7 +201,7 @@ export function ControlPanel({
                   step="1"
                   value={zoomLevel}
                   onChange={(e) => onZoomChange(Number(e.target.value))}
-                  className="w-full h-2 bg-[var(--glass-bg-strong)] rounded-lg appearance-none cursor-pointer accent-[var(--purple)]"
+                  className="w-full h-2 bg-[var(--glass-bg-strong)] rounded-lg appearance-none cursor-pointer accent-[var(--primary)]"
                   aria-label="Zoom level"
                   aria-valuetext={`${Math.round(zoomLevel)} units`}
                 />
@@ -220,7 +220,7 @@ export function ControlPanel({
                   step="0.1"
                   value={rotationSpeed}
                   onChange={(e) => onRotationSpeedChange(Number(e.target.value))}
-                  className="w-full h-2 bg-[var(--glass-bg-strong)] rounded-lg appearance-none cursor-pointer accent-[var(--purple)]"
+                  className="w-full h-2 bg-[var(--glass-bg-strong)] rounded-lg appearance-none cursor-pointer accent-[var(--primary)]"
                   aria-label="Rotation speed"
                   aria-valuetext={`${rotationSpeed.toFixed(1)} times`}
                 />

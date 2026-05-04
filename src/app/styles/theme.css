@@ -3,7 +3,7 @@
   --background: #0a0a0f;
   --foreground: #e5e5e5;
 
-  /* Primary palette - Purple for interactive, Orange for highlights */
+  /* Semantic palette: orange is primary, purple is AI-only */
   --purple: #a78bfa;
   --purple-hover: #c4b5fd;
   --purple-active: #8b5cf6;
@@ -15,17 +15,29 @@
   --orange-muted: rgba(224, 123, 60, 0.2);
 
   /* Semantic color roles */
-  --interactive: var(--purple);
-  --interactive-hover: var(--purple-hover);
-  --interactive-active: var(--purple-active);
-  --highlight: var(--orange);
-  --highlight-hover: var(--orange-hover);
-  --highlight-active: var(--orange-active);
+  --primary: var(--orange);
+  --primary-hover: var(--orange-hover);
+  --primary-active: var(--orange-active);
+  --primary-muted: var(--orange-muted);
+  --ai: var(--purple);
+  --ai-hover: var(--purple-hover);
+  --ai-active: var(--purple-active);
+  --ai-muted: var(--purple-muted);
+  --success: var(--status-success);
+  --success-muted: var(--status-success-muted);
+  --destructive: var(--status-error);
+  --destructive-muted: var(--status-error-muted);
+  --interactive: var(--primary);
+  --interactive-hover: var(--primary-hover);
+  --interactive-active: var(--primary-active);
+  --highlight: var(--primary);
+  --highlight-hover: var(--primary-hover);
+  --highlight-active: var(--primary-active);
 
   /* Legacy aliases (for backwards compat during migration) */
-  --accent: var(--purple);
-  --accent-secondary: var(--purple-active);
-  --accent-orange: var(--orange);
+  --accent: var(--primary);
+  --accent-secondary: var(--primary-active);
+  --accent-orange: var(--primary);
 
   --border: rgba(255, 255, 255, 0.1);
   --glass-bg: rgba(255, 255, 255, 0.05);
@@ -37,13 +49,13 @@
   --text-on-accent: #0a0a0f;
   --text-on-overlay: #ffffff;
   --shadow-color: rgba(0, 0, 0, 0.5);
-  --code-bg: rgba(167, 139, 250, 0.15);
-  --code-text: #c4b5fd;
+  --code-bg: rgba(224, 123, 60, 0.15);
+  --code-text: var(--primary);
   --scrollbar-track: rgba(255, 255, 255, 0.02);
   --scrollbar-thumb: rgba(255, 255, 255, 0.1);
   --scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
-  --selection-bg: rgba(167, 139, 250, 0.3);
-  --grid-line: rgba(167, 139, 250, 0.03);
+  --selection-bg: rgba(224, 123, 60, 0.3);
+  --grid-line: rgba(224, 123, 60, 0.03);
   --overlay-weak: rgba(0, 0, 0, 0.3);
   --overlay: rgba(0, 0, 0, 0.6);
   --overlay-strong: rgba(0, 0, 0, 0.8);
@@ -63,12 +75,12 @@
   /* Status colors - semantic for badges and toasts */
   --status-success: #22c55e;
   --status-success-muted: rgba(34, 197, 94, 0.2);
-  --status-warning: #eab308;
-  --status-warning-muted: rgba(234, 179, 8, 0.2);
   --status-error: #ef4444;
   --status-error-muted: rgba(239, 68, 68, 0.2);
   --status-info: #3b82f6;
   --status-info-muted: rgba(59, 130, 246, 0.2);
+  --status-warning: var(--primary);
+  --status-warning-muted: var(--primary-muted);
 
   /* Playground tokens */
   --pg-bg-deep: #050612;
@@ -80,8 +92,8 @@
   --pg-text-muted: #a1a1aa;
   --pg-text-disabled: #52525b;
   --pg-text-on-accent: #0a0a0f;
-  --pg-accent-gold: #fbbf24;
-  --pg-accent-gold-hover: #f59e0b;
+  --pg-accent-primary: var(--primary);
+  --pg-accent-primary-hover: var(--primary-hover);
   --pg-accent-cyan: #22d3ee;
   --pg-accent-cyan-hover: #06b6d4;
   --pg-accent-rose: #fb7185;
@@ -90,8 +102,8 @@
   --pg-game-success-bg: rgba(74, 222, 128, 0.15);
   --pg-game-error: #f87171;
   --pg-game-error-bg: rgba(248, 113, 113, 0.15);
-  --pg-game-warning: #fbbf24;
-  --pg-game-warning-bg: rgba(251, 191, 36, 0.15);
+  --pg-game-warning: var(--primary);
+  --pg-game-warning-bg: var(--primary-muted);
   --pg-game-perfect: #22d3ee;
   --pg-game-perfect-bg: rgba(34, 211, 238, 0.15);
 }
@@ -101,7 +113,7 @@
   --background: #fafafa;
   --foreground: #18181b;
 
-  /* Primary palette - adjusted for light mode contrast */
+  /* Semantic palette: adjusted for light mode contrast */
   --purple: #7c3aed;
   --purple-hover: #6d28d9;
   --purple-active: #5b21b6;
@@ -113,17 +125,29 @@
   --orange-muted: rgba(168, 78, 24, 0.15);
 
   /* Semantic color roles */
-  --interactive: var(--purple);
-  --interactive-hover: var(--purple-hover);
-  --interactive-active: var(--purple-active);
-  --highlight: var(--orange);
-  --highlight-hover: var(--orange-hover);
-  --highlight-active: var(--orange-active);
+  --primary: var(--orange);
+  --primary-hover: var(--orange-hover);
+  --primary-active: var(--orange-active);
+  --primary-muted: var(--orange-muted);
+  --ai: var(--purple);
+  --ai-hover: var(--purple-hover);
+  --ai-active: var(--purple-active);
+  --ai-muted: var(--purple-muted);
+  --success: var(--status-success);
+  --success-muted: var(--status-success-muted);
+  --destructive: var(--status-error);
+  --destructive-muted: var(--status-error-muted);
+  --interactive: var(--primary);
+  --interactive-hover: var(--primary-hover);
+  --interactive-active: var(--primary-active);
+  --highlight: var(--primary);
+  --highlight-hover: var(--primary-hover);
+  --highlight-active: var(--primary-active);
 
   /* Legacy aliases */
-  --accent: var(--purple);
-  --accent-secondary: var(--purple-active);
-  --accent-orange: var(--orange);
+  --accent: var(--primary);
+  --accent-secondary: var(--primary-active);
+  --accent-orange: var(--primary);
 
   --border: rgba(0, 0, 0, 0.1);
   --glass-bg: rgba(255, 255, 255, 0.7);
@@ -135,13 +159,13 @@
   --text-on-accent: #ffffff;
   --text-on-overlay: #ffffff;
   --shadow-color: rgba(0, 0, 0, 0.1);
-  --code-bg: rgba(139, 92, 246, 0.1);
-  --code-text: #7c3aed;
+  --code-bg: rgba(168, 78, 24, 0.1);
+  --code-text: var(--primary);
   --scrollbar-track: rgba(0, 0, 0, 0.02);
   --scrollbar-thumb: rgba(0, 0, 0, 0.1);
   --scrollbar-thumb-hover: rgba(0, 0, 0, 0.2);
-  --selection-bg: rgba(139, 92, 246, 0.2);
-  --grid-line: rgba(139, 92, 246, 0.05);
+  --selection-bg: rgba(168, 78, 24, 0.2);
+  --grid-line: rgba(168, 78, 24, 0.05);
   --overlay-weak: rgba(0, 0, 0, 0.2);
   --overlay: rgba(0, 0, 0, 0.5);
   --overlay-strong: rgba(0, 0, 0, 0.7);
@@ -150,12 +174,12 @@
   /* Status colors - adjusted for light mode */
   --status-success: #15803d;
   --status-success-muted: rgba(21, 128, 61, 0.15);
-  --status-warning: #854d0e;
-  --status-warning-muted: rgba(133, 77, 14, 0.15);
   --status-error: #dc2626;
   --status-error-muted: rgba(220, 38, 38, 0.15);
   --status-info: #2563eb;
   --status-info-muted: rgba(37, 99, 235, 0.15);
+  --status-warning: var(--primary);
+  --status-warning-muted: var(--primary-muted);
 
   /* Playground keeps a deliberate dark-game visual language in light mode */
   --pg-bg-deep: #050612;
@@ -167,8 +191,8 @@
   --pg-text-muted: #a1a1aa;
   --pg-text-disabled: #52525b;
   --pg-text-on-accent: #0a0a0f;
-  --pg-accent-gold: #fbbf24;
-  --pg-accent-gold-hover: #f59e0b;
+  --pg-accent-primary: var(--primary);
+  --pg-accent-primary-hover: var(--primary-hover);
   --pg-accent-cyan: #22d3ee;
   --pg-accent-cyan-hover: #06b6d4;
   --pg-accent-rose: #fb7185;
@@ -177,8 +201,8 @@
   --pg-game-success-bg: rgba(74, 222, 128, 0.15);
   --pg-game-error: #f87171;
   --pg-game-error-bg: rgba(248, 113, 113, 0.15);
-  --pg-game-warning: #fbbf24;
-  --pg-game-warning-bg: rgba(251, 191, 36, 0.15);
+  --pg-game-warning: var(--primary);
+  --pg-game-warning-bg: var(--primary-muted);
   --pg-game-perfect: #22d3ee;
   --pg-game-perfect-bg: rgba(34, 211, 238, 0.15);
 }
@@ -186,6 +210,14 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-ai: var(--ai);
+  --color-ai-hover: var(--ai-hover);
+  --color-ai-active: var(--ai-active);
+  --color-success: var(--success);
+  --color-destructive: var(--destructive);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
