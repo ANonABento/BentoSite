@@ -88,6 +88,7 @@ export function HeroSection({
             <div className="flex flex-wrap gap-4">
               <m.button
                 onClick={onViewRobots}
+                data-magnetic
                 className="px-6 py-3 bg-[var(--interactive)] hover:bg-[var(--interactive-hover)] text-[var(--text-on-accent)] rounded-xl font-medium transition-colors"
                 whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
                 whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
@@ -96,6 +97,7 @@ export function HeroSection({
               </m.button>
               <m.button
                 onClick={onOpenChat}
+                data-magnetic
                 className="px-6 py-3 bg-[var(--glass-bg)] hover:bg-[var(--glass-bg-strong)] text-[var(--text-primary)] rounded-xl font-medium transition-colors border border-[var(--border)]"
                 whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
                 whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}

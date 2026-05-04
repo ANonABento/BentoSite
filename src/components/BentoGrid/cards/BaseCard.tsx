@@ -23,6 +23,8 @@ interface BaseCardProps {
   motionMode?: 'spring' | 'instant';
   ariaLabel?: string;
   href?: string;
+  /** When true, marks the card as a magnetic target for the AnimatedCursor. */
+  magnetic?: boolean;
   children: ReactNode;
   onClick?: () => void;
   onHoverStart?: () => void;
@@ -43,6 +45,7 @@ export function BaseCard({
   hoverEnabled = true,
   ariaLabel,
   href,
+  magnetic = false,
   children,
   onClick,
   onHoverStart,
@@ -70,6 +73,10 @@ export function BaseCard({
       {children}
     </div>
   );
+
+  // Magnetic attribute is placed on whichever element is the actual hover
+  // target — the anchor when href is present, otherwise the wrapper div.
+  const magneticAttr = magnetic ? { 'data-magnetic': '' } : {};
 
   return (
     <motion.div
@@ -104,12 +111,14 @@ export function BaseCard({
       onPointerDown={onPointerDown}
       onWheel={onWheel}
       aria-label={ariaLabel}
+      {...(href ? {} : magneticAttr)}
     >
       {href ? (
         <a
           href={href}
           aria-label={ariaLabel}
           className="block h-full w-full no-underline text-inherit"
+          {...magneticAttr}
         >
           {shell}
         </a>

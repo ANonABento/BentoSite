@@ -148,6 +148,7 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
             <button
               type="button"
               onClick={handleViewProject}
+              data-magnetic
               className="inline-flex items-center gap-2 rounded-full bg-[var(--interactive)] px-4 py-2 text-sm font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--interactive-hover)]"
             >
               <EyeIcon size={14} />
@@ -161,6 +162,7 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => handleExternalLinkClick('live_demo', project.links.liveDemo!)}
+              data-magnetic
               className="inline-flex items-center gap-2 rounded-full bg-[var(--highlight)] px-4 py-2 text-sm font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--highlight-hover)]"
             >
               <ExternalLinkIcon size={14} />
@@ -174,6 +176,7 @@ export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => handleExternalLinkClick('github', project.links.github!)}
+              data-magnetic
               className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--glass-bg)] px-4 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
             >
               <GitHubIcon size={14} />
