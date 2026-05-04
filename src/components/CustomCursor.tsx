@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
 const TRAIL_COUNT = 4;
@@ -70,16 +70,30 @@ function createCursorRoot(): {
 
 export function CustomCursor() {
   const pathname = usePathname();
+  const [canUseCustomCursor, setCanUseCustomCursor] = useState(false);
 
   useEffect(() => {
-    if (!supportsCustomCursor(pathname)) {
-      return;
-    }
-
     const coarsePointerQuery = window.matchMedia('(pointer: coarse)');
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    if (coarsePointerQuery.matches || reducedMotionQuery.matches) {
+    const updateCapability = () => {
+      setCanUseCustomCursor(
+        !coarsePointerQuery.matches && !reducedMotionQuery.matches
+      );
+    };
+
+    updateCapability();
+    coarsePointerQuery.addEventListener('change', updateCapability);
+    reducedMotionQuery.addEventListener('change', updateCapability);
+
+    return () => {
+      coarsePointerQuery.removeEventListener('change', updateCapability);
+      reducedMotionQuery.removeEventListener('change', updateCapability);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!supportsCustomCursor(pathname) || !canUseCustomCursor) {
       return;
     }
 
@@ -184,7 +198,7 @@ export function CustomCursor() {
       document.body.classList.remove('custom-cursor-enabled');
       root.remove();
     };
-  }, [pathname]);
+  }, [canUseCustomCursor, pathname]);
 
   return null;
 }

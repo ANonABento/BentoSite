@@ -110,7 +110,7 @@ describe('BentoGrid cards', () => {
 
   it('keeps hover scaling separate from absolute card positioning', () => {
     render(
-      <BaseCard id="test-card" position={position} theme={theme}>
+      <BaseCard id="test-card" position={position} theme={theme} onClick={() => {}}>
         Card content
       </BaseCard>
     );
@@ -119,6 +119,7 @@ describe('BentoGrid cards', () => {
 
     expect(shell).toHaveAttribute('data-animate', expect.stringContaining('"y":80'));
     expect(shell).toHaveAttribute('data-while-hover', '{"scale":1.02}');
+    expect(shell).toHaveAttribute('data-magnetic', 'true');
   });
 
   it('renders project metadata and hover links through the shared shell', () => {
