@@ -1,0 +1,46 @@
+- generic [active] [ref=e1] [box=0,0,1440,1000]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer] [box=-9999,0,184,56]:
+    - /url: "#main-content"
+  - application "bentOS / projects interactive grid. Use arrow keys to focus cards, Enter to open, WASD to pan, and R to reset view." [ref=e14] [box=0,0,1440,1000]:
+    - generic [box=720,500,0,0]:
+      - generic [ref=e17] [cursor=pointer] [box=151,219,370,370]:
+        - generic [ref=e18] [box=191,235,314,170]
+        - generic [ref=e27] [box=151,405,370,184]
+      - generic [ref=e38] [cursor=pointer] [box=919,219,370,370]:
+        - generic [ref=e39] [box=959,235,314,170]
+        - generic [ref=e48] [box=919,405,370,184]
+      - generic [ref=e59] [cursor=pointer] [box=151,603,370,370]:
+        - generic [ref=e60] [box=191,619,314,170]
+        - generic [ref=e69] [box=151,789,370,184]
+      - generic [ref=e81] [cursor=pointer] [box=535,219,178,178]:
+        - generic [ref=e82] [box=575,235,122,27]
+        - heading "One Handed Keyboard" [level=3] [ref=e87] [box=575,295,122,39]
+        - generic [ref=e89] [box=575,368,122,14]
+      - generic [ref=e95] [cursor=pointer] [box=919,603,178,370]:
+        - generic [ref=e96] [box=959,619,122,27]
+        - heading "VR Haptic Gloves" [level=3] [ref=e101] [box=959,679,122,39]
+        - generic [ref=e103] [box=959,944,122,14]
+      - generic [ref=e109] [cursor=pointer] [box=727,219,178,178]:
+        - generic [ref=e110] [box=767,235,122,27]
+        - heading "FIRST Tech Challenge Robot" [level=3] [ref=e115] [box=767,295,122,58]
+        - generic [ref=e117] [box=767,368,122,14]
+      - generic [ref=e123] [cursor=pointer] [box=535,603,178,178]:
+        - generic [ref=e124] [box=575,619,122,27]
+        - heading "PCB Design & Assembly" [level=3] [ref=e129] [box=575,679,122,39]
+        - generic [ref=e131] [box=575,752,122,14]
+      - generic [ref=e137] [cursor=pointer] [box=727,603,178,178]:
+        - generic [ref=e138] [box=767,619,122,27]
+        - heading "Unity Game Development" [level=3] [ref=e143] [box=767,679,122,39]
+        - generic [ref=e145] [box=767,752,122,14]
+      - generic [ref=e151] [cursor=pointer] [box=1111,603,178,178]:
+        - generic [ref=e152] [box=1151,619,122,27]
+        - heading "Java & Android Applications" [level=3] [ref=e157] [box=1151,679,122,58]
+        - generic [ref=e159] [box=1151,752,122,14]
+    - generic "Search and filter cards" [ref=e162] [box=534,410,372,180]:
+      - generic [ref=e164] [box=535,411,370,178]:
+        - generic [ref=e165] [box=549,425,342,24]
+        - button "Back to Dashboard" [ref=e172] [box=549,457,147,20]
+        - generic [ref=e177] [box=549,485,342,38]
+        - generic [ref=e182] [box=545,531,350,40]
+    - button "Reset grid view" [ref=e192] [box=1293,946,131,38]: Reset View (R)
+  - alert [ref=e13] [box=-1,999,1,1]

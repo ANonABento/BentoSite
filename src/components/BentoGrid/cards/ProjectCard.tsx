@@ -179,7 +179,7 @@ export function ProjectCard({
             </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-violet-500/10 to-transparent">
-              <Model3DIcon size={32} className="text-white/20" />
+              <Model3DIcon size={32} className="text-[var(--text-muted)] opacity-50" />
             </div>
           )}
 
@@ -199,7 +199,7 @@ export function ProjectCard({
       <div className="p-3 flex flex-col h-[calc(50%-0px)]">
           {/* Title */}
           <h3
-            className={`font-semibold text-white line-clamp-1 ${
+            className={`font-semibold text-[var(--text-primary)] line-clamp-1 ${
               isLargeCard ? 'text-base' : 'text-sm'
             }`}
           >
@@ -208,7 +208,7 @@ export function ProjectCard({
 
           {/* Description - only on larger cards */}
           {isLargeCard && card.description && (
-            <p className="text-[11px] text-white/50 line-clamp-2 mt-1">
+            <p className="text-[11px] text-[var(--text-secondary)] line-clamp-2 mt-1">
               {card.description}
             </p>
           )}
@@ -232,13 +232,13 @@ export function ProjectCard({
               {card.technologies.slice(0, 4).map((tech) => (
                 <span
                   key={tech}
-                  className="px-1.5 py-0.5 text-[9px] font-mono bg-white/5 text-white/60 border border-white/10 rounded"
+                  className="px-1.5 py-0.5 text-[9px] font-mono bg-[var(--glass-bg)] text-[var(--text-secondary)] border border-[var(--border)] rounded"
                 >
                   {tech}
                 </span>
               ))}
               {card.technologies.length > 4 && (
-                <span className="text-[9px] text-white/40">
+                <span className="text-[9px] text-[var(--text-muted)]">
                   +{card.technologies.length - 4}
                 </span>
               )}
@@ -259,7 +259,7 @@ export function ProjectCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-1 px-2 py-1 text-[9px] font-medium bg-white/5 text-white/70 border border-white/10 rounded hover:text-white hover:bg-white/10 transition-colors"
+                  className="flex items-center gap-1 px-2 py-1 text-[9px] font-medium bg-[var(--glass-bg)] text-[var(--text-secondary)] border border-[var(--border)] rounded hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg-strong)] transition-colors"
                 >
                   <GitHubIcon size={10} />
                   <span>Code</span>
@@ -271,10 +271,9 @@ export function ProjectCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-1 px-2 py-1 text-[9px] font-medium rounded transition-colors"
+                  className="flex items-center gap-1 px-2 py-1 text-[9px] font-medium rounded transition-colors text-[var(--text-on-accent)]"
                   style={{
                     background: theme.accent.primary,
-                    color: 'white',
                   }}
                 >
                   <ExternalLinkIcon size={10} />

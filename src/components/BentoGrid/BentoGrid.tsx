@@ -6,7 +6,7 @@
  * A shared infinite grid system used by both /playground and /projects.
  * Features:
  * - FIFO pool-based card recycling
- * - Pan/zoom navigation with momentum
+ * - Pan navigation with momentum
  * - Keyboard navigation (WASD/arrows)
  * - Morphing search card (collapses to edge bar)
  * - Responsive: infinite canvas on desktop, scroll on mobile

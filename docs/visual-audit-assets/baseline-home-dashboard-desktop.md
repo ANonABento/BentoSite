@@ -1,0 +1,14 @@
+- generic [active] [ref=e1] [box=0,0,1440,1000]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer] [box=-9999,0,184,56]:
+    - /url: "#main-content"
+  - generic [ref=e5] [box=464,275,512,450]:
+    - heading "404" [level=1] [ref=e6] [box=513,324,414,128]
+    - heading "Page Not Found" [level=2] [ref=e7] [box=513,468,414,32]
+    - paragraph [ref=e8] [box=513,508,414,48]: The page you're looking for doesn't exist or has been moved.
+    - link "Back to Home" [ref=e9] [cursor=pointer] [box=630,588,180,48]:
+      - /url: /
+      - img [ref=e10] [box=654,602,20,20]
+      - text: Back to Home
+  - button "Open Next.js Dev Tools" [ref=e22] [cursor=pointer] [box=22,946,32,32]:
+    - img [ref=e23] [box=22,942,40,40]
+  - alert [ref=e16] [box=-1,999,1,1]

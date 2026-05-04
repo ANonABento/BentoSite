@@ -8,6 +8,7 @@
 import type Matter from 'matter-js';
 import type {
   CSSProperties,
+  MouseEventHandler,
   PointerEventHandler,
   ReactNode,
   WheelEventHandler,
@@ -215,6 +216,7 @@ export interface SpawnPhysicsBridge {
   addCard: (cardId: string, position: CardPosition) => void;
   removeCard: (cardId: string) => void;
   applyEntranceBurst: (cardId: string, center?: Position) => void;
+  resetCards?: (layouts: Map<string, CardPosition>) => void;
 }
 
 export interface UseSpawnManagerReturn {
@@ -235,6 +237,7 @@ export interface UseGridNavigationReturn {
 export type CameraUpdate = Partial<Camera> | ((camera: Camera) => Camera);
 
 export interface UseCameraReturn extends UseGridNavigationReturn {
+  cameraRef: React.RefObject<Camera>;
   stopMomentum: () => void;
   isDragging: boolean;
 }
@@ -244,6 +247,8 @@ export interface GridNavigationBindings {
   onPointerMove?: PointerEventHandler<EventTarget>;
   onPointerUp?: PointerEventHandler<EventTarget>;
   onPointerLeave?: PointerEventHandler<EventTarget>;
+  onAuxClick?: MouseEventHandler<EventTarget>;
+  onMouseDown?: MouseEventHandler<EventTarget>;
   onWheel?: WheelEventHandler<EventTarget>;
   style: CSSProperties;
 }

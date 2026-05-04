@@ -118,8 +118,8 @@ const SEARCH_CARD_DIMENSIONS = getCardDimensions('2x1');
 const SEARCH_CARD_VALUES = {
   expandedWidth: SEARCH_CARD_DIMENSIONS.width,
   expandedHeight: SEARCH_CARD_DIMENSIONS.height,
-  collapsedHeight: 56,
-  squashedSideWidth: 80,
+  collapsedHeight: 64,
+  squashedSideWidth: 64,
   compressionDistance: 180,
   stickyThreshold: 60,
   edgePadding: 16,
@@ -161,21 +161,21 @@ export const ANIMATION = {
 } as const;
 
 export const PHYSICS: PhysicsConfig = {
-  friction: 0.05,
-  frictionAir: 0.01,
-  restitution: 0.7,
+  friction: 0.1,
+  frictionAir: 0.08,
+  restitution: 0.2,
   density: 0.001,
-  sleepThreshold: 120,
-  settlingStrength: 0.002,
+  sleepThreshold: 60,
+  settlingStrength: 0.015,
 };
 
 export const PHYSICS_MOBILE: PhysicsConfig = {
-  friction: 0.08,
-  frictionAir: 0.02,
-  restitution: 0.6,
+  friction: 0.12,
+  frictionAir: 0.1,
+  restitution: 0.15,
   density: 0.001,
-  sleepThreshold: 80,
-  settlingStrength: 0.003,
+  sleepThreshold: 40,
+  settlingStrength: 0.02,
 };
 
 export const THEME_PLAYFUL: ThemeConfig = {
@@ -187,7 +187,7 @@ export const THEME_PLAYFUL: ThemeConfig = {
     borderRadius: 20,
     shadow: '0 0 20px var(--purple-muted), 0 8px 32px var(--shadow-color)',
     hoverShadow: '0 0 40px var(--purple-muted), 0 12px 48px var(--shadow-color)',
-    rotationRange: 3,
+    rotationRange: 0,
   },
   accent: {
     primary: 'var(--purple)',
@@ -225,6 +225,8 @@ export const THEMES = {
   playful: THEME_PLAYFUL,
   premium: THEME_PREMIUM,
 } satisfies Record<GridTheme, ThemeConfig>;
+
+export const SEARCH_CARD_ID = '__search__' as const;
 
 export const MOBILE = {
   BREAKPOINT: 768,

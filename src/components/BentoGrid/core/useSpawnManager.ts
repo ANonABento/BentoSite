@@ -11,6 +11,9 @@ import type {
 } from '../BentoGrid.types';
 import { GRID } from '../BentoGrid.constants';
 import { getCardDimensions, getCardSizeForIndex, getRandomRotation } from '../layout';
+import { getMovementDirectionFromDelta } from './movement';
+
+export { getMovementDirectionFromDelta, MOVEMENT_THRESHOLD } from './movement';
 
 export interface UseSpawnManagerOptions {
   cardPool: UseCardPoolReturn;
@@ -20,24 +23,6 @@ export interface UseSpawnManagerOptions {
   enabled?: boolean;
   physics?: SpawnPhysicsBridge;
   currentLayouts?: Map<string, CardPosition>;
-}
-
-export const MOVEMENT_THRESHOLD = 5;
-
-export function getMovementDirectionFromDelta(
-  dx: number,
-  dy: number,
-  threshold: number = MOVEMENT_THRESHOLD,
-): SpawnEdge | null {
-  if (Math.abs(dx) > Math.abs(dy)) {
-    if (dx > threshold) return 'left';
-    if (dx < -threshold) return 'right';
-  } else {
-    if (dy > threshold) return 'top';
-    if (dy < -threshold) return 'bottom';
-  }
-
-  return null;
 }
 
 function getCardSizeForSpawn(spawnIndex: number): CardSize {

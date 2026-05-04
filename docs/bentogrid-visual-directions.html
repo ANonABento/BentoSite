@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BentoGrid Visual Directions</title>
+  <style>
+    :root {
+      --ink: #f7f1e8;
+      --muted: rgba(247, 241, 232, 0.62);
+      --line: rgba(255, 255, 255, 0.16);
+      --purple: #a78bfa;
+      --orange: #e07b3c;
+      --cyan: #4de7ff;
+      --pink: #ff4da6;
+      --green: #74f2a5;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: #080808;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: #050505; }
+    main { display: grid; gap: 32px; padding: 32px; }
+    h1 { margin: 0 0 6px; font-size: clamp(30px, 5vw, 64px); letter-spacing: -0.06em; }
+    p { margin: 0; color: var(--muted); }
+    .intro { max-width: 920px; }
+    .direction {
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 28px;
+      overflow: hidden;
+      background: #111;
+      box-shadow: 0 30px 120px rgba(0,0,0,.55);
+    }
+    .direction header {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 22px 24px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      background: rgba(0,0,0,.38);
+    }
+    .direction h2 { margin: 0; font-size: 20px; letter-spacing: -.03em; }
+    .tag { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .18em; }
+    .board {
+      position: relative;
+      height: 720px;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .board::before, .board::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .board::after {
+      z-index: 3;
+      box-shadow: inset 0 0 120px rgba(0,0,0,.5);
+    }
+    .grid {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      display: grid;
+      grid-template-columns: repeat(6, 180px);
+      grid-template-rows: repeat(4, 180px);
+      grid-template-areas:
+        "a a g h b b"
+        "a a search search b b"
+        "e c c d d f"
+        "i j k l m n";
+      gap: 12px;
+      width: 1140px;
+      height: 756px;
+      transform: translate(-50%, -50%);
+    }
+    .card {
+      border-radius: 22px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      box-shadow: 0 24px 70px rgba(0,0,0,.38);
+    }
+    .card h3 { margin: 0; font-size: 21px; letter-spacing: -.04em; }
+    .card small { color: var(--muted); text-transform: uppercase; letter-spacing: .15em; font-size: 10px; }
+    .search {
+      grid-area: search;
+      z-index: 5;
+      justify-content: flex-start;
+      gap: 14px;
+    }
+    .search input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      border-radius: 14px;
+      padding: 14px 16px;
+      color: inherit;
+      background: rgba(255,255,255,.09);
+      font: inherit;
+    }
+    .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill { padding: 6px 10px; border-radius: 999px; font-size: 11px; color: var(--muted); border: 1px solid rgba(255,255,255,.12); }
+    .a { grid-area: a; }
+    .b { grid-area: b; }
+    .c { grid-area: c; }
+    .d { grid-area: d; }
+    .e { grid-area: e; }
+    .f { grid-area: f; }
+    .g { grid-area: g; }
+    .h { grid-area: h; }
+    .i { grid-area: i; }
+    .j { grid-area: j; }
+    .k { grid-area: k; }
+    .l { grid-area: l; }
+    .m { grid-area: m; }
+    .n { grid-area: n; }
+
+    .premium-glass {
+      background:
+        radial-gradient(circle at 50% 48%, rgba(167,139,250,.22), transparent 34%),
+        linear-gradient(135deg, #111827 0%, #07090d 42%, #14100d 100%);
+    }
+    .premium-glass::before {
+      background-image: radial-gradient(rgba(255,255,255,.14) 1px, transparent 1px);
+      background-size: 24px 24px;
+      opacity: .22;
+      transform: translateZ(0);
+    }
+    .premium-glass .card {
+      background: linear-gradient(145deg, rgba(255,255,255,.16), rgba(255,255,255,.045));
+      border: 1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(18px);
+    }
+    .premium-glass .search { border-color: rgba(167,139,250,.55); box-shadow: 0 0 0 1px rgba(167,139,250,.22), 0 30px 90px rgba(0,0,0,.48); }
+
+    .premium-editorial {
+      background:
+        radial-gradient(circle at 50% 50%, rgba(224,123,60,.14), transparent 36%),
+        linear-gradient(120deg, #191512, #0e0d0c 56%, #15100d);
+    }
+    .premium-editorial::before {
+      background:
+        linear-gradient(rgba(255,255,255,.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.055) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: .38;
+    }
+    .premium-editorial .card {
+      border-radius: 10px;
+      background: #ede3d3;
+      color: #16120e;
+      border: 1px solid rgba(255,255,255,.3);
+      box-shadow: 0 26px 80px rgba(0,0,0,.34);
+    }
+    .premium-editorial .card small, .premium-editorial .card p { color: rgba(22,18,14,.62); }
+    .premium-editorial .search { background: #15110e; color: var(--ink); border: 1px solid rgba(224,123,60,.58); }
+
+    .arcade-cartridge {
+      background:
+        radial-gradient(circle at 50% 50%, rgba(77,231,255,.2), transparent 33%),
+        linear-gradient(135deg, #12051d, #050611 52%, #190713);
+    }
+    .arcade-cartridge::before {
+      background:
+        linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+      background-size: 36px 36px;
+      opacity: .45;
+    }
+    .arcade-cartridge .card {
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.035));
+      border: 2px solid rgba(77,231,255,.32);
+      box-shadow: 0 0 32px rgba(77,231,255,.12), 0 26px 80px rgba(0,0,0,.5);
+    }
+    .arcade-cartridge .card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 44px;
+      background: linear-gradient(90deg, rgba(255,77,166,.65), rgba(77,231,255,.45));
+      opacity: .62;
+    }
+    .arcade-cartridge .card > * { position: relative; z-index: 1; }
+    .arcade-cartridge .search { border-color: rgba(255,77,166,.72); }
+
+    .toy-shelf {
+      background:
+        radial-gradient(circle at 50% 45%, rgba(116,242,165,.2), transparent 35%),
+        linear-gradient(180deg, #10231b, #07100e);
+    }
+    .toy-shelf::before {
+      background-image: radial-gradient(rgba(247,241,232,.18) 1.5px, transparent 1.5px);
+      background-size: 26px 26px;
+      opacity: .32;
+    }
+    .toy-shelf .card {
+      color: #112018;
+      background: linear-gradient(145deg, #f6d76d, #ef8b6a);
+      border: 4px solid rgba(255,255,255,.42);
+      box-shadow: 0 22px 0 rgba(0,0,0,.18), 0 36px 80px rgba(0,0,0,.38);
+    }
+    .toy-shelf .card:nth-child(2n) { background: linear-gradient(145deg, #74f2a5, #4de7ff); }
+    .toy-shelf .card:nth-child(3n) { background: linear-gradient(145deg, #ff9acb, #a78bfa); }
+    .toy-shelf .card small, .toy-shelf .card p { color: rgba(17,32,24,.62); }
+    .toy-shelf .search { background: #fff4db; }
+
+    @media (max-width: 900px) {
+      main { padding: 18px; }
+      .board { height: 620px; }
+      .grid { transform: translate(-50%, -50%) scale(.62); transform-origin: center; }
+      .direction header { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="intro">
+      <h1>BentoGrid visual directions</h1>
+      <p>Same packed geometry, different skins. Search is locked to the center anchor; featured/large cards dominate first load; smaller cards pack around the center.</p>
+    </section>
+
+    <section class="direction">
+      <header>
+        <div>
+          <div class="tag">Projects option A</div>
+          <h2>Premium Glass Desk</h2>
+        </div>
+        <p>Closest to current brand, but denser and more spatial.</p>
+      </header>
+      <div class="board premium-glass">
+        <div class="grid">
+          <article class="card wide a"><small>Featured</small><h3>Conductor</h3><p>Interactive orchestration system.</p></article>
+          <article class="card wide b"><small>Featured</small><h3>3D Portfolio</h3><p>Spatial project browser.</p></article>
+          <article class="card search"><small>bentOS / projects</small><input value="Search projects" readonly /><div class="pills"><span class="pill">All</span><span class="pill">Web</span><span class="pill">3D</span><span class="pill">Tools</span></div></article>
+          <article class="card small e"><small>Tool</small><h3>API</h3></article>
+          <article class="card small f"><small>Lab</small><h3>Model</h3></article>
+          <article class="card wide c"><small>Project</small><h3>Signals</h3></article>
+          <article class="card wide d"><small>Project</small><h3>Canvas</h3></article>
+          <article class="card small g"><small>Archive</small><h3>Notes</h3></article>
+          <article class="card small h"><small>CLI</small><h3>Agent</h3></article>
+          <article class="card small i"><small>Data</small><h3>Index</h3></article>
+          <article class="card small j"><small>Ops</small><h3>Deploy</h3></article>
+          <article class="card small k"><small>UI</small><h3>Tokens</h3></article>
+          <article class="card small l"><small>Lab</small><h3>Shader</h3></article>
+          <article class="card small m"><small>Docs</small><h3>Spec</h3></article>
+          <article class="card small n"><small>More</small><h3>Queue</h3></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="direction">
+      <header>
+        <div>
+          <div class="tag">Projects option B</div>
+          <h2>Editorial Workbench</h2>
+        </div>
+        <p>More distinctive and print-like. Better if projects should feel curated.</p>
+      </header>
+      <div class="board premium-editorial">
+        <div class="grid">
+          <article class="card wide a"><small>Case Study</small><h3>Conductor</h3><p>Featured system design.</p></article>
+          <article class="card wide b"><small>Case Study</small><h3>Portfolio OS</h3><p>Interface, motion, 3D.</p></article>
+          <article class="card search"><small>bentOS / projects</small><input value="Search projects" readonly /><div class="pills"><span class="pill">All</span><span class="pill">Web</span><span class="pill">Systems</span></div></article>
+          <article class="card small e"><small>Tool</small><h3>API</h3></article>
+          <article class="card small f"><small>3D</small><h3>Viewer</h3></article>
+          <article class="card wide c"><small>Project</small><h3>Signals</h3></article>
+          <article class="card wide d"><small>Project</small><h3>Canvas</h3></article>
+          <article class="card small g"><small>Archive</small><h3>Notes</h3></article>
+          <article class="card small h"><small>CLI</small><h3>Agent</h3></article>
+          <article class="card small i"><small>Data</small><h3>Index</h3></article>
+          <article class="card small j"><small>Ops</small><h3>Deploy</h3></article>
+          <article class="card small k"><small>UI</small><h3>Tokens</h3></article>
+          <article class="card small l"><small>Lab</small><h3>Shader</h3></article>
+          <article class="card small m"><small>Docs</small><h3>Spec</h3></article>
+          <article class="card small n"><small>More</small><h3>Queue</h3></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="direction">
+      <header>
+        <div>
+          <div class="tag">Playground option A</div>
+          <h2>Arcade Cartridges</h2>
+        </div>
+        <p>Best match for your cartridge direction. Same bento geometry, louder skin.</p>
+      </header>
+      <div class="board arcade-cartridge">
+        <div class="grid">
+          <article class="card wide a"><small>Timing</small><h3>Reaction</h3><p>Pure reflex timing.</p></article>
+          <article class="card wide b"><small>Rhythm</small><h3>Beat Runner</h3><p>Upload maps, chase score.</p></article>
+          <article class="card search"><small>bentOS / playground</small><input value="Search games" readonly /><div class="pills"><span class="pill">All</span><span class="pill">Arcade</span><span class="pill">Skill</span></div></article>
+          <article class="card small e"><small>Puzzle</small><h3>2048</h3></article>
+          <article class="card small f"><small>Aim</small><h3>3D</h3></article>
+          <article class="card wide c"><small>Typing</small><h3>WPM Lab</h3></article>
+          <article class="card wide d"><small>Classic</small><h3>Pacman</h3></article>
+          <article class="card small g"><small>Audio</small><h3>Sound</h3></article>
+          <article class="card small h"><small>Logic</small><h3>Mines</h3></article>
+          <article class="card small i"><small>Puzzle</small><h3>Sort</h3></article>
+          <article class="card small j"><small>Reflex</small><h3>Tap</h3></article>
+          <article class="card small k"><small>Memory</small><h3>Match</h3></article>
+          <article class="card small l"><small>Music</small><h3>Loop</h3></article>
+          <article class="card small m"><small>Score</small><h3>Board</h3></article>
+          <article class="card small n"><small>More</small><h3>Queue</h3></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="direction">
+      <header>
+        <div>
+          <div class="tag">Playground option B</div>
+          <h2>Toy Shelf</h2>
+        </div>
+        <p>Less neon, more playful object board. Worth comparing against cartridges.</p>
+      </header>
+      <div class="board toy-shelf">
+        <div class="grid">
+          <article class="card wide a"><small>Timing</small><h3>Reaction</h3><p>Pure reflex timing.</p></article>
+          <article class="card wide b"><small>Rhythm</small><h3>Beat Runner</h3><p>Upload maps, chase score.</p></article>
+          <article class="card search"><small>bentOS / playground</small><input value="Search games" readonly /><div class="pills"><span class="pill">All</span><span class="pill">Arcade</span><span class="pill">Skill</span></div></article>
+          <article class="card small e"><small>Puzzle</small><h3>2048</h3></article>
+          <article class="card small f"><small>Aim</small><h3>3D</h3></article>
+          <article class="card wide c"><small>Typing</small><h3>WPM Lab</h3></article>
+          <article class="card wide d"><small>Classic</small><h3>Pacman</h3></article>
+          <article class="card small g"><small>Audio</small><h3>Sound</h3></article>
+          <article class="card small h"><small>Logic</small><h3>Mines</h3></article>
+          <article class="card small i"><small>Puzzle</small><h3>Sort</h3></article>
+          <article class="card small j"><small>Reflex</small><h3>Tap</h3></article>
+          <article class="card small k"><small>Memory</small><h3>Match</h3></article>
+          <article class="card small l"><small>Music</small><h3>Loop</h3></article>
+          <article class="card small m"><small>Score</small><h3>Board</h3></article>
+          <article class="card small n"><small>More</small><h3>Queue</h3></article>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

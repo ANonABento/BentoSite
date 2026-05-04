@@ -1,22 +1,19 @@
 'use client';
 
-import { useCallback, useEffect, useMemo } from 'react';
-import { SearchMenuCard, useSearchCardState } from '../cards';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useSearchCardState } from '../cards';
 import {
   getCameraTransform,
   isEditableTarget,
-  screenToCanvas,
   useCamera,
   useCardNavigation,
-  useCardPool,
-  useSpawnManager,
-  useViewport,
   useWindowSize,
 } from '../core';
-import { preserveLayoutWithExclusion } from '../layout';
+import { useBoardController } from '../core/useBoardController';
 import { usePhysicsWorld } from '../physics';
-import { GRID, SEARCH_CARD } from '../BentoGrid.constants';
-import type { CardData, CardLayout, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
+import { SEARCH_CARD_ID } from '../BentoGrid.constants';
+import { ArrowLeftIcon, ChevronDownIcon, CloseIcon, SearchIcon } from '@/components/ui/Icons';
+import type { CardData, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
 interface DesktopCanvasViewProps {
@@ -47,123 +44,93 @@ export function DesktopCanvasView({
     windowSize,
   });
 
-  const cardPool = useCardPool({
+  const board = useBoardController({
     cards,
     rotationRange: theme.card.rotationRange,
   });
 
-  const viewport = useViewport({
-    camera: navigation.camera,
-    buffer: GRID.SPAWN_BUFFER,
-  });
+  const searchCardLayout = board.visible.get(SEARCH_CARD_ID);
 
   const searchState = useSearchCardState({
     camera: navigation.camera,
     windowSize,
     categories,
-    onFilterChange: cardPool.applyFilter,
+    searchCardLayout,
+    onFilterChange: board.applyFilter,
   });
 
-  const searchLayout = useMemo<CardLayout>(() => {
-    const isCompressed = searchState.edge !== 'none' && searchState.compression > 0;
-    const center = isCompressed
-      ? screenToCanvas(
-          searchState.screenPosition.x,
-          searchState.screenPosition.y,
-          navigation.camera,
-          windowSize,
-        )
-      : { x: 0, y: 0 };
-    const width = isCompressed
-      ? searchState.width / navigation.camera.zoom
-      : SEARCH_CARD.EXPANDED_WIDTH;
-    const height = isCompressed
-      ? searchState.height / navigation.camera.zoom
-      : SEARCH_CARD.EXPANDED_HEIGHT;
+  const isSearchSticky = searchState.compression > 0;
 
-    return {
-      id: '__search__',
-      x: center.x - width / 2,
-      y: center.y - height / 2,
-      width,
-      height,
-      rotation: 0,
-      size: '2x1',
-    };
-  }, [
-    navigation.camera,
-    searchState.compression,
-    searchState.edge,
-    searchState.height,
-    searchState.screenPosition.x,
-    searchState.screenPosition.y,
-    searchState.width,
-    windowSize,
-  ]);
+  // Rehome the search card when compression transitions from >0 to 0.
+  // This anchors the grid home to wherever the ghost currently is.
+  const prevCompressionRef = useRef(0);
+  useEffect(() => {
+    const prev = prevCompressionRef.current;
+    prevCompressionRef.current = searchState.compression;
 
-  const isSearchStuck = searchState.edge !== 'none' && searchState.compression > 0;
+    if (prev > 0 && searchState.compression === 0 && searchState.ghostCanvasPosition) {
+      board.rehomeSearchCard(
+        searchState.ghostCanvasPosition.x,
+        searchState.ghostCanvasPosition.y,
+      );
+    }
+  }, [searchState.compression, searchState.ghostCanvasPosition, board]);
 
+  // Display layouts: content cards at grid positions.
+  // Search card uses sticky override when compressed, grid position when free.
   const displayLayouts = useMemo(() => {
-    if (!isSearchStuck) return cardPool.visible;
+    if (!searchState.stickyCanvasPosition) return board.visible;
+    const layouts = new Map(board.visible);
+    layouts.set(SEARCH_CARD_ID, searchState.stickyCanvasPosition);
+    return layouts;
+  }, [board.visible, searchState.stickyCanvasPosition]);
 
-    return preserveLayoutWithExclusion(
-      cardPool.visible,
-      {
-        x: searchLayout.x,
-        y: searchLayout.y,
-        width: searchLayout.width,
-        height: searchLayout.height,
-        padding: SEARCH_CARD.EXCLUSION_PADDING,
-      },
-    );
-  }, [
-    cardPool.visible,
-    isSearchStuck,
-    searchLayout,
-  ]);
-
-  const { positions, updateSearchCard, addCard, removeCard, applyEntranceBurst } = usePhysicsWorld({
+  // Physics is only used for search card collision body
+  const { updateSearchCard } = usePhysicsWorld({
     layouts: displayLayouts,
     enabled: true,
     isMobile: false,
   });
 
-  const physicsBridge = useMemo(
-    () => ({ addCard, removeCard, applyEntranceBurst }),
-    [addCard, removeCard, applyEntranceBurst],
-  );
+  // Update search card physics body: static when sticky, dynamic when free
+  const searchDisplayPos = displayLayouts.get(SEARCH_CARD_ID);
+  useEffect(() => {
+    if (!searchDisplayPos) return;
+    updateSearchCard(
+      { id: SEARCH_CARD_ID, ...searchDisplayPos },
+      isSearchSticky,
+    );
+  }, [searchDisplayPos, isSearchSticky, updateSearchCard]);
 
-  const currentLayouts = useMemo(() => {
-    const layouts = new Map<string, CardPosition>();
+  // Refs for the rAF loop
+  const visibleRef = useRef<Map<string, CardPosition>>(displayLayouts);
+  const windowSizeRef = useRef(windowSize);
+  useEffect(() => { visibleRef.current = displayLayouts; }, [displayLayouts]);
+  useEffect(() => { windowSizeRef.current = windowSize; }, [windowSize]);
 
-    displayLayouts.forEach((layout, cardId) => {
-      const physicsPosition = positions.get(cardId);
-      layouts.set(cardId, physicsPosition
-        ? {
-            ...layout,
-            x: physicsPosition.x,
-            y: physicsPosition.y,
-            rotation: (physicsPosition.angle * 180) / Math.PI,
-          }
-        : layout,
-      );
-    });
+  // getCurrentLayouts returns grid positions directly — no physics merge
+  const getCurrentLayouts = useCallback((): Map<string, CardPosition> => {
+    return new Map(visibleRef.current);
+  }, []);
 
-    return layouts;
-  }, [displayLayouts, positions]);
+  // rAF loop — runs spawn/despawn at display refresh rate
+  const boardTickRef = useRef(board.tick);
+  useEffect(() => { boardTickRef.current = board.tick; }, [board.tick]);
 
   useEffect(() => {
-    updateSearchCard(searchLayout, isSearchStuck);
-  }, [isSearchStuck, searchLayout, updateSearchCard]);
+    let rafId: number;
 
-  useSpawnManager({
-    cardPool,
-    viewport,
-    camera: navigation.camera,
-    rotationRange: theme.card.rotationRange,
-    physics: physicsBridge,
-    currentLayouts,
-  });
+    function loop() {
+      const cam = navigation.cameraRef.current;
+      if (cam) {
+        boardTickRef.current(cam, windowSizeRef.current, getCurrentLayouts);
+      }
+      rafId = requestAnimationFrame(loop);
+    }
+
+    rafId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafId);
+  }, [navigation.cameraRef, getCurrentLayouts]);
 
   const cardNavigation = useCardNavigation({
     visible: displayLayouts,
@@ -204,7 +171,7 @@ export function DesktopCanvasView({
 
   const transform = useMemo(
     () => getCameraTransform(navigation.camera, windowSize),
-    [navigation.camera, windowSize]
+    [navigation.camera, windowSize],
   );
 
   const navBindings = navigation.bind();
@@ -212,7 +179,7 @@ export function DesktopCanvasView({
   return (
     <div
       id="main-content"
-      className={['fixed inset-0 overflow-hidden', className].filter(Boolean).join(' ')}
+      className={['fixed inset-0 overflow-hidden isolate', className].filter(Boolean).join(' ')}
       {...navBindings}
       role="application"
       aria-label={`${breadcrumb ?? 'Card grid'} interactive grid. Use arrow keys to focus cards, Enter to open, WASD to pan, and R to reset view.`}
@@ -228,8 +195,7 @@ export function DesktopCanvasView({
       >
         <DesktopCardLayer
           layouts={displayLayouts}
-          cardDataMap={cardPool.cardDataMap}
-          physicsPositions={positions}
+          cardDataMap={board.cardDataMap}
           theme={theme}
           focusedCardId={focusedCardId}
           renderCard={renderCard}
@@ -237,30 +203,68 @@ export function DesktopCanvasView({
         />
       </div>
 
-      <SearchMenuCard
-        theme={theme}
-        expanded={searchState.expanded}
-        edge={searchState.edge}
-        position={searchState.screenPosition}
-        compression={searchState.compression}
-        width={searchState.width}
-        height={searchState.height}
-        searchTerm={searchState.searchTerm}
-        category={searchState.category}
-        categories={categories}
-        breadcrumb={breadcrumb}
-        onToggleExpanded={searchState.toggleExpanded}
-        onSearchChange={searchState.setSearchTerm}
-        onCategoryChange={searchState.setCategory}
-        onBack={onBack}
-        totalCards={cards.length}
-        filteredCards={cardPool.visible.size + cardPool.queue.length}
-      />
+      {/* Search card — always rendered as fixed overlay in screen space */}
+      <div className="fixed inset-0 pointer-events-none z-10">
+        <div
+          className="pointer-events-auto absolute"
+          onPointerDown={(e) => e.stopPropagation()}
+          style={{
+            left: searchState.screenPosition.x - searchState.width / 2,
+            top: searchState.screenPosition.y - searchState.height / 2,
+            width: searchState.width,
+            height: searchState.height,
+            transition: 'width 200ms ease-out, height 200ms ease-out',
+          }}
+        >
+          <div
+            className="h-full w-full overflow-hidden backdrop-blur-xl"
+            style={{
+              background: theme.searchCard.background,
+              border: theme.searchCard.border,
+              boxShadow: isSearchSticky
+                ? `0 0 0 1px ${theme.accent.primary}33, ${theme.card.hoverShadow}`
+                : theme.card.shadow,
+              borderRadius: theme.card.borderRadius,
+            }}
+          >
+            {isSearchSticky && (searchState.edge === 'left' || searchState.edge === 'right') ? (
+              <IconStripContent
+                theme={theme}
+                onBack={onBack}
+                onToggleExpanded={searchState.toggleExpanded}
+                searchTerm={searchState.searchTerm}
+              />
+            ) : isSearchSticky ? (
+              <CompactBarContent
+                searchTerm={searchState.searchTerm}
+                onSearchChange={searchState.setSearchTerm}
+                onBack={onBack}
+                breadcrumb={breadcrumb}
+              />
+            ) : (
+              <FullSearchContent
+                theme={theme}
+                expanded={searchState.expanded}
+                searchTerm={searchState.searchTerm}
+                category={searchState.category}
+                categories={categories}
+                breadcrumb={breadcrumb}
+                onToggleExpanded={searchState.toggleExpanded}
+                onSearchChange={searchState.setSearchTerm}
+                onCategoryChange={searchState.setCategory}
+                onBack={onBack}
+                totalCards={cards.length}
+                filteredCards={board.filteredCount}
+              />
+            )}
+          </div>
+        </div>
+      </div>
 
       <button
         onClick={navigation.reset}
         aria-label="Reset grid view"
-        className="fixed bottom-4 right-4 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+        className="fixed bottom-4 right-4 px-4 py-2 rounded-lg text-sm font-medium transition-all z-20"
         style={{
           background: theme.searchCard.background,
           border: theme.searchCard.border,
@@ -271,10 +275,10 @@ export function DesktopCanvasView({
       </button>
 
       {process.env.NODE_ENV === 'development' && (
-        <div className="fixed bottom-4 left-4 text-xs text-white/50 font-mono">
+        <div className="fixed bottom-4 left-4 text-xs text-white/50 font-mono z-20">
           Camera: ({navigation.camera.x.toFixed(0)}, {navigation.camera.y.toFixed(0)}) z:{navigation.camera.zoom.toFixed(2)}
           <br />
-          Visible: {cardPool.visible.size} | Queue: {cardPool.queue.length}
+          Visible: {board.visible.size} | Queue: {board.queue.length}
           {focusedCardId && (
             <>
               <br />
@@ -283,6 +287,110 @@ export function DesktopCanvasView({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+// Inline sticky content components (imported from SearchMenuCard would create circular dep)
+function IconStripContent({ theme, onBack, onToggleExpanded, searchTerm }: {
+  theme: ThemeConfig;
+  onBack?: () => void;
+  onToggleExpanded: () => void;
+  searchTerm: string;
+}) {
+  return (
+    <div className="h-full flex flex-col items-center justify-center gap-3 py-3">
+      {onBack && (
+        <button onClick={onBack} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="Go back">
+          <ArrowLeftIcon className="w-5 h-5 text-white/70" />
+        </button>
+      )}
+      <button onClick={onToggleExpanded} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="Search" style={{ color: searchTerm ? theme.accent.primary : undefined }}>
+        <SearchIcon className="w-5 h-5 text-white/70" />
+      </button>
+      <button onClick={onToggleExpanded} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="Toggle filters" style={{ color: theme.accent.primary }}>
+        <ChevronDownIcon className="w-5 h-5" />
+      </button>
+    </div>
+  );
+}
+
+function FullSearchContent({ theme, expanded, searchTerm, category, categories, breadcrumb, onToggleExpanded, onSearchChange, onCategoryChange, onBack, totalCards, filteredCards }: {
+  theme: ThemeConfig;
+  expanded: boolean;
+  searchTerm: string;
+  category: string | null;
+  categories: string[];
+  breadcrumb?: string;
+  onToggleExpanded: () => void;
+  onSearchChange: (term: string) => void;
+  onCategoryChange: (category: string | null) => void;
+  onBack?: () => void;
+  totalCards: number;
+  filteredCards: number;
+}) {
+  return (
+    <div className="h-full min-w-0 p-4 flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-2 min-w-0">
+        <span className="text-xs text-white/50 font-mono truncate">{breadcrumb || 'bentOS'}</span>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <span className="text-[10px] text-white/40 font-mono">
+            {filteredCards !== totalCards ? `${filteredCards}/${totalCards}` : totalCards}
+          </span>
+          <button onClick={onToggleExpanded} className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors" aria-label={expanded ? 'Hide filters' : 'Show filters'} style={{ color: theme.accent.primary }}>
+            <ChevronDownIcon className="w-4 h-4 transition-transform" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+          </button>
+        </div>
+      </div>
+      {onBack && (
+        <button onClick={onBack} className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors w-fit">
+          <ArrowLeftIcon className="w-4 h-4" /><span>Back to Dashboard</span>
+        </button>
+      )}
+      <label className="flex items-center gap-2 rounded-md bg-white/5 border border-white/10 px-3 py-2">
+        <SearchIcon className="w-4 h-4 text-white/40 flex-shrink-0" />
+        <input type="text" placeholder="Search..." value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none" aria-label="Search cards" />
+        {searchTerm && (
+          <button onClick={() => onSearchChange('')} className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-white/10" aria-label="Clear search">
+            <CloseIcon className="w-3 h-3 text-white/50" />
+          </button>
+        )}
+      </label>
+      {expanded && (
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+          <button onClick={() => onCategoryChange(null)} className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap ${category === null ? 'text-white' : 'text-white/60 hover:text-white/80'}`} style={{ background: category === null ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)', border: category === null ? `1px solid ${theme.accent.primary}50` : '1px solid transparent' }}>All</button>
+          {categories.map((cat) => (
+            <button key={cat} onClick={() => onCategoryChange(cat === category ? null : cat)} className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap ${category === cat ? 'text-white' : 'text-white/60 hover:text-white/80'}`} style={{ background: category === cat ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)', border: category === cat ? `1px solid ${theme.accent.primary}50` : '1px solid transparent' }}>{cat}</button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CompactBarContent({ searchTerm, onSearchChange, onBack, breadcrumb }: {
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
+  onBack?: () => void;
+  breadcrumb?: string;
+}) {
+  return (
+    <div className="h-full flex items-center gap-2 px-3">
+      {onBack && (
+        <button onClick={onBack} className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors" aria-label="Go back">
+          <ArrowLeftIcon className="w-4 h-4 text-white/70" />
+        </button>
+      )}
+      <span className="text-xs text-white/40 font-mono truncate flex-shrink-0">{breadcrumb || 'bentOS'}</span>
+      <label className="flex-1 min-w-0 flex items-center gap-2 rounded-md bg-white/5 border border-white/10 px-3 py-1.5">
+        <SearchIcon className="w-4 h-4 text-white/40 flex-shrink-0" />
+        <input type="text" placeholder="Search..." value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none" aria-label="Search cards" />
+        {searchTerm && (
+          <button onClick={() => onSearchChange('')} className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-white/10" aria-label="Clear search">
+            <CloseIcon className="w-3 h-3 text-white/50" />
+          </button>
+        )}
+      </label>
     </div>
   );
 }

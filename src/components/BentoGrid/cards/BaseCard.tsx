@@ -6,10 +6,8 @@ import type {
   ReactNode,
   WheelEventHandler,
 } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import type { CardPosition, ThemeConfig } from '../BentoGrid.types';
-import { ANIMATION } from '../BentoGrid.constants';
-import { unifiedGridCardEntranceDelay } from '@/lib/animations';
 
 interface BaseCardProps {
   id: string;
@@ -22,6 +20,7 @@ interface BaseCardProps {
   shellStyle?: CSSProperties;
   positionMode?: 'absolute' | 'fixed';
   hoverEnabled?: boolean;
+  motionMode?: 'spring' | 'instant';
   ariaLabel?: string;
   children: ReactNode;
   onClick?: () => void;
@@ -36,7 +35,6 @@ export function BaseCard({
   position,
   theme,
   isFocused = false,
-  entranceIndex = 0,
   className,
   shellClassName,
   shellStyle,
@@ -50,11 +48,10 @@ export function BaseCard({
   onPointerDown,
   onWheel,
 }: BaseCardProps) {
-  const prefersReducedMotion = useReducedMotion() ?? false;
 
   return (
     <motion.div
-      layoutId={id}
+      key={id}
       className={[
         positionMode,
         onClick ? 'cursor-pointer' : 'cursor-default',
@@ -65,23 +62,20 @@ export function BaseCard({
         width: position.width,
         height: position.height,
       }}
-      initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.92 }}
+      initial={false}
       animate={{
-        opacity: 1,
-        scale: 1,
         x: position.x,
         y: position.y,
         rotate: position.rotation,
       }}
-      exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
+      exit={{ opacity: 0, transition: { duration: 0.15 } }}
       transition={{
         type: 'spring',
-        stiffness: ANIMATION.SPRING.stiffness,
-        damping: ANIMATION.SPRING.damping,
-        delay: prefersReducedMotion ? 0 : unifiedGridCardEntranceDelay(entranceIndex),
+        stiffness: 300,
+        damping: 30,
       }}
-      whileHover={prefersReducedMotion || !hoverEnabled ? undefined : { scale: 1.015, y: -2 }}
-      whileTap={prefersReducedMotion || !hoverEnabled ? undefined : { scale: 0.98 }}
+      whileHover={hoverEnabled ? { scale: 1.02 } : undefined}
+      whileTap={hoverEnabled ? { scale: 0.98 } : undefined}
       onHoverStart={onHoverStart}
       onHoverEnd={onHoverEnd}
       onClick={onClick}
