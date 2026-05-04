@@ -11,6 +11,7 @@ const ROLL_STAGGER = 60;
 const MIN_DISPLAY_MS = 800;
 const FULL_HOLD_MS = 500;
 const BOOT_PROGRESS_TARGETS = [6, 12, SEGMENT_COUNT];
+const AUTO_ADVANCE_MS = 2000;
 
 export function useBootSequence({ onExiting }: { onExiting: () => void }) {
   const [phase, setPhase] = useState<BootPhase>('logo');
@@ -18,11 +19,20 @@ export function useBootSequence({ onExiting }: { onExiting: () => void }) {
   const [isVisible, setIsVisible] = useState(true);
   const [showFlash, setShowFlash] = useState(false);
   const [glitchOffset, setGlitchOffset] = useState(0);
+  const [autoAdvanceProgress, setAutoAdvanceProgress] = useState(0);
   const completedRef = useRef(false);
   const progressCountRef = useRef(0);
   const barStartTimeRef = useRef(0);
   const fillQueueRef = useRef<number[]>([]);
   const fillingRef = useRef(false);
+  const autoAdvanceRafRef = useRef<number | null>(null);
+
+  const cancelAutoAdvance = useCallback(() => {
+    if (autoAdvanceRafRef.current !== null) {
+      window.cancelAnimationFrame(autoAdvanceRafRef.current);
+      autoAdvanceRafRef.current = null;
+    }
+  }, []);
 
   const triggerCrtTransition = useCallback(() => {
     if (completedRef.current) {
@@ -120,13 +130,14 @@ export function useBootSequence({ onExiting }: { onExiting: () => void }) {
     }
 
     completedRef.current = true;
+    cancelAutoAdvance();
     setPhase('done');
     setShowFlash(true);
 
     window.setTimeout(() => setShowFlash(false), 120);
     window.setTimeout(() => onExiting(), 150);
     window.setTimeout(() => setIsVisible(false), 200);
-  }, [onExiting]);
+  }, [cancelAutoAdvance, onExiting]);
 
   useEffect(() => {
     if (phase !== 'loading') {
@@ -169,7 +180,41 @@ export function useBootSequence({ onExiting }: { onExiting: () => void }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [completeBoot, phase]);
 
+  useEffect(() => {
+    if (phase !== 'ready' || completedRef.current) {
+      return;
+    }
+
+    const startedAt = performance.now();
+
+    const tick = (now: number) => {
+      if (completedRef.current) {
+        autoAdvanceRafRef.current = null;
+        return;
+      }
+
+      const elapsed = now - startedAt;
+      const ratio = Math.min(1, elapsed / AUTO_ADVANCE_MS);
+      setAutoAdvanceProgress(ratio);
+
+      if (ratio >= 1) {
+        autoAdvanceRafRef.current = null;
+        completeBoot();
+        return;
+      }
+
+      autoAdvanceRafRef.current = window.requestAnimationFrame(tick);
+    };
+
+    autoAdvanceRafRef.current = window.requestAnimationFrame(tick);
+
+    return () => {
+      cancelAutoAdvance();
+    };
+  }, [cancelAutoAdvance, completeBoot, phase]);
+
   return {
+    autoAdvanceProgress,
     completeBoot,
     filledSegments,
     glitchOffset,

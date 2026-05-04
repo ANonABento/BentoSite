@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { BentoIcon } from './BentoIcon';
 import { TerminalPrompt } from './TerminalPrompt';
@@ -12,9 +13,22 @@ interface BootScreenProps {
 
 const LOGO_FADE_DELAY = 300;
 const SEGMENT_COUNT = 16;
+const PROGRESS_BAR_CELLS = 20;
+const PROGRESS_FILLED_CHAR = '█';
+const PROGRESS_EMPTY_CHAR = '░';
+
+function buildProgressBar(progress: number): string {
+  const clamped = Math.max(0, Math.min(1, progress));
+  const filled = Math.round(clamped * PROGRESS_BAR_CELLS);
+  return (
+    PROGRESS_FILLED_CHAR.repeat(filled) +
+    PROGRESS_EMPTY_CHAR.repeat(PROGRESS_BAR_CELLS - filled)
+  );
+}
 
 export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
   const {
+    autoAdvanceProgress,
     completeBoot,
     filledSegments,
     glitchOffset,
@@ -24,6 +38,24 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
     phase,
     showFlash,
   } = useBootSequence({ onExiting });
+
+  const handleSkippablePointerDown = useCallback(() => {
+    if (isSkippable) {
+      completeBoot();
+    }
+  }, [completeBoot, isSkippable]);
+
+  const handleSkippableTouchStart = useCallback(() => {
+    if (isSkippable) {
+      completeBoot();
+    }
+  }, [completeBoot, isSkippable]);
+
+  const handleContinueClick = useCallback(() => {
+    completeBoot();
+  }, [completeBoot]);
+
+  const progressBarText = buildProgressBar(autoAdvanceProgress);
 
   return (
     <AnimatePresence onExitComplete={onComplete}>
@@ -37,6 +69,8 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
           exit={{ opacity: 0, scale: 1.05 }}
           transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
           onClick={isSkippable ? completeBoot : undefined}
+          onPointerDown={handleSkippablePointerDown}
+          onTouchStart={handleSkippableTouchStart}
         >
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-[1]" aria-hidden="true">
             <filter id="boot-noise">
@@ -166,15 +200,29 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
 
                 {phase === 'ready' ? (
                   <motion.div
-                    className="rounded-lg border border-white/10 overflow-hidden"
+                    className="flex flex-col items-center gap-3 rounded-lg border border-white/10 overflow-hidden"
                     style={{ background: 'rgba(255, 255, 255, 0.03)' }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.25, delay: 0.05 }}
                   >
-                    <div className="px-4 py-3">
+                    <div className="px-4 pt-3">
                       <TerminalPrompt />
                     </div>
+                    <div
+                      aria-hidden="true"
+                      className="px-4 font-mono text-[10px] tracking-[0.2em] text-[var(--text-muted)] whitespace-pre"
+                    >
+                      [{progressBarText}]
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleContinueClick}
+                      aria-label="Continue to dashboard"
+                      className="mb-3 mt-1 px-3 py-1 font-mono text-xs tracking-wider text-[var(--orange)] border border-[var(--orange)]/40 rounded-sm hover:bg-[var(--orange)]/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--orange)]/60 transition-colors"
+                    >
+                      &gt; continue _
+                    </button>
                   </motion.div>
                 ) : null}
 

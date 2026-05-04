@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
 const TYPEWRITER_SPEED = 35;
-const PROMPT_TEXT = 'initialized - press any key:';
+const PROMPT_TEXT = 'initialized — tap, click, or press any key';
 
 export function TerminalPrompt() {
   const [displayedText, setDisplayedText] = useState('');
