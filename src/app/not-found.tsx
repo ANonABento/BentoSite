@@ -1,8 +1,12 @@
 import Link from 'next/link';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { buildNotFoundPageJsonLd } from '@/lib/seo';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[var(--background)] bg-grid flex items-center justify-center p-4">
+    <>
+      <JsonLd id="not-found-json-ld" data={buildNotFoundPageJsonLd()} />
+      <div className="min-h-screen bg-[var(--background)] bg-grid flex items-center justify-center p-4">
       {/* Ambient glow effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--purple-muted)] opacity-50 rounded-full blur-[100px]" />
@@ -61,6 +65,7 @@ export default function NotFound() {
           />
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

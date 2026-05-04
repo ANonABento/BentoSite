@@ -1,29 +1,19 @@
-'use client';
+import type { Metadata } from 'next';
+import { JsonLd } from '@/components/seo/JsonLd';
+import {
+  buildPlaygroundPageJsonLd,
+  createRouteMetadata,
+  ROUTE_SEO,
+} from '@/lib/seo';
+import { PlaygroundPageClient } from './PlaygroundPageClient';
 
-/**
- * /playground - Games and experiments showcase page
- *
- * Thin route shell. The grid and card renderer live behind a route-level
- * dynamic boundary so the page module does not eagerly import them.
- */
-
-import dynamic from 'next/dynamic';
-import { RouteLoadingFallback } from '@/components/ui';
-
-const PlaygroundGridClient = dynamic(
-  () => import('./_components/PlaygroundGridClient').then((mod) => mod.PlaygroundGridClient),
-  {
-    ssr: false,
-    loading: () => (
-      <RouteLoadingFallback
-        label="loading playground..."
-        spinnerVariant="orange"
-        showIcon
-      />
-    ),
-  }
-);
+export const metadata: Metadata = createRouteMetadata(ROUTE_SEO['/playground']);
 
 export default function PlaygroundPage() {
-  return <PlaygroundGridClient />;
+  return (
+    <>
+      <JsonLd id="playground-json-ld" data={buildPlaygroundPageJsonLd()} />
+      <PlaygroundPageClient />
+    </>
+  );
 }

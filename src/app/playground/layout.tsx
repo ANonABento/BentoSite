@@ -1,10 +1,7 @@
-import { Metadata } from 'next';
-import { siteConfig } from '@/lib/site-config';
+import type { Metadata } from 'next';
+import { createRouteMetadata, ROUTE_SEO } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: `Playground | ${siteConfig.name}`,
-  description: `Interactive game lab from ${siteConfig.name} with reaction, typing, rhythm, sorting, and arcade experiments.`,
-};
+export const metadata: Metadata = createRouteMetadata(ROUTE_SEO['/playground']);
 
 export default function PlaygroundLayout({
   children,
