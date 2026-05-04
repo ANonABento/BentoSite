@@ -7,8 +7,8 @@ export type {
   GameCardData,
   Position,
   ProjectCardData,
-  SearchCardEdge,
-  SearchCardState,
+  InfoCardEdge,
+  InfoCardState,
   ThemeConfig,
 } from './BentoGrid.types';
 export {

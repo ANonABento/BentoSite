@@ -52,7 +52,16 @@ function getDashboardQuerySnapshot(): boolean {
     return false;
   }
 
-  return new URLSearchParams(window.location.search).get('view') === 'dashboard';
+  const params = new URLSearchParams(window.location.search);
+  return params.get('view') === 'dashboard' || params.has('project');
+}
+
+function getProjectQuerySnapshot(): string | undefined {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+
+  return new URLSearchParams(window.location.search).get('project') ?? undefined;
 }
 
 function getBootStateSnapshot(): BootState {
@@ -64,6 +73,11 @@ function getBootStateSnapshot(): BootState {
 }
 
 export default function Home() {
+  const initialProjectId = useSyncExternalStore(
+    subscribeToLocationChanges,
+    getProjectQuerySnapshot,
+    () => undefined
+  );
   const startsInDashboard = useSyncExternalStore(
     subscribeToLocationChanges,
     getDashboardQuerySnapshot,
@@ -106,6 +120,7 @@ export default function Home() {
           isShortcutsOpen={isShortcutsOpen}
           closeShortcuts={closeShortcuts}
           ready={dashboardReady}
+          initialProjectId={initialProjectId}
         />
       </main>
       {showBoot ? (

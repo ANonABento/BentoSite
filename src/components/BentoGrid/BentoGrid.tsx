@@ -8,14 +8,14 @@
  * - FIFO pool-based card recycling
  * - Pan navigation with momentum
  * - Keyboard navigation (WASD/arrows)
- * - Morphing search card (collapses to edge bar)
+ * - Morphing info card (collapses to edge bar)
  * - Responsive: infinite canvas on desktop, scroll on mobile
  */
 
 import { useMemo } from 'react';
 import { useWindowSize } from './core';
 import { THEMES, MOBILE } from './BentoGrid.constants';
-import type { GridConfig, RenderCard } from './BentoGrid.types';
+import type { CardData, GridConfig, RenderCard } from './BentoGrid.types';
 import { DesktopCanvasView } from './views/DesktopCanvasView';
 import { MobileScrollView } from './views/MobileScrollView';
 
@@ -46,6 +46,16 @@ export function BentoGrid({
   const windowSize = useWindowSize();
   const isMobile = windowSize.width < MOBILE.BREAKPOINT;
   const themeConfig = THEMES[theme];
+  const getCardHref = useMemo(
+    () => (card: CardData) => {
+      if (card.type === 'game') return card.href;
+      if (card.type === 'project' && !card.id.startsWith('seed-project-')) {
+        return `/?project=${encodeURIComponent(card.id)}`;
+      }
+      return undefined;
+    },
+    [],
+  );
 
   // Extract unique categories from cards
   const categories = useMemo(() => {
@@ -67,6 +77,7 @@ export function BentoGrid({
         onCardSelect={onCardSelect}
         onBack={onBack}
         renderCard={renderCard}
+        getCardHref={getCardHref}
       />
     );
   }
@@ -81,6 +92,7 @@ export function BentoGrid({
       onCardSelect={onCardSelect}
       renderCard={renderCard}
       onBack={onBack}
+      getCardHref={getCardHref}
     />
   );
 }
