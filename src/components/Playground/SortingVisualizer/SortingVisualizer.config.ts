@@ -16,11 +16,11 @@ export const DEFAULT_SPEED = 50;
 
 // Bar colors
 export const COLORS = {
-  default: 'var(--purple)',
-  comparing: 'var(--pg-accent-gold)',
+  default: 'var(--primary)',
+  comparing: 'var(--pg-accent-primary)',
   swapping: 'var(--pg-game-error)',
   sorted: 'var(--pg-game-success)',
-  pivot: 'var(--pg-accent-gold)',
+  pivot: 'var(--pg-accent-primary)',
 };
 
 // Algorithm information

@@ -1,5 +1,5 @@
 // Shared Design System Constants
-// Bold, clean design with purple (interactive) and orange (highlight) accents
+// Bold, clean design with semantic primary accents
 // No gradients - solid colors only
 // All colors use CSS variables from globals.css for theme support
 
@@ -22,25 +22,25 @@ export const DESIGN_SYSTEM = {
       primary: 'text-[var(--text-primary)]',
       secondary: 'text-[var(--text-secondary)]',
       tertiary: 'text-[var(--text-muted)]',
-      purple: 'text-[var(--purple)]',
+      primaryAccent: 'text-[var(--primary)]',
       orange: 'text-[var(--orange)]'
     },
     // Solid color system - uses CSS variables for theme support
     solid: {
-      purple: 'bg-[var(--purple)]',
-      purpleHover: 'bg-[var(--purple-hover)]',
-      purpleActive: 'bg-[var(--purple-active)]',
-      purpleMuted: 'bg-[var(--purple-muted)]',
+      primaryAccent: 'bg-[var(--primary)]',
+      primaryAccentHover: 'bg-[var(--primary-hover)]',
+      primaryAccentActive: 'bg-[var(--primary-active)]',
+      primaryAccentMuted: 'bg-[var(--primary-muted)]',
       orange: 'bg-[var(--orange)]',
       orangeHover: 'bg-[var(--orange-hover)]',
       orangeActive: 'bg-[var(--orange-active)]',
       orangeMuted: 'bg-[var(--orange-muted)]'
     },
     interactive: {
-      primary: 'bg-[var(--purple)]',
-      hover: 'bg-[var(--purple-hover)]',
-      active: 'bg-[var(--purple-active)]',
-      glow: 'shadow-[0_0_20px_var(--purple-muted)]'
+      primary: 'bg-[var(--primary)]',
+      hover: 'bg-[var(--primary-hover)]',
+      active: 'bg-[var(--primary-active)]',
+      glow: 'shadow-[0_0_20px_var(--primary-muted)]'
     },
     highlight: {
       primary: 'bg-[var(--orange)]',
@@ -51,16 +51,16 @@ export const DESIGN_SYSTEM = {
     border: {
       primary: 'border-[var(--border)]',
       secondary: 'border-[var(--border)]',
-      purple: 'border-[var(--purple)]',
+      primaryAccent: 'border-[var(--primary)]',
       orange: 'border-[var(--orange)]'
     }
   },
   effects: {
     glass: 'backdrop-blur-xl bg-[var(--glass-bg)] border border-[var(--border)]',
     glassStrong: 'backdrop-blur-2xl bg-[var(--glass-bg-strong)] border border-[var(--border)]',
-    glowPurple: 'shadow-[0_0_20px_var(--purple-muted)]',
+    glowPrimary: 'shadow-[0_0_20px_var(--primary-muted)]',
     glowOrange: 'shadow-[0_0_20px_var(--orange-muted)]',
-    glowSubtle: 'shadow-[0_0_12px_var(--purple-muted)]'
+    glowSubtle: 'shadow-[0_0_12px_var(--primary-muted)]'
   },
   animations: {
     duration: {

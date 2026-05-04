@@ -24,7 +24,7 @@ export const SuggestedQuestions = memo(function SuggestedQuestions({
             onClick={() => onSelect(question)}
             disabled={disabled}
             aria-label={`Ask suggested question: ${question}`}
-            className="text-xs font-mono px-2 py-1 text-[var(--purple)] hover:text-[var(--text-primary)] hover:underline transition-all duration-150 disabled:opacity-50 before:content-['$_'] before:text-[var(--text-muted)]"
+            className="text-xs font-mono px-2 py-1 text-[var(--ai)] hover:text-[var(--text-primary)] hover:underline transition-all duration-150 disabled:opacity-50 before:content-['$_'] before:text-[var(--text-muted)]"
           >
             {question}
           </button>

@@ -235,7 +235,7 @@ export function Pacman() {
                 <Heart key={i} className="w-4 h-4 text-[var(--pg-game-error)] fill-current" />
               ))}
             </div>
-            <span className="font-mono text-sm text-[var(--pg-accent-gold)]">
+            <span className="font-mono text-sm text-[var(--pg-accent-primary)]">
               {score.toLocaleString()}
             </span>
           </div>
@@ -252,7 +252,7 @@ export function Pacman() {
             className="text-center mb-6"
           >
             <motion.div
-              className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--pg-accent-gold)]/10 text-[var(--pg-accent-gold)] mb-4"
+              className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--pg-accent-primary)]/10 text-[var(--pg-accent-primary)] mb-4"
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               transition={springs.bouncy}
@@ -269,13 +269,13 @@ export function Pacman() {
 
             {scores?.highScore ? (
               <p className="text-xs text-[var(--pg-text-muted)] mb-4">
-                High Score: <span className="font-mono text-[var(--pg-accent-gold)]">{scores.highScore}</span>
+                High Score: <span className="font-mono text-[var(--pg-accent-primary)]">{scores.highScore}</span>
               </p>
             ) : null}
 
             <motion.button
               onClick={startGame}
-              className="px-6 py-3 rounded-lg bg-[var(--purple)] text-[var(--text-on-accent)] font-medium"
+              className="px-6 py-3 rounded-lg bg-[var(--primary)] text-[var(--text-on-accent)] font-medium"
               aria-label="Start Pacman game"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -317,7 +317,7 @@ export function Pacman() {
                   <Pause className="w-5 h-5 text-[var(--pg-text-secondary)]" />
                 )}
               </motion.button>
-              <div className="font-mono text-lg text-[var(--pg-accent-gold)]">
+              <div className="font-mono text-lg text-[var(--pg-accent-primary)]">
                 {score.toLocaleString()}
               </div>
             </div>
@@ -358,7 +358,7 @@ export function Pacman() {
                   </p>
                   <motion.button
                     onClick={togglePause}
-                    className="px-6 py-2 rounded-lg bg-[var(--purple)] text-[var(--text-on-accent)] font-medium"
+                    className="px-6 py-2 rounded-lg bg-[var(--primary)] text-[var(--text-on-accent)] font-medium"
                     aria-label="Resume Pacman"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -373,7 +373,7 @@ export function Pacman() {
             {frightTimeRemaining > 0 && (
               <div className="mt-2 text-center">
                 <span className="text-xs text-[var(--pg-text-muted)]">
-                  Power: <span className="font-mono text-[var(--pg-accent-gold)]">
+                  Power: <span className="font-mono text-[var(--pg-accent-primary)]">
                     {Math.ceil(frightTimeRemaining / 1000)}s
                   </span>
                 </span>

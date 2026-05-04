@@ -33,7 +33,7 @@ export function SkillsSectionWrapper({
           </h2>
           <div
             className="w-20 h-1 rounded-full"
-            style={{ background: 'linear-gradient(to right, var(--purple), var(--orange))' }}
+            style={{ background: 'linear-gradient(to right, var(--primary), var(--orange))' }}
           />
         </m.div>
         <m.div variants={sectionItem} className="glass rounded-2xl overflow-hidden">

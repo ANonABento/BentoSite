@@ -76,12 +76,12 @@ export function PhotographyGallery({ photos }: PhotographyGalleryProps) {
           <div className="max-w-3xl">
             <Link
               href="/"
-              className="interactive-hover mb-6 inline-flex items-center gap-2 rounded-lg border border-[var(--border)] px-3 py-2 text-sm font-medium text-[var(--text-secondary)] hover:border-[var(--purple-muted)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)] focus-ring"
+              className="interactive-hover mb-6 inline-flex items-center gap-2 rounded-lg border border-[var(--border)] px-3 py-2 text-sm font-medium text-[var(--text-secondary)] hover:border-[var(--primary-muted)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)] focus-ring"
             >
               <ArrowLeftIcon size={16} />
               bentOS
             </Link>
-            <div className="mb-4 flex items-center gap-3 text-[var(--orange)]">
+            <div className="mb-4 flex items-center gap-3 text-[var(--primary)]">
               <CameraIcon size={22} />
               <p className="font-mono text-sm uppercase tracking-[0.2em]">
                 photography

@@ -92,14 +92,14 @@ export function ReactionGame() {
     tooEarly: {
       style: {
         background:
-          'linear-gradient(135deg, var(--pg-accent-gold), color-mix(in srgb, var(--pg-accent-gold) 65%, black))',
-        boxShadow: '0 0 60px var(--pg-accent-gold)',
+          'linear-gradient(135deg, var(--pg-accent-primary), color-mix(in srgb, var(--pg-accent-primary) 65%, black))',
+        boxShadow: '0 0 60px var(--pg-accent-primary)',
       },
     },
     clicked: {
       style: {
-        background: 'linear-gradient(135deg, var(--purple), var(--purple-active))',
-        boxShadow: '0 0 60px var(--purple-muted)',
+        background: 'linear-gradient(135deg, var(--primary), var(--primary-active))',
+        boxShadow: '0 0 60px var(--primary-muted)',
       },
     },
   };
@@ -114,7 +114,7 @@ export function ReactionGame() {
         showGame && validRounds.length > 0 ? (
           <div className="flex items-center gap-2">
             <span className="pg-label">Avg</span>
-            <span className="font-mono text-sm text-[var(--pg-accent-gold)]">
+            <span className="font-mono text-sm text-[var(--pg-accent-primary)]">
               {average}ms
             </span>
           </div>
@@ -139,7 +139,7 @@ export function ReactionGame() {
             >
               {/* Icon */}
               <motion.div
-                className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[var(--pg-accent-gold)]/10 text-[var(--pg-accent-gold)] mb-6"
+                className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[var(--pg-accent-primary)]/10 text-[var(--pg-accent-primary)] mb-6"
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 transition={springs.bouncy}
@@ -170,7 +170,7 @@ export function ReactionGame() {
                   transition={{ delay: 0.2 }}
                 >
                   <span className="pg-label">Your Best</span>
-                  <span className="font-mono font-semibold text-[var(--pg-accent-gold)]">
+                  <span className="font-mono font-semibold text-[var(--pg-accent-primary)]">
                     {scores.best}ms
                   </span>
                 </motion.div>
@@ -298,13 +298,13 @@ export function ReactionGame() {
                   let bgColor = 'bg-[var(--pg-bg-elevated)]';
                   if (isComplete) {
                     if (roundData.reactionTime < 0) {
-                      bgColor = 'bg-[var(--pg-accent-gold)]';
+                      bgColor = 'bg-[var(--pg-accent-primary)]';
                     } else if (roundData.reactionTime < 250) {
                       bgColor = 'bg-[var(--pg-game-success)]';
                     } else if (roundData.reactionTime < 350) {
-                      bgColor = 'bg-[var(--purple)]';
+                      bgColor = 'bg-[var(--primary)]';
                     } else {
-                      bgColor = 'bg-[var(--pg-accent-gold)]';
+                      bgColor = 'bg-[var(--pg-accent-primary)]';
                     }
                   }
 

@@ -25,7 +25,7 @@ export function AboutSection() {
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
             About Me
           </h2>
-          <div className="w-20 h-1 rounded-full" style={{ background: 'linear-gradient(to right, var(--purple), var(--orange))' }} />
+          <div className="w-20 h-1 rounded-full" style={{ background: 'linear-gradient(to right, var(--primary), var(--orange))' }} />
         </m.div>
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -70,7 +70,7 @@ export function AboutSection() {
           >
             <div className="glass rounded-2xl p-8 relative overflow-hidden">
               {/* Decorative gradient */}
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom right, var(--purple-muted), transparent, var(--orange-muted))' }} />
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom right, var(--primary-muted), transparent, var(--orange-muted))' }} />
 
               {/* Code block aesthetic */}
               <div className="relative space-y-4 font-mono text-sm">
@@ -120,7 +120,7 @@ export function AboutSection() {
 
             {/* Floating decorative elements */}
             <m.div
-              className="absolute -top-4 -right-4 w-20 h-20 bg-[var(--purple-muted)] rounded-full blur-2xl"
+              className="absolute -top-4 -right-4 w-20 h-20 bg-[var(--primary-muted)] rounded-full blur-2xl"
               animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
               transition={{ duration: 4, repeat: Infinity }}
             />

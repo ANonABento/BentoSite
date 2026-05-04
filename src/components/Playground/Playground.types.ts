@@ -154,5 +154,5 @@ export interface GameInfo {
   description: string;
   icon: React.ReactNode;
   path: string;
-  color: 'purple' | 'orange';
+  color: 'primary' | 'orange';
 }

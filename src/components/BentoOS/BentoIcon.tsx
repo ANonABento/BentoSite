@@ -22,8 +22,8 @@ export function BentoIcon({ size = 16, className = '' }: BentoIconProps) {
     >
       {/* Left — full-height rectangle (orange) */}
       <rect x={0} y={0} width={cellW} height={size} fill="var(--orange)" />
-      {/* Top-right — purple */}
-      <rect x={cellW + gap} y={0} width={cellW} height={cellW} fill="var(--purple)" />
+      {/* Top-right — primary accent */}
+      <rect x={cellW + gap} y={0} width={cellW} height={cellW} fill="var(--primary)" />
       {/* Bottom-right — orange accent */}
       <rect x={cellW + gap} y={cellW + gap} width={cellW} height={cellW} fill="var(--orange)" />
     </svg>

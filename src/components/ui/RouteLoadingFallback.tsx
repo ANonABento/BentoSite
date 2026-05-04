@@ -14,7 +14,7 @@ interface RouteLoadingFallbackProps {
 
 export function RouteLoadingFallback({
   label,
-  spinnerVariant = 'purple',
+  spinnerVariant = 'primary',
   className,
   showIcon = false,
 }: RouteLoadingFallbackProps) {

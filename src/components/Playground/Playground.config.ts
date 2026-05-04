@@ -107,7 +107,7 @@ export const STORAGE_KEYS = {
 // Shared difficulty badge colors (used across rhythm games)
 export const DIFFICULTY_COLORS = {
   easy: 'bg-[var(--pg-game-success)]/15 text-[var(--pg-game-success)] border-[var(--pg-game-success)]/30',
-  medium: 'bg-[var(--pg-accent-gold)]/15 text-[var(--pg-accent-gold)] border-[var(--pg-accent-gold)]/30',
+  medium: 'bg-[var(--pg-accent-primary)]/15 text-[var(--pg-accent-primary)] border-[var(--pg-accent-primary)]/30',
   hard: 'bg-[var(--pg-game-error)]/15 text-[var(--pg-game-error)] border-[var(--pg-game-error)]/30',
 } as const;
 

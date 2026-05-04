@@ -21,9 +21,9 @@ export const PACMAN_SPEED = 0.1;
 export const COLORS = {
   wall: '#1e3a8a',
   empty: '#000',
-  dot: '#fbbf24',
-  powerPellet: '#fbbf24',
-  pacman: '#fbbf24',
+  dot: '#e07b3c',
+  powerPellet: '#e07b3c',
+  pacman: '#e07b3c',
   blinky: '#ef4444', // red
   pinky: '#f472b6', // pink
   inky: '#06b6d4',  // cyan

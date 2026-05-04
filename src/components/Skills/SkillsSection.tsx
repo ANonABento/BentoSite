@@ -27,7 +27,7 @@ const categoryConfig: Record<SkillCategory, { label: string; dotColor: string }>
   },
   software: {
     label: 'SW_STACK',
-    dotColor: 'bg-[var(--purple)]',
+    dotColor: 'bg-[var(--primary)]',
   },
   tools: {
     label: 'DEV_TOOLS',
@@ -46,7 +46,7 @@ function SkillTag({
 }) {
   const hoverClasses: Record<SkillCategory, string> = {
     hardware: 'hover:border-[var(--orange)] hover:text-[var(--orange)]',
-    software: 'hover:border-[var(--purple)] hover:text-[var(--purple)]',
+    software: 'hover:border-[var(--primary)] hover:text-[var(--primary)]',
     tools: 'hover:border-[var(--text-secondary)] hover:text-[var(--text-primary)]',
   };
 
@@ -87,7 +87,7 @@ function CategorySection({
   const config = categoryConfig[category];
   const textColorClass: Record<SkillCategory, string> = {
     hardware: 'text-[var(--orange)]',
-    software: 'text-[var(--purple)]',
+    software: 'text-[var(--primary)]',
     tools: 'text-[var(--text-muted)]',
   };
 

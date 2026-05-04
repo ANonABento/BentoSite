@@ -85,7 +85,7 @@ const theme: ThemeConfig = {
     rotationRange: 0,
   },
   accent: {
-    primary: 'var(--purple)',
+    primary: 'var(--primary)',
     secondary: 'var(--orange)',
   },
   searchCard: {

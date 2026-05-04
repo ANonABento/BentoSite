@@ -117,7 +117,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
         ))}
 
         {isLoading && (
-          <div className="pl-4 border-l-2 border-[var(--purple-muted)]">
+          <div className="pl-4 border-l-2 border-[var(--ai-muted)]">
             <span className="font-mono text-sm text-[var(--text-muted)]">
               processing<span className="animate-pulse">_</span>
             </span>

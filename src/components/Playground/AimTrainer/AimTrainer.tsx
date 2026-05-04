@@ -102,7 +102,7 @@ export function AimTrainer() {
               <span className="font-mono text-sm text-[var(--pg-text-primary)]">{hits}</span>
             </div>
             <div className="pg-divider" />
-            <span className="font-mono text-lg text-[var(--pg-accent-gold)]">{score}</span>
+            <span className="font-mono text-lg text-[var(--pg-accent-primary)]">{score}</span>
           </div>
         ) : null
       }
@@ -177,7 +177,7 @@ export function AimTrainer() {
                       className={`
                         px-4 py-2 rounded-lg font-mono text-sm transition-all
                         ${settings.duration === d
-                          ? 'bg-[var(--purple)] text-[var(--text-on-accent)]'
+                          ? 'bg-[var(--primary)] text-[var(--text-on-accent)]'
                           : 'bg-[var(--pg-bg-elevated)] text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]'
                         }
                       `}
@@ -202,7 +202,7 @@ export function AimTrainer() {
                   step={0.1}
                   value={settings.sensitivity}
                   onChange={(e) => updateSettings({ sensitivity: parseFloat(e.target.value) })}
-                  className="pg-range pg-range-purple w-full mt-2"
+                  className="pg-range pg-range-primary w-full mt-2"
                   aria-label="Aim sensitivity"
                   aria-valuetext={`${settings.sensitivity.toFixed(1)} sensitivity`}
                 />
@@ -212,7 +212,7 @@ export function AimTrainer() {
               {modeScores?.bestScore ? (
                 <div className="pg-surface-panel mb-6 inline-flex items-center gap-4 rounded-xl px-4 py-2">
                   <span className="text-xs text-[var(--pg-text-muted)]">
-                    Best: <span className="font-mono text-[var(--pg-accent-gold)]">{modeScores.bestScore}</span>
+                    Best: <span className="font-mono text-[var(--pg-accent-primary)]">{modeScores.bestScore}</span>
                   </span>
                   <span className="text-xs text-[var(--pg-text-muted)]">
                     Acc: <span className="font-mono text-[var(--pg-game-success)]">{modeScores.bestAccuracy}%</span>
@@ -266,7 +266,7 @@ export function AimTrainer() {
           <div className="absolute top-4 left-4 right-4 flex justify-between pointer-events-none">
               <div className="pg-overlay-panel px-4 py-2 rounded-lg">
                 <div className="text-xs text-[var(--pg-text-muted)]">Score</div>
-                <div className="font-mono text-2xl text-[var(--pg-accent-gold)]">{score}</div>
+                <div className="font-mono text-2xl text-[var(--pg-accent-primary)]">{score}</div>
               </div>
               <div className="pg-overlay-panel px-4 py-2 rounded-lg text-center">
                 <div className="text-xs text-[var(--pg-text-muted)]">Time</div>

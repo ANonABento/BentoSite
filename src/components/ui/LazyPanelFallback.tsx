@@ -16,7 +16,7 @@ export function LazyPanelFallback({
   label,
   icon,
   spinnerSize = 'md',
-  spinnerVariant = 'purple',
+  spinnerVariant = 'primary',
   className,
 }: LazyPanelFallbackProps) {
   return (
@@ -29,7 +29,7 @@ export function LazyPanelFallback({
       aria-label={label}
     >
       {icon ? (
-        <div className="text-[var(--purple)]" aria-hidden="true">
+        <div className="text-[var(--primary)]" aria-hidden="true">
           {icon}
         </div>
       ) : null}

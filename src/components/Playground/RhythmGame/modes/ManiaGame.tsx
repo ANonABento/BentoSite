@@ -77,7 +77,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
       headerRight={
         showGame ? (
           <div className="flex items-center gap-4">
-            <span className="font-mono text-lg font-semibold text-[var(--pg-accent-gold)]">
+            <span className="font-mono text-lg font-semibold text-[var(--pg-accent-primary)]">
               {formatNumber(score)}
             </span>
             {combo > 0 && (
@@ -87,7 +87,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
                   key={combo}
                   initial={{ scale: 1.2 }}
                   animate={{ scale: 1 }}
-                  className="font-mono text-[var(--purple)] font-semibold"
+                  className="font-mono text-[var(--primary)] font-semibold"
                 >
                   {combo}x
                 </motion.span>
@@ -122,7 +122,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
             >
               <motion.div
                 className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-6"
-                style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}
+                style={{ backgroundColor: 'rgba(224, 123, 60, 0.1)', color: '#e07b3c' }}
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 transition={springs.bouncy}
@@ -151,7 +151,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
                       w-full p-4 rounded-xl text-left transition-all duration-200
                       ${
                         selectedMap.id === map.id
-                          ? 'bg-[var(--purple)]/20 border-[var(--purple)]/40 shadow-lg shadow-[var(--purple)]/10'
+                          ? 'bg-[var(--primary)]/20 border-[var(--primary)]/40 shadow-lg shadow-[var(--primary)]/10'
                           : 'pg-surface-panel hover:bg-[var(--pg-bg-hover)]'
                       }
                       border
@@ -182,10 +182,10 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
                     {scores?.[map.id] && (
                       <div className="pg-border-subtle mt-2 flex gap-4 border-t pt-2 text-xs">
                         <span className="text-[var(--pg-text-muted)]">
-                          Best: <span className="text-[var(--pg-accent-gold)] font-mono">{formatNumber(scores[map.id].score)}</span>
+                          Best: <span className="text-[var(--pg-accent-primary)] font-mono">{formatNumber(scores[map.id].score)}</span>
                         </span>
                         <span className="text-[var(--pg-text-muted)]">
-                          Combo: <span className="text-[var(--purple)] font-mono">{scores[map.id].maxCombo}x</span>
+                          Combo: <span className="text-[var(--primary)] font-mono">{scores[map.id].maxCombo}x</span>
                         </span>
                       </div>
                     )}
@@ -217,7 +217,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
               <div className="mb-4">
                 <div className="pg-progress-track h-1.5 rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-[var(--purple)] to-[var(--pg-accent-gold)]"
+                    className="h-full bg-gradient-to-r from-[var(--primary)] to-[var(--pg-accent-primary)]"
                     style={{ width: `${progress * 100}%` }}
                     transition={{ duration: 0.1 }}
                   />
@@ -320,8 +320,8 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
                       key={Math.floor(combo / 5)}
                     >
                       <span
-                        className="font-mono text-4xl font-bold text-[var(--purple)]"
-                        style={{ textShadow: '0 0 20px rgba(139, 92, 246, 0.8)' }}
+                        className="font-mono text-4xl font-bold text-[var(--primary)]"
+                        style={{ textShadow: '0 0 20px rgba(224, 123, 60, 0.8)' }}
                       >
                         {combo}x
                       </span>

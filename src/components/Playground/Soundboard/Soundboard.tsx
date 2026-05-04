@@ -69,7 +69,7 @@ export function Soundboard() {
           className="text-center mb-8"
         >
           <motion.div
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--pg-accent-gold)]/10 text-[var(--pg-accent-gold)] mb-4"
+            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--pg-accent-primary)]/10 text-[var(--pg-accent-primary)] mb-4"
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={springs.bouncy}
@@ -96,7 +96,7 @@ export function Soundboard() {
               className={`
                 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
                 ${selectedCategory === cat.id
-                  ? 'bg-[var(--pg-accent-gold)] text-black'
+                  ? 'bg-[var(--pg-accent-primary)] text-black'
                   : 'bg-[var(--pg-bg-elevated)] text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]'
                 }
               `}

@@ -11,7 +11,7 @@ export type CardSize = '1x1' | '2x1' | '1x2' | '2x2';
 export type CardContentType = 'game' | 'stat' | 'void';
 
 // Card color accents - Synthwave palette
-export type CardColor = 'pink' | 'purple' | 'cyan' | 'gold' | 'void';
+export type CardColor = 'pink' | 'cyan' | 'primary' | 'void';
 
 export interface BentoCardConfig {
   id: string;

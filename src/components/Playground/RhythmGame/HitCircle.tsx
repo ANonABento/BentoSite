@@ -72,9 +72,9 @@ export function HitCircle({
         };
       default:
         return {
-          color: 'var(--purple)',
-          bg: 'var(--purple)',
-          glow: '0 0 30px rgba(167, 139, 250, 0.4)',
+          color: 'var(--primary)',
+          bg: 'var(--primary)',
+          glow: '0 0 30px rgba(224, 123, 60, 0.4)',
         };
     }
   };
@@ -108,7 +108,7 @@ export function HitCircle({
         <div
           className="absolute inset-0 rounded-full"
           style={{
-            background: 'radial-gradient(circle, rgba(167, 139, 250, 0.15) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(224, 123, 60, 0.15) 0%, transparent 70%)',
             transform: `scale(${approachScale + 0.5})`,
           }}
         />
@@ -119,10 +119,10 @@ export function HitCircle({
         <div
           className="absolute inset-0 rounded-full"
           style={{
-            border: '3px solid var(--pg-accent-gold)',
+            border: '3px solid var(--pg-accent-primary)',
             transform: `scale(${approachScale})`,
             opacity: 0.9 * pulseOpacity,
-            boxShadow: '0 0 15px rgba(251, 191, 36, 0.3)',
+            boxShadow: '0 0 15px rgba(224, 123, 60, 0.3)',
           }}
         />
       )}
@@ -133,12 +133,12 @@ export function HitCircle({
         style={{
           background: hit
             ? feedbackStyles.bg
-            : 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent 50%), linear-gradient(135deg, var(--purple), var(--pg-accent-gold))',
+            : 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent 50%), linear-gradient(135deg, var(--primary), var(--pg-accent-primary))',
           border: '3px solid rgba(255, 255, 255, 0.4)',
           boxShadow: hit
             ? feedbackStyles.glow
             : `
-              0 0 20px rgba(167, 139, 250, 0.4),
+              0 0 20px rgba(224, 123, 60, 0.4),
               inset 0 0 15px rgba(255, 255, 255, 0.1)
             `,
         }}

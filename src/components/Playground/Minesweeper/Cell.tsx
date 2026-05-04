@@ -73,7 +73,7 @@ export function Cell({
             : 'cursor-pointer hover:brightness-110 active:scale-95'
           }
           ${cell.isFlagged
-            ? 'bg-[var(--pg-accent-gold)]/20 border-[var(--pg-accent-gold)]/40'
+            ? 'bg-[var(--pg-accent-primary)]/20 border-[var(--pg-accent-primary)]/40'
             : 'bg-[var(--pg-bg-elevated)] pg-border-soft pg-hover-border-strong'
           }
         `}
@@ -82,7 +82,7 @@ export function Cell({
       >
         {cell.isFlagged && (
           <Flag
-            className="w-4 h-4 text-[var(--pg-accent-gold)]"
+            className="w-4 h-4 text-[var(--pg-accent-primary)]"
             strokeWidth={2.5}
           />
         )}
