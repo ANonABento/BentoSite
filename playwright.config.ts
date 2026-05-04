@@ -14,7 +14,7 @@ function isPortAvailable(port) {
     server.once('listening', () => {
       server.close(() => resolve(true));
     });
-    server.listen(port, '127.0.0.1');
+    server.listen(port);
   });
 }
 
@@ -41,6 +41,8 @@ function isPortAvailable(port) {
 const port = process.env.PORT
   ? Number(process.env.PORT)
   : getAvailablePort(3000);
+process.env.PORT = String(port);
+
 const baseURL = `http://127.0.0.1:${port}`;
 const shouldUseDevServer = process.env.PLAYWRIGHT_USE_DEV_SERVER === 'true';
 const webServerCommand = shouldUseDevServer
