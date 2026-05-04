@@ -145,6 +145,7 @@ export function ProjectCard({
       entranceIndex={entranceIndex}
       onClick={onClick}
       href={href}
+      magnetic
       ariaLabel={`Open ${card.title}`}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}

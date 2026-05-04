@@ -52,6 +52,7 @@ function SocialActions({
           <button
             key={link.id}
             onClick={handleEmailClick}
+            data-magnetic
             className={`interactive-hover flex items-center gap-2 px-4 py-2.5 rounded-lg transform border focus-ring ${
               copiedEmail
                 ? 'bg-[var(--status-success)] text-[var(--text-on-accent)] scale-105 shadow-[0_0_20px_var(--status-success-muted)] border-[var(--status-success)]'
@@ -68,6 +69,7 @@ function SocialActions({
             href={link.href}
             target="_blank"
             rel="noopener noreferrer"
+            data-magnetic
             className="interactive-hover flex items-center gap-2 px-4 py-2.5 rounded-lg transform border focus-ring glass text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--interactive)] hover:text-[var(--text-on-accent)] hover:scale-105 hover:shadow-[0_0_20px_var(--primary-muted)] hover:border-[var(--primary-muted)] border-[var(--border)]"
             aria-label={link.label}
           >
@@ -173,6 +175,7 @@ export default function Header({
               key={link.href}
               href={link.href}
               onClick={link.onClick}
+              data-magnetic
               className="interactive-hover flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]"
               aria-label={link.label}
             >
@@ -188,6 +191,7 @@ export default function Header({
               <button
                 key={link.id}
                 onClick={handleEmailClick}
+                data-magnetic
                 className={`interactive-hover p-2 rounded-lg focus-ring ${
                   copiedEmail
                     ? 'text-[var(--status-success)] bg-[var(--status-success-muted)]'
@@ -203,6 +207,7 @@ export default function Header({
                 href={link.href}
                 target="_blank"
                 rel="noopener noreferrer"
+                data-magnetic
                 className="interactive-hover p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg focus-ring"
                 aria-label={link.label}
               >

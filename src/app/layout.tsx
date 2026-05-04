@@ -6,6 +6,7 @@ import { siteConfig } from '@/lib/site-config';
 import { ThemeProvider } from '@/lib/theme-context';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { ToastProvider } from '@/components/ui/Toast';
+import { AnimatedCursor } from '@/components/cursor';
 import './globals.css';
 
 const geistSans = Geist({
@@ -105,6 +106,7 @@ export default function RootLayout({
             <PageTransition>{children}</PageTransition>
           </ToastProvider>
         </ThemeProvider>
+        <AnimatedCursor />
         <Analytics />
         <SpeedInsights />
       </body>
