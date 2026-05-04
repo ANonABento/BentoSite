@@ -51,6 +51,7 @@ function DimensionLoadingFallback() {
     <div className="w-full h-full bg-[var(--surface-deep)]" aria-busy="true" role="status">
       <span className="sr-only">Loading 3D model...</span>
       <Canvas
+        role="img"
         aria-label="Loading 3D model scene"
         camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
         performance={{ min: MIN_PERFORMANCE_SCALE }}
@@ -89,6 +90,7 @@ export function DimensionViewport({
     return (
       <div className="w-full h-full bg-[var(--surface-deep)]">
         <Canvas
+          role="img"
           aria-label="3D model error preview"
           camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
           performance={{ min: MIN_PERFORMANCE_SCALE }}
@@ -115,6 +117,7 @@ export function DimensionViewport({
       fallback={<DimensionLoadingFallback />}
     >
       <Canvas
+        role="application"
         aria-label={`${selectedModel.name} interactive 3D scene`}
         camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
         key={`canvas-${selectedModel.id}-${retryCount}`}

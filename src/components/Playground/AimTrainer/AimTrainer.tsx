@@ -2,15 +2,20 @@
 
 import { motion } from 'framer-motion';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { Play, Crosshair, Target } from 'lucide-react';
 import { GameLayout, ResultsScreen } from '../shared';
-import { Scene3D } from './Scene3D';
 import { useAimTrainer } from './AimTrainer.hooks';
 import { useHighScores } from '../Playground.hooks';
 import { isNewHighScore } from '../Playground.utils';
 import { GameMode } from './AimTrainer.types';
 import { MODES, DURATIONS, MIN_SENSITIVITY, MAX_SENSITIVITY } from './AimTrainer.config';
 import { springs } from '../design';
+
+const Scene3D = dynamic(
+  () => import('./Scene3D').then((mod) => mod.Scene3D),
+  { ssr: false }
+);
 
 export function AimTrainer() {
   const [showInstructions, setShowInstructions] = useState(true);
