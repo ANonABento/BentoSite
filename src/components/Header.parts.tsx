@@ -61,7 +61,8 @@ export function ResumeButton({
         bg-[var(--orange)] hover:bg-[var(--orange-hover)] active:bg-[var(--orange-active)] text-[var(--text-on-accent)]
         hover:shadow-[0_0_20px_var(--orange-muted)] hover:scale-105
         border border-[var(--orange-hover)]/20
-        focus-ring ${className}`}
+        focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--background),0_0_0_4px_var(--foreground)]
+        ${className}`}
     >
       <DocumentDownloadIcon size={16} />
       <span className="hidden sm:inline">Resume</span>

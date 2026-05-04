@@ -66,18 +66,6 @@ export function Game2048() {
     <GameLayout
       title="2048"
       subtitle={status === 'playing' ? `Score: ${score.toLocaleString()}` : undefined}
-      headerRight={
-        status === 'playing' ? (
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <div className="text-xs text-[var(--pg-text-muted)] uppercase tracking-wide">Best</div>
-              <div className="font-mono text-sm text-[var(--pg-accent-gold)]">
-                {Math.max(bestScore, savedBest).toLocaleString()}
-              </div>
-            </div>
-          </div>
-        ) : null
-      }
     >
       <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6">
         <AnimatePresence mode="wait">

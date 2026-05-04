@@ -15,20 +15,12 @@ import type {
 import { QUEUE } from '../BentoGrid.constants';
 import { calculateInitialPositions } from '../layout/positions';
 import { filterCards } from './cardPoolFilter';
+import { createQueuedCards } from './cardQueue';
 
 export interface UseCardPoolOptions {
   cards: CardData[];
   maxVisible?: number;
   rotationRange?: number;
-}
-
-function createQueuedCards(cards: CardData[]): QueuedCard[] {
-  const queuedAt = Date.now();
-  return cards.map((card) => ({
-    id: card.id,
-    data: card,
-    queuedAt,
-  }));
 }
 
 export function useCardPool(options: UseCardPoolOptions): UseCardPoolReturn {

@@ -137,7 +137,7 @@ export default function Header({
     {
       href: '/projects',
       label: 'View Projects',
-      text: 'View Projects',
+      text: 'Projects',
       visibleLabelClassName: 'hidden sm:inline',
       icon: <GridIcon size={16} />,
       onClick: onProjectsClick

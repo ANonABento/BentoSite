@@ -48,18 +48,6 @@ export default function NotFound() {
           Back to Home
         </Link>
 
-        {/* Decorative dots */}
-        <div className="mt-8 flex justify-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-[var(--purple-muted)] opacity-80 animate-pulse" />
-          <div
-            className="w-2 h-2 rounded-full bg-[var(--purple-muted)] opacity-80 animate-pulse"
-            style={{ animationDelay: '0.2s' }}
-          />
-          <div
-            className="w-2 h-2 rounded-full bg-[var(--status-info-muted)] opacity-80 animate-pulse"
-            style={{ animationDelay: '0.4s' }}
-          />
-        </div>
       </div>
     </div>
   );

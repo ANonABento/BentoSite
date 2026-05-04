@@ -191,7 +191,7 @@ export function ControlPanel({
               {/* Zoom Slider */}
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-[var(--text-muted)]">Zoom</span>
+                  <span className="text-[var(--text-secondary)]">Zoom</span>
                   <span className="text-[var(--text-secondary)] font-mono">{Math.round(zoomLevel)}</span>
                 </div>
                 <input
@@ -210,7 +210,7 @@ export function ControlPanel({
               {/* Rotation Speed Slider */}
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-[var(--text-muted)]">Speed</span>
+                  <span className="text-[var(--text-secondary)]">Speed</span>
                   <span className="text-[var(--text-secondary)] font-mono">{rotationSpeed.toFixed(1)}x</span>
                 </div>
                 <input
