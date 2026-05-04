@@ -52,42 +52,57 @@ export function DesktopCanvasView({
     cards,
     rotationRange: theme.card.rotationRange,
   });
+  const {
+    applyFilter,
+    cardDataMap,
+    filteredCount,
+    queue,
+    rehomeInfoCard,
+    tick,
+    visible,
+  } = board;
 
-  const infoCardLayout = board.visible.get(INFO_CARD_ID);
+  const infoCardLayout = visible.get(INFO_CARD_ID);
 
   const infoState = useInfoCardState({
     camera: navigation.camera,
     windowSize,
     categories,
     infoCardLayout,
-    onFilterChange: board.applyFilter,
+    onFilterChange: applyFilter,
   });
 
   const isInfoSticky = infoState.compression > 0;
+  const {
+    compression,
+    ghostCanvasPosition,
+    setExpanded,
+    stickyCanvasPosition,
+  } = infoState;
 
   // Rehome the info card when compression transitions from >0 to 0.
   // This anchors the grid home to wherever the ghost currently is.
   const prevCompressionRef = useRef(0);
   useEffect(() => {
     const prev = prevCompressionRef.current;
-    prevCompressionRef.current = infoState.compression;
+    prevCompressionRef.current = compression;
 
-    if (prev > 0 && infoState.compression === 0 && infoState.ghostCanvasPosition) {
-      board.rehomeInfoCard(
-        infoState.ghostCanvasPosition.x,
-        infoState.ghostCanvasPosition.y,
+    if (prev > 0 && compression === 0 && ghostCanvasPosition) {
+      rehomeInfoCard(
+        ghostCanvasPosition.x,
+        ghostCanvasPosition.y,
       );
     }
-  }, [infoState.compression, infoState.ghostCanvasPosition, board]);
+  }, [compression, ghostCanvasPosition, rehomeInfoCard]);
 
   // Display layouts: content cards at grid positions.
   // Info card uses sticky override when compressed, grid position when free.
   const displayLayouts = useMemo(() => {
-    if (!infoState.stickyCanvasPosition) return board.visible;
-    const layouts = new Map(board.visible);
-    layouts.set(INFO_CARD_ID, infoState.stickyCanvasPosition);
+    if (!stickyCanvasPosition) return visible;
+    const layouts = new Map(visible);
+    layouts.set(INFO_CARD_ID, stickyCanvasPosition);
     return layouts;
-  }, [board.visible, infoState.stickyCanvasPosition]);
+  }, [visible, stickyCanvasPosition]);
 
   // Physics is only used for info card collision body
   const { updateInfoCard } = usePhysicsWorld({
@@ -118,8 +133,8 @@ export function DesktopCanvasView({
   }, []);
 
   // rAF loop — runs spawn/despawn at display refresh rate
-  const boardTickRef = useRef(board.tick);
-  useEffect(() => { boardTickRef.current = board.tick; }, [board.tick]);
+  const boardTickRef = useRef(tick);
+  useEffect(() => { boardTickRef.current = tick; }, [tick]);
 
   useEffect(() => {
     let rafId: number;
@@ -157,7 +172,7 @@ export function DesktopCanvasView({
       if (event.key === '/' || event.key === 'f') {
         if (!isEditableTarget(event.target)) {
           event.preventDefault();
-          infoState.setExpanded(true);
+          setExpanded(true);
         }
       }
 
@@ -171,7 +186,7 @@ export function DesktopCanvasView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onBack, infoState]);
+  }, [onBack, setExpanded]);
 
   const transform = useMemo(
     () => getCameraTransform(navigation.camera, windowSize),
@@ -199,7 +214,7 @@ export function DesktopCanvasView({
       >
         <DesktopCardLayer
           layouts={displayLayouts}
-          cardDataMap={board.cardDataMap}
+          cardDataMap={cardDataMap}
           theme={theme}
           focusedCardId={focusedCardId}
           renderCard={renderCard}
@@ -227,12 +242,12 @@ export function DesktopCanvasView({
           onCategoryChange={infoState.setCategory}
           onBack={onBack}
           totalCards={cards.length}
-          filteredCards={board.filteredCount}
+          filteredCards={filteredCount}
           helpText="Use arrow keys to focus cards, Enter to open, WASD to pan, R to reset view, and / or F to search."
           debugInfo={showDebug ? {
             camera: `Camera: (${navigation.camera.x.toFixed(0)}, ${navigation.camera.y.toFixed(0)}) z:${navigation.camera.zoom.toFixed(2)}`,
-            visible: board.visible.size,
-            queue: board.queue.length,
+            visible: visible.size,
+            queue: queue.length,
             focus: focusedCardId,
           } : undefined}
         />
@@ -254,4 +269,3 @@ export function DesktopCanvasView({
     </div>
   );
 }
-
