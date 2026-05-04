@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/Skeleton';
 import { LazyPanelFallback, ScrollReveal } from '@/components/ui';
 import type { ChatFunctions } from '@/components/Chat';
+import { RESUME_URL } from '@/lib/constants';
 import { ChatPanel } from './layout-parts/ChatPanel';
 import { HeroSection } from './layout-parts/HeroSection';
 import { ScrollableFooter } from './layout-parts/ScrollableFooter';
@@ -170,7 +171,7 @@ export default function ScrollableLayout() {
             setIsChatOpen(false);
           }}
           onToggle={() => setIsChatOpen((open) => !open)}
-          onViewResume={() => window.open('/resume.pdf', '_blank')}
+          onViewResume={() => window.open(RESUME_URL, '_blank', 'noopener,noreferrer')}
         />
 
         <ProjectsModal isOpen={isProjectsOpen} onClose={() => setIsProjectsOpen(false)} />

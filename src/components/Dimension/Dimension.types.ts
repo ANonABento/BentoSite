@@ -1,6 +1,6 @@
 // Dimension.tsx - Types and Interfaces
 
-export type ModelFormat = 'stl' | 'gltf' | 'glb';
+export type ModelFormat = 'stl' | 'gltf' | 'glb' | 'procedural';
 
 export interface ModelInfo {
   id: string;

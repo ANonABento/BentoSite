@@ -1,24 +1,26 @@
 // Dimension.tsx - Configuration and Constants
 
 import type { ModelInfo } from './Dimension.types';
+import { PROCEDURAL_CAT_PATH } from './scene/model-format';
 
 // Model Configuration - Add your models here
 export const AVAILABLE_MODELS: ModelInfo[] = [
   {
-    id: 'placeholder',
-    name: 'Default Placeholder',
-    path: '/models/placeholder.stl',
+    id: 'cat',
+    name: 'Cat',
+    path: PROCEDURAL_CAT_PATH,
     thumbnail: '/models/thumbnails/placeholder.png',
-    fileSize: 45672,
-    dimensions: { width: 20, height: 20, depth: 20 },
-    vertexCount: 2400,
-    description: 'Default placeholder model for testing',
-    category: 'Basic'
+    fileSize: 0,
+    dimensions: { width: 3, height: 3, depth: 4 },
+    vertexCount: 0,
+    description: 'Default model — a cat. Built procedurally from primitives.',
+    category: 'Procedural',
+    format: 'procedural',
   },
 ];
 
 // Default model path
-export const DEFAULT_MODEL_PATH = '/models/placeholder.stl';
+export const DEFAULT_MODEL_PATH = PROCEDURAL_CAT_PATH;
 
 // Camera settings
 export const CAMERA_POSITION = [8, 8, 8] as const;

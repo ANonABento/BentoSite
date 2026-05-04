@@ -66,7 +66,7 @@ export function ChatPanel({
               <div className="flex-shrink-0 px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-[var(--ai)] animate-pulse" />
-                  <span className="text-sm font-medium text-[var(--text-primary)]">Servant</span>
+                  <span className="text-sm font-medium text-[var(--text-primary)]">Assistant</span>
                 </div>
                 <button
                   onClick={onClearChat}
