@@ -69,15 +69,12 @@ export function createCardPosition(
   };
 }
 
-/** Search card size in the grid. */
-const SEARCH_CARD_SIZE: CardSize = '2x1';
-
 /**
  * Calculate initial card positions using grid-snapped placement.
  *
- * The search card is placed first at grid center as a regular 2×1 card.
- * Content cards spiral outward around it. All cards live in the same
- * coordinate space and are positioned the same way.
+ * The search card is placed first at grid center. Content cards spiral
+ * outward around it. All cards live in the same coordinate space and
+ * are positioned the same way.
  *
  * Returns a Map of cardId → CardPosition including the search card.
  */
@@ -90,14 +87,17 @@ export function calculateInitialPositions(
   const positions = new Map<string, CardPosition>();
   const grid = new GridOccupancy();
 
+  // Search card is always 2×1 — wide enough for search UI, compact vertically
+  const searchCardSize: CardSize = '2x1';
+
   // Place the search card first at grid center
-  const searchCell = grid.findNearest(0, 0, SEARCH_CARD_SIZE)!;
-  grid.place(searchCell.col, searchCell.row, SEARCH_CARD_SIZE, SEARCH_CARD_ID);
+  const searchCell = grid.findNearest(0, 0, searchCardSize)!;
+  grid.place(searchCell.col, searchCell.row, searchCardSize, SEARCH_CARD_ID);
 
   // Place content cards spiraling outward
   const requested = Math.min(count, cards.length);
   const placements: Array<{ id: string; col: number; row: number; size: CardSize }> = [
-    { id: SEARCH_CARD_ID, col: searchCell.col, row: searchCell.row, size: SEARCH_CARD_SIZE },
+    { id: SEARCH_CARD_ID, col: searchCell.col, row: searchCell.row, size: searchCardSize },
   ];
 
   for (let i = 0; i < requested; i++) {

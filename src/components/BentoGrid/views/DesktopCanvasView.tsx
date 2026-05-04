@@ -56,12 +56,20 @@ export function DesktopCanvasView({
 
   const searchCardLayout = board.visible.get(SEARCH_CARD_ID);
 
+  const handleFilterChange = useCallback(
+    (searchTerm: string, category: string | null) => {
+      board.applyFilter(searchTerm, category);
+      navigation.reset();
+    },
+    [board, navigation],
+  );
+
   const searchState = useSearchCardState({
     camera: navigation.camera,
     windowSize,
     categories,
     searchCardLayout,
-    onFilterChange: board.applyFilter,
+    onFilterChange: handleFilterChange,
   });
 
   const isSearchSticky = searchState.compression > 0;
@@ -182,37 +190,39 @@ export function DesktopCanvasView({
   const navBindings = navigation.bind();
 
   return (
-    <div
-      id="main-content"
-      className={['fixed inset-0 overflow-hidden isolate', className].filter(Boolean).join(' ')}
-      {...navBindings}
-      role="application"
-      aria-label={`${breadcrumb ?? 'Card grid'} interactive grid. Use arrow keys to focus cards, Enter to open, WASD to pan, and R to reset view.`}
-      tabIndex={-1}
-      style={{ ...navBindings.style, background: theme.background }}
-    >
+    <>
+      {/* Gesture container — only the canvas layer lives here */}
       <div
-        className="absolute will-change-transform"
-        style={{
-          transform,
-          transformOrigin: '0 0',
-        }}
+        id="main-content"
+        className={['fixed inset-0 overflow-hidden isolate', className].filter(Boolean).join(' ')}
+        {...navBindings}
+        role="application"
+        aria-label={`${breadcrumb ?? 'Card grid'} interactive grid. Use arrow keys to focus cards, Enter to open, WASD to pan, and R to reset view.`}
+        tabIndex={-1}
+        style={{ ...navBindings.style, background: theme.background }}
       >
-        <DesktopCardLayer
-          layouts={displayLayouts}
-          cardDataMap={board.cardDataMap}
-          theme={theme}
-          focusedCardId={focusedCardId}
-          renderCard={renderCard}
-          onCardClick={handleCardClick}
-        />
+        <div
+          className="absolute will-change-transform"
+          style={{
+            transform,
+            transformOrigin: '0 0',
+          }}
+        >
+          <DesktopCardLayer
+            layouts={displayLayouts}
+            cardDataMap={board.cardDataMap}
+            theme={theme}
+            focusedCardId={focusedCardId}
+            renderCard={renderCard}
+            onCardClick={handleCardClick}
+          />
+        </div>
       </div>
 
-      {/* Search card — always rendered as fixed overlay in screen space */}
+      {/* Search card — outside gesture container so buttons work */}
       <div className="fixed inset-0 pointer-events-none z-10">
         <div
           className="pointer-events-auto absolute"
-          onPointerDown={(e) => e.stopPropagation()}
           style={{
             left: searchState.screenPosition.x - searchState.width / 2,
             top: searchState.screenPosition.y - searchState.height / 2,
@@ -292,7 +302,7 @@ export function DesktopCanvasView({
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }
 

@@ -174,7 +174,7 @@ export interface SearchCardState {
   categories: string[];
 }
 
-export type CardSizeMode = 'mixed' | '2x2';
+export type CardSizeMode = 'mixed' | 'detail' | '2x2';
 
 export interface GridConfig {
   theme: GridTheme;

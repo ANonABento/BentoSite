@@ -220,6 +220,14 @@
   background: var(--scrollbar-thumb-hover);
 }
 
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 ::selection {
   background: var(--selection-bg);
   color: var(--text-primary);
