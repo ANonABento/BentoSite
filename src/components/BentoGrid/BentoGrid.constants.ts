@@ -195,8 +195,8 @@ export const THEME_PLAYFUL: ThemeConfig = {
     tertiary: 'var(--purple-hover)',
   },
   searchCard: {
-    background: 'var(--overlay-strong)',
-    border: '2px solid var(--purple-muted)',
+    background: 'var(--glass-bg-strong)',
+    border: '1px solid var(--glass-border)',
   },
 };
 
@@ -216,7 +216,7 @@ export const THEME_PREMIUM: ThemeConfig = {
     secondary: 'var(--orange)',
   },
   searchCard: {
-    background: 'var(--overlay-strong)',
+    background: 'var(--glass-bg-strong)',
     border: '1px solid var(--glass-border)',
   },
 };

@@ -1,4 +1,5 @@
 export { filterCards } from './cardPoolFilter';
+export { createQueuedCards } from './cardQueue';
 export { isEditableTarget } from './keyboard';
 export {
   useCardNavigation,

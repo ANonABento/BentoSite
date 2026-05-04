@@ -138,9 +138,13 @@ describe('BentoGrid cards', () => {
 
     render(<ProjectCard card={project} position={{ ...position, size: '2x2' }} theme={theme} />);
 
-    expect(screen.getByText('READY')).toBeInTheDocument();
+    expect(screen.queryByText('READY')).not.toBeInTheDocument();
     expect(screen.getByText('Robot Arm')).toBeInTheDocument();
     expect(screen.getByText('ROS2')).toBeInTheDocument();
+    expect(screen.queryByText('C++')).not.toBeInTheDocument();
+
+    fireEvent.mouseEnter(screen.getByRole('button', { name: /show hidden technologies/i }));
+    expect(screen.getByRole('tooltip')).toHaveTextContent('C++');
 
     const shell = screen.getByText('Robot Arm').closest('[data-animate]');
     fireEvent.mouseEnter(shell!);
