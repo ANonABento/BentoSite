@@ -24,6 +24,7 @@ import {
 } from './scene';
 
 interface DimensionViewportProps {
+  allowScreenshots: boolean;
   autoRotate: boolean;
   canvasRef: RefObject<HTMLCanvasElement | null>;
   controlsRef: RefObject<OrbitControlsImpl | null>;
@@ -53,7 +54,8 @@ function DimensionLoadingFallback() {
         aria-label="Loading 3D model scene"
         camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
         performance={{ min: MIN_PERFORMANCE_SCALE }}
-        gl={{ preserveDrawingBuffer: true }}
+        dpr={[1, MOBILE_PIXEL_RATIO_MAX]}
+        gl={{ antialias: false, powerPreference: 'high-performance' }}
       />
       <div
         className="absolute inset-0 flex items-center justify-center pointer-events-none"
@@ -67,6 +69,7 @@ function DimensionLoadingFallback() {
 }
 
 export function DimensionViewport({
+  allowScreenshots,
   autoRotate,
   canvasRef,
   controlsRef,
@@ -89,7 +92,12 @@ export function DimensionViewport({
           aria-label="3D model error preview"
           camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
           performance={{ min: MIN_PERFORMANCE_SCALE }}
-          gl={{ preserveDrawingBuffer: true }}
+          dpr={[1, isMobile ? MOBILE_PIXEL_RATIO_MAX : 2]}
+          gl={{
+            antialias: !isMobile,
+            powerPreference: 'high-performance',
+            preserveDrawingBuffer: allowScreenshots,
+          }}
         >
           <ambientLight intensity={0.3} />
           <pointLight position={[15, 15, 15]} intensity={0.8} />
@@ -111,7 +119,12 @@ export function DimensionViewport({
         camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
         key={`canvas-${selectedModel.id}-${retryCount}`}
         performance={{ min: MIN_PERFORMANCE_SCALE }}
-        gl={{ preserveDrawingBuffer: true }}
+        dpr={[1, isMobile ? MOBILE_PIXEL_RATIO_MAX : 2]}
+        gl={{
+          antialias: !isMobile,
+          powerPreference: 'high-performance',
+          preserveDrawingBuffer: allowScreenshots,
+        }}
         onCreated={({ gl }) => {
           if (isMobile) {
             gl.shadowMap.enabled = false;
