@@ -227,6 +227,7 @@ export const THEMES = {
 } satisfies Record<GridTheme, ThemeConfig>;
 
 export const SEARCH_CARD_ID = '__search__' as const;
+export const INFO_CARD_ID = '__info__' as const;
 
 export const MOBILE = {
   BREAKPOINT: 768,

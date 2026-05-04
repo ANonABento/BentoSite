@@ -25,6 +25,7 @@ interface DesktopCanvasViewProps {
   onCardSelect?: (card: CardData) => void;
   renderCard?: RenderCard;
   onBack?: () => void;
+  getCardHref?: (card: CardData) => string | undefined;
 }
 
 export function DesktopCanvasView({
@@ -36,6 +37,7 @@ export function DesktopCanvasView({
   onCardSelect,
   renderCard,
   onBack,
+  getCardHref,
 }: DesktopCanvasViewProps) {
   const windowSize = useWindowSize();
 
@@ -86,7 +88,7 @@ export function DesktopCanvasView({
   }, [board.visible, searchState.stickyCanvasPosition]);
 
   // Physics is only used for search card collision body
-  const { updateSearchCard } = usePhysicsWorld({
+  const { updateInfoCard } = usePhysicsWorld({
     layouts: displayLayouts,
     enabled: true,
     isMobile: false,
@@ -96,11 +98,11 @@ export function DesktopCanvasView({
   const searchDisplayPos = displayLayouts.get(SEARCH_CARD_ID);
   useEffect(() => {
     if (!searchDisplayPos) return;
-    updateSearchCard(
+    updateInfoCard(
       { id: SEARCH_CARD_ID, ...searchDisplayPos },
       isSearchSticky,
     );
-  }, [searchDisplayPos, isSearchSticky, updateSearchCard]);
+  }, [searchDisplayPos, isSearchSticky, updateInfoCard]);
 
   // Refs for the rAF loop
   const visibleRef = useRef<Map<string, CardPosition>>(displayLayouts);
@@ -200,6 +202,7 @@ export function DesktopCanvasView({
           focusedCardId={focusedCardId}
           renderCard={renderCard}
           onCardClick={handleCardClick}
+          getCardHref={getCardHref}
         />
       </div>
 

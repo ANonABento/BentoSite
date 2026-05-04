@@ -162,10 +162,23 @@ export interface NavigationState {
 
 export type InfoCardEdge = 'none' | 'top' | 'bottom' | 'left' | 'right';
 export type StickyEdge = InfoCardEdge;
+export type SearchCardEdge = InfoCardEdge;
 
 export interface InfoCardState {
   expanded: boolean;
   edge: InfoCardEdge;
+  compression: number;
+  width: number;
+  height: number;
+  screenPosition: Position;
+  searchTerm: string;
+  category: string | null;
+  categories: string[];
+}
+
+export interface SearchCardState {
+  expanded: boolean;
+  edge: SearchCardEdge;
   compression: number;
   width: number;
   height: number;

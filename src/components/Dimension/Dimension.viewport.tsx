@@ -53,7 +53,6 @@ function DimensionLoadingFallback() {
       <Canvas
         role="img"
         aria-label="Loading 3D model scene"
-        role="img"
         camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
         performance={{ min: MIN_PERFORMANCE_SCALE }}
         dpr={[1, MOBILE_PIXEL_RATIO_MAX]}
@@ -93,7 +92,6 @@ export function DimensionViewport({
         <Canvas
           role="img"
           aria-label="3D model error preview"
-          role="img"
           camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
           performance={{ min: MIN_PERFORMANCE_SCALE }}
           dpr={[1, isMobile ? MOBILE_PIXEL_RATIO_MAX : 2]}
@@ -121,7 +119,6 @@ export function DimensionViewport({
       <Canvas
         role="application"
         aria-label={`${selectedModel.name} interactive 3D scene`}
-        role="img"
         camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
         key={`canvas-${selectedModel.id}-${retryCount}`}
         performance={{ min: MIN_PERFORMANCE_SCALE }}

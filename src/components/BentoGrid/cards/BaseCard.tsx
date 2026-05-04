@@ -22,6 +22,7 @@ interface BaseCardProps {
   hoverEnabled?: boolean;
   motionMode?: 'spring' | 'instant';
   ariaLabel?: string;
+  href?: string;
   children: ReactNode;
   onClick?: () => void;
   onHoverStart?: () => void;
@@ -41,6 +42,7 @@ export function BaseCard({
   positionMode = 'absolute',
   hoverEnabled = true,
   ariaLabel,
+  href,
   children,
   onClick,
   onHoverStart,
@@ -48,13 +50,33 @@ export function BaseCard({
   onPointerDown,
   onWheel,
 }: BaseCardProps) {
+  const isInteractive = Boolean(onClick) || Boolean(href);
+  const shell = (
+    <div
+      className={[
+        'h-full w-full overflow-hidden transition-all duration-300 ease-out',
+        shellClassName,
+      ].filter(Boolean).join(' ')}
+      style={{
+        background: theme.card.background,
+        border: isFocused ? `1px solid ${theme.accent.primary}66` : theme.card.border,
+        borderRadius: theme.card.borderRadius,
+        boxShadow: isFocused
+          ? `0 0 0 3px ${theme.accent.primary}, ${theme.card.hoverShadow}`
+          : theme.card.shadow,
+        ...shellStyle,
+      }}
+    >
+      {children}
+    </div>
+  );
 
   return (
     <motion.div
       key={id}
       className={[
         positionMode,
-        onClick ? 'cursor-pointer' : 'cursor-default',
+        isInteractive ? 'cursor-pointer' : 'cursor-default',
         'select-none',
         className,
       ].filter(Boolean).join(' ')}
@@ -83,23 +105,17 @@ export function BaseCard({
       onWheel={onWheel}
       aria-label={ariaLabel}
     >
-      <div
-        className={[
-          'h-full w-full overflow-hidden transition-all duration-300 ease-out',
-          shellClassName,
-        ].filter(Boolean).join(' ')}
-        style={{
-          background: theme.card.background,
-          border: isFocused ? `1px solid ${theme.accent.primary}66` : theme.card.border,
-          borderRadius: theme.card.borderRadius,
-          boxShadow: isFocused
-            ? `0 0 0 3px ${theme.accent.primary}, ${theme.card.hoverShadow}`
-            : theme.card.shadow,
-          ...shellStyle,
-        }}
-      >
-        {children}
-      </div>
+      {href ? (
+        <a
+          href={href}
+          aria-label={ariaLabel}
+          className="block h-full w-full no-underline text-inherit"
+        >
+          {shell}
+        </a>
+      ) : (
+        shell
+      )}
     </motion.div>
   );
 }
