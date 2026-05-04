@@ -1,3 +1,14 @@
+/**
+ * useBoardController - Grid Layout, Spawn/Despawn & Search Card Rehoming
+ *
+ * Manages the board's visible card set and spawn queue. On each rAF tick,
+ * cards outside the viewport are despawned (returned to the queue) and
+ * queued cards are spawned into the nearest available grid cells.
+ *
+ * The search card is special: it never despawns and can be rehomed to a
+ * new grid cell via rehomeSearchCard, evicting any content cards that
+ * occupy the target cell.
+ */
 'use client';
 
 import { useCallback, useMemo, useRef, useState } from 'react';
@@ -5,6 +16,7 @@ import type {
   Camera,
   CardData,
   CardPosition,
+  CardSizeMode,
   QueuedCard,
   SpawnPhysicsBridge,
   ViewportBounds,
@@ -18,6 +30,7 @@ import {
   GridOccupancy,
   cellToPixel,
   pixelToCell,
+  sizeToSpan,
   occupancyFromPositions,
 } from '../layout';
 import { filterCards } from './cardPoolFilter';
@@ -26,6 +39,7 @@ import { screenToCanvas } from './useViewport';
 interface BoardControllerOptions {
   cards: CardData[];
   rotationRange: number;
+  cardSizeMode?: CardSizeMode;
   maxVisible?: number;
 }
 
@@ -89,6 +103,7 @@ function isCardInBounds(
 export function useBoardController({
   cards,
   rotationRange,
+  cardSizeMode = 'mixed',
   maxVisible = QUEUE.MAX_VISIBLE,
 }: BoardControllerOptions): BoardControllerReturn {
   const cardDataMap = useMemo(() => {
@@ -102,6 +117,7 @@ export function useBoardController({
       cards,
       Math.min(QUEUE.INITIAL_SPAWN_COUNT, maxVisible),
       rotationRange,
+      cardSizeMode,
     ),
   );
   const [queue, setQueueState] = useState<QueuedCard[]>(() => {
@@ -136,6 +152,7 @@ export function useBoardController({
         filtered,
         Math.min(QUEUE.INITIAL_SPAWN_COUNT, maxVisible),
         rotationRange,
+        cardSizeMode,
       );
       const visibleIds = new Set(nextVisible.keys());
 
@@ -145,7 +162,7 @@ export function useBoardController({
       physicsRef.current?.resetCards?.(nextVisible);
       spawnCountRef.current = 0;
     },
-    [cards, maxVisible, rotationRange, setQueue, setVisible],
+    [cards, maxVisible, rotationRange, cardSizeMode, setQueue, setVisible],
   );
 
   const applyFilter = useCallback(
@@ -174,20 +191,49 @@ export function useBoardController({
       // Release old grid cells
       grid.release(SEARCH_CARD_ID);
 
-      // Snap to nearest grid cell
+      // Place at the exact target cell. If occupied, evict the content
+      // cards there — the search card always wins its position.
       const cell = pixelToCell(x, y);
+      const nextVisible = new Map(visibleRef.current);
+      const nextQueue = [...queueRef.current];
+      let evicted = false;
+
+      if (!grid.canPlace(cell.col, cell.row, current.size)) {
+        const { cols, rows } = sizeToSpan(current.size);
+        const evictIds = new Set<string>();
+        for (let c = 0; c < cols; c++) {
+          for (let r = 0; r < rows; r++) {
+            const occupant = grid.getCardAt(cell.col + c, cell.row + r);
+            if (occupant && occupant !== SEARCH_CARD_ID) {
+              evictIds.add(occupant);
+            }
+          }
+        }
+        for (const evictId of evictIds) {
+          grid.release(evictId);
+          nextVisible.delete(evictId);
+          const card = cardDataMap.get(evictId);
+          if (card) {
+            nextQueue.push({ id: evictId, data: card, queuedAt: Date.now() });
+          }
+          evicted = true;
+        }
+      }
+
       grid.place(cell.col, cell.row, current.size, SEARCH_CARD_ID);
       const pixel = cellToPixel(cell.col, cell.row);
 
-      const nextVisible = new Map(visibleRef.current);
       nextVisible.set(SEARCH_CARD_ID, {
         ...current,
         x: pixel.x,
         y: pixel.y,
       });
       setVisible(nextVisible);
+      if (evicted) {
+        setQueue(nextQueue);
+      }
     },
-    [setVisible],
+    [cardDataMap, setQueue, setVisible],
   );
 
   // -----------------------------------------------------------------------
@@ -247,7 +293,7 @@ export function useBoardController({
 
         for (let i = 0; i < spawnCount; i++) {
           const queuedCard = nextQueue.shift()!;
-          const size = getCardSizeForIndex(spawnCountRef.current, queuedCard.data);
+          const size = getCardSizeForIndex(spawnCountRef.current, queuedCard.data, cardSizeMode);
           const dimensions = getCardDimensions(size);
 
           // Find nearest available grid cell from viewport center
@@ -277,7 +323,7 @@ export function useBoardController({
       setVisible(nextVisible);
       setQueue(nextQueue);
     },
-    [cardDataMap, maxVisible, rotationRange, setQueue, setVisible],
+    [cardDataMap, maxVisible, rotationRange, cardSizeMode, setQueue, setVisible],
   );
 
   return {

@@ -14,7 +14,7 @@ import { usePhysicsWorld } from '../physics';
 import { SEARCH_CARD_ID } from '../BentoGrid.constants';
 import { ArrowLeftIcon, ChevronDownIcon, CloseIcon, SearchIcon } from '@/components/ui/Icons';
 import { useDebugFlag } from '@/lib/use-debug-flag';
-import type { CardData, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
+import type { CardData, CardPosition, CardSizeMode, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
 interface DesktopCanvasViewProps {
@@ -22,6 +22,7 @@ interface DesktopCanvasViewProps {
   cards: CardData[];
   theme: ThemeConfig;
   categories: string[];
+  cardSizeMode?: CardSizeMode;
   breadcrumb?: string;
   onCardSelect?: (card: CardData) => void;
   renderCard?: RenderCard;
@@ -33,6 +34,7 @@ export function DesktopCanvasView({
   cards,
   theme,
   categories,
+  cardSizeMode,
   breadcrumb,
   onCardSelect,
   renderCard,
@@ -49,6 +51,7 @@ export function DesktopCanvasView({
   const board = useBoardController({
     cards,
     rotationRange: theme.card.rotationRange,
+    cardSizeMode,
   });
 
   const searchCardLayout = board.visible.get(SEARCH_CARD_ID);

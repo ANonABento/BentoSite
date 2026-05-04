@@ -174,9 +174,13 @@ export interface SearchCardState {
   categories: string[];
 }
 
+export type CardSizeMode = 'mixed' | '2x2';
+
 export interface GridConfig {
   theme: GridTheme;
   cards: CardData[];
+  /** Force all content cards to a specific size. Default: 'mixed' (varied sizes). */
+  cardSizeMode?: CardSizeMode;
   onCardSelect?: (card: CardData) => void;
   onBack?: () => void;
   pageTitle?: string;

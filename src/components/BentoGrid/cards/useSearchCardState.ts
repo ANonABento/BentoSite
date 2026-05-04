@@ -1,12 +1,16 @@
 /**
- * useSearchCardState - Search Card Edge Detection & Sticky Logic
+ * useSearchCardState - Search Card Edge Compression & Ghost Tracking
  *
- * The search card lives in the canvas layer like all other cards. When the
- * camera pans and the search card's grid slot approaches a viewport edge,
- * this hook computes:
- *   - Whether the card should stick to an edge
- *   - How much to compress it
- *   - The overridden canvas position (clamped to viewport edge)
+ * The search card renders as a position:fixed overlay in screen space
+ * (DesktopCardLayer skips SEARCH_CARD_ID). When the camera pans so the
+ * card's grid slot nears a viewport edge, this hook computes:
+ *   - Which edge is closest and the compression ratio (0 = free, 1 = fully squashed)
+ *   - A "ghost" canvas position that tracks near the viewport edge while
+ *     compressed, enabling smooth decompression on pan-back
+ *   - The screen-space position for rendering the fixed overlay
+ *
+ * On decompression (compression -> 0), DesktopCanvasView calls
+ * rehomeSearchCard to snap the grid slot to the ghost's position.
  */
 
 import { useState, useCallback, useMemo, useRef } from 'react';
@@ -30,9 +34,7 @@ interface UseSearchCardStateReturn extends SearchCardState {
   setSearchTerm: (term: string) => void;
   setCategory: (category: string | null) => void;
   clearFilters: () => void;
-  /** Screen position for the search card (used for rendering) */
-  screenPosition: Position;
-  /** Overridden canvas position when sticky (null when free) */
+  /** Overridden canvas position when compressed (null when free) */
   stickyCanvasPosition: CardPosition | null;
   /** The ghost's current effective canvas position (used for rehoming) */
   ghostCanvasPosition: { x: number; y: number } | null;
@@ -172,7 +174,8 @@ export function useSearchCardState(
   // in the 0..1 range and decompression happens immediately on pan-back.
   const ghostPosRef = useRef<{ x: number; y: number } | null>(null);
 
-  /* eslint-disable react-hooks/refs -- ghost tracking requires synchronous ref read/write */
+  /* eslint-disable react-hooks/refs -- ghostPosRef requires synchronous read/write in useMemo and return */
+
   const effectivePresentation = useMemo(() => {
     if (isMobile) return getMobilePresentation(windowSize, userExpanded);
     if (!searchCardLayout) {
@@ -217,10 +220,20 @@ export function useSearchCardState(
 
     const isOnScreen = offLeft === 0 && offRight === 0 && offTop === 0 && offBottom === 0;
 
-
     if (isOnScreen) {
-      // Ghost matches grid home — no compression
-      ghostPosRef.current = { x: searchCardLayout.x, y: searchCardLayout.y };
+      // Ghost entered the viewport. Snap to grid home if it's nearby
+      // (post-rehome the grid home will be close). If grid home is far
+      // away (pre-rehome), keep the ghost at prevGhost to avoid the
+      // oscillation bug (ghost snaps far → off-screen → back → repeat).
+      const dx = Math.abs(prevGhost.x - searchCardLayout.x);
+      const dy = Math.abs(prevGhost.y - searchCardLayout.y);
+      if (dx <= compDist && dy <= compDist) {
+        // Grid home is nearby — snap for grid alignment
+        ghostPosRef.current = { x: searchCardLayout.x, y: searchCardLayout.y };
+      } else {
+        // Grid home is far — keep ghost here, rehome will update it
+        ghostPosRef.current = prevGhost;
+      }
     } else {
       // Ghost stays at a fixed canvas position near the viewport edge.
       // It only moves DEEPER off-screen (when the user pans further away)
@@ -264,10 +277,7 @@ export function useSearchCardState(
       w, h, camera, windowSize,
     );
   }, [camera, windowSize, isMobile, userExpanded, searchCardLayout]);
-  /* eslint-enable react-hooks/refs */
 
-  // Sticky canvas position: use the ghost's effective position
-  /* eslint-disable react-hooks/refs -- reading ghost ref for sticky canvas pos */
   const stickyCanvasPosition = useMemo((): CardPosition | null => {
     if (effectivePresentation.compression === 0 || !searchCardLayout || !ghostPosRef.current) return null;
 
@@ -280,7 +290,6 @@ export function useSearchCardState(
       rotation: 0,
     };
   }, [effectivePresentation, searchCardLayout]);
-  /* eslint-enable react-hooks/refs */
 
   const toggleExpanded = useCallback(() => {
     setUserExpanded((prev) => !prev);
@@ -308,7 +317,6 @@ export function useSearchCardState(
     onFilterChange?.('', null);
   }, [onFilterChange]);
 
-  /* eslint-disable react-hooks/refs -- effectivePresentation and stickyCanvasPosition use ref tracking */
   return {
     expanded: userExpanded,
     edge: effectivePresentation.edge,

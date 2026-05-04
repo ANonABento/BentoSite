@@ -1,4 +1,4 @@
-import type { CardData, CardPosition, CardSize, Rect } from '../BentoGrid.types';
+import type { CardData, CardPosition, CardSize, CardSizeMode, Rect } from '../BentoGrid.types';
 import { GRID, SEARCH_CARD_ID } from '../BentoGrid.constants';
 import { getCardDimensions, getCardSizeForIndex } from './cardSizes';
 import { GridOccupancy, cellToPixel, sizeToSpan } from './gridOccupancy';
@@ -85,6 +85,7 @@ export function calculateInitialPositions(
   cards: CardData[],
   count: number,
   _rotationRange: number,
+  sizeMode: CardSizeMode = 'mixed',
 ): Map<string, CardPosition> {
   const positions = new Map<string, CardPosition>();
   const grid = new GridOccupancy();
@@ -101,7 +102,7 @@ export function calculateInitialPositions(
 
   for (let i = 0; i < requested; i++) {
     const card = cards[i];
-    const size = getCardSizeForIndex(i, card);
+    const size = getCardSizeForIndex(i, card, sizeMode);
 
     const cell = grid.findNearest(0, 0, size);
     if (!cell) continue;

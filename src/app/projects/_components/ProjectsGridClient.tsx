@@ -88,6 +88,7 @@ export function ProjectsGridClient() {
     <BentoGrid
       theme="premium"
       cards={projectCards}
+      cardSizeMode="2x2"
       onCardSelect={handleCardSelect}
       onBack={handleBack}
       breadcrumb="bentOS / projects"

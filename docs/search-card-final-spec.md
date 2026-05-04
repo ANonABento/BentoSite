@@ -1,11 +1,13 @@
 # Search Card — Final Implementation Spec
 
-Status: **Needs fresh implementation**
+Status: **Implemented and working**
 
 ## Context
 
-We've tried multiple approaches for the search card positioning and all have
-had issues. This spec defines the definitive approach.
+The search card in the BentoGrid needs to behave as both a grid-resident card
+and a viewport-sticky element. After multiple failed approaches, the current
+implementation uses a hybrid canvas/screen rendering model with ghost position
+tracking and rehome-on-decompress.
 
 ## The Fundamental Problem
 
@@ -33,121 +35,171 @@ These requirements conflict because:
 4. **Rehoming to nearest gap** — card jumps to new position, then slides off opposite edge
 5. **Viewport center tracking** — card always centered, never compresses
 6. **Edge capping position ref** — position never goes off-screen, so compression never triggers
+7. **Gap reservation** — proposed reserving grid cells ahead of the decompression
+   path and targeting the search card toward the reserved gap. Superseded before
+   implementation because the ghost tracking + rehome eviction approach is simpler
+   and handles the same problem without a separate reservation system. See
+   `search-card-gap-reservation-spec.md` for the original proposal.
 
-## The Solution: Hybrid Canvas/Screen Rendering
+## Current Implementation: Hybrid Canvas/Screen with Ghost Tracking
 
 The search card exists in TWO places simultaneously:
 
 ### 1. Grid Ghost (canvas layer)
+
 - An invisible placeholder in the grid occupancy map
-- Reserves cells so content cards don't overlap
-- Moves with the canvas like any other card
-- Not rendered visually
+- Registered under `SEARCH_CARD_ID` (`'__search__'`) in the `GridOccupancy`
+- Prevents content cards from spawning at those cells
+- Not rendered in the canvas layer — `DesktopCardLayer` skips `SEARCH_CARD_ID`
+- The ghost's canvas position drives compression math
 
 ### 2. Visual Card (screen layer)
+
 - The actual visible search card
-- Positioned in SCREEN coordinates (position: fixed)
-- Screen position computed from the ghost's canvas position via canvasToScreen
+- Rendered as `position: fixed` overlay in `DesktopCanvasView`
+- Screen position computed from the ghost's canvas position via `canvasToScreen`
 - When the ghost is on-screen: visual card appears at the ghost's screen position
   (looks like it's in the grid)
 - When the ghost goes off-screen: visual card clamps to viewport edge and compresses
-- The ghost's canvas position is what drives compression distance
+- Three visual states based on compression and edge:
+  - **Side edge** (left/right): `IconStripContent` — vertical icon buttons
+  - **Top/bottom edge**: `CompactBarContent` — horizontal search bar
+  - **Free** (compression = 0): `FullSearchContent` — full search + category filters
 
-### Why this works for decompression
+### Ghost Position Tracking (`useSearchCardState`)
 
-When the user pans back, the ghost's screen position moves back toward the
-viewport. Compression is based on `distance(ghostScreenPos, viewportEdge)`.
-This distance decreases as the user pans back. Decompression starts immediately.
+The ghost position is maintained in a `useRef` (`ghostPosRef`) and updated
+synchronously each render. The logic:
 
-BUT: the ghost can be 2000px off-screen. So decompression would still take 2000px.
+**When ghost is on-screen:**
+- Check if the grid home is nearby (distance <= `COMPRESSION_DISTANCE` on each axis)
+- If nearby: snap ghost to grid home (post-rehome alignment)
+- If far: keep ghost at its previous position (pre-rehome, avoids oscillation bug
+  where ghost snaps to far grid home, goes off-screen, snaps back, repeat)
 
-### The missing piece: Ghost repositioning
+**When ghost is off-screen:**
+- Ghost tracks at `viewportEdge - COMPRESSION_DISTANCE` in canvas space
+- The ghost only moves deeper off-screen (when user pans further away) but stays
+  put when panning back
+- This means panning back moves the viewport toward the ghost, reducing
+  compression immediately
+- Specifically: for left edge, `ghostX = max(prevGhostX, edgePos)` where
+  `edgePos = viewportLeftEdge - compressionDistance / zoom`
+- Similar logic for right, top, bottom edges
 
-When the ghost is off-screen AND the user starts panning back, the ghost's
-canvas position should be updated to be just outside the viewport edge.
-This way the decompression distance is always small (< COMPRESSION_DISTANCE).
-
-This is the `rehomeSearchCard` approach, but done correctly:
-- Don't rehome to the viewport center (causes the slide-off-opposite-edge bug)
-- Rehome to just OUTSIDE the edge the card is stuck on
-- This puts the ghost at `viewportEdge - COMPRESSION_DISTANCE` in canvas space
-- Decompression then takes exactly COMPRESSION_DISTANCE pixels of panning
-
-### When to rehome
-
-Rehome the ghost every frame while the card is compressed. The ghost position
-should track `viewportEdge - COMPRESSION_DISTANCE` on the stuck axis. This
-means the ghost "follows" the viewport at a fixed offset from the edge.
-
-On the non-stuck axis, the ghost position should stay at its original value
-(or clamp to viewport bounds).
-
-### When the card decompresses
-
-When compression reaches 0 (ghost is back on-screen), the ghost stops
-following the viewport and stays at its current canvas position. This
-becomes the card's new grid home. Content cards adjust around it.
-
-## Implementation Plan
-
-### Step 1: Implement ghost tracking in useSearchCardState
-
-The hook needs a ref that tracks the search card's "effective canvas position"
-(the ghost). Each frame:
-
+**Compression formula:**
 ```
-if (ghost is on-screen) {
-  // Free state — ghost stays put at its grid position
-  effectivePos = gridHome
-} else {
-  // Compressed state — ghost tracks viewport edge
-  if (stuck on left edge) {
-    effectivePos.x = viewportLeft - COMPRESSION_DISTANCE + edgePadding
-  }
-  if (stuck on right edge) {
-    effectivePos.x = viewportRight + COMPRESSION_DISTANCE - cardWidth - edgePadding
-  }
-  // Similar for top/bottom
-  // Non-stuck axis: clamp to viewport
-}
-
-// Compute presentation from effectivePos (via getSearchCardPresentation)
-// This gives correct compression (0 to 1 over COMPRESSION_DISTANCE)
+offscreenDistance = how far the ghost's screen projection extends past the viewport edge
+compression = clamp(offscreenDistance / COMPRESSION_DISTANCE, 0, 1)
 ```
 
-### Step 2: Visual card as fixed overlay
+Constants (from `BentoGrid.constants.ts`):
+- `COMPRESSION_DISTANCE`: 180px
+- `EDGE_PADDING`: 16px
+- `COLLAPSED_HEIGHT`: 64px (top/bottom compressed)
+- `SQUASHED_SIDE_WIDTH`: 64px (left/right compressed)
 
-The search card renders as `position: fixed` (current approach). Its screen
-position comes from `effectivePresentation.screenPosition`. This already works.
+### Rehome on Decompress (`DesktopCanvasView` + `useBoardController`)
 
-### Step 3: Update grid home on decompress
+When compression transitions from >0 to 0, `DesktopCanvasView` calls
+`board.rehomeSearchCard(ghostX, ghostY)`. This:
 
-When compression transitions from >0 to 0, update the search card's position
-in `board.visible` to the ghost's current canvas position. This re-anchors
-the grid home to wherever the card is now. Use `board.rehomeSearchCard` or
-equivalent.
+1. **Releases** the search card's old grid cells via `grid.release(SEARCH_CARD_ID)`
+2. **Converts** the ghost position to a grid cell via `pixelToCell(x, y)`
+3. **Checks occupancy** at the target cell for the search card's size
+4. **Evicts** any content cards occupying those cells:
+   - Removes them from `visible`
+   - Releases their grid cells
+   - Pushes them back to the spawn queue
+5. **Places** the search card at the target cell in the occupancy grid
+6. **Updates** the search card's position in `visible` to the cell-aligned pixel position
 
-### Step 4: Grid occupancy follows ghost
+This ensures the search card always wins its position. Evicted content cards
+will respawn elsewhere when the viewport moves.
 
-The grid occupancy for the search card should track the ghost position, not
-the original grid home. This ensures content cards don't spawn where the
-search card currently is.
+### Sticky Canvas Position Override
 
-## Files to Change
+When compressed (compression > 0), the search card's display layout is
+overridden with the ghost's position and compressed dimensions. This is
+computed in `useSearchCardState` as `stickyCanvasPosition` and merged into
+`displayLayouts` in `DesktopCanvasView`.
 
-| File | Change |
-|------|--------|
-| `cards/useSearchCardState.ts` | Ghost tracking logic, replace edge-capping |
-| `views/DesktopCanvasView.tsx` | Grid home update on decompress |
-| `core/useBoardController.ts` | Re-add rehomeSearchCard or equivalent |
+When free (compression = 0), `stickyCanvasPosition` is null and the search
+card uses its normal grid position from `board.visible`.
+
+### Content Card Spawn Prevention
+
+There is no separate gap reservation system. The grid occupancy registered
+under `SEARCH_CARD_ID` naturally prevents the spawn system in `tick()` from
+placing content cards at the search card's cells. The spawn system calls
+`grid.findNearest()` which respects occupancy, and `grid.canPlace()` checks
+for existing occupants.
+
+### Physics Integration
+
+The search card has a Matter.js physics body managed by `usePhysicsWorld`.
+When sticky (compressed), the body is set to static. When free, it's dynamic.
+The body position is updated via `updateSearchCard()` each time the display
+position changes.
+
+## Rendering Architecture
+
+```
+DesktopCanvasView
+├── Canvas layer (CSS transform for pan/zoom)
+│   └── DesktopCardLayer
+│       ├── Content card 1
+│       ├── Content card 2
+│       └── ... (SEARCH_CARD_ID is SKIPPED here)
+│
+├── Fixed overlay (position: fixed, z-10)
+│   └── Search card visual
+│       ├── IconStripContent (side edge compressed)
+│       ├── CompactBarContent (top/bottom compressed)
+│       └── FullSearchContent (free, uncompressed)
+│
+└── Reset button (fixed, z-20)
+```
+
+## Data Flow
+
+```
+board.visible (grid positions)
+    │
+    ├── searchCardLayout → useSearchCardState
+    │       │
+    │       ├── ghostPosRef (tracks viewport edge when compressed)
+    │       ├── compression (0..1 from ghost screen projection)
+    │       ├── screenPosition (clamped screen coords for visual)
+    │       ├── stickyCanvasPosition (override when compressed)
+    │       └── ghostCanvasPosition (exposed for rehome)
+    │
+    ├── displayLayouts = board.visible + stickyCanvasPosition override
+    │
+    └── On compression 0→0 transition:
+            board.rehomeSearchCard(ghostX, ghostY)
+            → evict occupants → place search card → update visible
+```
+
+## Files
+
+| File | Role |
+|------|------|
+| `cards/useSearchCardState.ts` | Ghost tracking, compression math, screen position |
+| `views/DesktopCanvasView.tsx` | Orchestration, rehome trigger, fixed overlay rendering |
+| `views/DesktopCardLayer.tsx` | Skips `SEARCH_CARD_ID` (not rendered in canvas) |
+| `core/useBoardController.ts` | `rehomeSearchCard()`, grid occupancy, spawn/despawn |
+| `BentoGrid.constants.ts` | `SEARCH_CARD` constants, `SEARCH_CARD_ID` |
 
 ## Key Constraints
 
 - The visual search card is ALWAYS `position: fixed` (screen space)
-- The ghost is in the canvas layer (canvas space) but invisible
-- Compression is computed from the ghost's screen projection
-- The ghost follows the viewport edge while compressed
-- On decompress, the ghost becomes the new grid home
-- Content cards never overlap the ghost's grid cells
-- All existing functionality (icon strip, compact bar, button clicks,
-  grid spawning, queue) must continue working
+- The ghost is in the grid occupancy (canvas space) but not rendered in canvas
+- Compression is computed from the ghost's screen projection via `canvasToScreen`
+- The ghost follows the viewport edge while compressed (but never moves closer
+  to the viewport on its own — only the viewport moves toward the ghost)
+- On decompress, the ghost position becomes the new grid home via rehome
+- Content cards are evicted at rehome time, not pre-reserved
+- The search card never despawns (explicitly skipped in `tick()` despawn loop)
+- All existing functionality (icon strip, compact bar, button clicks, category
+  filters, grid spawning, queue) continues working

@@ -38,6 +38,7 @@ export function BentoGrid({
   className,
   theme,
   cards,
+  cardSizeMode,
   onCardSelect,
   onBack,
   breadcrumb,
@@ -77,6 +78,7 @@ export function BentoGrid({
       cards={cards}
       theme={themeConfig}
       categories={categories}
+      cardSizeMode={cardSizeMode}
       breadcrumb={breadcrumb}
       onCardSelect={onCardSelect}
       renderCard={renderCard}
