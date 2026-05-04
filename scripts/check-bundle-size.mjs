@@ -4,27 +4,11 @@ import path from 'node:path';
 import vm from 'node:vm';
 
 const CONFIG_PATH = path.resolve(process.cwd(), '.size-limit.json');
+const LIGHTHOUSE_CONFIG_PATH = path.resolve(process.cwd(), 'lighthouserc.json');
 const rootDir = process.cwd();
 const jsonMode = process.argv.includes('--json');
 const compareIndex = process.argv.indexOf('--compare');
 const allowGrowth = process.argv.includes('--allow-growth');
-
-const ROUTES = [
-  '/',
-  '/projects',
-  '/playground',
-  '/playground/2048',
-  '/playground/aim-trainer',
-  '/playground/minesweeper',
-  '/playground/pacman',
-  '/playground/reaction',
-  '/playground/rhythm',
-  '/playground/sorting',
-  '/playground/soundboard',
-  '/playground/typing',
-  '/photography',
-  '/scrollable',
-];
 
 function getArgValue(name, fallback) {
   const prefix = `${name}=`;
@@ -37,7 +21,8 @@ function getArgValue(name, fallback) {
   const index = process.argv.indexOf(name);
 
   if (index !== -1) {
-    return process.argv[index + 1] ?? fallback;
+    const value = process.argv[index + 1];
+    return value && !value.startsWith('--') ? value : fallback;
   }
 
   return fallback;
@@ -149,7 +134,23 @@ function unique(values) {
 }
 
 function normalizeAssetPath(file) {
-  return file.replace(/^\/_next\//, '').replace(/^\/?\.next\//, '');
+  return file.replace(/^\/?_next\//, '').replace(/^\/?\.next\//, '');
+}
+
+function routeFromUrl(url) {
+  const pathname = new URL(url).pathname.replace(/\/$/, '');
+  return pathname || '/';
+}
+
+async function readBundleRoutes() {
+  const config = await readJson(LIGHTHOUSE_CONFIG_PATH);
+  const urls = config.ci?.collect?.url;
+
+  if (!Array.isArray(urls) || urls.length === 0) {
+    throw new Error(`No Lighthouse URLs found in ${LIGHTHOUSE_CONFIG_PATH}`);
+  }
+
+  return unique(urls.map(routeFromUrl));
 }
 
 async function readAppRouteFiles(buildDir, route) {
@@ -252,7 +253,7 @@ async function runBundleDiff() {
 
   const results = [];
 
-  for (const route of ROUTES) {
+  for (const route of await readBundleRoutes()) {
     const base = await calculateRouteSize(baseBuildDir, route);
     const head = await calculateRouteSize(headBuildDir, route);
     const deltaBytes = head.sizeBytes - base.sizeBytes;
