@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
 import { useClipboard } from '@/lib/clipboard';
 import { analytics } from '@/lib/analytics';
+import { RESUME_URL } from '@/lib/constants';
 import { BentoIcon } from '@/components/BentoOS/BentoIcon';
 import {
   CheckIcon,
@@ -88,7 +89,7 @@ export default function Header({
   githubUrl = 'https://github.com',
   linkedinUrl = 'https://linkedin.com',
   email = 'hello@example.com',
-  resumeUrl = '/resume.pdf',
+  resumeUrl = RESUME_URL,
   compact = false,
   onProjectsClick,
 }: HeaderProps) {

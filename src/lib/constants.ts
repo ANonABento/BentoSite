@@ -130,3 +130,13 @@ export const API_ENDPOINTS = {
   CHAT: '/api/chat',
   FEEDBACK: '/api/feedback',
 } as const;
+
+// === EXTERNAL URLS ===
+
+/**
+ * Resume PDF — exported on demand from the canonical Google Doc.
+ * Using the export endpoint avoids stale `/public` copies and keeps
+ * the source of truth in Google Docs.
+ */
+export const RESUME_URL =
+  'https://docs.google.com/document/d/140poL_mXjYyzeCwDNUE6Fs4U9zUKyypF3m4gpUiO1ZU/export?format=pdf';

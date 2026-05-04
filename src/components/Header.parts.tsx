@@ -54,10 +54,10 @@ export function ResumeButton({
   return (
     <a
       href={resumeUrl}
-      download
+      target="_blank"
+      rel="noopener noreferrer"
       onClick={() => analytics.resumeDownloaded()}
-      aria-label="Download resume"
-      data-magnetic
+      aria-label="View resume"
       className={`interactive-hover flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm
         bg-[var(--orange)] hover:bg-[var(--orange-hover)] active:bg-[var(--orange-active)] text-[var(--text-on-accent)]
         hover:shadow-[0_0_20px_var(--orange-muted)] hover:scale-105

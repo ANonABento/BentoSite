@@ -13,6 +13,7 @@ import { useBoardController } from '../core/useBoardController';
 import { usePhysicsWorld } from '../physics';
 import { SEARCH_CARD_ID } from '../BentoGrid.constants';
 import { ArrowLeftIcon, ChevronDownIcon, CloseIcon, SearchIcon } from '@/components/ui/Icons';
+import { useDebugFlag } from '@/lib/use-debug-flag';
 import type { CardData, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
@@ -141,6 +142,7 @@ export function DesktopCanvasView({
     enabled: true,
   });
   const { focusedCardId, setFocusedCardId } = cardNavigation;
+  const showDebugHud = useDebugFlag();
 
   const handleCardClick = useCallback(
     (card: CardData) => {
@@ -277,7 +279,7 @@ export function DesktopCanvasView({
         Reset View (R)
       </button>
 
-      {process.env.NODE_ENV === 'development' && (
+      {showDebugHud && (
         <div className="fixed bottom-4 left-4 text-xs text-white/50 font-mono z-20">
           Camera: ({navigation.camera.x.toFixed(0)}, {navigation.camera.y.toFixed(0)}) z:{navigation.camera.zoom.toFixed(2)}
           <br />
