@@ -1,0 +1,104 @@
+{
+  "thresholdRationale": [
+    {
+      "routes": ["/", "/photography", "/scrollable", "/playground/2048", "/playground/aim-trainer", "/playground/minesweeper", "/playground/pacman", "/playground/reaction", "/playground/rhythm", "/playground/sorting", "/playground/soundboard", "/playground/typing"],
+      "performance": 90,
+      "reason": "Primary, gallery, long-form, and individual game pages should stay lightweight enough for a 90 Lighthouse performance floor."
+    },
+    {
+      "routes": ["/projects"],
+      "performance": 75,
+      "reason": "Projects allows 75 because the archive includes Three.js-heavy browsing and model-rendering costs."
+    },
+    {
+      "routes": ["/playground"],
+      "performance": 80,
+      "reason": "Playground allows 80 because the index includes the physics-driven grid and richer interactive setup."
+    },
+    {
+      "routes": ["all"],
+      "accessibility": 90,
+      "bestPractices": 95,
+      "seo": 95,
+      "reason": "Non-performance categories are not waived for 3D or physics pages."
+    }
+  ],
+  "ci": {
+    "collect": {
+      "startServerCommand": "node_modules/.bin/next start --hostname 127.0.0.1 --port 3001",
+      "startServerReadyPattern": "Ready in",
+      "startServerReadyTimeout": 120000,
+      "url": [
+        "http://127.0.0.1:3001/",
+        "http://127.0.0.1:3001/projects",
+        "http://127.0.0.1:3001/playground",
+        "http://127.0.0.1:3001/playground/2048",
+        "http://127.0.0.1:3001/playground/aim-trainer",
+        "http://127.0.0.1:3001/playground/minesweeper",
+        "http://127.0.0.1:3001/playground/pacman",
+        "http://127.0.0.1:3001/playground/reaction",
+        "http://127.0.0.1:3001/playground/rhythm",
+        "http://127.0.0.1:3001/playground/sorting",
+        "http://127.0.0.1:3001/playground/soundboard",
+        "http://127.0.0.1:3001/playground/typing",
+        "http://127.0.0.1:3001/photography",
+        "http://127.0.0.1:3001/scrollable"
+      ],
+      "numberOfRuns": 1,
+      "settings": {
+        "preset": "desktop",
+        "maxWaitForLoad": 45000,
+        "throttlingMethod": "provided"
+      }
+    },
+    "assert": {
+      "assertMatrix": [
+        {
+          "matchingUrlPattern": ".*",
+          "assertions": {
+            "categories:accessibility": ["error", { "minScore": 0.9 }],
+            "categories:best-practices": ["error", { "minScore": 0.95 }],
+            "categories:seo": ["error", { "minScore": 0.95 }],
+            "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }],
+            "document-title": "error",
+            "html-has-lang": "error",
+            "meta-description": "error"
+          }
+        },
+        {
+          "matchingUrlPattern": "^http://127\\.0\\.0\\.1:3001/$",
+          "assertions": {
+            "categories:performance": ["error", { "minScore": 0.9 }]
+          }
+        },
+        {
+          "matchingUrlPattern": "^http://127\\.0\\.0\\.1:3001/projects/?$",
+          "assertions": {
+            "categories:performance": ["error", { "minScore": 0.75 }]
+          }
+        },
+        {
+          "matchingUrlPattern": "^http://127\\.0\\.0\\.1:3001/playground/?$",
+          "assertions": {
+            "categories:performance": ["error", { "minScore": 0.8 }]
+          }
+        },
+        {
+          "matchingUrlPattern": "^http://127\\.0\\.0\\.1:3001/(photography|scrollable)/?$",
+          "assertions": {
+            "categories:performance": ["error", { "minScore": 0.9 }]
+          }
+        },
+        {
+          "matchingUrlPattern": "^http://127\\.0\\.0\\.1:3001/playground/(2048|aim-trainer|minesweeper|pacman|reaction|rhythm|sorting|soundboard|typing)/?$",
+          "assertions": {
+            "categories:performance": ["error", { "minScore": 0.9 }]
+          }
+        }
+      ]
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}

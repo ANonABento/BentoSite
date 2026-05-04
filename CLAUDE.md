@@ -26,7 +26,12 @@ npm run build    # Production build
 npm run start    # Run production server
 npm run lint     # ESLint check
 npm test         # Run unit tests
+npm run lighthouse # Run strict Lighthouse CI gates
+npm run size     # Check absolute bundle budget
+npm run size:diff -- ../base-bundle/.next --head .next # Compare route bundle growth
 ```
+
+Performance gates are documented in `docs/perf-gates.md`. CI runs strict Lighthouse thresholds from `lighthouserc.json` across `/`, `/projects`, `/playground`, each Playground game route, `/photography`, and `/scrollable`. The PR bundle-size job fails route-level JS/CSS growth above `10%` unless the PR title or body includes `[allow-bundle-growth]`.
 
 ---
 

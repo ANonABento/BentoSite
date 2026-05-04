@@ -18,7 +18,8 @@
     "analyze": "ANALYZE=true next build",
     "lighthouse": "lhci autorun",
     "size": "node scripts/check-bundle-size.mjs",
-    "size:check": "node scripts/check-bundle-size.mjs --json"
+    "size:check": "node scripts/check-bundle-size.mjs --json",
+    "size:diff": "node scripts/check-bundle-size.mjs --compare"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
