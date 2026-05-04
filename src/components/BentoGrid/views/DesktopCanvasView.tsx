@@ -301,14 +301,14 @@ function IconStripContent({ theme, onBack, onToggleExpanded, searchTerm }: {
   return (
     <div className="h-full flex flex-col items-center justify-center gap-3 py-3">
       {onBack && (
-        <button onClick={onBack} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="Go back">
-          <ArrowLeftIcon className="w-5 h-5 text-white/70" />
+        <button onClick={onBack} className="w-10 h-10 flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)] transition-colors" aria-label="Go back">
+          <ArrowLeftIcon className="w-5 h-5" />
         </button>
       )}
-      <button onClick={onToggleExpanded} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="Search" style={{ color: searchTerm ? theme.accent.primary : undefined }}>
-        <SearchIcon className="w-5 h-5 text-white/70" />
+      <button onClick={onToggleExpanded} className="w-10 h-10 flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)] transition-colors" aria-label="Search" style={{ color: searchTerm ? theme.accent.primary : undefined }}>
+        <SearchIcon className="w-5 h-5" />
       </button>
-      <button onClick={onToggleExpanded} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="Toggle filters" style={{ color: theme.accent.primary }}>
+      <button onClick={onToggleExpanded} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-[var(--glass-bg)] transition-colors" aria-label="Toggle filters" style={{ color: theme.accent.primary }}>
         <ChevronDownIcon className="w-5 h-5" />
       </button>
     </div>
@@ -332,35 +332,35 @@ function FullSearchContent({ theme, expanded, searchTerm, category, categories, 
   return (
     <div className="h-full min-w-0 p-4 flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2 min-w-0">
-        <span className="text-xs text-white/50 font-mono truncate">{breadcrumb || 'bentOS'}</span>
+        <span className="text-xs text-[var(--text-muted)] font-mono truncate">{breadcrumb || 'bentOS'}</span>
         <div className="flex items-center gap-1 flex-shrink-0">
-          <span className="text-[10px] text-white/40 font-mono">
+          <span className="text-[10px] text-[var(--text-muted)] font-mono">
             {filteredCards !== totalCards ? `${filteredCards}/${totalCards}` : totalCards}
           </span>
-          <button onClick={onToggleExpanded} className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors" aria-label={expanded ? 'Hide filters' : 'Show filters'} style={{ color: theme.accent.primary }}>
+          <button onClick={onToggleExpanded} className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-[var(--glass-bg)] transition-colors" aria-label={expanded ? 'Hide filters' : 'Show filters'} style={{ color: theme.accent.primary }}>
             <ChevronDownIcon className="w-4 h-4 transition-transform" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
           </button>
         </div>
       </div>
       {onBack && (
-        <button onClick={onBack} className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors w-fit">
+        <button onClick={onBack} className="flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors w-fit">
           <ArrowLeftIcon className="w-4 h-4" /><span>Back to Dashboard</span>
         </button>
       )}
-      <label className="flex items-center gap-2 rounded-md bg-white/5 border border-white/10 px-3 py-2">
-        <SearchIcon className="w-4 h-4 text-white/40 flex-shrink-0" />
-        <input type="text" placeholder="Search..." value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none" aria-label="Search cards" />
+      <label className="flex items-center gap-2 rounded-md bg-[var(--glass-bg)] border border-[var(--border)] px-3 py-2">
+        <SearchIcon className="w-4 h-4 text-[var(--text-muted)] flex-shrink-0" />
+        <input type="text" placeholder="Search..." value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent text-[var(--text-primary)] text-sm placeholder:text-[var(--text-muted)] outline-none" aria-label="Search cards" />
         {searchTerm && (
-          <button onClick={() => onSearchChange('')} className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-white/10" aria-label="Clear search">
-            <CloseIcon className="w-3 h-3 text-white/50" />
+          <button onClick={() => onSearchChange('')} className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full text-[var(--text-muted)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)]" aria-label="Clear search">
+            <CloseIcon className="w-3 h-3" />
           </button>
         )}
       </label>
       {expanded && (
         <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
-          <button onClick={() => onCategoryChange(null)} className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap ${category === null ? 'text-white' : 'text-white/60 hover:text-white/80'}`} style={{ background: category === null ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)', border: category === null ? `1px solid ${theme.accent.primary}50` : '1px solid transparent' }}>All</button>
+          <button onClick={() => onCategoryChange(null)} className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap ${category === null ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`} style={{ background: category === null ? `${theme.accent.primary}30` : 'var(--glass-bg)', border: category === null ? `1px solid ${theme.accent.primary}50` : '1px solid var(--border)' }}>All</button>
           {categories.map((cat) => (
-            <button key={cat} onClick={() => onCategoryChange(cat === category ? null : cat)} className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap ${category === cat ? 'text-white' : 'text-white/60 hover:text-white/80'}`} style={{ background: category === cat ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)', border: category === cat ? `1px solid ${theme.accent.primary}50` : '1px solid transparent' }}>{cat}</button>
+            <button key={cat} onClick={() => onCategoryChange(cat === category ? null : cat)} className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap ${category === cat ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`} style={{ background: category === cat ? `${theme.accent.primary}30` : 'var(--glass-bg)', border: category === cat ? `1px solid ${theme.accent.primary}50` : '1px solid var(--border)' }}>{cat}</button>
           ))}
         </div>
       )}
@@ -377,17 +377,17 @@ function CompactBarContent({ searchTerm, onSearchChange, onBack, breadcrumb }: {
   return (
     <div className="h-full flex items-center gap-2 px-3">
       {onBack && (
-        <button onClick={onBack} className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors" aria-label="Go back">
-          <ArrowLeftIcon className="w-4 h-4 text-white/70" />
+        <button onClick={onBack} className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)] transition-colors" aria-label="Go back">
+          <ArrowLeftIcon className="w-4 h-4" />
         </button>
       )}
-      <span className="text-xs text-white/40 font-mono truncate flex-shrink-0">{breadcrumb || 'bentOS'}</span>
-      <label className="flex-1 min-w-0 flex items-center gap-2 rounded-md bg-white/5 border border-white/10 px-3 py-1.5">
-        <SearchIcon className="w-4 h-4 text-white/40 flex-shrink-0" />
-        <input type="text" placeholder="Search..." value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none" aria-label="Search cards" />
+      <span className="text-xs text-[var(--text-muted)] font-mono truncate flex-shrink-0">{breadcrumb || 'bentOS'}</span>
+      <label className="flex-1 min-w-0 flex items-center gap-2 rounded-md bg-[var(--glass-bg)] border border-[var(--border)] px-3 py-1.5">
+        <SearchIcon className="w-4 h-4 text-[var(--text-muted)] flex-shrink-0" />
+        <input type="text" placeholder="Search..." value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent text-[var(--text-primary)] text-sm placeholder:text-[var(--text-muted)] outline-none" aria-label="Search cards" />
         {searchTerm && (
-          <button onClick={() => onSearchChange('')} className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-white/10" aria-label="Clear search">
-            <CloseIcon className="w-3 h-3 text-white/50" />
+          <button onClick={() => onSearchChange('')} className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full text-[var(--text-muted)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)]" aria-label="Clear search">
+            <CloseIcon className="w-3 h-3" />
           </button>
         )}
       </label>

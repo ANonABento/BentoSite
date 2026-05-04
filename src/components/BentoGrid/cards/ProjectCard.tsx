@@ -6,7 +6,7 @@
  * Features:
  * - Clean, professional design
  * - Sharp corners, subtle shadows
- * - Thumbnail with status badge
+ * - Thumbnail with media badges
  * - Tech badges and links
  * - Subtle violet accent on hover
  */
@@ -44,52 +44,6 @@ export interface ProjectCardProps {
 const BLUR_PLACEHOLDER =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
-// =============================================================================
-// STATUS BADGE
-// =============================================================================
-
-type ProjectStatus = ProjectCardData['status'];
-
-function StatusBadge({ status }: { status?: ProjectStatus }) {
-  if (!status) return null;
-
-  const statusConfig: Record<NonNullable<ProjectStatus>, {
-    label: string;
-    bg: string;
-    text: string;
-    border: string;
-  }> = {
-    Completed: {
-      label: 'READY',
-      bg: 'bg-emerald-500/10',
-      text: 'text-emerald-400',
-      border: 'border-emerald-500/30',
-    },
-    'In Progress': {
-      label: 'WIP',
-      bg: 'bg-amber-500/10',
-      text: 'text-amber-400',
-      border: 'border-amber-500/30',
-    },
-    Archived: {
-      label: 'ARCHIVED',
-      bg: 'bg-gray-500/10',
-      text: 'text-gray-400',
-      border: 'border-gray-500/30',
-    },
-  };
-  const config = statusConfig[status];
-
-  return (
-    <span
-      className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-semibold uppercase tracking-wider ${config.bg} ${config.text} border ${config.border}`}
-    >
-      {config.label}
-    </span>
-  );
-}
-
-// =============================================================================
 // MEDIA INDICATORS
 // =============================================================================
 
@@ -114,6 +68,41 @@ function MediaIndicators({ card }: { card: ProjectCardData }) {
       ))}
     </div>
   ) : null;
+}
+
+function HiddenTagsPopover({ tags }: { tags: string[] }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const label = tags.join(', ');
+
+  return (
+    <span className="relative inline-flex">
+      <button
+        type="button"
+        className="rounded px-1 text-[9px] font-mono text-white/50 transition-colors hover:bg-white/10 hover:text-white/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/60"
+        aria-label={`Show hidden technologies: ${label}`}
+        aria-expanded={isOpen}
+        title={label}
+        onClick={(event) => {
+          event.stopPropagation();
+          setIsOpen((open) => !open);
+        }}
+        onFocus={() => setIsOpen(true)}
+        onBlur={() => setIsOpen(false)}
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
+      >
+        +{tags.length}
+      </button>
+      {isOpen && (
+        <span
+          role="tooltip"
+          className="absolute bottom-full left-1/2 z-20 mb-1 w-max max-w-36 -translate-x-1/2 rounded-md border border-[var(--border)] bg-[var(--glass-bg-strong)] px-2 py-1 text-[10px] font-mono leading-snug text-[var(--text-primary)] shadow-lg backdrop-blur"
+        >
+          {label}
+        </span>
+      )}
+    </span>
+  );
 }
 
 // =============================================================================
@@ -183,11 +172,6 @@ export function ProjectCard({
             </div>
           )}
 
-          {/* Status badge */}
-          <div className="absolute top-2 left-2">
-            <StatusBadge status={card.status} />
-          </div>
-
           {/* Media indicators */}
           <MediaIndicators card={card} />
 
@@ -238,9 +222,7 @@ export function ProjectCard({
                 </span>
               ))}
               {card.technologies.length > 4 && (
-                <span className="text-[9px] text-white/40">
-                  +{card.technologies.length - 4}
-                </span>
+                <HiddenTagsPopover tags={card.technologies.slice(4)} />
               )}
             </div>
           )}
