@@ -4,9 +4,13 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
 const TRAIL_COUNT = 4;
+const COARSE_POINTER_QUERY = '(pointer: coarse)';
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 const INTERACTIVE_SELECTOR =
   'a[href], button, input, textarea, select, summary, [role="button"], [data-magnetic]';
 const MAGNETIC_SELECTOR = '[data-magnetic], button, a[href], [role="button"]';
+const CURSOR_ROUTES = new Set(['/', '/scrollable', '/projects', '/playground']);
+const CURSOR_ROUTE_PREFIXES = ['/projects/', '/playground/'] as const;
 
 function supportsCustomCursor(pathname: string | null): boolean {
   if (!pathname) {
@@ -14,11 +18,8 @@ function supportsCustomCursor(pathname: string | null): boolean {
   }
 
   return (
-    pathname === '/' ||
-    pathname === '/projects' ||
-    pathname.startsWith('/projects/') ||
-    pathname === '/playground' ||
-    pathname.startsWith('/playground/')
+    CURSOR_ROUTES.has(pathname) ||
+    CURSOR_ROUTE_PREFIXES.some((prefix) => pathname.startsWith(prefix))
   );
 }
 
@@ -73,8 +74,8 @@ export function CustomCursor() {
   const [canUseCustomCursor, setCanUseCustomCursor] = useState(false);
 
   useEffect(() => {
-    const coarsePointerQuery = window.matchMedia('(pointer: coarse)');
-    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const coarsePointerQuery = window.matchMedia(COARSE_POINTER_QUERY);
+    const reducedMotionQuery = window.matchMedia(REDUCED_MOTION_QUERY);
 
     const updateCapability = () => {
       setCanUseCustomCursor(

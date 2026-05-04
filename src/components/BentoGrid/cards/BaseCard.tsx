@@ -4,10 +4,13 @@ import type {
   CSSProperties,
   PointerEventHandler,
   ReactNode,
+  ComponentProps,
   WheelEventHandler,
 } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import type { CardPosition, ThemeConfig } from '../BentoGrid.types';
+import { ANIMATION } from '../BentoGrid.constants';
+import { unifiedGridCardEntranceDelay } from '@/lib/animations';
 
 interface BaseCardProps {
   id: string;
@@ -35,11 +38,13 @@ export function BaseCard({
   position,
   theme,
   isFocused = false,
+  entranceIndex = 0,
   className,
   shellClassName,
   shellStyle,
   positionMode = 'absolute',
   hoverEnabled = true,
+  motionMode = 'spring',
   ariaLabel,
   children,
   onClick,
@@ -48,6 +53,26 @@ export function BaseCard({
   onPointerDown,
   onWheel,
 }: BaseCardProps) {
+  const prefersReducedMotion = useReducedMotion() ?? false;
+  const shouldAnimateEntrance = motionMode === 'spring' && !prefersReducedMotion;
+  const transition: ComponentProps<typeof motion.div>['transition'] =
+    motionMode === 'instant' || prefersReducedMotion
+      ? { duration: 0 }
+      : {
+          default: {
+            type: 'spring',
+            stiffness: ANIMATION.SPRING.stiffness,
+            damping: ANIMATION.SPRING.damping,
+          },
+          opacity: {
+            duration: ANIMATION.CARD_ENTER / 1000,
+            delay: unifiedGridCardEntranceDelay(entranceIndex),
+          },
+          scale: {
+            duration: ANIMATION.CARD_ENTER / 1000,
+            delay: unifiedGridCardEntranceDelay(entranceIndex),
+          },
+        };
 
   return (
     <motion.div
@@ -62,20 +87,28 @@ export function BaseCard({
         width: position.width,
         height: position.height,
       }}
-      initial={false}
+      initial={
+        shouldAnimateEntrance
+          ? {
+              opacity: 0,
+              scale: 0.96,
+              x: position.x,
+              y: position.y,
+              rotate: position.rotation,
+            }
+          : false
+      }
       animate={{
+        opacity: 1,
+        scale: 1,
         x: position.x,
         y: position.y,
         rotate: position.rotation,
       }}
       exit={{ opacity: 0, transition: { duration: 0.15 } }}
-      transition={{
-        type: 'spring',
-        stiffness: 300,
-        damping: 30,
-      }}
-      whileHover={hoverEnabled ? { scale: 1.02 } : undefined}
-      whileTap={hoverEnabled ? { scale: 0.98 } : undefined}
+      transition={transition}
+      whileHover={prefersReducedMotion || !hoverEnabled ? undefined : { scale: 1.02 }}
+      whileTap={prefersReducedMotion || !hoverEnabled ? undefined : { scale: 0.98 }}
       onHoverStart={onHoverStart}
       onHoverEnd={onHoverEnd}
       onClick={onClick}

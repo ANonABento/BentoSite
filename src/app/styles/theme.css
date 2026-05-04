@@ -13,8 +13,6 @@
   --orange-hover: #d4722f;
   --orange-active: #c46526;
   --orange-muted: rgba(224, 123, 60, 0.2);
-  --primary: var(--orange);
-  --primary-muted: var(--orange-muted);
 
   /* Semantic color roles */
   --interactive: var(--purple);
@@ -113,8 +111,6 @@
   --orange-hover: #8f4214;
   --orange-active: #78350f;
   --orange-muted: rgba(168, 78, 24, 0.15);
-  --primary: var(--orange);
-  --primary-muted: var(--orange-muted);
 
   /* Semantic color roles */
   --interactive: var(--purple);

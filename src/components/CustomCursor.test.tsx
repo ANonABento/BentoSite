@@ -109,6 +109,16 @@ describe('CustomCursor', () => {
     expect(document.body).not.toHaveClass('custom-cursor-enabled');
   });
 
+  it('mounts on the scrollable portfolio route', async () => {
+    mockPathname = '/scrollable';
+
+    render(<CustomCursor />);
+
+    await waitFor(() => {
+      expect(document.querySelector('.custom-cursor-root')).toBeInTheDocument();
+    });
+  });
+
   it('removes the cursor when reduced motion is enabled after mount', async () => {
     render(<CustomCursor />);
 

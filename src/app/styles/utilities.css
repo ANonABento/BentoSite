@@ -249,11 +249,11 @@
   top: 0;
   width: 18px;
   height: 18px;
-  border: 1px solid var(--primary);
+  border: 1px solid var(--orange);
   border-radius: 9999px;
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--primary) 25%, transparent),
-    0 0 22px var(--primary-muted);
+    0 0 0 1px color-mix(in srgb, var(--orange) 25%, transparent),
+    0 0 22px var(--orange-muted);
   transition:
     width 160ms ease,
     height 160ms ease,
@@ -269,24 +269,24 @@
   top: 50%;
   width: 4px;
   height: 4px;
-  background: var(--primary);
+  background: var(--orange);
   border-radius: 9999px;
   transform: translate(-50%, -50%);
-  box-shadow: 0 0 14px var(--primary);
+  box-shadow: 0 0 14px var(--orange);
 }
 
 .custom-cursor-root.is-hovering .custom-cursor {
   width: 34px;
   height: 34px;
-  background: color-mix(in srgb, var(--primary) 12%, transparent);
-  border-color: color-mix(in srgb, var(--primary) 85%, white);
+  background: color-mix(in srgb, var(--orange) 12%, transparent);
+  border-color: color-mix(in srgb, var(--orange) 85%, white);
 }
 
 .custom-cursor-trail {
   position: fixed;
   left: 0;
   top: 0;
-  background: var(--primary);
+  background: var(--orange);
   border-radius: 9999px;
   filter: blur(0.2px);
   will-change: transform;
