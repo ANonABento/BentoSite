@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useSearchCardState } from '../cards';
+import { SearchMenuCardContent, useSearchCardState } from '../cards';
 import {
   getCameraTransform,
   isEditableTarget,
@@ -12,7 +12,6 @@ import {
 import { useBoardController } from '../core/useBoardController';
 import { usePhysicsWorld } from '../physics';
 import { SEARCH_CARD_ID } from '../BentoGrid.constants';
-import { ArrowLeftIcon, ChevronDownIcon, CloseIcon, SearchIcon } from '@/components/ui/Icons';
 import type { CardData, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
@@ -108,12 +107,12 @@ export function DesktopCanvasView({
   useEffect(() => { visibleRef.current = displayLayouts; }, [displayLayouts]);
   useEffect(() => { windowSizeRef.current = windowSize; }, [windowSize]);
 
-  // getCurrentLayouts returns grid positions directly — no physics merge
+  // getCurrentLayouts returns grid positions directly; there is no physics merge.
   const getCurrentLayouts = useCallback((): Map<string, CardPosition> => {
     return new Map(visibleRef.current);
   }, []);
 
-  // rAF loop — runs spawn/despawn at display refresh rate
+  // rAF loop runs spawn/despawn at display refresh rate.
   const boardTickRef = useRef(board.tick);
   useEffect(() => { boardTickRef.current = board.tick; }, [board.tick]);
 
@@ -148,12 +147,14 @@ export function DesktopCanvasView({
     [onCardSelect, setFocusedCardId],
   );
 
+  const setSearchExpanded = searchState.setExpanded;
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === '/' || event.key === 'f') {
         if (!isEditableTarget(event.target)) {
           event.preventDefault();
-          searchState.setExpanded(true);
+          setSearchExpanded(true);
         }
       }
 
@@ -167,7 +168,7 @@ export function DesktopCanvasView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onBack, searchState]);
+  }, [onBack, setSearchExpanded]);
 
   const transform = useMemo(
     () => getCameraTransform(navigation.camera, windowSize),
@@ -203,7 +204,7 @@ export function DesktopCanvasView({
         />
       </div>
 
-      {/* Search card — always rendered as fixed overlay in screen space */}
+      {/* Search card is always rendered as a fixed overlay in screen space. */}
       <div className="fixed inset-0 pointer-events-none z-10">
         <div
           className="pointer-events-auto absolute"
@@ -227,36 +228,22 @@ export function DesktopCanvasView({
               borderRadius: theme.card.borderRadius,
             }}
           >
-            {isSearchSticky && (searchState.edge === 'left' || searchState.edge === 'right') ? (
-              <IconStripContent
-                theme={theme}
-                onBack={onBack}
-                onToggleExpanded={searchState.toggleExpanded}
-                searchTerm={searchState.searchTerm}
-              />
-            ) : isSearchSticky ? (
-              <CompactBarContent
-                searchTerm={searchState.searchTerm}
-                onSearchChange={searchState.setSearchTerm}
-                onBack={onBack}
-                breadcrumb={breadcrumb}
-              />
-            ) : (
-              <FullSearchContent
-                theme={theme}
-                expanded={searchState.expanded}
-                searchTerm={searchState.searchTerm}
-                category={searchState.category}
-                categories={categories}
-                breadcrumb={breadcrumb}
-                onToggleExpanded={searchState.toggleExpanded}
-                onSearchChange={searchState.setSearchTerm}
-                onCategoryChange={searchState.setCategory}
-                onBack={onBack}
-                totalCards={cards.length}
-                filteredCards={board.filteredCount}
-              />
-            )}
+            <SearchMenuCardContent
+              theme={theme}
+              expanded={searchState.expanded}
+              edge={searchState.edge}
+              compression={isSearchSticky ? 1 : 0}
+              searchTerm={searchState.searchTerm}
+              category={searchState.category}
+              categories={categories}
+              breadcrumb={breadcrumb}
+              onToggleExpanded={searchState.toggleExpanded}
+              onSearchChange={searchState.setSearchTerm}
+              onCategoryChange={searchState.setCategory}
+              onBack={onBack}
+              totalCards={cards.length}
+              filteredCards={board.filteredCount}
+            />
           </div>
         </div>
       </div>
@@ -287,110 +274,6 @@ export function DesktopCanvasView({
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-// Inline sticky content components (imported from SearchMenuCard would create circular dep)
-function IconStripContent({ theme, onBack, onToggleExpanded, searchTerm }: {
-  theme: ThemeConfig;
-  onBack?: () => void;
-  onToggleExpanded: () => void;
-  searchTerm: string;
-}) {
-  return (
-    <div className="h-full flex flex-col items-center justify-center gap-3 py-3">
-      {onBack && (
-        <button onClick={onBack} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="Go back">
-          <ArrowLeftIcon className="w-5 h-5 text-white/70" />
-        </button>
-      )}
-      <button onClick={onToggleExpanded} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="Search" style={{ color: searchTerm ? theme.accent.primary : undefined }}>
-        <SearchIcon className="w-5 h-5 text-white/70" />
-      </button>
-      <button onClick={onToggleExpanded} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="Toggle filters" style={{ color: theme.accent.primary }}>
-        <ChevronDownIcon className="w-5 h-5" />
-      </button>
-    </div>
-  );
-}
-
-function FullSearchContent({ theme, expanded, searchTerm, category, categories, breadcrumb, onToggleExpanded, onSearchChange, onCategoryChange, onBack, totalCards, filteredCards }: {
-  theme: ThemeConfig;
-  expanded: boolean;
-  searchTerm: string;
-  category: string | null;
-  categories: string[];
-  breadcrumb?: string;
-  onToggleExpanded: () => void;
-  onSearchChange: (term: string) => void;
-  onCategoryChange: (category: string | null) => void;
-  onBack?: () => void;
-  totalCards: number;
-  filteredCards: number;
-}) {
-  return (
-    <div className="h-full min-w-0 p-4 flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-2 min-w-0">
-        <span className="text-xs text-white/50 font-mono truncate">{breadcrumb || 'bentOS'}</span>
-        <div className="flex items-center gap-1 flex-shrink-0">
-          <span className="text-[10px] text-white/40 font-mono">
-            {filteredCards !== totalCards ? `${filteredCards}/${totalCards}` : totalCards}
-          </span>
-          <button onClick={onToggleExpanded} className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors" aria-label={expanded ? 'Hide filters' : 'Show filters'} style={{ color: theme.accent.primary }}>
-            <ChevronDownIcon className="w-4 h-4 transition-transform" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
-          </button>
-        </div>
-      </div>
-      {onBack && (
-        <button onClick={onBack} className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors w-fit">
-          <ArrowLeftIcon className="w-4 h-4" /><span>Back to Dashboard</span>
-        </button>
-      )}
-      <label className="flex items-center gap-2 rounded-md bg-white/5 border border-white/10 px-3 py-2">
-        <SearchIcon className="w-4 h-4 text-white/40 flex-shrink-0" />
-        <input type="text" placeholder="Search..." value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none" aria-label="Search cards" />
-        {searchTerm && (
-          <button onClick={() => onSearchChange('')} className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-white/10" aria-label="Clear search">
-            <CloseIcon className="w-3 h-3 text-white/50" />
-          </button>
-        )}
-      </label>
-      {expanded && (
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
-          <button onClick={() => onCategoryChange(null)} className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap ${category === null ? 'text-white' : 'text-white/60 hover:text-white/80'}`} style={{ background: category === null ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)', border: category === null ? `1px solid ${theme.accent.primary}50` : '1px solid transparent' }}>All</button>
-          {categories.map((cat) => (
-            <button key={cat} onClick={() => onCategoryChange(cat === category ? null : cat)} className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap ${category === cat ? 'text-white' : 'text-white/60 hover:text-white/80'}`} style={{ background: category === cat ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)', border: category === cat ? `1px solid ${theme.accent.primary}50` : '1px solid transparent' }}>{cat}</button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function CompactBarContent({ searchTerm, onSearchChange, onBack, breadcrumb }: {
-  searchTerm: string;
-  onSearchChange: (term: string) => void;
-  onBack?: () => void;
-  breadcrumb?: string;
-}) {
-  return (
-    <div className="h-full flex items-center gap-2 px-3">
-      {onBack && (
-        <button onClick={onBack} className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors" aria-label="Go back">
-          <ArrowLeftIcon className="w-4 h-4 text-white/70" />
-        </button>
-      )}
-      <span className="text-xs text-white/40 font-mono truncate flex-shrink-0">{breadcrumb || 'bentOS'}</span>
-      <label className="flex-1 min-w-0 flex items-center gap-2 rounded-md bg-white/5 border border-white/10 px-3 py-1.5">
-        <SearchIcon className="w-4 h-4 text-white/40 flex-shrink-0" />
-        <input type="text" placeholder="Search..." value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none" aria-label="Search cards" />
-        {searchTerm && (
-          <button onClick={() => onSearchChange('')} className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-white/10" aria-label="Clear search">
-            <CloseIcon className="w-3 h-3 text-white/50" />
-          </button>
-        )}
-      </label>
     </div>
   );
 }

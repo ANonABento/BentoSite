@@ -37,6 +37,11 @@ export interface SearchMenuCardProps {
   filteredCards?: number;
 }
 
+export type SearchMenuCardContentProps = Omit<
+  SearchMenuCardProps,
+  'position' | 'width' | 'height'
+>;
+
 // =============================================================================
 // HELPERS
 // =============================================================================
@@ -188,7 +193,7 @@ function FullContent({
   onBack,
   totalCards,
   filteredCards,
-}: Omit<SearchMenuCardProps, 'edge' | 'position' | 'compression' | 'width' | 'height' | 'theme'> & { theme: ThemeConfig }) {
+}: Omit<SearchMenuCardContentProps, 'edge' | 'compression' | 'theme'> & { theme: ThemeConfig }) {
   const detailsOpacity = expanded ? 1 : 0;
   const detailsInteractive = expanded;
 
@@ -295,6 +300,65 @@ function FullContent({
 // MAIN COMPONENT
 // =============================================================================
 
+export function SearchMenuCardContent({
+  theme,
+  expanded,
+  edge,
+  compression,
+  searchTerm,
+  category,
+  categories,
+  breadcrumb,
+  onToggleExpanded,
+  onSearchChange,
+  onCategoryChange,
+  onBack,
+  totalCards,
+  filteredCards,
+}: SearchMenuCardContentProps) {
+  const isSideEdge = (edge === 'left' || edge === 'right') && compression > 0.8;
+  const isHorizontalEdge = (edge === 'top' || edge === 'bottom') && compression > 0.8;
+
+  if (isSideEdge) {
+    return (
+      <IconStripContent
+        theme={theme}
+        onBack={onBack}
+        onToggleExpanded={onToggleExpanded}
+        searchTerm={searchTerm}
+      />
+    );
+  }
+
+  if (isHorizontalEdge) {
+    return (
+      <CompactBarContent
+        searchTerm={searchTerm}
+        onSearchChange={onSearchChange}
+        onBack={onBack}
+        breadcrumb={breadcrumb}
+      />
+    );
+  }
+
+  return (
+    <FullContent
+      theme={theme}
+      expanded={expanded}
+      searchTerm={searchTerm}
+      category={category}
+      categories={categories}
+      breadcrumb={breadcrumb}
+      onToggleExpanded={onToggleExpanded}
+      onSearchChange={onSearchChange}
+      onCategoryChange={onCategoryChange}
+      onBack={onBack}
+      totalCards={totalCards}
+      filteredCards={filteredCards}
+    />
+  );
+}
+
 export function SearchMenuCard({
   theme,
   expanded,
@@ -314,9 +378,6 @@ export function SearchMenuCard({
   totalCards,
   filteredCards,
 }: SearchMenuCardProps) {
-  const isSideEdge = (edge === 'left' || edge === 'right') && compression > 0.8;
-  const isHorizontalEdge = (edge === 'top' || edge === 'bottom') && compression > 0.8;
-
   const cardPosition: CardPosition = {
     x: position.x - width / 2,
     y: position.y - height / 2,
@@ -350,36 +411,22 @@ export function SearchMenuCard({
       }}
       ariaLabel="Search and filter cards"
     >
-      {isSideEdge ? (
-        <IconStripContent
-          theme={theme}
-          onBack={onBack}
-          onToggleExpanded={onToggleExpanded}
-          searchTerm={searchTerm}
-        />
-      ) : isHorizontalEdge ? (
-        <CompactBarContent
-          searchTerm={searchTerm}
-          onSearchChange={onSearchChange}
-          onBack={onBack}
-          breadcrumb={breadcrumb}
-        />
-      ) : (
-        <FullContent
-          theme={theme}
-          expanded={expanded}
-          searchTerm={searchTerm}
-          category={category}
-          categories={categories}
-          breadcrumb={breadcrumb}
-          onToggleExpanded={onToggleExpanded}
-          onSearchChange={onSearchChange}
-          onCategoryChange={onCategoryChange}
-          onBack={onBack}
-          totalCards={totalCards}
-          filteredCards={filteredCards}
-        />
-      )}
+      <SearchMenuCardContent
+        theme={theme}
+        expanded={expanded}
+        edge={edge}
+        compression={compression}
+        searchTerm={searchTerm}
+        category={category}
+        categories={categories}
+        breadcrumb={breadcrumb}
+        onToggleExpanded={onToggleExpanded}
+        onSearchChange={onSearchChange}
+        onCategoryChange={onCategoryChange}
+        onBack={onBack}
+        totalCards={totalCards}
+        filteredCards={filteredCards}
+      />
     </BaseCard>
   );
 }

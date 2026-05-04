@@ -75,11 +75,11 @@ const SEARCH_CARD_SIZE: CardSize = '2x1';
 /**
  * Calculate initial card positions using grid-snapped placement.
  *
- * The search card is placed first at grid center as a regular 2×1 card.
+ * The search card is placed first at grid center as a regular 2x1 card.
  * Content cards spiral outward around it. All cards live in the same
  * coordinate space and are positioned the same way.
  *
- * Returns a Map of cardId → CardPosition including the search card.
+ * Returns a Map of cardId to CardPosition including the search card.
  */
 export function calculateInitialPositions(
   cards: CardData[],

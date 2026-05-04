@@ -1,5 +1,5 @@
 /**
- * Grid Occupancy Map — tracks which grid cells are occupied by which cards.
+ * Grid Occupancy Map - tracks which grid cells are occupied by which cards.
  *
  * Grid coordinates:
  *   - (col, row) integers, origin at (0, 0)
@@ -7,7 +7,7 @@
  *   - Step = CELL_SIZE + GAP (192px default)
  *   - Multi-cell cards (2x1, 1x2, 2x2) occupy contiguous cells
  *
- * The map is a simple string→string dictionary: "col,row" → cardId.
+ * The map is a simple string-to-string dictionary: "col,row" to cardId.
  * This allows O(1) lookups and works with an infinite canvas (no bounds).
  */
 
@@ -47,9 +47,9 @@ export function sizeToSpan(size: CardSize): { cols: number; rows: number } {
  * Mutable occupancy map. Tracks which cells are taken and by whom.
  */
 export class GridOccupancy {
-  /** "col,row" → cardId */
+  /** "col,row" to cardId */
   private cells = new Map<string, string>();
-  /** cardId → list of "col,row" keys it occupies */
+  /** cardId to list of "col,row" keys it occupies */
   private cardCells = new Map<string, string[]>();
 
   /** Check if a card of the given size can be placed at (col, row). */

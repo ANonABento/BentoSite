@@ -3,7 +3,12 @@
  */
 
 // Search card
-export { SearchMenuCard, type SearchMenuCardProps } from './SearchMenuCard';
+export {
+  SearchMenuCard,
+  SearchMenuCardContent,
+  type SearchMenuCardContentProps,
+  type SearchMenuCardProps,
+} from './SearchMenuCard';
 export { useSearchCardState } from './useSearchCardState';
 
 // Themed cards
