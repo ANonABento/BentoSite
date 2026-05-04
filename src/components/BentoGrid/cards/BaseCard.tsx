@@ -82,6 +82,7 @@ export function BaseCard({
       onPointerDown={onPointerDown}
       onWheel={onWheel}
       aria-label={ariaLabel}
+      data-magnetic={onClick ? true : undefined}
     >
       <div
         className={[

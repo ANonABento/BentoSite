@@ -8,6 +8,7 @@ import { buildSiteJsonLd } from '@/lib/seo';
 import { ThemeProvider } from '@/lib/theme-context';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { ToastProvider } from '@/components/ui/Toast';
+import { CustomCursor } from '@/components/CustomCursor';
 import './globals.css';
 
 const geistSans = Geist({
@@ -105,6 +106,7 @@ export default function RootLayout({
         </a>
         <ThemeProvider>
           <ToastProvider>
+            <CustomCursor />
             <PageTransition>{children}</PageTransition>
           </ToastProvider>
         </ThemeProvider>
