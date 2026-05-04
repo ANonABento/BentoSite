@@ -27,6 +27,7 @@ interface DesktopCanvasViewProps {
   onCardSelect?: (card: CardData) => void;
   renderCard?: RenderCard;
   onBack?: () => void;
+  getCardHref?: (card: CardData) => string | undefined;
 }
 
 export function DesktopCanvasView({
@@ -39,6 +40,7 @@ export function DesktopCanvasView({
   onCardSelect,
   renderCard,
   onBack,
+  getCardHref,
 }: DesktopCanvasViewProps) {
   const windowSize = useWindowSize();
   const debugEnabled = useDebugFlag();

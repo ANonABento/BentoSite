@@ -31,6 +31,7 @@ export interface ProjectCardProps {
   position: CardPosition;
   theme: ThemeConfig;
   onClick?: () => void;
+  href?: string;
   /** Whether the card has keyboard focus */
   isFocused?: boolean;
   /** Visible-order index used for entrance staggering */
@@ -125,6 +126,7 @@ export function ProjectCard({
   position,
   theme,
   onClick,
+  href,
   isFocused = false,
   entranceIndex = 0,
 }: ProjectCardProps) {
@@ -142,6 +144,8 @@ export function ProjectCard({
       isFocused={isFocused}
       entranceIndex={entranceIndex}
       onClick={onClick}
+      href={href}
+      ariaLabel={`Open ${card.title}`}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       shellClassName="group"
