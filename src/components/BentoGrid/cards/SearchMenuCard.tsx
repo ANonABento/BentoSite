@@ -37,6 +37,23 @@ export interface SearchMenuCardProps {
   filteredCards?: number;
 }
 
+export interface SearchCardIconStripContentProps {
+  theme: ThemeConfig;
+  onBack?: () => void;
+  onToggleExpanded: () => void;
+  searchTerm: string;
+}
+
+export interface SearchCardCompactBarContentProps {
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
+  onBack?: () => void;
+  breadcrumb?: string;
+}
+
+export type SearchCardFullContentProps =
+  Omit<SearchMenuCardProps, 'edge' | 'position' | 'compression' | 'width' | 'height'>;
+
 // =============================================================================
 // HELPERS
 // =============================================================================
@@ -75,17 +92,12 @@ function CategoryFilterButton({
 // ICON STRIP (left/right edge, high compression)
 // =============================================================================
 
-function IconStripContent({
+export function SearchCardIconStripContent({
   theme,
   onBack,
   onToggleExpanded,
   searchTerm,
-}: {
-  theme: ThemeConfig;
-  onBack?: () => void;
-  onToggleExpanded: () => void;
-  searchTerm: string;
-}) {
+}: SearchCardIconStripContentProps) {
   return (
     <div className="h-full flex flex-col items-center justify-center gap-3 py-3">
       {onBack && (
@@ -121,17 +133,12 @@ function IconStripContent({
 // COMPACT BAR (top/bottom edge, moderate compression)
 // =============================================================================
 
-function CompactBarContent({
+export function SearchCardCompactBarContent({
   searchTerm,
   onSearchChange,
   onBack,
   breadcrumb,
-}: {
-  searchTerm: string;
-  onSearchChange: (term: string) => void;
-  onBack?: () => void;
-  breadcrumb?: string;
-}) {
+}: SearchCardCompactBarContentProps) {
   return (
     <div className="h-full flex items-center gap-2 px-3">
       {onBack && (
@@ -175,7 +182,7 @@ function CompactBarContent({
 // FULL CONTENT (free state, no compression)
 // =============================================================================
 
-function FullContent({
+export function SearchCardFullContent({
   theme,
   expanded,
   searchTerm,
@@ -188,7 +195,7 @@ function FullContent({
   onBack,
   totalCards,
   filteredCards,
-}: Omit<SearchMenuCardProps, 'edge' | 'position' | 'compression' | 'width' | 'height' | 'theme'> & { theme: ThemeConfig }) {
+}: SearchCardFullContentProps) {
   const detailsOpacity = expanded ? 1 : 0;
   const detailsInteractive = expanded;
 
@@ -351,21 +358,21 @@ export function SearchMenuCard({
       ariaLabel="Search and filter cards"
     >
       {isSideEdge ? (
-        <IconStripContent
+        <SearchCardIconStripContent
           theme={theme}
           onBack={onBack}
           onToggleExpanded={onToggleExpanded}
           searchTerm={searchTerm}
         />
       ) : isHorizontalEdge ? (
-        <CompactBarContent
+        <SearchCardCompactBarContent
           searchTerm={searchTerm}
           onSearchChange={onSearchChange}
           onBack={onBack}
           breadcrumb={breadcrumb}
         />
       ) : (
-        <FullContent
+        <SearchCardFullContent
           theme={theme}
           expanded={expanded}
           searchTerm={searchTerm}

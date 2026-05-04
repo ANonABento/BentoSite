@@ -40,6 +40,7 @@ export function BaseCard({
   shellStyle,
   positionMode = 'absolute',
   hoverEnabled = true,
+  motionMode = 'spring',
   ariaLabel,
   children,
   onClick,
@@ -70,9 +71,13 @@ export function BaseCard({
       }}
       exit={{ opacity: 0, transition: { duration: 0.15 } }}
       transition={{
-        type: 'spring',
-        stiffness: 300,
-        damping: 30,
+        ...(motionMode === 'instant'
+          ? { duration: 0 }
+          : {
+              type: 'spring',
+              stiffness: 300,
+              damping: 30,
+            }),
       }}
       whileHover={hoverEnabled ? { scale: 1.02 } : undefined}
       whileTap={hoverEnabled ? { scale: 0.98 } : undefined}

@@ -175,7 +175,10 @@ export function useBoardController({
       grid.release(SEARCH_CARD_ID);
 
       // Snap to nearest grid cell
-      const cell = pixelToCell(x, y);
+      const targetCell = pixelToCell(x, y);
+      const cell = grid.findNearest(targetCell.col, targetCell.row, current.size);
+      if (!cell) return;
+
       grid.place(cell.col, cell.row, current.size, SEARCH_CARD_ID);
       const pixel = cellToPixel(cell.col, cell.row);
 
