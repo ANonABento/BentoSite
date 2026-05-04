@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { SearchMenuCard, useSearchCardState } from '../cards';
+import { InfoMenuCard, useInfoCardState } from '../cards';
 import { filterCards, useWindowSize } from '../core';
 import { MOBILE } from '../BentoGrid.constants';
 import type { CardData, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
@@ -17,6 +17,7 @@ interface MobileScrollViewProps {
   onCardSelect?: (card: CardData) => void;
   onBack?: () => void;
   renderCard?: RenderCard;
+  getCardHref: (card: CardData) => string | undefined;
 }
 
 export function MobileScrollView({
@@ -28,6 +29,7 @@ export function MobileScrollView({
   onCardSelect,
   onBack,
   renderCard,
+  getCardHref,
 }: MobileScrollViewProps) {
   const windowSize = useWindowSize();
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,7 +40,7 @@ export function MobileScrollView({
     [cards, searchTerm, category]
   );
 
-  const searchState = useSearchCardState({
+  const infoState = useInfoCardState({
     camera: { x: 0, y: 0, zoom: 1 },
     windowSize,
     categories,
@@ -56,29 +58,30 @@ export function MobileScrollView({
       tabIndex={-1}
       style={{ background: theme.background }}
     >
-      <SearchMenuCard
+      <InfoMenuCard
         theme={theme}
-        expanded={searchState.expanded}
-        edge={searchState.edge}
-        position={searchState.screenPosition}
-        compression={searchState.compression}
-        width={searchState.width}
-        height={searchState.height}
-        searchTerm={searchState.searchTerm}
-        category={searchState.category}
+        expanded={infoState.expanded}
+        edge={infoState.edge}
+        position={infoState.screenPosition}
+        compression={infoState.compression}
+        width={infoState.width}
+        height={infoState.height}
+        searchTerm={infoState.searchTerm}
+        category={infoState.category}
         categories={categories}
         breadcrumb={breadcrumb}
-        onToggleExpanded={searchState.toggleExpanded}
-        onSearchChange={searchState.setSearchTerm}
-        onCategoryChange={searchState.setCategory}
+        onToggleExpanded={infoState.toggleExpanded}
+        onSearchChange={infoState.setSearchTerm}
+        onCategoryChange={infoState.setCategory}
         onBack={onBack}
         totalCards={cards.length}
         filteredCards={localFilteredCards.length}
+        helpText="Search, filter, and open cards from this list."
       />
 
       <div
         className="flex-1 overflow-y-auto"
-        style={{ paddingTop: searchState.height + MOBILE.SCROLL_GAP }}
+        style={{ paddingTop: infoState.height + MOBILE.SCROLL_GAP }}
       >
         <div
           className="flex flex-col gap-4 max-w-md mx-auto"
@@ -108,7 +111,15 @@ export function MobileScrollView({
             if (renderCard) {
               return (
                 <div key={card.id} style={wrapperStyle}>
-                  {renderCard(card, position, theme, false, () => onCardSelect?.(card), index)}
+                  {renderCard(
+                    card,
+                    position,
+                    theme,
+                    false,
+                    () => onCardSelect?.(card),
+                    index,
+                    getCardHref(card),
+                  )}
                 </div>
               );
             }
@@ -126,6 +137,7 @@ export function MobileScrollView({
                   position={position}
                   theme={theme}
                   onClick={() => onCardSelect?.(card)}
+                  href={getCardHref(card)}
                 />
               </motion.div>
             );

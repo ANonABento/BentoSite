@@ -103,6 +103,7 @@ export interface GameCardProps {
   theme: ThemeConfig;
   index?: number;
   onClick?: () => void;
+  href?: string;
   /** Whether the card has keyboard focus */
   isFocused?: boolean;
   /** Visible-order index used for entrance staggering */
@@ -119,6 +120,7 @@ export function GameCard({
   theme,
   index = 0,
   onClick,
+  href,
   isFocused = false,
   entranceIndex = 0,
 }: GameCardProps) {
@@ -147,6 +149,8 @@ export function GameCard({
       isFocused={isFocused}
       entranceIndex={entranceIndex}
       onClick={onClick}
+      href={href}
+      ariaLabel={`Open ${card.title}`}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       shellClassName="rounded-xl backdrop-blur-sm group relative"

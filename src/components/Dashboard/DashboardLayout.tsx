@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect, ComponentType } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo, ComponentType } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -43,13 +43,10 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<'3d' | 'chat'>('3d');
-  // Load initial project from URL param if provided
-  const [selectedProject] = useState<Project | null>(() => {
-    if (initialProjectId) {
-      return getProjectById(initialProjectId) || null;
-    }
-    return null;
-  });
+  const selectedProject = useMemo(
+    () => (initialProjectId ? getProjectById(initialProjectId) || null : null),
+    [initialProjectId],
+  );
   const [chatFns, setChatFns] = useState<ChatFunctions | null>(null);
   const isMountedRef = useRef(true);
   const mobileChatRef = useRef<HTMLDivElement>(null);

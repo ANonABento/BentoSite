@@ -2,9 +2,9 @@
  * Card components for BentoGrid
  */
 
-// Search card
-export { SearchMenuCard, type SearchMenuCardProps } from './SearchMenuCard';
-export { useSearchCardState } from './useSearchCardState';
+// Info card
+export { InfoMenuCard, type InfoMenuCardProps } from './InfoMenuCard';
+export { useInfoCardState } from './useInfoCardState';
 
 // Themed cards
 export { GameCard, type GameCardProps } from './GameCard';
