@@ -1,7 +1,7 @@
 import type { CardData, CardPosition, CardSize, Rect } from '../BentoGrid.types';
 import { GRID, SEARCH_CARD_ID } from '../BentoGrid.constants';
 import { getCardDimensions, getCardSizeForIndex } from './cardSizes';
-import { GridOccupancy, cellToPixel, sizeToSpan } from './gridOccupancy';
+import { GridOccupancy, cellToPixel, pixelToCell, sizeToSpan } from './gridOccupancy';
 
 export function getRandomRotation(range: number): number {
   if (range === 0) return 0;
@@ -155,7 +155,7 @@ export function occupancyFromPositions(
   const grid = new GridOccupancy();
 
   positions.forEach((pos, cardId) => {
-    const { col, row } = { col: Math.round(pos.x / (GRID.CELL_SIZE + GRID.GAP)), row: Math.round(pos.y / (GRID.CELL_SIZE + GRID.GAP)) };
+    const { col, row } = pixelToCell(pos.x, pos.y);
     if (grid.canPlace(col, row, pos.size)) {
       grid.place(col, row, pos.size, cardId);
     }

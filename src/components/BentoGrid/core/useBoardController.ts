@@ -6,7 +6,6 @@ import type {
   CardData,
   CardPosition,
   QueuedCard,
-  SpawnPhysicsBridge,
   ViewportBounds,
 } from '../BentoGrid.types';
 import { GRID, QUEUE, SEARCH_CARD_ID } from '../BentoGrid.constants';
@@ -21,6 +20,7 @@ import {
   occupancyFromPositions,
 } from '../layout';
 import { filterCards } from './cardPoolFilter';
+import { createQueuedCards } from './cardQueue';
 import { screenToCanvas } from './useViewport';
 
 interface BoardControllerOptions {
@@ -36,7 +36,6 @@ export interface BoardControllerReturn {
   filteredCount: number;
   applyFilter: (searchTerm: string, category: string | null) => void;
   resetBoard: () => void;
-  setPhysicsBridge: (physics: SpawnPhysicsBridge) => void;
   /** Move the search card's grid position to new canvas coordinates */
   rehomeSearchCard: (x: number, y: number) => void;
   tick: (
@@ -44,15 +43,6 @@ export interface BoardControllerReturn {
     windowSize: { width: number; height: number },
     getCurrentLayouts: () => Map<string, CardPosition>,
   ) => void;
-}
-
-function createQueuedCards(cards: CardData[]): QueuedCard[] {
-  const queuedAt = Date.now();
-  return cards.map((card) => ({
-    id: card.id,
-    data: card,
-    queuedAt,
-  }));
 }
 
 function computeViewportBounds(
@@ -112,7 +102,6 @@ export function useBoardController({
   const visibleRef = useRef(visible);
   const queueRef = useRef(queue);
   const spawnCountRef = useRef(0);
-  const physicsRef = useRef<SpawnPhysicsBridge | null>(null);
   const gridRef = useRef<GridOccupancy>(occupancyFromPositions(visible));
   const filterRef = useRef<{ searchTerm: string; category: string | null }>({
     searchTerm: '',
@@ -142,7 +131,6 @@ export function useBoardController({
       gridRef.current = occupancyFromPositions(nextVisible);
       setVisible(nextVisible);
       setQueue(createQueuedCards(filtered.filter((card) => !visibleIds.has(card.id))));
-      physicsRef.current?.resetCards?.(nextVisible);
       spawnCountRef.current = 0;
     },
     [cards, maxVisible, rotationRange, setQueue, setVisible],
@@ -159,10 +147,6 @@ export function useBoardController({
   const resetBoard = useCallback(() => {
     rebuildFromFilter(filterRef.current.searchTerm, filterRef.current.category);
   }, [rebuildFromFilter]);
-
-  const setPhysicsBridge = useCallback((physics: SpawnPhysicsBridge) => {
-    physicsRef.current = physics;
-  }, []);
 
   const rehomeSearchCard = useCallback(
     (x: number, y: number) => {
@@ -287,7 +271,6 @@ export function useBoardController({
     filteredCount: Math.max(0, visible.size + queue.length - 1), // exclude search card
     applyFilter,
     resetBoard,
-    setPhysicsBridge,
     rehomeSearchCard,
     tick,
   };

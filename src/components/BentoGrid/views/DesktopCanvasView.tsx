@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef } from 'react';
+import type { ChangeEvent, ReactNode } from 'react';
 import { useSearchCardState } from '../cards';
 import {
   getCameraTransform,
@@ -315,7 +316,85 @@ function IconStripContent({ theme, onBack, onToggleExpanded, searchTerm }: {
   );
 }
 
-function FullSearchContent({ theme, expanded, searchTerm, category, categories, breadcrumb, onToggleExpanded, onSearchChange, onCategoryChange, onBack, totalCards, filteredCards }: {
+function SearchField({
+  searchTerm,
+  onSearchChange,
+  className = 'px-3 py-2',
+}: {
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
+  className?: string;
+}) {
+  const handleChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => onSearchChange(event.target.value),
+    [onSearchChange],
+  );
+
+  return (
+    <label className={`flex items-center gap-2 rounded-md bg-[var(--glass-bg)] border border-[var(--border)] ${className}`}>
+      <SearchIcon className="w-4 h-4 text-[var(--text-muted)] flex-shrink-0" />
+      <input
+        type="text"
+        placeholder="Search..."
+        value={searchTerm}
+        onChange={handleChange}
+        className="flex-1 min-w-0 bg-transparent text-[var(--text-primary)] text-sm placeholder:text-[var(--text-muted)] outline-none"
+        aria-label="Search cards"
+      />
+      {searchTerm && (
+        <button
+          onClick={() => onSearchChange('')}
+          className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full text-[var(--text-muted)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)]"
+          aria-label="Clear search"
+        >
+          <CloseIcon className="w-3 h-3" />
+        </button>
+      )}
+    </label>
+  );
+}
+
+function CategoryButton({
+  active,
+  children,
+  onClick,
+  accent,
+}: {
+  active: boolean;
+  children: ReactNode;
+  onClick: () => void;
+  accent: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap ${
+        active ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+      }`}
+      style={{
+        background: active ? `${accent}30` : 'var(--glass-bg)',
+        border: active ? `1px solid ${accent}50` : '1px solid var(--border)',
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function FullSearchContent({
+  theme,
+  expanded,
+  searchTerm,
+  category,
+  categories,
+  breadcrumb,
+  onToggleExpanded,
+  onSearchChange,
+  onCategoryChange,
+  onBack,
+  totalCards,
+  filteredCards,
+}: {
   theme: ThemeConfig;
   expanded: boolean;
   searchTerm: string;
@@ -347,20 +426,25 @@ function FullSearchContent({ theme, expanded, searchTerm, category, categories, 
           <ArrowLeftIcon className="w-4 h-4" /><span>Back to Dashboard</span>
         </button>
       )}
-      <label className="flex items-center gap-2 rounded-md bg-[var(--glass-bg)] border border-[var(--border)] px-3 py-2">
-        <SearchIcon className="w-4 h-4 text-[var(--text-muted)] flex-shrink-0" />
-        <input type="text" placeholder="Search..." value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent text-[var(--text-primary)] text-sm placeholder:text-[var(--text-muted)] outline-none" aria-label="Search cards" />
-        {searchTerm && (
-          <button onClick={() => onSearchChange('')} className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full text-[var(--text-muted)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)]" aria-label="Clear search">
-            <CloseIcon className="w-3 h-3" />
-          </button>
-        )}
-      </label>
+      <SearchField searchTerm={searchTerm} onSearchChange={onSearchChange} />
       {expanded && (
         <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
-          <button onClick={() => onCategoryChange(null)} className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap ${category === null ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`} style={{ background: category === null ? `${theme.accent.primary}30` : 'var(--glass-bg)', border: category === null ? `1px solid ${theme.accent.primary}50` : '1px solid var(--border)' }}>All</button>
+          <CategoryButton
+            active={category === null}
+            onClick={() => onCategoryChange(null)}
+            accent={theme.accent.primary}
+          >
+            All
+          </CategoryButton>
           {categories.map((cat) => (
-            <button key={cat} onClick={() => onCategoryChange(cat === category ? null : cat)} className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap ${category === cat ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`} style={{ background: category === cat ? `${theme.accent.primary}30` : 'var(--glass-bg)', border: category === cat ? `1px solid ${theme.accent.primary}50` : '1px solid var(--border)' }}>{cat}</button>
+            <CategoryButton
+              key={cat}
+              active={category === cat}
+              onClick={() => onCategoryChange(cat === category ? null : cat)}
+              accent={theme.accent.primary}
+            >
+              {cat}
+            </CategoryButton>
           ))}
         </div>
       )}
@@ -382,15 +466,11 @@ function CompactBarContent({ searchTerm, onSearchChange, onBack, breadcrumb }: {
         </button>
       )}
       <span className="text-xs text-[var(--text-muted)] font-mono truncate flex-shrink-0">{breadcrumb || 'bentOS'}</span>
-      <label className="flex-1 min-w-0 flex items-center gap-2 rounded-md bg-[var(--glass-bg)] border border-[var(--border)] px-3 py-1.5">
-        <SearchIcon className="w-4 h-4 text-[var(--text-muted)] flex-shrink-0" />
-        <input type="text" placeholder="Search..." value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent text-[var(--text-primary)] text-sm placeholder:text-[var(--text-muted)] outline-none" aria-label="Search cards" />
-        {searchTerm && (
-          <button onClick={() => onSearchChange('')} className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full text-[var(--text-muted)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)]" aria-label="Clear search">
-            <CloseIcon className="w-3 h-3" />
-          </button>
-        )}
-      </label>
+      <SearchField
+        searchTerm={searchTerm}
+        onSearchChange={onSearchChange}
+        className="flex-1 min-w-0 px-3 py-1.5"
+      />
     </div>
   );
 }
