@@ -8,6 +8,7 @@ interface DefaultCardProps {
   position: CardPosition;
   theme: ThemeConfig;
   onClick?: () => void;
+  href?: string;
   isFocused?: boolean;
   entranceIndex?: number;
 }
@@ -17,6 +18,7 @@ export function DefaultCard({
   position,
   theme,
   onClick,
+  href,
   isFocused,
   entranceIndex,
 }: DefaultCardProps) {
@@ -28,6 +30,8 @@ export function DefaultCard({
       isFocused={isFocused}
       entranceIndex={entranceIndex}
       onClick={onClick}
+      href={href}
+      ariaLabel={`Open ${card.title}`}
     >
       <div className="p-4 h-full flex flex-col">
         <h3 className="font-bold text-[var(--foreground)] text-lg truncate">{card.title}</h3>

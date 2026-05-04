@@ -1,6 +1,6 @@
 import Matter from 'matter-js';
 import type { CardPosition, Position } from '../BentoGrid.types';
-import { SEARCH_CARD_ID } from '../BentoGrid.constants';
+import { INFO_CARD_ID } from '../BentoGrid.constants';
 
 const { Body, Sleeping } = Matter;
 
@@ -37,7 +37,7 @@ export function applySettlingForces(
   strength: number,
 ): void {
   bodies.forEach((body, id) => {
-    if (body.isStatic || id === SEARCH_CARD_ID) return;
+    if (body.isStatic || id === INFO_CARD_ID) return;
 
     const target = targets.get(id);
     if (!target) return;
@@ -99,14 +99,14 @@ export function applyEntranceBurst(
   strength = 8,
 ): void {
   bodies.forEach((body, id) => {
-    if (id === SEARCH_CARD_ID) return;
+    if (id === INFO_CARD_ID) return;
     applyEntranceBurstToBody(body, center, strength);
   });
 }
 
 export function applyDamping(bodies: Map<string, Matter.Body>, factor: number): void {
   bodies.forEach((body, id) => {
-    if (body.isStatic || id === SEARCH_CARD_ID) return;
+    if (body.isStatic || id === INFO_CARD_ID) return;
 
     Body.setVelocity(body, {
       x: body.velocity.x * factor,

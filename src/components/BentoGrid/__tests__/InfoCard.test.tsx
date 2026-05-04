@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { SEARCH_CARD, THEME_PREMIUM } from '../BentoGrid.constants';
-import { SearchMenuCard, type SearchMenuCardProps } from '../cards/SearchMenuCard';
+import { InfoMenuCard, type InfoMenuCardProps } from '../cards/InfoMenuCard';
 
 vi.mock('framer-motion', () => ({
   motion: {
@@ -35,7 +35,7 @@ vi.mock('framer-motion', () => ({
   useReducedMotion: () => false,
 }));
 
-const baseProps: SearchMenuCardProps = {
+const baseProps: InfoMenuCardProps = {
   theme: THEME_PREMIUM,
   expanded: true,
   edge: 'none',
@@ -53,21 +53,21 @@ const baseProps: SearchMenuCardProps = {
   filteredCards: 8,
 };
 
-function renderSearchCard(overrides: Partial<SearchMenuCardProps> = {}) {
-  return render(<SearchMenuCard {...baseProps} {...overrides} />);
+function renderInfoCard(overrides: Partial<InfoMenuCardProps> = {}) {
+  return render(<InfoMenuCard {...baseProps} {...overrides} />);
 }
 
-describe('SearchCard', () => {
+describe('InfoCard', () => {
   it('keeps the regular breadcrumb and filters while fully on-screen', () => {
-    renderSearchCard();
+    renderInfoCard();
 
     expect(screen.getByText('bentOS')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Projects' })).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Search cards' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Info cards' })).toBeInTheDocument();
   });
 
   it('collapses top and bottom edge states to the compact search bar', () => {
-    renderSearchCard({
+    renderInfoCard({
       edge: 'top',
       compression: 1,
       height: SEARCH_CARD.COLLAPSED_HEIGHT,
@@ -77,11 +77,11 @@ describe('SearchCard', () => {
     expect(screen.getByText('bentOS')).toBeInTheDocument();
     // Category filters hidden at full compression (detailsOpacity drops to 0)
     expect(screen.queryByRole('button', { name: 'Projects' })).not.toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Search cards' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Info cards' })).toBeInTheDocument();
   });
 
   it('renders icon buttons in the side icon strip', () => {
-    renderSearchCard({
+    renderInfoCard({
       edge: 'left',
       compression: 1,
       width: SEARCH_CARD.SQUASHED_SIDE_WIDTH,
@@ -91,6 +91,6 @@ describe('SearchCard', () => {
     expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Toggle filters' })).toBeInTheDocument();
     // No text input in icon strip mode
-    expect(screen.queryByRole('textbox', { name: 'Search cards' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'Info cards' })).not.toBeInTheDocument();
   });
 });

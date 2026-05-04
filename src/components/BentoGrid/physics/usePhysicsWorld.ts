@@ -118,7 +118,7 @@ export function usePhysicsWorld({
     engineRef.current?.applyEntranceBurst(cardId, center);
   }, []);
 
-  const updateSearchCard = useCallback((layout: CardLayout, isStatic: boolean) => {
+  const updateInfoCard = useCallback((layout: CardLayout, isStatic: boolean) => {
     const engine = engineRef.current;
     if (!engine) return;
 
@@ -159,7 +159,7 @@ export function usePhysicsWorld({
     addCard,
     removeCard,
     applyEntranceBurst,
-    updateSearchCard,
+    updateInfoCard,
     updateTargets,
   };
 }

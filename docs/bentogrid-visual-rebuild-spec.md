@@ -160,9 +160,9 @@ Search must become the visual keystone.
 
 3. Redesign BaseCard.
    Add board-aware depth, surface variants, focus rings, hover lift, and theme
-   hooks without duplicating shell code in project/game/search cards.
+   hooks without duplicating shell code in project/game/info cards.
 
-4. Redesign SearchMenuCard.
+4. Redesign InfoMenuCard.
    Build explicit free, horizontal-stuck, and vertical-stuck compositions that
    share state and transition cleanly.
 

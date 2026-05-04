@@ -1,8 +1,8 @@
 /**
- * useSearchCardState - Search Card Edge Detection & Sticky Logic
+ * useInfoCardState - Search Card Edge Detection & Sticky Logic
  *
- * The search card lives in the canvas layer like all other cards. When the
- * camera pans and the search card's grid slot approaches a viewport edge,
+ * The info card lives in the canvas layer like all other cards. When the
+ * camera pans and the info card's grid slot approaches a viewport edge,
  * this hook computes:
  *   - Whether the card should stick to an edge
  *   - How much to compress it
@@ -10,27 +10,27 @@
  */
 
 import { useState, useCallback, useMemo, useRef } from 'react';
-import type { Position, SearchCardState, SearchCardEdge, Camera, CardPosition } from '../BentoGrid.types';
+import type { Position, InfoCardState, InfoCardEdge, Camera, CardPosition } from '../BentoGrid.types';
 import { SEARCH_CARD } from '../BentoGrid.constants';
 import { canvasToScreen, screenToCanvas } from '../core/useViewport';
 
-interface UseSearchCardStateOptions {
+interface UseInfoCardStateOptions {
   camera: Camera;
   windowSize: { width: number; height: number };
   categories: string[];
-  /** The search card's grid position from the board visible map */
-  searchCardLayout?: CardPosition;
+  /** The info card's grid position from the board visible map */
+  infoCardLayout?: CardPosition;
   isMobile?: boolean;
   onFilterChange?: (searchTerm: string, category: string | null) => void;
 }
 
-interface UseSearchCardStateReturn extends SearchCardState {
+interface UseInfoCardStateReturn extends InfoCardState {
   toggleExpanded: () => void;
   setExpanded: (expanded: boolean) => void;
   setSearchTerm: (term: string) => void;
   setCategory: (category: string | null) => void;
   clearFilters: () => void;
-  /** Screen position for the search card (used for rendering) */
+  /** Screen position for the info card (used for rendering) */
   screenPosition: Position;
   /** Overridden canvas position when sticky (null when free) */
   stickyCanvasPosition: CardPosition | null;
@@ -38,8 +38,8 @@ interface UseSearchCardStateReturn extends SearchCardState {
   ghostCanvasPosition: { x: number; y: number } | null;
 }
 
-interface SearchCardPresentation {
-  edge: SearchCardEdge;
+interface InfoCardPresentation {
+  edge: InfoCardEdge;
   compression: number;
   rawOffscreenDistance: number;
   screenPosition: Position;
@@ -57,17 +57,17 @@ function lerp(from: number, to: number, progress: number): number {
 }
 
 /**
- * Compute sticky presentation from the search card's canvas position.
+ * Compute sticky presentation from the info card's canvas position.
  * Returns edge detection, compression, and clamped screen position.
  */
-export function getSearchCardPresentation(
+export function getInfoCardPresentation(
   canvasX: number,
   canvasY: number,
   cardWidth: number,
   cardHeight: number,
   camera: Camera,
   windowSize: { width: number; height: number },
-): SearchCardPresentation {
+): InfoCardPresentation {
   // Convert the card's canvas center to screen coordinates
   const screenCenter = canvasToScreen(
     canvasX + cardWidth / 2,
@@ -85,7 +85,7 @@ export function getSearchCardPresentation(
   const cardTop = screenCenter.y - scaledHeight / 2;
   const cardBottom = screenCenter.y + scaledHeight / 2;
 
-  const edgeDistances: Record<Exclude<SearchCardEdge, 'none'>, number> = {
+  const edgeDistances: Record<Exclude<InfoCardEdge, 'none'>, number> = {
     left: Math.max(0, padding - cardLeft),
     right: Math.max(0, cardRight - (windowSize.width - padding)),
     top: Math.max(0, padding - cardTop),
@@ -93,8 +93,8 @@ export function getSearchCardPresentation(
   };
 
   const [edge, offscreenDistance] = (
-    Object.entries(edgeDistances) as Array<[Exclude<SearchCardEdge, 'none'>, number]>
-  ).reduce<[SearchCardEdge, number]>(
+    Object.entries(edgeDistances) as Array<[Exclude<InfoCardEdge, 'none'>, number]>
+  ).reduce<[InfoCardEdge, number]>(
     (best, [nextEdge, distance]) => (distance > best[1] ? [nextEdge, distance] : best),
     ['none', 0],
   );
@@ -130,7 +130,7 @@ export function getSearchCardPresentation(
 function getMobilePresentation(
   windowSize: { width: number; height: number },
   expanded: boolean,
-): SearchCardPresentation {
+): InfoCardPresentation {
   const width = Math.min(
     windowSize.width - SEARCH_CARD.EDGE_PADDING * 2,
     SEARCH_CARD.EXPANDED_WIDTH,
@@ -150,14 +150,14 @@ function getMobilePresentation(
   };
 }
 
-export function useSearchCardState(
-  options: UseSearchCardStateOptions,
-): UseSearchCardStateReturn {
+export function useInfoCardState(
+  options: UseInfoCardStateOptions,
+): UseInfoCardStateReturn {
   const {
     camera,
     windowSize,
     categories,
-    searchCardLayout,
+    infoCardLayout,
     isMobile = false,
     onFilterChange,
   } = options;
@@ -166,7 +166,7 @@ export function useSearchCardState(
   const [searchTerm, setSearchTermState] = useState('');
   const [category, setCategoryState] = useState<string | null>(null);
 
-  // Ghost position tracking: the search card's effective canvas position.
+  // Ghost position tracking: the info card's effective canvas position.
   // When the grid home is on-screen, the ghost matches it. When off-screen,
   // the ghost tracks viewportEdge - COMPRESSION_DISTANCE so compression stays
   // in the 0..1 range and decompression happens immediately on pan-back.
@@ -175,10 +175,10 @@ export function useSearchCardState(
   /* eslint-disable react-hooks/refs -- ghost tracking requires synchronous ref read/write */
   const effectivePresentation = useMemo(() => {
     if (isMobile) return getMobilePresentation(windowSize, userExpanded);
-    if (!searchCardLayout) {
+    if (!infoCardLayout) {
       ghostPosRef.current = null;
       return {
-        edge: 'none' as SearchCardEdge,
+        edge: 'none' as InfoCardEdge,
         compression: 0,
         rawOffscreenDistance: 0,
         width: SEARCH_CARD.EXPANDED_WIDTH,
@@ -187,15 +187,15 @@ export function useSearchCardState(
       };
     }
 
-    const w = searchCardLayout.width;
-    const h = searchCardLayout.height;
+    const w = infoCardLayout.width;
+    const h = infoCardLayout.height;
     const padding = SEARCH_CARD.EDGE_PADDING;
     const compDist = SEARCH_CARD.COMPRESSION_DISTANCE;
 
     // Use the ghost's previous position (or grid home if no ghost yet) to
     // check if the card is on-screen. This is critical — using the grid home
     // (which can be far away) would keep the card permanently compressed.
-    const prevGhost = ghostPosRef.current ?? { x: searchCardLayout.x, y: searchCardLayout.y };
+    const prevGhost = ghostPosRef.current ?? { x: infoCardLayout.x, y: infoCardLayout.y };
     const checkScreen = canvasToScreen(
       prevGhost.x + w / 2,
       prevGhost.y + h / 2,
@@ -220,7 +220,7 @@ export function useSearchCardState(
 
     if (isOnScreen) {
       // Ghost matches grid home — no compression
-      ghostPosRef.current = { x: searchCardLayout.x, y: searchCardLayout.y };
+      ghostPosRef.current = { x: infoCardLayout.x, y: infoCardLayout.y };
     } else {
       // Ghost stays at a fixed canvas position near the viewport edge.
       // It only moves DEEPER off-screen (when the user pans further away)
@@ -258,28 +258,28 @@ export function useSearchCardState(
       ghostPosRef.current = { x: ghostX, y: ghostY };
     }
 
-    return getSearchCardPresentation(
+    return getInfoCardPresentation(
       ghostPosRef.current.x,
       ghostPosRef.current.y,
       w, h, camera, windowSize,
     );
-  }, [camera, windowSize, isMobile, userExpanded, searchCardLayout]);
+  }, [camera, windowSize, isMobile, userExpanded, infoCardLayout]);
   /* eslint-enable react-hooks/refs */
 
   // Sticky canvas position: use the ghost's effective position
   /* eslint-disable react-hooks/refs -- reading ghost ref for sticky canvas pos */
   const stickyCanvasPosition = useMemo((): CardPosition | null => {
-    if (effectivePresentation.compression === 0 || !searchCardLayout || !ghostPosRef.current) return null;
+    if (effectivePresentation.compression === 0 || !infoCardLayout || !ghostPosRef.current) return null;
 
     return {
       x: ghostPosRef.current.x,
       y: ghostPosRef.current.y,
       width: effectivePresentation.width,
       height: effectivePresentation.height,
-      size: searchCardLayout.size,
+      size: infoCardLayout.size,
       rotation: 0,
     };
-  }, [effectivePresentation, searchCardLayout]);
+  }, [effectivePresentation, infoCardLayout]);
   /* eslint-enable react-hooks/refs */
 
   const toggleExpanded = useCallback(() => {

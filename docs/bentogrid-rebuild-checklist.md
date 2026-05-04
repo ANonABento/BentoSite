@@ -19,7 +19,7 @@ implementation in place.
 - [x] Infinite 2D board with drag, wheel/pinch zoom, WASD panning.
 - [ ] Single click on card triggers selection (not swallowed by drag gesture).
 - [x] Keyboard card focus and navigation.
-- [ ] Cards never render on top of search card (z-index stacking fix).
+- [ ] Cards never render on top of info card (z-index stacking fix).
 
 ### Search
 - [x] Search is always visible and never enters the card queue.
@@ -28,7 +28,7 @@ implementation in place.
 - [x] Search sticky state clamps to an edge and compresses proportionally.
 - [x] Top/bottom sticky state becomes a compact horizontal bar.
 - [x] Left/right sticky state becomes a usable vertical strip.
-- [x] Non-search cards never squash.
+- [x] Non-info cards never squash.
 - [ ] Stuck search pushes/blocks cards through physics and layout targets.
 
 ### Cards
@@ -47,7 +47,7 @@ implementation in place.
 - [x] No separate `search/` visual package; search lives with cards.
 - [x] `BaseCard` owns shared shell, focus, hover, entrance, and exit behavior.
 - [x] `useBoardController` is the single board state hook.
-- [x] `SEARCH_CARD_ID` constant, no magic strings.
+- [x] `INFO_CARD_ID` constant, no magic strings.
 - [x] `getMovementDirectionFromDelta` lives in `movement.ts` (single source).
 - [ ] Spawn/despawn runs in rAF loop, not React useEffect.
 - [x] Tests cover behavior at layout/math boundaries.
@@ -58,7 +58,7 @@ implementation in place.
    requestAnimationFrame loop that reads camera from a ref. This is the
    critical fix for the empty-viewport-during-fast-pan bug.
 
-2. **Z-index fix** — Ensure search card always renders above content cards.
+2. **Z-index fix** — Ensure info card always renders above content cards.
 
 3. **Remove rotation** — Set `rotationRange: 0` for all themes.
 

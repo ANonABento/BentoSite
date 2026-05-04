@@ -9,7 +9,7 @@ import type {
   SpawnPhysicsBridge,
   ViewportBounds,
 } from '../BentoGrid.types';
-import { GRID, QUEUE, SEARCH_CARD_ID } from '../BentoGrid.constants';
+import { GRID, QUEUE, INFO_CARD_ID } from '../BentoGrid.constants';
 import {
   calculateInitialPositions,
   getCardDimensions,
@@ -37,8 +37,8 @@ export interface BoardControllerReturn {
   applyFilter: (searchTerm: string, category: string | null) => void;
   resetBoard: () => void;
   setPhysicsBridge: (physics: SpawnPhysicsBridge) => void;
-  /** Move the search card's grid position to new canvas coordinates */
-  rehomeSearchCard: (x: number, y: number) => void;
+  /** Move the info card's grid position to new canvas coordinates */
+  rehomeInfoCard: (x: number, y: number) => void;
   tick: (
     camera: Camera,
     windowSize: { width: number; height: number },
@@ -164,23 +164,23 @@ export function useBoardController({
     physicsRef.current = physics;
   }, []);
 
-  const rehomeSearchCard = useCallback(
+  const rehomeInfoCard = useCallback(
     (x: number, y: number) => {
-      const current = visibleRef.current.get(SEARCH_CARD_ID);
+      const current = visibleRef.current.get(INFO_CARD_ID);
       if (!current) return;
 
       const grid = gridRef.current;
 
       // Release old grid cells
-      grid.release(SEARCH_CARD_ID);
+      grid.release(INFO_CARD_ID);
 
       // Snap to nearest grid cell
       const cell = pixelToCell(x, y);
-      grid.place(cell.col, cell.row, current.size, SEARCH_CARD_ID);
+      grid.place(cell.col, cell.row, current.size, INFO_CARD_ID);
       const pixel = cellToPixel(cell.col, cell.row);
 
       const nextVisible = new Map(visibleRef.current);
-      nextVisible.set(SEARCH_CARD_ID, {
+      nextVisible.set(INFO_CARD_ID, {
         ...current,
         x: pixel.x,
         y: pixel.y,
@@ -209,8 +209,8 @@ export function useBoardController({
 
       // --- Despawn: recycle cards that left the viewport ---
       nextVisible.forEach((fallbackPosition, cardId) => {
-        // Search card never despawns
-        if (cardId === SEARCH_CARD_ID) return;
+        // Info card never despawns
+        if (cardId === INFO_CARD_ID) return;
 
         const currentPosition = currentLayouts.get(cardId) ?? fallbackPosition;
         if (isCardInBounds(currentPosition, bounds, GRID.DESPAWN_BUFFER)) return;
@@ -284,11 +284,11 @@ export function useBoardController({
     visible,
     queue,
     cardDataMap,
-    filteredCount: Math.max(0, visible.size + queue.length - 1), // exclude search card
+    filteredCount: Math.max(0, visible.size + queue.length - 1), // exclude info card
     applyFilter,
     resetBoard,
     setPhysicsBridge,
-    rehomeSearchCard,
+    rehomeInfoCard,
     tick,
   };
 }

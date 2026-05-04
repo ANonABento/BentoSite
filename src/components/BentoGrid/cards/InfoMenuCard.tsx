@@ -1,26 +1,26 @@
 'use client';
 
 /**
- * SearchMenuCard - BentoGrid search card with three display modes:
+ * InfoMenuCard - BentoGrid info card with three display modes:
  *
  * 1. Free (compression=0): Full card with breadcrumb, search, categories, back button
  * 2. Compact bar (top/bottom edge): Horizontal bar with search input + back button
  * 3. Icon strip (left/right edge): Vertical strip with icon buttons
  */
 
-import { ArrowLeftIcon, ChevronDownIcon, CloseIcon, SearchIcon } from '@/components/ui/Icons';
-import type { CardPosition, Position, ThemeConfig, SearchCardEdge } from '../BentoGrid.types';
-import { SEARCH_CARD_ID } from '../BentoGrid.constants';
+import { ArrowLeftIcon, ChevronDownIcon, CloseIcon, InfoIcon, SearchIcon } from '@/components/ui/Icons';
+import type { CardPosition, Position, ThemeConfig, InfoCardEdge } from '../BentoGrid.types';
+import { INFO_CARD_ID } from '../BentoGrid.constants';
 import { BaseCard } from './BaseCard';
 
 // =============================================================================
 // PROPS
 // =============================================================================
 
-export interface SearchMenuCardProps {
+export interface InfoMenuCardProps {
   theme: ThemeConfig;
   expanded: boolean;
-  edge: SearchCardEdge;
+  edge: InfoCardEdge;
   position: Position;
   compression: number;
   width: number;
@@ -35,6 +35,13 @@ export interface SearchMenuCardProps {
   onBack?: () => void;
   totalCards?: number;
   filteredCards?: number;
+  helpText?: string;
+  debugInfo?: {
+    camera: string;
+    visible: number;
+    queue: number;
+    focus?: string | null;
+  };
 }
 
 // =============================================================================
@@ -57,7 +64,7 @@ function CategoryFilterButton({
   return (
     <button
       onClick={onClick}
-      className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full transition-colors whitespace-nowrap ${
+      className={`flex-shrink-0 snap-start px-2.5 py-1 text-xs rounded-full transition-colors whitespace-nowrap ${
         active ? 'text-white' : 'text-white/60 hover:text-white/80'
       }`}
       style={{
@@ -155,7 +162,7 @@ function CompactBarContent({
           onChange={(e) => onSearchChange(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.blur(); }}
           className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none"
-          aria-label="Search cards"
+          aria-label="Info cards"
         />
         {searchTerm && (
           <button
@@ -188,18 +195,38 @@ function FullContent({
   onBack,
   totalCards,
   filteredCards,
-}: Omit<SearchMenuCardProps, 'edge' | 'position' | 'compression' | 'width' | 'height' | 'theme'> & { theme: ThemeConfig }) {
+  helpText,
+  debugInfo,
+}: Omit<InfoMenuCardProps, 'edge' | 'position' | 'compression' | 'width' | 'height' | 'theme'> & { theme: ThemeConfig }) {
   const detailsOpacity = expanded ? 1 : 0;
   const detailsInteractive = expanded;
 
   return (
-    <div className="h-full min-w-0 p-4 flex flex-col gap-3">
+    <div className="relative h-full min-w-0 p-4 flex flex-col gap-3">
       {/* Header */}
       <div className="flex items-center justify-between gap-2 min-w-0">
         <span className="text-xs text-white/50 font-mono truncate">
           {breadcrumb || 'bentOS'}
         </span>
         <div className="flex items-center gap-1 flex-shrink-0">
+          {helpText && (
+            <div className="relative group">
+              <button
+                type="button"
+                className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors"
+                aria-label="Grid controls help"
+                style={{ color: theme.accent.primary }}
+              >
+                <InfoIcon className="w-4 h-4" />
+              </button>
+              <div
+                role="tooltip"
+                className="pointer-events-none absolute right-0 top-8 z-20 w-60 rounded-md border border-white/10 bg-black/90 px-3 py-2 text-[11px] leading-relaxed text-white/75 opacity-0 shadow-xl transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+              >
+                {helpText}
+              </div>
+            </div>
+          )}
           {totalCards !== undefined && (
             <span className="text-[10px] text-white/40 font-mono">
               {filteredCards !== undefined && filteredCards !== totalCards
@@ -242,7 +269,7 @@ function FullContent({
           onChange={(e) => onSearchChange(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.blur(); }}
           className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none"
-          aria-label="Search cards"
+          aria-label="Info cards"
         />
         {searchTerm && (
           <button
@@ -265,7 +292,7 @@ function FullContent({
         }}
         aria-hidden={!detailsInteractive}
       >
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide px-1 -mx-1 pb-1">
+        <div className="flex flex-nowrap gap-1.5 overflow-x-auto scrollbar-hide scroll-smooth snap-x px-1 pr-7 -mx-1 pb-1">
           <CategoryFilterButton
             active={category === null}
             accentColor={theme.accent.primary}
@@ -286,7 +313,16 @@ function FullContent({
             </CategoryFilterButton>
           ))}
         </div>
+        <div className="pointer-events-none absolute right-0 top-0 h-8 w-8 bg-gradient-to-l from-black/50 to-transparent" />
       </div>
+
+      {debugInfo && (
+        <div className="absolute bottom-3 left-4 right-4 rounded-md border border-white/10 bg-black/55 px-2.5 py-1.5 font-mono text-[10px] leading-relaxed text-white/55 shadow-lg backdrop-blur">
+          <div>{debugInfo.camera}</div>
+          <div>Visible: {debugInfo.visible} | Queue: {debugInfo.queue}</div>
+          {debugInfo.focus ? <div>Focus: {debugInfo.focus}</div> : null}
+        </div>
+      )}
     </div>
   );
 }
@@ -295,7 +331,7 @@ function FullContent({
 // MAIN COMPONENT
 // =============================================================================
 
-export function SearchMenuCard({
+export function InfoMenuCard({
   theme,
   expanded,
   edge,
@@ -313,7 +349,9 @@ export function SearchMenuCard({
   onBack,
   totalCards,
   filteredCards,
-}: SearchMenuCardProps) {
+  helpText,
+  debugInfo,
+}: InfoMenuCardProps) {
   const isSideEdge = (edge === 'left' || edge === 'right') && compression > 0.8;
   const isHorizontalEdge = (edge === 'top' || edge === 'bottom') && compression > 0.8;
 
@@ -328,12 +366,12 @@ export function SearchMenuCard({
 
   return (
     <BaseCard
-      id={SEARCH_CARD_ID}
+      id={INFO_CARD_ID}
       position={cardPosition}
       theme={theme}
       positionMode="absolute"
       motionMode="instant"
-      className="z-10"
+      className="pointer-events-auto z-10"
       shellClassName="backdrop-blur-xl"
       shellStyle={{
         background: theme.searchCard.background,
@@ -344,7 +382,7 @@ export function SearchMenuCard({
       }}
       hoverEnabled={compression === 0}
       onPointerDown={(event) => {
-        // Stop all pointer events on the search card from reaching the
+        // Stop all pointer events on the info card from reaching the
         // drag gesture handler on the parent canvas
         event.stopPropagation();
       }}
@@ -378,6 +416,8 @@ export function SearchMenuCard({
           onBack={onBack}
           totalCards={totalCards}
           filteredCards={filteredCards}
+          helpText={helpText}
+          debugInfo={debugInfo}
         />
       )}
     </BaseCard>

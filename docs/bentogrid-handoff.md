@@ -5,7 +5,7 @@
 BentoGrid is the shared browsing surface for `/projects`, `/playground`, and
 (planned) `/photography`. It should feel like an infinite, tactile bento board:
 users pan around a 2D canvas, cards recycle through a queue as they leave the
-viewport, and a persistent search card behaves like one of the cards until it
+viewport, and a persistent info card behaves like one of the cards until it
 reaches an edge.
 
 The target experience is:
@@ -44,11 +44,11 @@ sticky grid card:
 
 - When fully on-screen, search uses the same card shell, dimensions, animation
   vocabulary, and physics participation as normal cards.
-- When its logical grid slot crosses a viewport edge, the rendered search card
+- When its logical grid slot crosses a viewport edge, the rendered info card
   sticks to that edge and compresses proportionally to the off-screen distance.
 - Top/bottom sticky state becomes a compact horizontal search bar.
 - Left/right sticky state becomes a vertical sidebar strip with controls/icons.
-- Only the search card squashes. Project/game cards never squash.
+- Only the info card squashes. Project/game cards never squash.
 - When stuck, search acts as a static Matter.js body so other cards collide with
   it and flow around it.
 - When the camera moves back and the slot is on-screen again, search expands
@@ -72,7 +72,7 @@ BentoGrid/
     keyboard.ts            # Editable target detection
   physics/                 # Matter.js engine, forces, React bridge
   layout/                  # Bento placement, exclusion/target layout, card sizes
-  cards/                   # BaseCard, SearchCard, ProjectCard, GameCard
+  cards/                   # BaseCard, InfoCard, ProjectCard, GameCard
   views/                   # Desktop and mobile render orchestration
   __tests__/               # Unit tests
 ```
@@ -87,10 +87,10 @@ BentoGrid/
   `useSpawnManager`).
 - Deficit-based spawning: counts on-screen cards, spawns to fill target of 12.
 - Matter.js physics with settling forces, collision detection.
-- `SEARCH_CARD_ID` constant replaces magic `'__search__'` strings.
+- `INFO_CARD_ID` constant replaces magic `'__search__'` strings.
 - `getMovementDirectionFromDelta` deduplicated into `movement.ts`.
 - Theme system (`playful`, `premium`) with per-theme card styling.
-- Search card uses `theme.searchCard.background` (not `theme.card.background`),
+- Info card uses `theme.searchCard.background` (not `theme.card.background`),
   fixing visibility in light mode.
 - Passive event listener fix for pinch gestures.
 - Mobile vertical scroll fallback.
@@ -130,9 +130,9 @@ always populated regardless of pan speed.
 
 ### Known Issues — Visual/UI
 
-- **Cards render in front of search card.** Search card has `z-50` class but
+- **Cards render in front of info card.** Info card has `z-50` class but
   is a sibling of the transform layer. Framer Motion stacking contexts on
-  card elements can override CSS z-index. Cards overlap the search card.
+  card elements can override CSS z-index. Cards overlap the info card.
 - **Card rotation on playground theme.** `rotationRange: 3` on playful theme
   causes persistent slight rotation. Consider removing (set to 0).
 - **Card click vs drag discrimination.** Fast clicks can be interpreted as
@@ -173,7 +173,7 @@ always populated regardless of pan speed.
 | `core/useCamera.ts` | Camera pan/zoom/momentum with @use-gesture |
 | `core/useViewport.ts` | Viewport bounds, coordinate transforms |
 | `core/movement.ts` | Direction detection from camera delta |
-| `cards/SearchMenuCard.tsx` | Search card UI |
+| `cards/InfoMenuCard.tsx` | Info card UI |
 | `cards/BaseCard.tsx` | Shared card shell |
 | `physics/usePhysicsWorld.ts` | React-to-Matter.js bridge |
 | `physics/forces.ts` | Settling forces, entrance burst, damping |
@@ -200,8 +200,8 @@ Before calling BentoGrid done, verify:
 - [ ] Search filters other cards, not an internal result list.
 - [ ] Search top/bottom compression produces a compact horizontal bar.
 - [ ] Search left/right compression produces a usable vertical strip.
-- [ ] Search card is always visually above content cards (z-index correct).
-- [ ] Content cards never render on top of search card.
+- [ ] Info card is always visually above content cards (z-index correct).
+- [ ] Content cards never render on top of info card.
 
 ### Cards
 - [ ] No random rotation on any theme (rotationRange: 0 everywhere).
@@ -212,7 +212,7 @@ Before calling BentoGrid done, verify:
 
 ### Themes
 - [ ] Premium and playful themes both render correctly.
-- [ ] Search card text is visible in both dark and light mode.
+- [ ] Info card text is visible in both dark and light mode.
 - [ ] Gallery theme exists for photography (when implemented).
 
 ### General

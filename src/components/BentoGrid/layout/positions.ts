@@ -1,5 +1,5 @@
 import type { CardData, CardPosition, CardSize, Rect } from '../BentoGrid.types';
-import { GRID, SEARCH_CARD_ID } from '../BentoGrid.constants';
+import { GRID, INFO_CARD_ID } from '../BentoGrid.constants';
 import { getCardDimensions, getCardSizeForIndex } from './cardSizes';
 import { GridOccupancy, cellToPixel, sizeToSpan } from './gridOccupancy';
 
@@ -69,17 +69,17 @@ export function createCardPosition(
   };
 }
 
-/** Search card size in the grid. */
+/** Info card size in the grid. */
 const SEARCH_CARD_SIZE: CardSize = '2x1';
 
 /**
  * Calculate initial card positions using grid-snapped placement.
  *
- * The search card is placed first at grid center as a regular 2×1 card.
+ * The info card is placed first at grid center as a regular 2×1 card.
  * Content cards spiral outward around it. All cards live in the same
  * coordinate space and are positioned the same way.
  *
- * Returns a Map of cardId → CardPosition including the search card.
+ * Returns a Map of cardId → CardPosition including the info card.
  */
 export function calculateInitialPositions(
   cards: CardData[],
@@ -89,14 +89,14 @@ export function calculateInitialPositions(
   const positions = new Map<string, CardPosition>();
   const grid = new GridOccupancy();
 
-  // Place the search card first at grid center
+  // Place the info card first at grid center
   const searchCell = grid.findNearest(0, 0, SEARCH_CARD_SIZE)!;
-  grid.place(searchCell.col, searchCell.row, SEARCH_CARD_SIZE, SEARCH_CARD_ID);
+  grid.place(searchCell.col, searchCell.row, SEARCH_CARD_SIZE, INFO_CARD_ID);
 
   // Place content cards spiraling outward
   const requested = Math.min(count, cards.length);
   const placements: Array<{ id: string; col: number; row: number; size: CardSize }> = [
-    { id: SEARCH_CARD_ID, col: searchCell.col, row: searchCell.row, size: SEARCH_CARD_SIZE },
+    { id: INFO_CARD_ID, col: searchCell.col, row: searchCell.row, size: SEARCH_CARD_SIZE },
   ];
 
   for (let i = 0; i < requested; i++) {

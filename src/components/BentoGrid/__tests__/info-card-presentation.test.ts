@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { SEARCH_CARD } from '../BentoGrid.constants';
-import { getSearchCardPresentation } from '../cards/useSearchCardState';
+import { getInfoCardPresentation } from '../cards/useInfoCardState';
 
 const windowSize = { width: 1000, height: 800 };
 const cardWidth = SEARCH_CARD.EXPANDED_WIDTH;
 const cardHeight = SEARCH_CARD.EXPANDED_HEIGHT;
 
-// The search card sits at canvas (0, 0). The camera position determines
+// The info card sits at canvas (0, 0). The camera position determines
 // where the card appears on screen.
 function cameraForScreenPosition(x: number, y: number, zoom = 1) {
   // canvasToScreen: screenX = (canvasX + camera.x) * zoom + centerX
@@ -22,10 +22,10 @@ function cameraForScreenPosition(x: number, y: number, zoom = 1) {
 }
 
 function present(camera: { x: number; y: number; zoom: number }) {
-  return getSearchCardPresentation(0, 0, cardWidth, cardHeight, camera, windowSize);
+  return getInfoCardPresentation(0, 0, cardWidth, cardHeight, camera, windowSize);
 }
 
-describe('getSearchCardPresentation', () => {
+describe('getInfoCardPresentation', () => {
   it('uses the regular 2x1 card size while fully on-screen', () => {
     const presentation = present(
       cameraForScreenPosition(windowSize.width / 2, windowSize.height / 2),

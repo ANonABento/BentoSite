@@ -4,7 +4,7 @@ Status: **Needs fresh implementation**
 
 ## Context
 
-We've tried multiple approaches for the search card positioning and all have
+We've tried multiple approaches for the info card positioning and all have
 had issues. This spec defines the definitive approach.
 
 ## The Fundamental Problem
@@ -12,7 +12,7 @@ had issues. This spec defines the definitive approach.
 The BentoGrid uses a CSS transform on a canvas layer to implement panning.
 Cards have fixed canvas positions. The camera transform moves everything.
 
-The search card needs to:
+The info card needs to:
 1. Be a real card in the grid (not a floating overlay)
 2. Compress when pushed to a viewport edge
 3. Decompress immediately when the user pans back (not after traveling back
@@ -36,7 +36,7 @@ These requirements conflict because:
 
 ## The Solution: Hybrid Canvas/Screen Rendering
 
-The search card exists in TWO places simultaneously:
+The info card exists in TWO places simultaneously:
 
 ### 1. Grid Ghost (canvas layer)
 - An invisible placeholder in the grid occupancy map
@@ -45,7 +45,7 @@ The search card exists in TWO places simultaneously:
 - Not rendered visually
 
 ### 2. Visual Card (screen layer)
-- The actual visible search card
+- The actual visible info card
 - Positioned in SCREEN coordinates (position: fixed)
 - Screen position computed from the ghost's canvas position via canvasToScreen
 - When the ghost is on-screen: visual card appears at the ghost's screen position
@@ -67,7 +67,7 @@ When the ghost is off-screen AND the user starts panning back, the ghost's
 canvas position should be updated to be just outside the viewport edge.
 This way the decompression distance is always small (< COMPRESSION_DISTANCE).
 
-This is the `rehomeSearchCard` approach, but done correctly:
+This is the `rehomeInfoCard` approach, but done correctly:
 - Don't rehome to the viewport center (causes the slide-off-opposite-edge bug)
 - Rehome to just OUTSIDE the edge the card is stuck on
 - This puts the ghost at `viewportEdge - COMPRESSION_DISTANCE` in canvas space
@@ -90,9 +90,9 @@ becomes the card's new grid home. Content cards adjust around it.
 
 ## Implementation Plan
 
-### Step 1: Implement ghost tracking in useSearchCardState
+### Step 1: Implement ghost tracking in useInfoCardState
 
-The hook needs a ref that tracks the search card's "effective canvas position"
+The hook needs a ref that tracks the info card's "effective canvas position"
 (the ghost). Each frame:
 
 ```
@@ -111,39 +111,39 @@ if (ghost is on-screen) {
   // Non-stuck axis: clamp to viewport
 }
 
-// Compute presentation from effectivePos (via getSearchCardPresentation)
+// Compute presentation from effectivePos (via getInfoCardPresentation)
 // This gives correct compression (0 to 1 over COMPRESSION_DISTANCE)
 ```
 
 ### Step 2: Visual card as fixed overlay
 
-The search card renders as `position: fixed` (current approach). Its screen
+The info card renders as `position: fixed` (current approach). Its screen
 position comes from `effectivePresentation.screenPosition`. This already works.
 
 ### Step 3: Update grid home on decompress
 
-When compression transitions from >0 to 0, update the search card's position
+When compression transitions from >0 to 0, update the info card's position
 in `board.visible` to the ghost's current canvas position. This re-anchors
-the grid home to wherever the card is now. Use `board.rehomeSearchCard` or
+the grid home to wherever the card is now. Use `board.rehomeInfoCard` or
 equivalent.
 
 ### Step 4: Grid occupancy follows ghost
 
-The grid occupancy for the search card should track the ghost position, not
+The grid occupancy for the info card should track the ghost position, not
 the original grid home. This ensures content cards don't spawn where the
-search card currently is.
+info card currently is.
 
 ## Files to Change
 
 | File | Change |
 |------|--------|
-| `cards/useSearchCardState.ts` | Ghost tracking logic, replace edge-capping |
+| `cards/useInfoCardState.ts` | Ghost tracking logic, replace edge-capping |
 | `views/DesktopCanvasView.tsx` | Grid home update on decompress |
-| `core/useBoardController.ts` | Re-add rehomeSearchCard or equivalent |
+| `core/useBoardController.ts` | Re-add rehomeInfoCard or equivalent |
 
 ## Key Constraints
 
-- The visual search card is ALWAYS `position: fixed` (screen space)
+- The visual info card is ALWAYS `position: fixed` (screen space)
 - The ghost is in the canvas layer (canvas space) but invisible
 - Compression is computed from the ghost's screen projection
 - The ghost follows the viewport edge while compressed

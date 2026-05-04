@@ -87,7 +87,7 @@ describe('BentoGrid calculateInitialPositions', () => {
     const positions = calculateInitialPositions(cards, 4, 0);
     const values = Array.from(positions.values());
 
-    // 4 content cards + 1 search card
+    // 4 content cards + 1 info card
     expect(positions.size).toBe(5);
     values.forEach((position) => {
       expect(position.rotation).toBe(0);
@@ -182,7 +182,7 @@ describe('useCardPool', () => {
       }),
     );
 
-    // Skip the search card — find a content card to despawn
+    // Skip the info card — find a content card to despawn
     const contentCardIds = Array.from(result.current.visible.keys()).filter(id => id !== '__search__');
     const despawnedCardId = contentCardIds[0];
 
@@ -224,7 +224,7 @@ describe('useCardPool', () => {
       result.current.spawnManager.forceSpawn('right');
     });
 
-    // All cards + search card are visible; force spawn should not dequeue
+    // All cards + info card are visible; force spawn should not dequeue
     expect(result.current.cardPool.visible.size).toBe(5);
     expect(result.current.cardPool.queue.map((card) => card.id)).toEqual(initialQueueIds);
   });

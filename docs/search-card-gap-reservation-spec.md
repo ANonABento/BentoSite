@@ -4,49 +4,49 @@ Status: **Ready to implement**
 
 ## Problem
 
-The search card decompresses when panning back, but has nowhere to slot into
+The info card decompresses when panning back, but has nowhere to slot into
 the grid because content cards already occupy all nearby cells. The card
 decompresses into empty space and floats as an overlay instead of fitting
 cleanly into the bento grid.
 
-## Solution: Reserve a gap in the grid for the search card to slot into
+## Solution: Reserve a gap in the grid for the info card to slot into
 
-When the search card is compressed at an edge and the user starts panning
+When the info card is compressed at an edge and the user starts panning
 back, the system should:
 
 1. **Find the nearest 2×1 gap** in the grid near the viewport edge where the
-   search card is stuck
+   info card is stuck
 2. **Block that gap** from card spawning (don't place content cards there)
-3. **Target the search card** toward that gap — compression is based on
+3. **Target the info card** toward that gap — compression is based on
    distance from the edge to the gap
-4. **Slot in** — when the search card reaches the gap, compression = 0,
+4. **Slot in** — when the info card reaches the gap, compression = 0,
    the card is back in the grid as a normal card
 
 ## Detailed Flow
 
 ### Phase 1: Compressed at edge
-- Search card is at left edge, fully compressed (icon strip)
+- Info card is at left edge, fully compressed (icon strip)
 - Content cards fill the viewport
 - User starts panning back (leftward)
 
 ### Phase 2: Gap reservation triggered
-- Trigger: user pans back while search card is compressed
+- Trigger: user pans back while info card is compressed
 - Find the nearest available 2×1 cell in the grid, starting from the
-  viewport edge the search card is on
-- Reserve those cells in the grid occupancy (place SEARCH_CARD_ID there)
+  viewport edge the info card is on
+- Reserve those cells in the grid occupancy (place INFO_CARD_ID there)
 - This prevents the spawn system from filling those cells
 - If no cells available, evict the content card closest to the edge
   (despawn it back to queue, freeing its cells)
 
 ### Phase 3: Decompression animation
-- The search card's target position is the reserved gap (in canvas space)
+- The info card's target position is the reserved gap (in canvas space)
 - Compression = distance(searchCardEdgePosition, gapPosition) / COMPRESSION_DISTANCE
-- As the user pans back, the search card slides from the edge toward the gap
+- As the user pans back, the info card slides from the edge toward the gap
 - The card smoothly decompresses (icon strip → full card) as it approaches
 - Width/height interpolate from compressed to full over this distance
 
 ### Phase 4: Slotted in
-- Search card reaches the gap, compression = 0
+- Info card reaches the gap, compression = 0
 - Card is now a full 2×1 card at the reserved grid cells
 - This becomes its new grid home
 - Normal grid card behavior resumes
@@ -59,11 +59,11 @@ Add `reserveSearchGap(nearX: number, nearY: number)`:
 - Finds nearest available 2×1 cells near the given canvas position
 - If none available within 2 cells of the edge, despawn the nearest
   content card to free space
-- Reserves the cells as SEARCH_CARD_ID
+- Reserves the cells as INFO_CARD_ID
 - Returns the canvas position of the reserved gap
-- Updates `board.visible` with the new search card position
+- Updates `board.visible` with the new info card position
 
-### Changes to `useSearchCardState.ts`
+### Changes to `useInfoCardState.ts`
 
 When decompressing (ghost moving toward viewport):
 - Get the reserved gap position from the board
@@ -76,12 +76,12 @@ When decompressing (ghost moving toward viewport):
 - Detect when decompression starts (compression drops below threshold
   after being high)
 - Call `board.reserveSearchGap()` to create the gap
-- Pass the gap position to `useSearchCardState` for targeting
+- Pass the gap position to `useInfoCardState` for targeting
 
-### New prop on useSearchCardState
+### New prop on useInfoCardState
 
 ```typescript
-interface UseSearchCardStateOptions {
+interface UseInfoCardStateOptions {
   // ... existing props
   /** Target gap position for decompression (canvas coords) */
   decompressionTarget?: { x: number; y: number } | null;
@@ -110,13 +110,13 @@ the target instead of relative to the grid home.
 | File | Change |
 |------|--------|
 | `core/useBoardController.ts` | Add `reserveSearchGap()` method |
-| `cards/useSearchCardState.ts` | Accept decompressionTarget, compute targeted compression |
+| `cards/useInfoCardState.ts` | Accept decompressionTarget, compute targeted compression |
 | `views/DesktopCanvasView.tsx` | Detect decompression, trigger gap reservation |
 
 ## Testing
 
-- Pan right 2000px → search card at left edge
-- Pan back → gap appears near left edge, search card slides toward it
-- Continue panning back 200-300px → search card slots into grid
-- Pan away again → search card compresses, gap releases
+- Pan right 2000px → info card at left edge
+- Pan back → gap appears near left edge, info card slides toward it
+- Continue panning back 200-300px → info card slots into grid
+- Pan away again → info card compresses, gap releases
 - Verify with `?seed=1` (many cards) and without (9 cards)

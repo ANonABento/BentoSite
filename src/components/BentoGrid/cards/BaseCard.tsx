@@ -2,6 +2,7 @@
 
 import type {
   CSSProperties,
+  MouseEvent,
   PointerEventHandler,
   ReactNode,
   WheelEventHandler,
@@ -22,6 +23,7 @@ interface BaseCardProps {
   hoverEnabled?: boolean;
   motionMode?: 'spring' | 'instant';
   ariaLabel?: string;
+  href?: string;
   children: ReactNode;
   onClick?: () => void;
   onHoverStart?: () => void;
@@ -41,6 +43,7 @@ export function BaseCard({
   positionMode = 'absolute',
   hoverEnabled = true,
   ariaLabel,
+  href,
   children,
   onClick,
   onHoverStart,
@@ -48,13 +51,30 @@ export function BaseCard({
   onPointerDown,
   onWheel,
 }: BaseCardProps) {
+  const handleAnchorClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!onClick) return;
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      event.currentTarget.target
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    onClick();
+  };
 
   return (
     <motion.div
       key={id}
       className={[
         positionMode,
-        onClick ? 'cursor-pointer' : 'cursor-default',
+        href || onClick ? 'cursor-pointer' : 'cursor-default',
         'select-none',
         className,
       ].filter(Boolean).join(' ')}
@@ -78,14 +98,14 @@ export function BaseCard({
       whileTap={hoverEnabled ? { scale: 0.98 } : undefined}
       onHoverStart={onHoverStart}
       onHoverEnd={onHoverEnd}
-      onClick={onClick}
+      onClick={href ? undefined : onClick}
       onPointerDown={onPointerDown}
       onWheel={onWheel}
-      aria-label={ariaLabel}
+      aria-label={href ? undefined : ariaLabel}
     >
       <div
         className={[
-          'h-full w-full overflow-hidden transition-all duration-300 ease-out',
+          'relative h-full w-full overflow-hidden transition-all duration-300 ease-out',
           shellClassName,
         ].filter(Boolean).join(' ')}
         style={{
@@ -98,7 +118,17 @@ export function BaseCard({
           ...shellStyle,
         }}
       >
-        {children}
+        {href ? (
+          <a
+            href={href}
+            onClick={handleAnchorClick}
+            aria-label={ariaLabel}
+            className="absolute inset-0 z-0"
+          />
+        ) : null}
+        <div className={href ? 'relative z-10 h-full w-full pointer-events-none' : 'h-full w-full'}>
+          {children}
+        </div>
       </div>
     </motion.div>
   );

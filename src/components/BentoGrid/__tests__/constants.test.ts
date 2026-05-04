@@ -15,7 +15,7 @@ describe('BentoGrid constants', () => {
     expect(QUEUE.policy).toBe('FIFO');
   });
 
-  it('applies the updated search card compressed dimensions', () => {
+  it('applies the updated info card compressed dimensions', () => {
     expect(SEARCH_CARD.SQUASHED_SIDE_WIDTH).toBe(64);
     expect(SEARCH_CARD.squashedSideWidth).toBe(64);
     expect(SEARCH_CARD.COLLAPSED_HEIGHT).toBe(64);

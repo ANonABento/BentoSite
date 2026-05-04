@@ -1,6 +1,6 @@
 import Matter from 'matter-js';
 import type { CardPosition, PhysicsConfig, Position } from '../BentoGrid.types';
-import { PHYSICS, PHYSICS_MOBILE, SEARCH_CARD_ID } from '../BentoGrid.constants';
+import { PHYSICS, PHYSICS_MOBILE, INFO_CARD_ID } from '../BentoGrid.constants';
 import { applyEntranceBurstToBody, toBodyCenter } from './forces';
 
 const { Bodies, Body, Engine, Events, Runner, Sleeping, World } = Matter;
@@ -171,7 +171,7 @@ export function syncBodiesWithLayouts(
   const bodyIds = new Set(physicsEngine.bodies.keys());
 
   bodyIds.forEach((id) => {
-    if (id !== SEARCH_CARD_ID && !layoutIds.has(id)) {
+    if (id !== INFO_CARD_ID && !layoutIds.has(id)) {
       physicsEngine.removeBody(id);
     }
   });

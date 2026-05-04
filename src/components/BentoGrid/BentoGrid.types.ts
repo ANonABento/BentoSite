@@ -107,6 +107,7 @@ export type RenderCard = (
   isFocused?: boolean,
   onClick?: () => void,
   entranceIndex?: number,
+  href?: string,
 ) => ReactNode;
 
 export interface ViewportBounds {
@@ -159,12 +160,12 @@ export interface NavigationState {
   isPanning: boolean;
 }
 
-export type SearchCardEdge = 'none' | 'top' | 'bottom' | 'left' | 'right';
-export type StickyEdge = SearchCardEdge;
+export type InfoCardEdge = 'none' | 'top' | 'bottom' | 'left' | 'right';
+export type StickyEdge = InfoCardEdge;
 
-export interface SearchCardState {
+export interface InfoCardState {
   expanded: boolean;
-  edge: SearchCardEdge;
+  edge: InfoCardEdge;
   compression: number;
   width: number;
   height: number;
@@ -186,7 +187,7 @@ export interface GridConfig {
 export interface GridState {
   visibleCards: Map<string, CardPosition>;
   queuedCards: QueuedCard[];
-  search: SearchCardState;
+  search: InfoCardState;
   navigation: NavigationState;
   isMobile: boolean;
 }
@@ -280,6 +281,6 @@ export interface PhysicsConfig {
 export interface UsePhysicsWorldReturn extends SpawnPhysicsBridge {
   positions: Map<string, PhysicsPosition>;
   isReady: boolean;
-  updateSearchCard: (layout: CardLayout, isStatic: boolean) => void;
+  updateInfoCard: (layout: CardLayout, isStatic: boolean) => void;
   updateTargets: (layouts: Map<string, CardPosition>) => void;
 }

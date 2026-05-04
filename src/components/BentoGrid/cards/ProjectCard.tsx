@@ -31,6 +31,7 @@ export interface ProjectCardProps {
   position: CardPosition;
   theme: ThemeConfig;
   onClick?: () => void;
+  href?: string;
   /** Whether the card has keyboard focus */
   isFocused?: boolean;
   /** Visible-order index used for entrance staggering */
@@ -125,6 +126,7 @@ export function ProjectCard({
   position,
   theme,
   onClick,
+  href,
   isFocused = false,
   entranceIndex = 0,
 }: ProjectCardProps) {
@@ -142,6 +144,8 @@ export function ProjectCard({
       isFocused={isFocused}
       entranceIndex={entranceIndex}
       onClick={onClick}
+      href={href}
+      ariaLabel={`Open ${card.title}`}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       shellClassName="group"
@@ -259,7 +263,7 @@ export function ProjectCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-1 px-2 py-1 text-[9px] font-medium bg-white/5 text-white/70 border border-white/10 rounded hover:text-white hover:bg-white/10 transition-colors"
+                  className="pointer-events-auto flex items-center gap-1 px-2 py-1 text-[9px] font-medium bg-white/5 text-white/70 border border-white/10 rounded hover:text-white hover:bg-white/10 transition-colors"
                 >
                   <GitHubIcon size={10} />
                   <span>Code</span>
@@ -271,7 +275,7 @@ export function ProjectCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-1 px-2 py-1 text-[9px] font-medium rounded transition-colors"
+                  className="pointer-events-auto flex items-center gap-1 px-2 py-1 text-[9px] font-medium rounded transition-colors"
                   style={{
                     background: theme.accent.primary,
                     color: 'white',

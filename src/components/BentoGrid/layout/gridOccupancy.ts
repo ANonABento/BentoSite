@@ -110,7 +110,7 @@ export class GridOccupancy {
 
   /**
    * Reserve a rectangular zone of cells under a single ID.
-   * Used for the search card exclusion zone.
+   * Used for the info card exclusion zone.
    */
   reserveZone(
     startCol: number,
