@@ -48,6 +48,7 @@ export function DashboardLayout({
     [initialProjectId],
   );
   const [chatFns, setChatFns] = useState<ChatFunctions | null>(null);
+  const [isDesktopViewport, setIsDesktopViewport] = useState<boolean | null>(null);
   const isMountedRef = useRef(true);
   const mobileChatRef = useRef<HTMLDivElement>(null);
   const pendingChatMessageRef = useRef<string | null>(null);
@@ -57,6 +58,15 @@ export function DashboardLayout({
     return () => {
       isMountedRef.current = false;
     };
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 768px)');
+    const handleViewportChange = () => setIsDesktopViewport(mediaQuery.matches);
+
+    handleViewportChange();
+    mediaQuery.addEventListener?.('change', handleViewportChange);
+    return () => mediaQuery.removeEventListener?.('change', handleViewportChange);
   }, []);
 
   const handleClearChat = useCallback(() => {
@@ -126,18 +136,27 @@ export function DashboardLayout({
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col md:flex-row gap-5 px-4 pb-4 md:px-6 md:pb-6 min-h-0">
-          {/* Desktop Viewfinder */}
-          <ViewfinderPanel
-            selectedProject={selectedProject}
-            Viewfinder={Viewfinder}
-          />
+          {isDesktopViewport === null ? (
+            <div
+              className="hidden md:flex md:w-1/2 min-h-0 glass-panel rounded-2xl"
+              aria-hidden="true"
+            />
+          ) : null}
 
-          {/* Mobile Viewfinder (3d tab) */}
-          <ViewfinderPanel
-            selectedProject={selectedProject}
-            Viewfinder={Viewfinder}
-            mobileHidden={activeSection !== '3d'}
-          />
+          {isDesktopViewport === true ? (
+            <ViewfinderPanel
+              selectedProject={selectedProject}
+              Viewfinder={Viewfinder}
+            />
+          ) : null}
+
+          {isDesktopViewport === false && activeSection === '3d' ? (
+            <ViewfinderPanel
+              selectedProject={selectedProject}
+              Viewfinder={Viewfinder}
+              mobileHidden={false}
+            />
+          ) : null}
 
           {/* Mobile Chat Tab */}
           <AnimatePresence mode="wait">

@@ -88,6 +88,7 @@ export default function DimensionViewer({
         selectedModel={selectedModel}
         zoomLevel={zoomLevel}
         onZoomLevelChange={handleZoomChange}
+        allowScreenshots={!minimal}
       />
       
       {/* Model Info Display */}
