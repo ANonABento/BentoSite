@@ -18,6 +18,7 @@ interface DesktopCardLayerProps {
   focusedCardId: string | null;
   renderCard?: RenderCard;
   onCardClick: (card: CardData) => void;
+  getCardHref?: (card: CardData) => string | undefined;
 }
 
 export function DesktopCardLayer({
@@ -27,6 +28,7 @@ export function DesktopCardLayer({
   focusedCardId,
   renderCard,
   onCardClick,
+  getCardHref,
 }: DesktopCardLayerProps) {
   return (
     <AnimatePresence mode="popLayout">
@@ -39,6 +41,7 @@ export function DesktopCardLayer({
         if (!cardData) return null;
 
         const isFocused = focusedCardId === cardId;
+        const href = getCardHref?.(cardData);
 
         if (renderCard) {
           return (
@@ -50,6 +53,7 @@ export function DesktopCardLayer({
                 isFocused,
                 () => onCardClick(cardData),
                 index,
+                href,
               )}
             </Fragment>
           );
@@ -63,6 +67,7 @@ export function DesktopCardLayer({
             theme={theme}
             onClick={() => onCardClick(cardData)}
             isFocused={isFocused}
+            href={href}
           />
         );
       })}
