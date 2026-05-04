@@ -21,6 +21,9 @@ type RouteSeoConfig = {
 type GameSeoConfig = RouteSeoConfig & {
   name: string;
 };
+type PlaygroundGameCard = ReturnType<typeof getGameCards>[number] & {
+  href: string;
+};
 type PhotographyJsonLdPhoto = {
   src: string;
   title: string;
@@ -53,11 +56,15 @@ const CORE_ROUTES: SitemapEntry[] = [
   { path: '/playground', changeFrequency: 'monthly', priority: 0.7 },
 ];
 
+const GAME_CARDS_WITH_ROUTES = getGameCards().filter(
+  (card): card is PlaygroundGameCard => Boolean(card.href)
+);
+
 export const REQUIRED_SEO_ROUTES = [
   '/',
   '/projects',
   '/playground',
-  ...getGameCards().map((card) => card.href as string),
+  ...GAME_CARDS_WITH_ROUTES.map((card) => card.href),
   '/photography',
   '/scrollable',
   '/404',
@@ -108,8 +115,8 @@ export const ROUTE_SEO: Record<string, RouteSeoConfig> = {
 };
 
 export const GAME_SEO: Record<string, GameSeoConfig> = Object.fromEntries(
-  getGameCards().map((card) => {
-    const path = card.href as string;
+  GAME_CARDS_WITH_ROUTES.map((card) => {
+    const path = card.href;
     const title = `${card.title} — bentOS / Kevin Jiang`;
 
     return [
@@ -118,7 +125,7 @@ export const GAME_SEO: Record<string, GameSeoConfig> = Object.fromEntries(
         path,
         name: card.title,
         title,
-        description: `${card.description} in Kevin Jiang's bentOS interactive playground.`,
+        description: `${card.description ?? card.title} in Kevin Jiang's bentOS interactive playground.`,
         schemaType: 'Game',
       },
     ];
@@ -159,13 +166,11 @@ export function getAbsoluteUrl(path = '/'): string {
 
 export function getSitemapEntries(): MetadataRoute.Sitemap {
   const lastModified = new Date();
-  const playgroundRoutes = getGameCards()
-    .filter((card) => card.href)
-    .map<SitemapEntry>((card) => ({
-      path: card.href as string,
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    }));
+  const playgroundRoutes = GAME_CARDS_WITH_ROUTES.map<SitemapEntry>((card) => ({
+    path: card.href,
+    changeFrequency: 'monthly',
+    priority: 0.5,
+  }));
 
   return [...CORE_ROUTES, ...playgroundRoutes].map((route) => ({
     url: getAbsoluteUrl(route.path),
@@ -173,13 +178,6 @@ export function getSitemapEntries(): MetadataRoute.Sitemap {
     changeFrequency: route.changeFrequency,
     priority: route.priority,
   }));
-}
-
-export function buildSiteJsonLd(): JsonLdObject {
-  return {
-    '@context': 'https://schema.org',
-    '@graph': [buildPersonJsonLd(), buildWebSiteJsonLd()],
-  };
 }
 
 export function buildPortfolioPageJsonLd(): JsonLdObject {
@@ -239,8 +237,6 @@ export function buildProjectsPageJsonLd(): JsonLdObject {
 }
 
 export function buildPlaygroundPageJsonLd(): JsonLdObject {
-  const games = getGameCards();
-
   return {
     '@context': 'https://schema.org',
     '@graph': [
@@ -257,12 +253,12 @@ export function buildPlaygroundPageJsonLd(): JsonLdObject {
         about: { '@id': PERSON_ID },
         mainEntity: {
           '@type': 'ItemList',
-          numberOfItems: games.length,
-          itemListElement: games.map((game, index) => ({
+          numberOfItems: GAME_CARDS_WITH_ROUTES.length,
+          itemListElement: GAME_CARDS_WITH_ROUTES.map((game, index) => ({
             '@type': 'ListItem',
             position: index + 1,
-            url: getAbsoluteUrl(game.href as string),
-            item: buildGameJsonLd(game.href as string),
+            url: getAbsoluteUrl(game.href),
+            item: buildGameJsonLd(game.href),
           })),
         },
       },
