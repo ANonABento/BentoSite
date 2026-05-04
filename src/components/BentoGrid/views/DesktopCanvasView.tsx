@@ -16,7 +16,7 @@ import { ArrowLeftIcon, ChevronDownIcon, CloseIcon, SearchIcon } from '@/compone
 import type { CardData, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
-interface DesktopCanvasViewProps {
+export interface DesktopCanvasViewProps {
   className?: string;
   cards: CardData[];
   theme: ThemeConfig;

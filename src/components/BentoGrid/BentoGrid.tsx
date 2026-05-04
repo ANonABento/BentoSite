@@ -13,11 +13,17 @@
  */
 
 import { useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { useWindowSize } from './core';
 import { THEMES, MOBILE } from './BentoGrid.constants';
 import type { GridConfig, RenderCard } from './BentoGrid.types';
-import { DesktopCanvasView } from './views/DesktopCanvasView';
+import type { DesktopCanvasViewProps } from './views/DesktopCanvasView';
 import { MobileScrollView } from './views/MobileScrollView';
+
+const DesktopCanvasView = dynamic<DesktopCanvasViewProps>(
+  () => import('./views/DesktopCanvasView').then((mod) => mod.DesktopCanvasView),
+  { ssr: false }
+);
 
 // =============================================================================
 // PROPS

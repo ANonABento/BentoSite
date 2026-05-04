@@ -1,11 +1,13 @@
 'use client';
 
 import { memo } from 'react';
-import ReactMarkdown from 'react-markdown';
+import dynamic from 'next/dynamic';
 import { useHasMounted } from '@/lib/use-has-mounted';
 import type { Message } from '../chat.types';
 import { CopyButton } from './CopyButton';
 import { FeedbackButtons } from './FeedbackButtons';
+
+const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
 
 interface MessageItemProps {
   message: Message;
