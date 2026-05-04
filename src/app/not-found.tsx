@@ -5,8 +5,8 @@ export default function NotFound() {
     <div className="min-h-screen bg-[var(--background)] bg-grid flex items-center justify-center p-4">
       {/* Ambient glow effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--purple-muted)] opacity-50 rounded-full blur-[100px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[var(--purple-muted)] opacity-50 rounded-full blur-[100px]" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--primary-muted)] opacity-50 rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[var(--primary-muted)] opacity-50 rounded-full blur-[100px]" />
       </div>
 
       {/* Content card */}
@@ -28,9 +28,9 @@ export default function NotFound() {
         <Link
           href="/"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium
-            text-[var(--text-on-accent)] hover:shadow-[0_0_20px_var(--purple-muted)] hover:scale-105
+            text-[var(--text-on-accent)] hover:shadow-[0_0_20px_var(--primary-muted)] hover:scale-105
             transition-all duration-300"
-          style={{ background: 'linear-gradient(to right, var(--purple), var(--purple-active))' }}
+          style={{ background: 'linear-gradient(to right, var(--primary), var(--primary-active))' }}
         >
           <svg
             className="w-5 h-5"

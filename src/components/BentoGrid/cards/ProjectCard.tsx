@@ -8,7 +8,7 @@
  * - Sharp corners, subtle shadows
  * - Thumbnail with status badge
  * - Tech badges and links
- * - Subtle violet accent on hover
+ * - Subtle primary accent on hover
  */
 
 import { useState } from 'react';
@@ -62,15 +62,15 @@ function StatusBadge({ status }: { status?: ProjectStatus }) {
   }> = {
     Completed: {
       label: 'READY',
-      bg: 'bg-emerald-500/10',
-      text: 'text-emerald-400',
-      border: 'border-emerald-500/30',
+      bg: 'bg-[var(--success-muted)]',
+      text: 'text-[var(--success)]',
+      border: 'border-[var(--success)]/30',
     },
     'In Progress': {
       label: 'WIP',
-      bg: 'bg-amber-500/10',
-      text: 'text-amber-400',
-      border: 'border-amber-500/30',
+      bg: 'bg-[var(--primary-muted)]',
+      text: 'text-[var(--primary)]',
+      border: 'border-[var(--primary)]/30',
     },
     Archived: {
       label: 'ARCHIVED',
@@ -183,7 +183,7 @@ export function ProjectCard({
               />
             </>
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-violet-500/10 to-transparent">
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--primary-muted)] to-transparent">
               <Model3DIcon size={32} className="text-[var(--text-muted)] opacity-50" />
             </div>
           )}
