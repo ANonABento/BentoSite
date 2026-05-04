@@ -246,7 +246,9 @@ export function useBoardController({
         const spawnCount = Math.min(deficit, nextQueue.length, maxVisible - nextVisible.size);
 
         for (let i = 0; i < spawnCount; i++) {
-          const queuedCard = nextQueue.shift()!;
+          const queuedCard = nextQueue[0];
+          if (!queuedCard) break;
+
           const size = getCardSizeForIndex(spawnCountRef.current, queuedCard.data);
           const dimensions = getCardDimensions(size);
 
@@ -254,6 +256,7 @@ export function useBoardController({
           const cell = grid.findNearest(center.col, center.row, size);
           if (!cell) continue;
 
+          nextQueue.shift();
           grid.place(cell.col, cell.row, size, queuedCard.id);
           const pixel = cellToPixel(cell.col, cell.row);
 

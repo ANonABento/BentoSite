@@ -7,8 +7,8 @@ import type {
   UseViewportReturn,
 } from '../BentoGrid.types';
 import { GRID, getCardDimensions } from '../BentoGrid.constants';
-import { filterCards, useCardPool, useSpawnManager } from '../core';
-import { calculateInitialPositions, rectsOverlap } from '../layout';
+import { filterCards, useBoardController, useCardPool, useSpawnManager } from '../core';
+import { calculateInitialPositions, GridOccupancy, rectsOverlap } from '../layout';
 
 const cards: CardData[] = [
   {
@@ -45,6 +45,13 @@ const cards: CardData[] = [
     technologies: ['React Native'],
   },
 ];
+
+const manyCards: CardData[] = Array.from({ length: 20 }, (_, index) => ({
+  id: `project-${index}`,
+  type: 'project',
+  title: `Project ${index}`,
+  category: 'web',
+}));
 
 function cardRectsOverlap(a: CardPosition, b: CardPosition): boolean {
   return rectsOverlap(a, b, GRID.GAP);
@@ -227,5 +234,47 @@ describe('useCardPool', () => {
     // All cards + search card are visible; force spawn should not dequeue
     expect(result.current.cardPool.visible.size).toBe(5);
     expect(result.current.cardPool.queue.map((card) => card.id)).toEqual(initialQueueIds);
+  });
+});
+
+describe('useBoardController', () => {
+  it('keeps queued cards when spawning cannot find a free grid cell', () => {
+    const { result } = renderHook(() =>
+      useBoardController({
+        cards: manyCards,
+        rotationRange: 0,
+      }),
+    );
+
+    const initialVisible = new Map(result.current.visible);
+    const layoutsAfterPan = new Map(
+      Array.from(initialVisible, ([cardId, position]) => [
+        cardId,
+        cardId === '__search__'
+          ? position
+          : {
+              ...position,
+              x: 10000,
+              y: 10000,
+            },
+      ]),
+    );
+
+    const findNearestSpy = vi
+      .spyOn(GridOccupancy.prototype, 'findNearest')
+      .mockReturnValue(null);
+
+    act(() => {
+      result.current.tick(
+        { x: 0, y: 0, zoom: 1 },
+        { width: 1000, height: 600 },
+        () => layoutsAfterPan,
+      );
+    });
+
+    expect(result.current.queue).toHaveLength(manyCards.length);
+    expect(result.current.queue.map(card => card.id)).toContain('project-0');
+
+    findNearestSpy.mockRestore();
   });
 });
