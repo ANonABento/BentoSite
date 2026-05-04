@@ -32,8 +32,8 @@ describe('SEO validator gate', () => {
       const seo = ROUTE_SEO[route] ?? GAME_SEO[route];
       const metadata = createRouteMetadata(seo);
 
-      expect(metadata.title, `${route} title`).toBe(seo.title);
-      expect(String(metadata.title), `${route} brand`).toMatch(
+      expect(metadata.title, `${route} title`).toEqual({ absolute: seo.title });
+      expect(seo.title, `${route} brand`).toMatch(
         /— bentOS \/ Kevin Jiang$/
       );
       expect(metadata.description, `${route} description`).toBe(seo.description);

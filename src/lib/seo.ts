@@ -129,7 +129,9 @@ export function createRouteMetadata(config: RouteSeoConfig): Metadata {
   const url = getAbsoluteUrl(config.path);
 
   return {
-    title: config.title,
+    title: {
+      absolute: config.title,
+    },
     description: config.description,
     alternates: {
       canonical: url,
