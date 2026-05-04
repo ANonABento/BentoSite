@@ -130,3 +130,17 @@ export const API_ENDPOINTS = {
   CHAT: '/api/chat',
   FEEDBACK: '/api/feedback',
 } as const;
+
+// === EXTERNAL URLS ===
+
+/**
+ * Resume PDF — points at the public Google Docs export endpoint, which
+ * forces a PDF download for publicly-shared docs (server returns
+ * `Content-Type: application/pdf` with a `Content-Disposition: attachment`).
+ *
+ * Cross-origin link, so consumers should use `target="_blank"` and
+ * `rel="noopener noreferrer"` (not the `download` attribute, which only
+ * works for same-origin URLs).
+ */
+export const RESUME_URL =
+  'https://docs.google.com/document/d/140poL_mXjYyzeCwDNUE6Fs4U9zUKyypF3m4gpUiO1ZU/export?format=pdf';

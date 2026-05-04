@@ -10,6 +10,7 @@ import {
   tabContent,
 } from '@/lib/animations';
 import Header from '@/components/Header';
+import { RESUME_URL } from '@/lib/constants';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { ViewfinderPanel } from './ViewfinderPanel';
 import { TerminalPanel } from './TerminalPanel';
@@ -68,7 +69,7 @@ export function DashboardLayout({
   }, [chatFns]);
 
   const handleViewResume = useCallback(() => {
-    window.open('/resume.pdf', '_blank');
+    window.open(RESUME_URL, '_blank', 'noopener,noreferrer');
   }, []);
 
   const handleSeeProjects = useCallback(() => {
@@ -118,7 +119,7 @@ export function DashboardLayout({
             githubUrl={PORTFOLIO_DATA.personal.github}
             linkedinUrl={PORTFOLIO_DATA.personal.linkedin}
             email={PORTFOLIO_DATA.personal.email}
-            resumeUrl="/resume.pdf"
+            resumeUrl={RESUME_URL}
             compact
             onProjectsClick={handleSeeProjects}
           />

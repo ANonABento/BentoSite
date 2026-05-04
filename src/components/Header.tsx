@@ -14,6 +14,7 @@ import {
   MailIcon,
   PlayCircleIcon,
 } from '@/components/ui/Icons';
+import { RESUME_URL } from '@/lib/constants';
 import { HeaderSocialLink, ResumeButton, TaskbarClock, ThemeToggle } from './Header.parts';
 
 type CompactNavLink = {
@@ -86,7 +87,7 @@ export default function Header({
   githubUrl = 'https://github.com',
   linkedinUrl = 'https://linkedin.com',
   email = 'hello@example.com',
-  resumeUrl = '/resume.pdf',
+  resumeUrl = RESUME_URL,
   compact = false,
   onProjectsClick,
 }: HeaderProps) {

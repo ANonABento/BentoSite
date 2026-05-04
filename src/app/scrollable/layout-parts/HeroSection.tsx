@@ -6,6 +6,7 @@ import { sectionItem, sectionStagger } from '@/lib/animations';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import type { DimensionViewerProps } from '@/components/Dimension/Dimension.types';
 import Header from '@/components/Header';
+import { RESUME_URL } from '@/lib/constants';
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { ScrollableErrorFallback } from './ScrollableErrorFallback';
 
@@ -45,7 +46,7 @@ export function HeroSection({
             githubUrl={PORTFOLIO_DATA.personal.github}
             linkedinUrl={PORTFOLIO_DATA.personal.linkedin}
             email={PORTFOLIO_DATA.personal.email}
-            resumeUrl="/resume.pdf"
+            resumeUrl={RESUME_URL}
             compact
           />
         </div>

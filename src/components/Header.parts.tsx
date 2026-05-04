@@ -44,6 +44,10 @@ export function ThemeToggle() {
   );
 }
 
+function handleResumeClick() {
+  analytics.resumeDownloaded();
+}
+
 export function ResumeButton({
   resumeUrl,
   className = '',
@@ -54,9 +58,10 @@ export function ResumeButton({
   return (
     <a
       href={resumeUrl}
-      download
-      onClick={() => analytics.resumeDownloaded()}
-      aria-label="Download resume"
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={handleResumeClick}
+      aria-label="Open resume PDF in a new tab"
       className={`interactive-hover flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm
         bg-[var(--orange)] hover:bg-[var(--orange-hover)] active:bg-[var(--orange-active)] text-[var(--text-on-accent)]
         hover:shadow-[0_0_20px_var(--orange-muted)] hover:scale-105

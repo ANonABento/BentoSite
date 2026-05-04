@@ -5,20 +5,22 @@ import type { ModelInfo } from './Dimension.types';
 // Model Configuration - Add your models here
 export const AVAILABLE_MODELS: ModelInfo[] = [
   {
-    id: 'placeholder',
-    name: 'Default Placeholder',
-    path: '/models/placeholder.stl',
-    thumbnail: '/models/thumbnails/placeholder.png',
-    fileSize: 45672,
-    dimensions: { width: 20, height: 20, depth: 20 },
-    vertexCount: 2400,
-    description: 'Default placeholder model for testing',
-    category: 'Basic'
+    id: 'cat',
+    name: 'Cat',
+    // The `procedural:` prefix is recognised by `getModelFormat` and routed
+    // to a Three.js primitives-based renderer instead of a file loader.
+    path: 'procedural:cat',
+    thumbnail: '/models/thumbnails/cat.png',
+    fileSize: 0,
+    dimensions: { width: 4, height: 3, depth: 5 },
+    vertexCount: 1800,
+    description: 'Default model — a small procedural cat. No assets required.',
+    category: 'Procedural',
   },
 ];
 
 // Default model path
-export const DEFAULT_MODEL_PATH = '/models/placeholder.stl';
+export const DEFAULT_MODEL_PATH = 'procedural:cat';
 
 // Camera settings
 export const CAMERA_POSITION = [8, 8, 8] as const;
