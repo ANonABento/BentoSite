@@ -80,16 +80,17 @@ describe('SearchCard', () => {
     expect(screen.getByRole('textbox', { name: 'Search cards' })).toBeInTheDocument();
   });
 
-  it('keeps a searchable input in the side icon strip', () => {
+  it('renders icon buttons in the side icon strip', () => {
     renderSearchCard({
       edge: 'left',
       compression: 1,
       width: SEARCH_CARD.SQUASHED_SIDE_WIDTH,
     });
 
-    // Side squash visually hides the breadcrumb header (opacity:0, height:0, aria-hidden)
-    const breadcrumb = screen.getByText('bentOS');
-    expect(breadcrumb.closest('[aria-hidden="true"]')).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Search cards' })).toBeInTheDocument();
+    // Side squash shows icon buttons instead of full UI
+    expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Toggle filters' })).toBeInTheDocument();
+    // No text input in icon strip mode
+    expect(screen.queryByRole('textbox', { name: 'Search cards' })).not.toBeInTheDocument();
   });
 });

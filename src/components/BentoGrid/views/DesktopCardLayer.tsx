@@ -2,10 +2,10 @@
 
 import { Fragment } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import { SEARCH_CARD_ID } from '../BentoGrid.constants';
 import type {
   CardData,
   CardPosition,
-  PhysicsPosition,
   RenderCard,
   ThemeConfig,
 } from '../BentoGrid.types';
@@ -14,7 +14,6 @@ import { DefaultCard } from './DefaultCard';
 interface DesktopCardLayerProps {
   layouts: Map<string, CardPosition>;
   cardDataMap: Map<string, CardData>;
-  physicsPositions: Map<string, PhysicsPosition>;
   theme: ThemeConfig;
   focusedCardId: string | null;
   renderCard?: RenderCard;
@@ -24,7 +23,6 @@ interface DesktopCardLayerProps {
 export function DesktopCardLayer({
   layouts,
   cardDataMap,
-  physicsPositions,
   theme,
   focusedCardId,
   renderCard,
@@ -33,26 +31,21 @@ export function DesktopCardLayer({
   return (
     <AnimatePresence mode="popLayout">
       {Array.from(layouts.entries()).map(([cardId, layout], index) => {
+        // Search card is rendered as a fixed overlay by DesktopCanvasView
+        if (cardId === SEARCH_CARD_ID) return null;
+
+        // Content cards render directly at grid positions — no physics override
         const cardData = cardDataMap.get(cardId);
         if (!cardData) return null;
 
         const isFocused = focusedCardId === cardId;
-        const physicsPosition = physicsPositions.get(cardId);
-        const position: CardPosition = physicsPosition
-          ? {
-              ...layout,
-              x: physicsPosition.x,
-              y: physicsPosition.y,
-              rotation: (physicsPosition.angle * 180) / Math.PI,
-            }
-          : layout;
 
         if (renderCard) {
           return (
             <Fragment key={cardId}>
               {renderCard(
                 cardData,
-                position,
+                layout,
                 theme,
                 isFocused,
                 () => onCardClick(cardData),
@@ -66,7 +59,7 @@ export function DesktopCardLayer({
           <DefaultCard
             key={cardId}
             card={cardData}
-            position={position}
+            position={layout}
             theme={theme}
             onClick={() => onCardClick(cardData)}
             isFocused={isFocused}

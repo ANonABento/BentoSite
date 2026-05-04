@@ -24,7 +24,7 @@ export function shouldUseBentoGridSeed(searchParams: URLSearchParams): boolean {
   return searchParams.get('seed') === '1' || searchParams.get('debug') === 'queue';
 }
 
-export function createSeedProjectCards(cards: ProjectCardData[], seedCount = 48): ProjectCardData[] {
+export function createSeedProjectCards(cards: ProjectCardData[], seedCount = 80): ProjectCardData[] {
   if (cards.length === 0) return cards;
 
   return Array.from({ length: seedCount }, (_, index) => {
@@ -32,18 +32,19 @@ export function createSeedProjectCards(cards: ProjectCardData[], seedCount = 48)
     const category = PROJECT_SEED_CATEGORIES[index % PROJECT_SEED_CATEGORIES.length];
     const cycle = Math.floor(index / cards.length) + 1;
 
+    const title = `${base.title} ${cycle}.${(index % cards.length) + 1}`;
     return {
       ...base,
       id: `seed-project-${index + 1}-${base.id}`,
-      title: `${base.title} ${cycle}.${(index % cards.length) + 1}`,
+      title,
       description: `Queue spawn test card ${index + 1}. ${base.description ?? ''}`.trim(),
       category,
-      featured: index % 5 === 0,
+      featured: index % 7 === 0,
     };
   });
 }
 
-export function createSeedGameCards(cards: GameCardData[], seedCount = 54): GameCardData[] {
+export function createSeedGameCards(cards: GameCardData[], seedCount = 80): GameCardData[] {
   if (cards.length === 0) return cards;
 
   return Array.from({ length: seedCount }, (_, index) => {

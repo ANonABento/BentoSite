@@ -118,7 +118,7 @@ describe('BentoGrid cards', () => {
     const shell = screen.getByText('Card content').closest('[data-animate]');
 
     expect(shell).toHaveAttribute('data-animate', expect.stringContaining('"y":80'));
-    expect(shell).toHaveAttribute('data-while-hover', '{"scale":1.015,"y":-2}');
+    expect(shell).toHaveAttribute('data-while-hover', '{"scale":1.02}');
   });
 
   it('renders project metadata and hover links through the shared shell', () => {

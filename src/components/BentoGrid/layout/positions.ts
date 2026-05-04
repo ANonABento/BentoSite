@@ -1,12 +1,14 @@
 import type { CardData, CardPosition, CardSize, Rect } from '../BentoGrid.types';
-import { GRID, SEARCH_CARD } from '../BentoGrid.constants';
+import { GRID, SEARCH_CARD_ID } from '../BentoGrid.constants';
 import { getCardDimensions, getCardSizeForIndex } from './cardSizes';
+import { GridOccupancy, cellToPixel, sizeToSpan } from './gridOccupancy';
 
 export function getRandomRotation(range: number): number {
   if (range === 0) return 0;
   return (Math.random() - 0.5) * 2 * range;
 }
 
+/** @deprecated Use GridOccupancy.findNearest instead. Kept for test compat. */
 export function generateSpiralPositions(count: number): Array<{ col: number; row: number }> {
   const positions: Array<{ col: number; row: number }> = [];
   let col = 0;
@@ -67,80 +69,97 @@ export function createCardPosition(
   };
 }
 
+/** Search card size in the grid. */
+const SEARCH_CARD_SIZE: CardSize = '2x1';
+
+/**
+ * Calculate initial card positions using grid-snapped placement.
+ *
+ * The search card is placed first at grid center as a regular 2×1 card.
+ * Content cards spiral outward around it. All cards live in the same
+ * coordinate space and are positioned the same way.
+ *
+ * Returns a Map of cardId → CardPosition including the search card.
+ */
 export function calculateInitialPositions(
   cards: CardData[],
   count: number,
-  rotationRange: number,
+  _rotationRange: number,
 ): Map<string, CardPosition> {
   const positions = new Map<string, CardPosition>();
-  const placed: Rect[] = [
-    {
-      x: -SEARCH_CARD.EXPANDED_WIDTH / 2,
-      y: -SEARCH_CARD.EXPANDED_HEIGHT / 2,
-      width: SEARCH_CARD.EXPANDED_WIDTH,
-      height: SEARCH_CARD.EXPANDED_HEIGHT,
-    },
+  const grid = new GridOccupancy();
+
+  // Place the search card first at grid center
+  const searchCell = grid.findNearest(0, 0, SEARCH_CARD_SIZE)!;
+  grid.place(searchCell.col, searchCell.row, SEARCH_CARD_SIZE, SEARCH_CARD_ID);
+
+  // Place content cards spiraling outward
+  const requested = Math.min(count, cards.length);
+  const placements: Array<{ id: string; col: number; row: number; size: CardSize }> = [
+    { id: SEARCH_CARD_ID, col: searchCell.col, row: searchCell.row, size: SEARCH_CARD_SIZE },
   ];
 
-  const requested = Math.min(count, cards.length);
-  const spiralPositions = generateSpiralPositions(requested * 8 + 32);
-  const tempPositions: Array<{ id: string } & CardPosition> = [];
-  let cardIndex = 0;
-  let spiralIndex = 0;
+  for (let i = 0; i < requested; i++) {
+    const card = cards[i];
+    const size = getCardSizeForIndex(i, card);
 
-  while (cardIndex < requested && spiralIndex < spiralPositions.length) {
-    const card = cards[cardIndex];
-    const spiralPos = spiralPositions[spiralIndex];
-    const size = getCardSizeForIndex(cardIndex, card);
-    const dimensions = getCardDimensions(size);
-    const x = spiralPos.col * (GRID.CELL_SIZE + GRID.GAP);
-    const y = spiralPos.row * (GRID.CELL_SIZE + GRID.GAP);
-    const cardRect = { x, y, width: dimensions.width, height: dimensions.height };
+    const cell = grid.findNearest(0, 0, size);
+    if (!cell) continue;
 
-    if (!placed.some((placedRect) => rectsOverlap(cardRect, placedRect))) {
-      tempPositions.push({
-        id: card.id,
-        x,
-        y,
-        rotation: getRandomRotation(rotationRange),
-        size,
-        width: dimensions.width,
-        height: dimensions.height,
-      });
-      placed.push(cardRect);
-      cardIndex++;
-    }
-
-    spiralIndex++;
+    grid.place(cell.col, cell.row, size, card.id);
+    placements.push({ id: card.id, col: cell.col, row: cell.row, size });
   }
 
-  if (tempPositions.length === 0) return positions;
+  // Center all cards (including search) around origin
+  if (placements.length > 0) {
+    const bounds = placements.reduce(
+      (acc, p) => {
+        const span = sizeToSpan(p.size);
+        return {
+          minCol: Math.min(acc.minCol, p.col),
+          maxCol: Math.max(acc.maxCol, p.col + span.cols),
+          minRow: Math.min(acc.minRow, p.row),
+          maxRow: Math.max(acc.maxRow, p.row + span.rows),
+        };
+      },
+      { minCol: Infinity, maxCol: -Infinity, minRow: Infinity, maxRow: -Infinity },
+    );
 
-  const bounds = tempPositions.reduce(
-    (acc, position) => ({
-      minX: Math.min(acc.minX, position.x),
-      maxX: Math.max(acc.maxX, position.x + position.width),
-      minY: Math.min(acc.minY, position.y),
-      maxY: Math.max(acc.maxY, position.y + position.height),
-    }),
-    {
-      minX: Number.POSITIVE_INFINITY,
-      maxX: Number.NEGATIVE_INFINITY,
-      minY: Number.POSITIVE_INFINITY,
-      maxY: Number.NEGATIVE_INFINITY,
-    },
-  );
+    const offsetCol = Math.round((bounds.minCol + bounds.maxCol) / 2);
+    const offsetRow = Math.round((bounds.minRow + bounds.maxRow) / 2);
 
-  const centerOffsetX = (bounds.minX + bounds.maxX) / 2;
-  const centerOffsetY = (bounds.minY + bounds.maxY) / 2;
-
-  tempPositions.forEach(({ id, ...position }) => {
-    positions.set(id, {
-      ...position,
-      x: position.x - centerOffsetX,
-      y: position.y - centerOffsetY,
-    });
-  });
+    for (const p of placements) {
+      const dimensions = getCardDimensions(p.size);
+      const pixel = cellToPixel(p.col - offsetCol, p.row - offsetRow);
+      positions.set(p.id, {
+        x: pixel.x,
+        y: pixel.y,
+        width: dimensions.width,
+        height: dimensions.height,
+        size: p.size,
+        rotation: 0,
+      });
+    }
+  }
 
   return positions;
+}
+
+/**
+ * Create a GridOccupancy map from an existing set of card positions.
+ * Used to reconstruct the grid state from visible cards.
+ */
+export function occupancyFromPositions(
+  positions: Map<string, CardPosition>,
+): GridOccupancy {
+  const grid = new GridOccupancy();
+
+  positions.forEach((pos, cardId) => {
+    const { col, row } = { col: Math.round(pos.x / (GRID.CELL_SIZE + GRID.GAP)), row: Math.round(pos.y / (GRID.CELL_SIZE + GRID.GAP)) };
+    if (grid.canPlace(col, row, pos.size)) {
+      grid.place(col, row, pos.size, cardId);
+    }
+  });
+
+  return grid;
 }

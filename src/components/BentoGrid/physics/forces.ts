@@ -1,5 +1,6 @@
 import Matter from 'matter-js';
 import type { CardPosition, Position } from '../BentoGrid.types';
+import { SEARCH_CARD_ID } from '../BentoGrid.constants';
 
 const { Body, Sleeping } = Matter;
 
@@ -27,13 +28,16 @@ export function extractTargets(layouts: Map<string, CardPosition>): Map<string, 
   return targets;
 }
 
+/** Snap threshold — if a body is within this many pixels of its target, lock it. */
+const SNAP_DISTANCE = 3;
+
 export function applySettlingForces(
   bodies: Map<string, Matter.Body>,
   targets: Map<string, Position>,
   strength: number,
 ): void {
   bodies.forEach((body, id) => {
-    if (body.isStatic || id === '__search__') return;
+    if (body.isStatic || id === SEARCH_CARD_ID) return;
 
     const target = targets.get(id);
     if (!target) return;
@@ -41,7 +45,21 @@ export function applySettlingForces(
     const dx = target.x - body.position.x;
     const dy = target.y - body.position.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    if (distance < 1) return;
+
+    // Always correct rotation toward 0 — cards should be straight
+    if (Math.abs(body.angle) > 0.001) {
+      Body.setAngle(body, body.angle * 0.8);
+      Body.setAngularVelocity(body, body.angularVelocity * 0.5);
+    }
+
+    // Snap to target when close enough — eliminates jitter
+    if (distance < SNAP_DISTANCE) {
+      Body.setPosition(body, target);
+      Body.setVelocity(body, { x: 0, y: 0 });
+      Body.setAngularVelocity(body, 0);
+      Body.setAngle(body, 0);
+      return;
+    }
 
     const forceMagnitude = distance * strength;
     Body.applyForce(body, body.position, {
@@ -81,14 +99,14 @@ export function applyEntranceBurst(
   strength = 8,
 ): void {
   bodies.forEach((body, id) => {
-    if (id === '__search__') return;
+    if (id === SEARCH_CARD_ID) return;
     applyEntranceBurstToBody(body, center, strength);
   });
 }
 
 export function applyDamping(bodies: Map<string, Matter.Body>, factor: number): void {
   bodies.forEach((body, id) => {
-    if (body.isStatic || id === '__search__') return;
+    if (body.isStatic || id === SEARCH_CARD_ID) return;
 
     Body.setVelocity(body, {
       x: body.velocity.x * factor,

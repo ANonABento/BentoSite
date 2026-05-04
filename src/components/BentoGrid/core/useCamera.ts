@@ -212,6 +212,7 @@ export function useCamera({
       pinch: {
         scaleBounds: { min: CAMERA.minZoom, max: CAMERA.maxZoom },
         pointer: { touch: true },
+        eventOptions: { passive: false },
       },
       wheel: {
         eventOptions: { passive: false },
@@ -275,6 +276,7 @@ export function useCamera({
 
   return {
     camera,
+    cameraRef,
     pan,
     zoom,
     setCamera,

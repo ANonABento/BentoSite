@@ -16,10 +16,10 @@ describe('BentoGrid constants', () => {
   });
 
   it('applies the updated search card compressed dimensions', () => {
-    expect(SEARCH_CARD.SQUASHED_SIDE_WIDTH).toBe(80);
-    expect(SEARCH_CARD.squashedSideWidth).toBe(80);
-    expect(SEARCH_CARD.COLLAPSED_HEIGHT).toBe(56);
-    expect(SEARCH_CARD.collapsedHeight).toBe(56);
+    expect(SEARCH_CARD.SQUASHED_SIDE_WIDTH).toBe(64);
+    expect(SEARCH_CARD.squashedSideWidth).toBe(64);
+    expect(SEARCH_CARD.COLLAPSED_HEIGHT).toBe(64);
+    expect(SEARCH_CARD.collapsedHeight).toBe(64);
   });
 
   it('keeps source-compatible aliases mapped to the BentoGrid values', () => {

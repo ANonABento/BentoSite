@@ -6,10 +6,8 @@ import type {
   ReactNode,
   WheelEventHandler,
 } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import type { CardPosition, ThemeConfig } from '../BentoGrid.types';
-import { ANIMATION } from '../BentoGrid.constants';
-import { unifiedGridCardEntranceDelay } from '@/lib/animations';
 
 interface BaseCardProps {
   id: string;
@@ -37,13 +35,11 @@ export function BaseCard({
   position,
   theme,
   isFocused = false,
-  entranceIndex = 0,
   className,
   shellClassName,
   shellStyle,
   positionMode = 'absolute',
   hoverEnabled = true,
-  motionMode = 'spring',
   ariaLabel,
   children,
   onClick,
@@ -52,12 +48,10 @@ export function BaseCard({
   onPointerDown,
   onWheel,
 }: BaseCardProps) {
-  const prefersReducedMotion = useReducedMotion() ?? false;
-  const useInstantMotion = prefersReducedMotion || motionMode === 'instant';
 
   return (
     <motion.div
-      layoutId={motionMode === 'instant' ? undefined : id}
+      key={id}
       className={[
         positionMode,
         onClick ? 'cursor-pointer' : 'cursor-default',
@@ -68,25 +62,20 @@ export function BaseCard({
         width: position.width,
         height: position.height,
       }}
-      initial={useInstantMotion ? false : { opacity: 0, scale: 0.92 }}
+      initial={false}
       animate={{
-        opacity: 1,
-        scale: 1,
         x: position.x,
         y: position.y,
         rotate: position.rotation,
       }}
-      exit={useInstantMotion ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
-      transition={useInstantMotion
-        ? { duration: 0 }
-        : {
-            type: 'spring',
-            stiffness: ANIMATION.SPRING.stiffness,
-            damping: ANIMATION.SPRING.damping,
-            delay: unifiedGridCardEntranceDelay(entranceIndex),
-          }}
-      whileHover={useInstantMotion || !hoverEnabled ? undefined : { scale: 1.015, y: -2 }}
-      whileTap={useInstantMotion || !hoverEnabled ? undefined : { scale: 0.98 }}
+      exit={{ opacity: 0, transition: { duration: 0.15 } }}
+      transition={{
+        type: 'spring',
+        stiffness: 300,
+        damping: 30,
+      }}
+      whileHover={hoverEnabled ? { scale: 1.02 } : undefined}
+      whileTap={hoverEnabled ? { scale: 0.98 } : undefined}
       onHoverStart={onHoverStart}
       onHoverEnd={onHoverEnd}
       onClick={onClick}
