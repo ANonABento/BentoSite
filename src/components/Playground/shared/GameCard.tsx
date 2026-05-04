@@ -11,7 +11,7 @@ interface GameCardProps {
 }
 
 export function GameCard({ game, bestScore }: GameCardProps) {
-  const isGold = game.color === 'orange';
+  const isPrimary = game.color === 'orange' || game.color === 'primary';
 
   return (
     <Link href={game.path} className="block">
@@ -39,9 +39,9 @@ export function GameCard({ game, bestScore }: GameCardProps) {
             className={`
               absolute inset-0 opacity-0 group-hover:opacity-100
               transition-opacity duration-500 pointer-events-none
-              ${isGold
-                ? 'bg-gradient-to-br from-[var(--pg-accent-gold)]/10 via-transparent to-transparent'
-                : 'bg-gradient-to-br from-[var(--purple)]/10 via-transparent to-transparent'
+              ${isPrimary
+                ? 'bg-gradient-to-br from-[var(--pg-accent-primary)]/10 via-transparent to-transparent'
+                : 'bg-gradient-to-br from-[var(--primary)]/10 via-transparent to-transparent'
               }
             `}
           />
@@ -52,16 +52,16 @@ export function GameCard({ game, bestScore }: GameCardProps) {
               relative w-14 h-14 mb-5
               flex items-center justify-center
               rounded-xl
-              ${isGold
-                ? 'bg-[var(--pg-accent-gold)]/10 text-[var(--pg-accent-gold)]'
-                : 'bg-[var(--purple)]/10 text-[var(--purple)]'
+              ${isPrimary
+                ? 'bg-[var(--pg-accent-primary)]/10 text-[var(--pg-accent-primary)]'
+                : 'bg-[var(--primary)]/10 text-[var(--primary)]'
               }
             `}
             whileHover={{
               scale: 1.05,
-              boxShadow: isGold
-                ? '0 0 30px rgba(251, 191, 36, 0.3)'
-                : '0 0 30px rgba(167, 139, 250, 0.3)',
+              boxShadow: isPrimary
+                ? '0 0 30px rgba(224, 123, 60, 0.3)'
+                : '0 0 30px rgba(224, 123, 60, 0.3)',
             }}
             transition={springs.snappy}
           >
@@ -86,7 +86,7 @@ export function GameCard({ game, bestScore }: GameCardProps) {
                 <span
                   className={`
                     font-mono font-semibold text-sm
-                    ${isGold ? 'text-[var(--pg-accent-gold)]' : 'text-[var(--purple)]'}
+                    ${isPrimary ? 'text-[var(--pg-accent-primary)]' : 'text-[var(--primary)]'}
                   `}
                 >
                   {bestScore}
@@ -100,9 +100,9 @@ export function GameCard({ game, bestScore }: GameCardProps) {
             <motion.div
               className={`
                 w-8 h-8 rounded-full flex items-center justify-center
-                ${isGold
-                  ? 'bg-[var(--pg-accent-gold)]/10 text-[var(--pg-accent-gold)]'
-                  : 'bg-[var(--purple)]/10 text-[var(--purple)]'
+                ${isPrimary
+                  ? 'bg-[var(--pg-accent-primary)]/10 text-[var(--pg-accent-primary)]'
+                  : 'bg-[var(--primary)]/10 text-[var(--primary)]'
                 }
                 opacity-0 group-hover:opacity-100
                 transition-opacity duration-300
@@ -132,9 +132,9 @@ export function GameCard({ game, bestScore }: GameCardProps) {
               absolute bottom-0 left-0 right-0 h-[2px]
               transform scale-x-0 group-hover:scale-x-100
               transition-transform duration-300 origin-left
-              ${isGold
-                ? 'bg-gradient-to-r from-[var(--pg-accent-gold)] to-transparent'
-                : 'bg-gradient-to-r from-[var(--purple)] to-transparent'
+              ${isPrimary
+                ? 'bg-gradient-to-r from-[var(--pg-accent-primary)] to-transparent'
+                : 'bg-gradient-to-r from-[var(--primary)] to-transparent'
               }
             `}
           />

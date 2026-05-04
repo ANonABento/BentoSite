@@ -30,7 +30,7 @@ const Chatbot = dynamic(() => import('@/components/Chat'), {
     <LazyPanelFallback
       label="Initializing chat..."
       spinnerSize="sm"
-      spinnerVariant="purple"
+      spinnerVariant="primary"
     />
   ),
 });

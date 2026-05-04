@@ -133,7 +133,7 @@ export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, 
                 <div
                   key={model.id}
                   onClick={() => handleModelClick(model)}
-                  className={`border-2 rounded-lg p-4 cursor-pointer ${isInitialRender ? '' : 'transition-all duration-200 transform hover:scale-[1.02] hover:shadow-[0_0_30px_var(--purple-muted)]'} ${selectedModel.id === model.id ? 'border-[var(--interactive)] bg-[var(--purple-muted)] shadow-[0_0_20px_var(--purple-muted)]' : 'border-[var(--border)] hover:border-[var(--border)] hover:bg-[var(--glass-bg)] bg-[var(--glass-bg)]'} focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50`}
+                  className={`border-2 rounded-lg p-4 cursor-pointer ${isInitialRender ? '' : 'transition-all duration-200 transform hover:scale-[1.02] hover:shadow-[0_0_30px_var(--primary-muted)]'} ${selectedModel.id === model.id ? 'border-[var(--interactive)] bg-[var(--primary-muted)] shadow-[0_0_20px_var(--primary-muted)]' : 'border-[var(--border)] hover:border-[var(--border)] hover:bg-[var(--glass-bg)] bg-[var(--glass-bg)]'} focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50`}
                   tabIndex={0}
                   role="button"
                   aria-label={`Select ${model.name} model`}
@@ -147,7 +147,7 @@ export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, 
                   <h3 className="font-bold text-[var(--text-primary)] mb-2 leading-tight">{model.name}</h3>
                   <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-2 leading-relaxed">{model.description}</p>
                   <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-sm text-xs font-medium bg-[var(--purple-muted)] text-[var(--interactive)] border border-[var(--interactive)] border-opacity-30">{model.category}</span>
+                    <span className="px-3 py-1 rounded-sm text-xs font-medium bg-[var(--primary-muted)] text-[var(--interactive)] border border-[var(--interactive)] border-opacity-30">{model.category}</span>
                     <span className="text-xs text-[var(--text-muted)] font-mono">{formatFileSize(model.fileSize)}</span>
                   </div>
                 </div>

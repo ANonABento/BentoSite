@@ -6,8 +6,8 @@ export interface SectionHeaderProps {
   title: string;
   /** Icon to display (required for consistency) */
   icon: ReactNode;
-  /** Icon color: 'orange' or 'violet' (default) */
-  iconColor?: 'orange' | 'violet';
+  /** Icon color: 'orange' or 'primary' (default) */
+  iconColor?: 'orange' | 'primary';
   subtitle?: string;
   action?: ReactNode;
   /** Use monospace font for title (bentOS panel style) */
@@ -20,7 +20,7 @@ export interface SectionHeaderProps {
 export function SectionHeader({
   title,
   icon,
-  iconColor = 'violet',
+  iconColor = 'primary',
   subtitle,
   action,
   mono = false,

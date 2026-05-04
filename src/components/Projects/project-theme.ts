@@ -10,22 +10,22 @@ export const PROJECT_CATEGORY_THEMES: Record<
   }
 > = {
   Robotics: {
-    accent: 'var(--purple)',
-    muted: 'var(--purple-muted)',
+    accent: 'var(--primary)',
+    muted: 'var(--primary-muted)',
     icon: '🦾',
-    gradient: 'linear-gradient(135deg, rgba(167, 139, 250, 0.28), rgba(12, 12, 20, 0.82))',
+    gradient: 'linear-gradient(135deg, rgba(224, 123, 60, 0.28), rgba(12, 12, 20, 0.82))',
   },
   'AI & Robotics': {
     accent: 'var(--orange)',
     muted: 'var(--orange-muted)',
     icon: '🤖',
-    gradient: 'linear-gradient(135deg, rgba(224, 123, 60, 0.28), rgba(167, 139, 250, 0.2))',
+    gradient: 'linear-gradient(135deg, rgba(224, 123, 60, 0.28), rgba(224, 123, 60, 0.2))',
   },
   Hardware: {
     accent: 'var(--status-warning)',
     muted: 'var(--status-warning-muted)',
     icon: '🔧',
-    gradient: 'linear-gradient(135deg, rgba(234, 179, 8, 0.24), rgba(12, 12, 20, 0.82))',
+    gradient: 'linear-gradient(135deg, rgba(224, 123, 60, 0.24), rgba(12, 12, 20, 0.82))',
   },
   Software: {
     accent: 'var(--status-info)',
@@ -37,7 +37,7 @@ export const PROJECT_CATEGORY_THEMES: Record<
     accent: 'var(--status-info)',
     muted: 'var(--status-info-muted)',
     icon: '🥽',
-    gradient: 'linear-gradient(135deg, rgba(59, 130, 246, 0.24), rgba(167, 139, 250, 0.16))',
+    gradient: 'linear-gradient(135deg, rgba(59, 130, 246, 0.24), rgba(224, 123, 60, 0.16))',
   },
   Competition: {
     accent: 'var(--orange)',
@@ -55,7 +55,7 @@ export const PROJECT_CATEGORY_THEMES: Record<
     accent: 'var(--status-error)',
     muted: 'var(--status-error-muted)',
     icon: '🎮',
-    gradient: 'linear-gradient(135deg, rgba(239, 68, 68, 0.24), rgba(167, 139, 250, 0.16))',
+    gradient: 'linear-gradient(135deg, rgba(239, 68, 68, 0.24), rgba(224, 123, 60, 0.16))',
   },
 };
 

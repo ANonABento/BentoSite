@@ -12,7 +12,7 @@ export interface GlobePalette {
 const DEFAULT_GLOBE_PALETTE: GlobePalette = {
   surface: '#23252d',
   land: '#9ca3af',
-  interactive: '#a78bfa',
+  interactive: '#e07b3c',
   highlight: '#e07b3c',
 };
 
@@ -30,7 +30,7 @@ export function useGlobePalette(): GlobePalette {
       setPalette({
         surface: readCssVar('--surface-deep', DEFAULT_GLOBE_PALETTE.surface),
         land: readCssVar('--text-secondary', DEFAULT_GLOBE_PALETTE.land),
-        interactive: readCssVar('--purple', DEFAULT_GLOBE_PALETTE.interactive),
+        interactive: readCssVar('--primary', DEFAULT_GLOBE_PALETTE.interactive),
         highlight: readCssVar('--orange', DEFAULT_GLOBE_PALETTE.highlight),
       });
     };

@@ -74,7 +74,7 @@ export function HeroSection({
                 I build
                 <span
                   className="text-transparent bg-clip-text"
-                  style={{ backgroundImage: 'linear-gradient(to right, var(--purple), var(--orange))' }}
+                  style={{ backgroundImage: 'linear-gradient(to right, var(--primary), var(--orange))' }}
                 >
                   {' '}robots{' '}
                 </span>
@@ -133,7 +133,7 @@ export function HeroSection({
         >
           <m.button
             onClick={onScrollToAbout}
-            className="flex flex-col items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
+            className="flex flex-col items-center gap-2 text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
             animate={prefersReducedMotion ? undefined : { y: [0, 8, 0] }}
             transition={prefersReducedMotion ? instantTransition : { duration: 2, repeat: Infinity }}
             aria-label="Scroll down to about section"

@@ -40,10 +40,10 @@ export const SCORING = {
 
 // Lane colors
 export const LANE_COLORS: Record<KeyCount, string[]> = {
-  4: ['#8b5cf6', '#f59e0b', '#f59e0b', '#8b5cf6'],
-  5: ['#8b5cf6', '#f59e0b', '#22c55e', '#f59e0b', '#8b5cf6'],
-  6: ['#8b5cf6', '#f59e0b', '#22c55e', '#22c55e', '#f59e0b', '#8b5cf6'],
-  7: ['#8b5cf6', '#f59e0b', '#22c55e', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6'],
+  4: ['#e07b3c', '#d4722f', '#d4722f', '#e07b3c'],
+  5: ['#e07b3c', '#d4722f', '#22c55e', '#d4722f', '#e07b3c'],
+  6: ['#e07b3c', '#d4722f', '#22c55e', '#22c55e', '#d4722f', '#e07b3c'],
+  7: ['#e07b3c', '#d4722f', '#22c55e', '#ef4444', '#22c55e', '#d4722f', '#e07b3c'],
 };
 
 // Key bindings for different key counts

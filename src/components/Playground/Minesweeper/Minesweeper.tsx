@@ -84,7 +84,7 @@ export function Minesweeper() {
         status === 'playing' ? (
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Flag className="w-4 h-4 text-[var(--pg-accent-gold)]" />
+              <Flag className="w-4 h-4 text-[var(--pg-accent-primary)]" />
               <span className="font-mono text-sm text-[var(--pg-text-primary)]">
                 {minesRemaining}
               </span>
@@ -113,7 +113,7 @@ export function Minesweeper() {
               className="text-center mb-8"
             >
               <motion.div
-                className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--purple)]/10 text-[var(--purple)] mb-4"
+                className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--primary)]/10 text-[var(--primary)] mb-4"
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 transition={springs.bouncy}
@@ -142,7 +142,7 @@ export function Minesweeper() {
                       className={`
                         px-4 py-2 rounded-xl font-medium capitalize transition-all duration-200
                         ${selectedDifficulty === diff
-                          ? 'bg-[var(--purple)] text-[var(--text-on-accent)] shadow-lg shadow-[var(--purple)]/25'
+                          ? 'bg-[var(--primary)] text-[var(--text-on-accent)] shadow-lg shadow-[var(--primary)]/25'
                           : 'pg-surface-panel text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]'
                         }
                       `}
@@ -154,7 +154,7 @@ export function Minesweeper() {
                         {config.cols}×{config.rows} · {config.mines} mines
                       </div>
                       {stats?.bestTime && stats.bestTime < Infinity && (
-                        <div className="text-xs text-[var(--pg-accent-gold)] mt-1">
+                        <div className="text-xs text-[var(--pg-accent-primary)] mt-1">
                           Best: {formatTime(stats.bestTime)}
                         </div>
                       )}
@@ -181,7 +181,7 @@ export function Minesweeper() {
               {/* Stats bar */}
               <div className="flex items-center gap-6 mb-4">
                 <div className="flex items-center gap-2">
-                  <Flag className="w-4 h-4 text-[var(--pg-accent-gold)]" />
+                  <Flag className="w-4 h-4 text-[var(--pg-accent-primary)]" />
                   <span className="font-mono text-lg text-[var(--pg-text-primary)]">
                     {minesRemaining}
                   </span>
@@ -249,7 +249,7 @@ export function Minesweeper() {
                       className="text-center"
                     >
                       {status === 'won' ? (
-                        <Trophy className="w-12 h-12 text-[var(--pg-accent-gold)] mx-auto mb-2" />
+                        <Trophy className="w-12 h-12 text-[var(--pg-accent-primary)] mx-auto mb-2" />
                       ) : (
                         <span className="text-4xl">💥</span>
                       )}

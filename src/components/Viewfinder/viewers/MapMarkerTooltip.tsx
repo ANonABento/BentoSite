@@ -30,7 +30,7 @@ export function MapMarkerTooltip({ location, onClose }: MapMarkerTooltipProps) {
           </button>
         </div>
         <div className="mt-1.5 flex items-center gap-1.5">
-          <span className={`inline-block w-1.5 h-1.5 rounded-full ${location.type === 'education' ? 'bg-[var(--purple)]' : 'bg-[var(--orange)]'}`} />
+          <span className={`inline-block w-1.5 h-1.5 rounded-full ${location.type === 'education' ? 'bg-[var(--primary)]' : 'bg-[var(--orange)]'}`} />
           <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">
             {location.type === 'education' ? 'Education' : 'Work'}
           </span>

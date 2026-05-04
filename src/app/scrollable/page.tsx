@@ -43,7 +43,7 @@ const ThreeViewer = dynamic(() => import('@/components/Dimension'), {
     <LazyPanelFallback
       label="Loading 3D Viewer..."
       spinnerSize="lg"
-      spinnerVariant="purple"
+      spinnerVariant="primary"
     />
   ),
 });
@@ -54,7 +54,7 @@ const Chatbot = dynamic(() => import('@/components/Chat'), {
     <LazyPanelFallback
       label="Initializing chat..."
       spinnerSize="sm"
-      spinnerVariant="purple"
+      spinnerVariant="primary"
     />
   ),
 });

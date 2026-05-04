@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 /**
  * Loading spinner variants
  */
-export type SpinnerVariant = 'default' | 'purple' | 'orange' | 'white';
+export type SpinnerVariant = 'default' | 'primary' | 'ai' | 'purple' | 'orange' | 'white';
 
 /**
  * Loading spinner sizes
@@ -37,9 +37,17 @@ const variantClasses: Record<SpinnerVariant, { track: string; active: string }> 
     track: 'border-[var(--border)]',
     active: 'border-t-[var(--text-primary)]',
   },
+  primary: {
+    track: 'border-[var(--primary-muted)]',
+    active: 'border-t-[var(--primary)]',
+  },
+  ai: {
+    track: 'border-[var(--ai-muted)]',
+    active: 'border-t-[var(--ai)]',
+  },
   purple: {
-    track: 'border-[var(--purple-muted)]',
-    active: 'border-t-[var(--interactive)]',
+    track: 'border-[var(--primary-muted)]',
+    active: 'border-t-[var(--primary)]',
   },
   orange: {
     track: 'border-[var(--orange-muted)]',
@@ -60,7 +68,7 @@ const variantClasses: Record<SpinnerVariant, { track: string; active: string }> 
  * <LoadingSpinner />
  *
  * // With message
- * <LoadingSpinner message="Loading content..." variant="purple" />
+ * <LoadingSpinner message="Loading content..." variant="primary" />
  *
  * // Centered in container
  * <LoadingSpinner centered size="lg" />
@@ -108,7 +116,7 @@ export function LoadingSpinner({
  */
 export function LoadingOverlay({
   message = 'Loading...',
-  variant = 'purple',
+  variant = 'primary',
 }: {
   message?: string;
   variant?: SpinnerVariant;

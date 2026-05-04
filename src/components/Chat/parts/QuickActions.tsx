@@ -25,7 +25,7 @@ export const QuickActions = memo(function QuickActions({
           onClick={onViewResume}
           disabled={disabled}
           aria-label="Download resume from chat"
-          className="text-xs font-mono text-[var(--orange)] hover:underline transition-all duration-150 disabled:opacity-50"
+          className="text-xs font-mono text-[var(--ai)] hover:underline transition-all duration-150 disabled:opacity-50"
         >
           [resume --download]
         </button>
@@ -36,7 +36,7 @@ export const QuickActions = memo(function QuickActions({
           onClick={onSeeProjects}
           disabled={disabled}
           aria-label="View Projects"
-          className="text-xs font-mono text-[var(--purple)] hover:underline transition-all duration-150 disabled:opacity-50"
+          className="text-xs font-mono text-[var(--ai)] hover:underline transition-all duration-150 disabled:opacity-50"
         >
           [projects --list]
         </button>

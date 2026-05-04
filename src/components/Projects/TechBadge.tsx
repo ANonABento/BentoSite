@@ -18,7 +18,7 @@ export function TechBadge({ tech, size = 'sm' }: TechBadgeProps) {
         bg-[var(--glass-bg)] border border-[var(--border)]
         text-[var(--text-secondary)]
         transition-all duration-150
-        hover:bg-[var(--glass-bg)] hover:border-[var(--purple-muted)] hover:text-[var(--text-primary)]
+        hover:bg-[var(--glass-bg)] hover:border-[var(--primary-muted)] hover:text-[var(--text-primary)]
       `}
     >
       {tech}

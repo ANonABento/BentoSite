@@ -96,14 +96,14 @@ export function ResultsScreen({
         className="relative mb-10"
       >
         {/* Background glow */}
-        <div className="absolute inset-0 blur-3xl bg-[var(--pg-accent-gold)]/20 rounded-full scale-150" />
+        <div className="absolute inset-0 blur-3xl bg-[var(--pg-accent-primary)]/20 rounded-full scale-150" />
 
         <div className="relative text-center">
           <AnimatedScore
             value={primaryValue}
             suffix={primarySuffix}
             delay={0.3}
-            className="pg-score-hero font-mono text-[var(--pg-accent-gold)]"
+            className="pg-score-hero font-mono text-[var(--pg-accent-primary)]"
           />
 
           {/* New high score badge */}
@@ -114,7 +114,7 @@ export function ResultsScreen({
               animate={{ scale: 1, rotate: 0 }}
               transition={{ ...springs.bouncy, delay: 0.6 }}
             >
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-[var(--pg-accent-gold)] text-black shadow-lg">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-[var(--pg-accent-primary)] text-black shadow-lg">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>

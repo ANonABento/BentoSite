@@ -5,11 +5,11 @@ import { ErrorBoundary } from '../ErrorBoundary';
 import { LoadingOverlay, LoadingSpinner } from '../LoadingSpinner';
 
 describe('LoadingSpinner', () => {
-  it('renders a labeled spinner with the purple token variant', () => {
-    render(<LoadingSpinner message="Loading content..." variant="purple" />);
+  it('renders a labeled spinner with the primary token variant', () => {
+    render(<LoadingSpinner message="Loading content..." variant="primary" />);
 
     expect(screen.getByRole('status', { name: 'Loading content...' })).toHaveClass(
-      'border-[var(--purple-muted)]'
+      'border-[var(--primary-muted)]'
     );
     expect(screen.getByText('Loading content...')).toBeInTheDocument();
   });
@@ -19,7 +19,7 @@ describe('LoadingSpinner', () => {
 
     expect(screen.getByText('Please wait')).toBeInTheDocument();
     expect(screen.getByRole('status', { name: 'Please wait' })).toHaveClass(
-      'border-t-[var(--interactive)]'
+      'border-t-[var(--primary)]'
     );
   });
 });

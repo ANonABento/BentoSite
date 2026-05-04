@@ -26,7 +26,7 @@ export function ModelInfoDisplay({ model, isMobile }: ModelInfoDisplayProps) {
     >
       <div className="space-y-3">
         {/* Category badge */}
-        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${isMobile ? 'text-xs' : 'text-sm'} bg-[var(--purple-muted)] text-[var(--interactive)] border border-[var(--interactive)] border-opacity-30`}>
+        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${isMobile ? 'text-xs' : 'text-sm'} bg-[var(--primary-muted)] text-[var(--interactive)] border border-[var(--interactive)] border-opacity-30`}>
           {model.category}
         </span>
 

@@ -232,7 +232,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
       headerRight={
         showGame ? (
           <div className="flex items-center gap-4">
-            <span className="font-mono text-lg font-semibold text-[var(--pg-accent-gold)]">
+            <span className="font-mono text-lg font-semibold text-[var(--pg-accent-primary)]">
               {formatNumber(score)}
             </span>
             {combo > 0 && (
@@ -242,7 +242,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
                   key={combo}
                   initial={{ scale: 1.2 }}
                   animate={{ scale: 1 }}
-                  className="font-mono text-[var(--purple)] font-semibold"
+                  className="font-mono text-[var(--primary)] font-semibold"
                 >
                   {combo}x
                 </motion.span>
@@ -307,7 +307,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
                       w-full p-4 rounded-xl text-left transition-all duration-200
                       ${
                         selectedMap.id === map.id
-                          ? 'bg-[var(--pg-accent-gold)]/10 border-[var(--pg-accent-gold)]/40 shadow-lg shadow-[var(--pg-accent-gold)]/10'
+                          ? 'bg-[var(--pg-accent-primary)]/10 border-[var(--pg-accent-primary)]/40 shadow-lg shadow-[var(--pg-accent-primary)]/10'
                           : 'pg-surface-panel hover:bg-[var(--pg-bg-hover)]'
                       }
                       border
@@ -333,10 +333,10 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
                     {scores?.[map.id] && (
                       <div className="pg-border-subtle mt-2 flex gap-4 border-t pt-2 text-xs">
                         <span className="text-[var(--pg-text-muted)]">
-                          Best: <span className="text-[var(--pg-accent-gold)] font-mono">{formatNumber(scores[map.id].score)}</span>
+                          Best: <span className="text-[var(--pg-accent-primary)] font-mono">{formatNumber(scores[map.id].score)}</span>
                         </span>
                         <span className="text-[var(--pg-text-muted)]">
-                          Combo: <span className="text-[var(--purple)] font-mono">{scores[map.id].maxCombo}x</span>
+                          Combo: <span className="text-[var(--primary)] font-mono">{scores[map.id].maxCombo}x</span>
                         </span>
                       </div>
                     )}

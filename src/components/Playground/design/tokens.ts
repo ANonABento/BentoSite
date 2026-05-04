@@ -20,14 +20,14 @@ export const colors = {
     disabled: '#505050',
   },
 
-  // Accent colors - Neon Synthwave palette
+  // Accent colors - primary orange plus game-specific support colors
   accent: {
     pink: '#ff007f',      // Hot pink (primary)
     pinkHover: '#ff3399',
     cyan: '#00ffff',      // Electric cyan
     cyanHover: '#33ffff',
-    purple: '#bf00ff',    // Vivid purple
-    purpleHover: '#cc33ff',
+    primary: 'var(--primary)',
+    primaryHover: 'var(--primary-hover)',
     blue: '#0066ff',      // Electric blue
     blueHover: '#3388ff',
   },
@@ -38,8 +38,8 @@ export const colors = {
     successBg: 'rgba(0, 255, 136, 0.15)',
     error: '#ff3366',
     errorBg: 'rgba(255, 51, 102, 0.15)',
-    warning: '#ffcc00',
-    warningBg: 'rgba(255, 204, 0, 0.15)',
+    warning: 'var(--primary)',
+    warningBg: 'var(--primary-muted)',
     perfect: '#00ffff',
     perfectBg: 'rgba(0, 255, 255, 0.15)',
   },
@@ -48,11 +48,11 @@ export const colors = {
   gradient: {
     pink: 'linear-gradient(135deg, #ff007f 0%, #ff3399 100%)',
     cyan: 'linear-gradient(135deg, #00ffff 0%, #00cccc 100%)',
-    purple: 'linear-gradient(135deg, #bf00ff 0%, #8000aa 100%)',
+    primary: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-active) 100%)',
     blue: 'linear-gradient(135deg, #0066ff 0%, #0044aa 100%)',
     dark: 'linear-gradient(180deg, #0a0a0a 0%, #050505 100%)',
     synthwave: 'linear-gradient(180deg, #0a0612 0%, #0a0a0a 50%, #060a0a 100%)',
-    neonHorizon: 'linear-gradient(180deg, #ff007f 0%, #bf00ff 50%, #0066ff 100%)',
+    neonHorizon: 'linear-gradient(180deg, #ff007f 0%, var(--primary) 50%, #0066ff 100%)',
     radial: 'radial-gradient(ellipse at center, rgba(255, 0, 127, 0.08) 0%, transparent 70%)',
   },
 
@@ -60,7 +60,7 @@ export const colors = {
   glow: {
     pink: '0 0 20px rgba(255, 0, 127, 0.6), 0 0 40px rgba(255, 0, 127, 0.3)',
     cyan: '0 0 20px rgba(0, 255, 255, 0.6), 0 0 40px rgba(0, 255, 255, 0.3)',
-    purple: '0 0 20px rgba(191, 0, 255, 0.6), 0 0 40px rgba(191, 0, 255, 0.3)',
+    primary: '0 0 20px var(--primary-muted), 0 0 40px var(--primary-muted)',
     blue: '0 0 20px rgba(0, 102, 255, 0.6), 0 0 40px rgba(0, 102, 255, 0.3)',
     success: '0 0 20px rgba(0, 255, 136, 0.5)',
     error: '0 0 20px rgba(255, 51, 102, 0.5)',

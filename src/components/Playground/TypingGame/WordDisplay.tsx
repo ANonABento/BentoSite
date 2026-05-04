@@ -67,7 +67,7 @@ export function WordDisplay({ text, currentIndex, errorIndices }: WordDisplayPro
             {/* Caret before current character */}
             {isCurrent && (
               <span
-                className="absolute left-0 top-0 w-[2px] h-[1.2em] bg-[var(--pg-accent-gold)] pg-caret -translate-x-[1px]"
+                className="absolute left-0 top-0 w-[2px] h-[1.2em] bg-[var(--pg-accent-primary)] pg-caret -translate-x-[1px]"
                 aria-hidden="true"
               />
             )}

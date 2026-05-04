@@ -66,7 +66,7 @@ export function SortingVisualizer() {
         isRunning || isPaused ? (
           <div className="flex items-center gap-4 text-sm">
             <span className="text-[var(--pg-text-muted)]">
-              Comparisons: <span className="font-mono text-[var(--pg-accent-gold)]">{comparisons}</span>
+              Comparisons: <span className="font-mono text-[var(--pg-accent-primary)]">{comparisons}</span>
             </span>
             <span className="text-[var(--pg-text-muted)]">
               Swaps: <span className="font-mono text-[var(--pg-game-error)]">{swaps}</span>
@@ -84,7 +84,7 @@ export function SortingVisualizer() {
           className="text-center mb-6"
         >
           <motion.div
-            className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[var(--purple)]/10 text-[var(--purple)] mb-3"
+            className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[var(--primary)]/10 text-[var(--primary)] mb-3"
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={springs.bouncy}
@@ -112,7 +112,7 @@ export function SortingVisualizer() {
               className={`
                 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
                 ${algorithm === algo.id
-                  ? 'bg-[var(--purple)] text-[var(--text-on-accent)]'
+                  ? 'bg-[var(--primary)] text-[var(--text-on-accent)]'
                   : 'bg-[var(--pg-bg-elevated)] text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]'
                 }
                 ${isRunning ? 'opacity-50 cursor-not-allowed' : ''}
@@ -129,7 +129,7 @@ export function SortingVisualizer() {
         {currentAlgorithm && (
           <div className="text-center mb-4">
             <span className="text-xs text-[var(--pg-text-muted)]">
-              Time: <span className="font-mono text-[var(--pg-accent-gold)]">{currentAlgorithm.timeComplexity}</span>
+              Time: <span className="font-mono text-[var(--pg-accent-primary)]">{currentAlgorithm.timeComplexity}</span>
               {' · '}
               Space: <span className="font-mono text-[var(--pg-text-secondary)]">{currentAlgorithm.spaceComplexity}</span>
             </span>
@@ -148,7 +148,7 @@ export function SortingVisualizer() {
               value={arraySize}
               onChange={(e) => setArraySize(parseInt(e.target.value))}
               disabled={isRunning || isPaused}
-              className="pg-range pg-range-purple w-20 disabled:opacity-50"
+              className="pg-range pg-range-primary w-20 disabled:opacity-50"
               aria-label="Array size"
             />
             <span className="text-xs font-mono text-[var(--pg-text-secondary)] w-8">{arraySize}</span>
@@ -187,7 +187,7 @@ export function SortingVisualizer() {
             <motion.button
               onClick={start}
               aria-label={`Start ${currentAlgorithm?.name ?? 'selected'} sort`}
-              className="flex items-center gap-2 px-6 py-2 rounded-lg bg-[var(--purple)] text-[var(--text-on-accent)] font-medium"
+              className="flex items-center gap-2 px-6 py-2 rounded-lg bg-[var(--primary)] text-[var(--text-on-accent)] font-medium"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -198,7 +198,7 @@ export function SortingVisualizer() {
             <motion.button
               onClick={pause}
               aria-label="Pause sorting visualization"
-              className="flex items-center gap-2 px-6 py-2 rounded-lg bg-[var(--pg-accent-gold)] text-black font-medium"
+              className="flex items-center gap-2 px-6 py-2 rounded-lg bg-[var(--pg-accent-primary)] text-black font-medium"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -209,7 +209,7 @@ export function SortingVisualizer() {
             <motion.button
               onClick={resume}
               aria-label="Resume sorting visualization"
-              className="flex items-center gap-2 px-6 py-2 rounded-lg bg-[var(--purple)] text-[var(--text-on-accent)] font-medium"
+              className="flex items-center gap-2 px-6 py-2 rounded-lg bg-[var(--primary)] text-[var(--text-on-accent)] font-medium"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -284,7 +284,7 @@ export function SortingVisualizer() {
             <div className="pg-surface-panel inline-flex items-center gap-6 rounded-xl px-6 py-3">
               <div>
                 <div className="text-xs text-[var(--pg-text-muted)]">Comparisons</div>
-                <div className="font-mono text-lg text-[var(--pg-accent-gold)]">{comparisons}</div>
+                <div className="font-mono text-lg text-[var(--pg-accent-primary)]">{comparisons}</div>
               </div>
               <div className="pg-divider-tall" />
               <div>
