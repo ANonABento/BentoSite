@@ -119,7 +119,7 @@ export function HeroSection({
                 <ErrorBoundary
                   fallback={({ retry }) => <ScrollableErrorFallback onRetry={retry} />}
                 >
-                  <ThreeViewer />
+                  <ThreeViewer minimal />
                 </ErrorBoundary>
               </div>
             </div>

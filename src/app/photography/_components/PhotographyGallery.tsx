@@ -114,6 +114,8 @@ export function PhotographyGallery({ photos }: PhotographyGalleryProps) {
                 className="object-cover transition duration-500 group-hover:scale-105"
                 placeholder={photo.blurDataURL ? 'blur' : 'empty'}
                 blurDataURL={photo.blurDataURL}
+                priority={index === 0}
+                fetchPriority={index === 0 ? 'high' : 'auto'}
               />
               <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[var(--overlay-strong)] via-[var(--overlay)] to-transparent p-4 text-[var(--text-on-overlay)] opacity-100 transition md:opacity-0 md:group-hover:opacity-100">
                 <span className="block text-base font-semibold">{photo.title}</span>
