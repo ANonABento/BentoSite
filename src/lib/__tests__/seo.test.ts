@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildGamePageJsonLd,
   buildPhotographyPageJsonLd,
+  buildPlaygroundPageJsonLd,
   buildPortfolioPageJsonLd,
   buildProjectsPageJsonLd,
+  buildScrollablePageJsonLd,
+  GAME_SEO,
   getAbsoluteUrl,
   getSitemapEntries,
+  REQUIRED_SEO_ROUTES,
+  ROUTE_SEO,
 } from '@/lib/seo';
 import { PROJECTS } from '@/lib/projects-data';
 import { siteConfig } from '@/lib/site-config';
@@ -77,6 +83,41 @@ describe('seo helpers', () => {
     expect(firstProject.datePublished).toMatch(/^\d{4}-\d{2}-01$/);
   });
 
+  it('describes the playground hub and every game route', () => {
+    const jsonLd = buildPlaygroundPageJsonLd();
+    const graph = getGraph(jsonLd);
+    const collection = graph.find(
+      (item) => item['@id'] === `${siteUrl}/playground#playground`
+    ) as Record<string, unknown>;
+    const mainEntity = collection.mainEntity as Record<string, unknown>;
+    const items = mainEntity.itemListElement as Record<string, unknown>[];
+    const gameRoutes = Object.keys(GAME_SEO);
+
+    expect(collection).toMatchObject({
+      '@type': 'CollectionPage',
+      url: `${siteUrl}/playground`,
+      about: { '@id': `${siteUrl}#person` },
+    });
+    expect(mainEntity.numberOfItems).toBe(gameRoutes.length);
+    expect(items.map((item) => item.url)).toEqual(
+      gameRoutes.map((route) => `${siteUrl}${route}`)
+    );
+
+    for (const route of gameRoutes) {
+      const gameJsonLd = buildGamePageJsonLd(route);
+      const game = getGraph(gameJsonLd).find(
+        (item) => item['@id'] === `${siteUrl}${route}#game`
+      );
+
+      expect(game).toMatchObject({
+        '@type': 'Game',
+        url: `${siteUrl}${route}`,
+        creator: { '@id': `${siteUrl}#person` },
+        playMode: 'SinglePlayer',
+      });
+    }
+  });
+
   it('describes the photography page as an image gallery', () => {
     const photos = [
       {
@@ -124,5 +165,33 @@ describe('seo helpers', () => {
       height: 2000,
       creator: { '@id': `${siteUrl}#person` },
     });
+  });
+
+  it('describes the scrollable portfolio as an alternate web page', () => {
+    const jsonLd = buildScrollablePageJsonLd();
+    const graph = getGraph(jsonLd);
+    const page = graph.find(
+      (item) => item['@id'] === `${siteUrl}/scrollable#scrollable`
+    );
+
+    expect(page).toMatchObject({
+      '@type': 'WebPage',
+      url: `${siteUrl}/scrollable`,
+      about: { '@id': `${siteUrl}#person` },
+      isPartOf: { '@id': `${siteUrl}#website` },
+    });
+  });
+
+  it('hard-fails when a required route lacks SEO config', () => {
+    for (const route of REQUIRED_SEO_ROUTES) {
+      const seo = ROUTE_SEO[route] ?? GAME_SEO[route];
+
+      expect(seo, `${route} must have SEO config`).toBeDefined();
+      expect(seo.title, `${route} must use branded title`).toMatch(
+        /— bentOS \/ Kevin Jiang$/
+      );
+      expect(seo.description.trim().length, `${route} description length`).toBeGreaterThan(40);
+      expect(seo.path).toBe(route);
+    }
   });
 });
