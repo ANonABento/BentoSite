@@ -132,7 +132,7 @@ export function MobileScrollView({
           })}
 
           {localFilteredCards.length === 0 && (
-            <div className="text-center text-white/50 py-12">
+            <div className="text-center text-[var(--text-secondary)] py-12">
               No items found
             </div>
           )}

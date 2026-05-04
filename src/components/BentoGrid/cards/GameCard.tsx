@@ -149,10 +149,10 @@ export function GameCard({
       onClick={onClick}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
-      shellClassName="rounded-xl bg-[#1a1a1a]/95 backdrop-blur-sm group relative"
+      shellClassName="rounded-xl backdrop-blur-sm group relative"
       shellStyle={{
-        background: '#1a1a1a',
-        border: `2px solid ${isHighlighted ? colors.borderColor : 'rgba(255, 255, 255, 0.08)'}`,
+        background: 'var(--glass-bg-strong)',
+        border: `2px solid ${isHighlighted ? colors.borderColor : 'var(--border)'}`,
         boxShadow: isFocused
           ? `0 0 0 3px ${colors.borderColor}, ${colors.neonGlow}`
           : isHovered
@@ -207,13 +207,13 @@ export function GameCard({
           </motion.div>
 
           {/* Title */}
-          <h3 className="text-lg font-semibold text-white tracking-tight">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)] tracking-tight">
             {card.title}
           </h3>
 
           {/* Description */}
           {card.description && (
-            <p className="text-sm text-white/50 mt-1 line-clamp-2">
+            <p className="text-sm text-[var(--text-secondary)] mt-1 line-clamp-2">
               {card.description}
             </p>
           )}
@@ -225,13 +225,13 @@ export function GameCard({
           <div className="flex items-center justify-between mt-2">
             {bestScore != null || card.bestScore != null ? (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-white/40 uppercase tracking-wider">Best</span>
+                <span className="text-xs text-[var(--text-muted)] uppercase tracking-wider">Best</span>
                 <span className={`font-mono font-semibold text-sm ${colors.scoreText}`}>
                   {bestScore ?? card.bestScore}
                 </span>
               </div>
             ) : (
-              <span className="text-xs text-white/40">Click to play</span>
+              <span className="text-xs text-[var(--text-muted)]">Click to play</span>
             )}
 
             {/* Play arrow (shows on hover) */}
