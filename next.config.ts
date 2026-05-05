@@ -5,14 +5,39 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 });
 
+const isProd = process.env.NODE_ENV === 'production';
+
+const cspDirectives = [
+  "default-src 'self'",
+  // Next.js inlines hydration JSON; framer-motion / R3F use inline styles.
+  // Vercel Analytics + Speed Insights are loaded from va.vercel-scripts.com.
+  `script-src 'self' 'unsafe-inline'${isProd ? '' : " 'unsafe-eval'"} https://va.vercel-scripts.com`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  "connect-src 'self' https://va.vercel-scripts.com https://vitals.vercel-insights.com",
+  "media-src 'self' data: blob:",
+  "worker-src 'self' blob:",
+  // Project showcases embed YouTube/Vimeo and other trusted https iframes.
+  "frame-src 'self' https:",
+  "frame-ancestors 'self'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "object-src 'none'",
+  ...(isProd ? ['upgrade-insecure-requests'] : []),
+].join('; ');
+
 const securityHeaders = [
   {
     key: 'X-DNS-Prefetch-Control',
     value: 'on'
   },
+  // X-XSS-Protection is deprecated and can introduce vulnerabilities in legacy
+  // browsers; modern browsers ignore it. Setting `0` explicitly disables the
+  // legacy auditor (OWASP recommendation).
   {
     key: 'X-XSS-Protection',
-    value: '1; mode=block'
+    value: '0'
   },
   {
     key: 'X-Frame-Options',
@@ -24,11 +49,23 @@ const securityHeaders = [
   },
   {
     key: 'Referrer-Policy',
-    value: 'origin-when-cross-origin'
+    value: 'strict-origin-when-cross-origin'
   },
   {
     key: 'Permissions-Policy',
-    value: 'camera=(), microphone=(), geolocation=()'
+    value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()'
+  },
+  {
+    key: 'Strict-Transport-Security',
+    value: 'max-age=63072000; includeSubDomains; preload'
+  },
+  {
+    key: 'Content-Security-Policy',
+    value: cspDirectives
+  },
+  {
+    key: 'Cross-Origin-Opener-Policy',
+    value: 'same-origin'
   }
 ];
 

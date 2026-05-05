@@ -1,11 +1,14 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
 import { SYSTEM_PROMPT, PORTFOLIO_DATA } from '@/lib/portfolio-context';
+import { getClientKey, rateLimit } from '@/lib/rate-limit';
 
 // Constants
 const MAX_MESSAGE_LENGTH = 4000;
 const MAX_MESSAGES_COUNT = 20;
 const MAX_TOTAL_CONTENT_LENGTH = 50000;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 20;
 
 // Initialize Gemini AI only if API key is available
 const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
@@ -31,15 +34,23 @@ function isValidMessage(msg: unknown): msg is ChatMessage {
 
 export async function POST(request: NextRequest) {
   try {
-    // Check for API key
-    if (!genAI) {
+    const clientKey = getClientKey(request.headers);
+    const rl = rateLimit(`chat:${clientKey}`, {
+      limit: RATE_LIMIT_MAX,
+      windowMs: RATE_LIMIT_WINDOW_MS,
+    });
+    if (!rl.ok) {
+      const retrySeconds = Math.ceil(rl.retryAfterMs / 1000);
       return NextResponse.json(
+        { error: 'Too many requests. Please slow down.' },
         {
-          error: 'API key not configured',
-          message: "I'm currently in demo mode. Please configure the Gemini API key to enable full AI responses.",
-          isDemoMode: true,
-        },
-        { status: 503 }
+          status: 429,
+          headers: {
+            'Retry-After': String(retrySeconds),
+            'X-RateLimit-Limit': String(RATE_LIMIT_MAX),
+            'X-RateLimit-Remaining': '0',
+          },
+        }
       );
     }
 
@@ -53,7 +64,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { messages } = body as { messages: unknown[] };
+    if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+      return NextResponse.json(
+        { error: 'Invalid request body' },
+        { status: 400 }
+      );
+    }
+
+    const { messages } = body as { messages?: unknown };
 
     // Validate messages array exists
     if (!messages || !Array.isArray(messages)) {
@@ -89,6 +107,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Total message content too large' },
         { status: 400 }
+      );
+    }
+
+    // Check for API key after validation so malformed requests still 4xx in demo mode.
+    if (!genAI) {
+      return NextResponse.json(
+        {
+          error: 'API key not configured',
+          message: "I'm currently in demo mode. Please configure the Gemini API key to enable full AI responses.",
+          isDemoMode: true,
+        },
+        { status: 503 }
       );
     }
 
