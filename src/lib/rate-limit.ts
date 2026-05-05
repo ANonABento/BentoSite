@@ -11,6 +11,8 @@
  *     evicted by `MAX_KEYS` to prevent unbounded growth.
  */
 
+import { NextResponse } from 'next/server';
+
 const MAX_KEYS = 10_000;
 
 interface Bucket {
@@ -78,6 +80,28 @@ export function getClientKey(headers: Headers): string {
   const real = headers.get('x-real-ip');
   if (real) return real.trim();
   return 'unknown';
+}
+
+/**
+ * Build a standard 429 response from a blocked `RateLimitResult`. Centralizes
+ * the Retry-After / X-RateLimit-* header shape so route handlers stay terse.
+ */
+export function tooManyRequestsResponse(
+  result: RateLimitResult,
+  limit: number
+): NextResponse {
+  const retrySeconds = Math.ceil(result.retryAfterMs / 1000);
+  return NextResponse.json(
+    { error: 'Too many requests. Please slow down.' },
+    {
+      status: 429,
+      headers: {
+        'Retry-After': String(retrySeconds),
+        'X-RateLimit-Limit': String(limit),
+        'X-RateLimit-Remaining': '0',
+      },
+    }
+  );
 }
 
 /** Test helper — clears all buckets. Not exported from index. */

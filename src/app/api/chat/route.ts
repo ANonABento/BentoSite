@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
 import { SYSTEM_PROMPT, PORTFOLIO_DATA } from '@/lib/portfolio-context';
-import { getClientKey, rateLimit } from '@/lib/rate-limit';
+import { getClientKey, rateLimit, tooManyRequestsResponse } from '@/lib/rate-limit';
 
 // Constants
 const MAX_MESSAGE_LENGTH = 4000;
@@ -40,18 +40,7 @@ export async function POST(request: NextRequest) {
       windowMs: RATE_LIMIT_WINDOW_MS,
     });
     if (!rl.ok) {
-      const retrySeconds = Math.ceil(rl.retryAfterMs / 1000);
-      return NextResponse.json(
-        { error: 'Too many requests. Please slow down.' },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': String(retrySeconds),
-            'X-RateLimit-Limit': String(RATE_LIMIT_MAX),
-            'X-RateLimit-Remaining': '0',
-          },
-        }
-      );
+      return tooManyRequestsResponse(rl, RATE_LIMIT_MAX);
     }
 
     let body: unknown;
