@@ -14,7 +14,7 @@ This is a static portfolio with a small attack surface: two POST routes (`/api/c
 |----------|-------|------------------|---------------|-------------|
 | Critical | 1     | 1                | 0             | 0           |
 | High     | 9     | 1                | 8             | 0           |
-| Medium   | 4     | 4                | 0             | 0           |
+| Medium   | 5     | 5                | 0             | 0           |
 | Low      | 8     | 0                | 0             | 8           |
 
 All HIGH/CRITICAL findings in production code have been remediated. The remaining HIGH/CRITICAL items are devDependency-only CVEs (Lighthouse CI, vitest, vite, jsdom, eslint toolchain) that never ship to production — see [Dependency Audit](#3-dependency-audit) for triage.
@@ -89,6 +89,13 @@ All HIGH/CRITICAL findings in production code have been remediated. The remainin
 - **Severity:** Medium
 - **Issue:** Earlier config did not set CSP, HSTS, or `Cross-Origin-Opener-Policy`.
 - **Fix:** Added `Content-Security-Policy`, `Strict-Transport-Security` (2y, preload), `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `X-XSS-Protection: 0` (OWASP-correct disable), `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (camera/mic/geo/FLoC), `Cross-Origin-Opener-Policy: same-origin`. Verified live (see [Header Verification](#5-header-verification)).
+
+### MED-05 — `X-Powered-By: Next.js` server-fingerprint header (FIXED)
+
+- **File:** `next.config.ts`
+- **Severity:** Medium (defense-in-depth — fingerprint leak)
+- **Issue:** Next.js sends `X-Powered-By: Next.js` by default. While not directly exploitable, it advertises the framework + version family, which simplifies targeted CVE matching against the deploy. Companion to MED-03 (server fingerprint via default 405).
+- **Fix:** `poweredByHeader: false` in `next.config.ts` strips the header globally.
 
 ### LOW-01 — CSP allows `'unsafe-inline'` for styles (LOGGED)
 

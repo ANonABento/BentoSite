@@ -160,6 +160,9 @@ const nextConfig: NextConfig = {
   // Compression
   compress: true,
 
+  // Strip `X-Powered-By: Next.js` server-fingerprint header.
+  poweredByHeader: false,
+
   // Silence Turbopack warning (Next.js 16 default)
   turbopack: {},
 };
