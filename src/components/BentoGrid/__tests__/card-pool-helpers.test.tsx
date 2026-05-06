@@ -84,7 +84,7 @@ describe('BentoGrid filterCards', () => {
 
 describe('BentoGrid calculateInitialPositions', () => {
   it('returns centered, non-overlapping positions', () => {
-    const positions = calculateInitialPositions(cards, 4, 0);
+    const { positions } = calculateInitialPositions(cards, 4, 0);
     const values = Array.from(positions.values());
 
     // 4 content cards + 1 search card
@@ -133,7 +133,7 @@ describe('BentoGrid calculateInitialPositions', () => {
       },
     ];
 
-    expect(calculateInitialPositions(featuredOnly, 1, 0).get('featured')).toMatchObject({
+    expect(calculateInitialPositions(featuredOnly, 1, 0).positions.get('featured')).toMatchObject({
       size: '2x2',
       ...getCardDimensions('2x2'),
     });

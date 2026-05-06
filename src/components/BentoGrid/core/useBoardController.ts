@@ -31,7 +31,6 @@ import {
   cellToPixel,
   pixelToCell,
   sizeToSpan,
-  occupancyFromPositions,
 } from '../layout';
 import { filterCards } from './cardPoolFilter';
 import { screenToCanvas } from './useViewport';
@@ -112,7 +111,7 @@ export function useBoardController({
     return map;
   }, [cards]);
 
-  const [visible, setVisibleState] = useState<Map<string, CardPosition>>(() =>
+  const [initialResult] = useState(() =>
     calculateInitialPositions(
       cards,
       Math.min(QUEUE.INITIAL_SPAWN_COUNT, maxVisible),
@@ -120,8 +119,9 @@ export function useBoardController({
       cardSizeMode,
     ),
   );
+  const [visible, setVisibleState] = useState<Map<string, CardPosition>>(initialResult.positions);
   const [queue, setQueueState] = useState<QueuedCard[]>(() => {
-    const visibleIds = new Set(visible.keys());
+    const visibleIds = new Set(initialResult.positions.keys());
     return createQueuedCards(cards.filter((card) => !visibleIds.has(card.id)));
   });
 
@@ -129,7 +129,11 @@ export function useBoardController({
   const queueRef = useRef(queue);
   const spawnCountRef = useRef(0);
   const physicsRef = useRef<SpawnPhysicsBridge | null>(null);
-  const gridRef = useRef<GridOccupancy>(occupancyFromPositions(visible));
+  // Use the grid directly from initial placement — no reconstruction from
+  // pixel positions, which would misalign due to the centering offset.
+  const gridRef = useRef<GridOccupancy>(initialResult.grid);
+  // Centering offset: add to pixel coords before pixelToCell conversion
+  const originOffsetRef = useRef(initialResult.originOffset);
   const filterRef = useRef<{ searchTerm: string; category: string | null }>({
     searchTerm: '',
     category: null,
@@ -148,18 +152,19 @@ export function useBoardController({
   const rebuildFromFilter = useCallback(
     (searchTerm: string, category: string | null) => {
       const filtered = filterCards(cards, searchTerm, category);
-      const nextVisible = calculateInitialPositions(
+      const result = calculateInitialPositions(
         filtered,
         Math.min(QUEUE.INITIAL_SPAWN_COUNT, maxVisible),
         rotationRange,
         cardSizeMode,
       );
-      const visibleIds = new Set(nextVisible.keys());
+      const visibleIds = new Set(result.positions.keys());
 
-      gridRef.current = occupancyFromPositions(nextVisible);
-      setVisible(nextVisible);
+      gridRef.current = result.grid;
+      originOffsetRef.current = result.originOffset;
+      setVisible(result.positions);
       setQueue(createQueuedCards(filtered.filter((card) => !visibleIds.has(card.id))));
-      physicsRef.current?.resetCards?.(nextVisible);
+      physicsRef.current?.resetCards?.(result.positions);
       spawnCountRef.current = 0;
     },
     [cards, maxVisible, rotationRange, cardSizeMode, setQueue, setVisible],
@@ -193,7 +198,8 @@ export function useBoardController({
 
       // Place at the exact target cell. If occupied, evict the content
       // cards there — the search card always wins its position.
-      const cell = pixelToCell(x, y);
+      const offset = originOffsetRef.current;
+      const cell = pixelToCell(x + offset.x, y + offset.y);
       const nextVisible = new Map(visibleRef.current);
       const nextQueue = [...queueRef.current];
       let evicted = false;
@@ -225,8 +231,8 @@ export function useBoardController({
 
       nextVisible.set(SEARCH_CARD_ID, {
         ...current,
-        x: pixel.x,
-        y: pixel.y,
+        x: pixel.x - offset.x,
+        y: pixel.y - offset.y,
       });
       setVisible(nextVisible);
       if (evicted) {
@@ -271,25 +277,30 @@ export function useBoardController({
       });
 
       // --- Spawn: fill viewport with queued cards on grid cells ---
+      // Count cards within the spawn buffer as "on screen" to avoid the
+      // feedback loop where buffer-zone cards inflate the deficit.
       let onScreenCount = 0;
       nextVisible.forEach((pos, cardId) => {
         const current = currentLayouts.get(cardId) ?? pos;
-        if (isCardInBounds(current, bounds, 0)) {
+        if (isCardInBounds(current, bounds, GRID.SPAWN_BUFFER)) {
           onScreenCount++;
         }
       });
 
       const totalCards = nextVisible.size + nextQueue.length;
-      const targetOnScreen = Math.min(QUEUE.INITIAL_SPAWN_COUNT, maxVisible, totalCards);
+      const targetOnScreen = Math.min(maxVisible, totalCards);
       const deficit = targetOnScreen - onScreenCount;
 
       if (deficit > 0 && nextQueue.length > 0) {
-        // Find the grid cell at the viewport center
+        // Convert viewport center to grid cell, accounting for centering offset.
+        // Pixel positions are shifted by originOffset; add it back to get true grid coords.
+        const offset = originOffsetRef.current;
         const viewCenterX = bounds.left + bounds.width / 2;
         const viewCenterY = bounds.top + bounds.height / 2;
-        const center = pixelToCell(viewCenterX, viewCenterY);
+        const center = pixelToCell(viewCenterX + offset.x, viewCenterY + offset.y);
 
-        const spawnCount = Math.min(deficit, nextQueue.length, maxVisible - nextVisible.size);
+        // Cap spawns per tick to prevent clustering
+        const spawnCount = Math.min(deficit, nextQueue.length, maxVisible - nextVisible.size, 3);
 
         for (let i = 0; i < spawnCount; i++) {
           const queuedCard = nextQueue.shift()!;
@@ -301,11 +312,12 @@ export function useBoardController({
           if (!cell) continue;
 
           grid.place(cell.col, cell.row, size, queuedCard.id);
+          // Convert grid cell back to pixel position with centering offset
           const pixel = cellToPixel(cell.col, cell.row);
 
           const position: CardPosition = {
-            x: pixel.x,
-            y: pixel.y,
+            x: pixel.x - offset.x,
+            y: pixel.y - offset.y,
             width: dimensions.width,
             height: dimensions.height,
             size,

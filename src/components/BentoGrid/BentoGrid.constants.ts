@@ -35,8 +35,8 @@ export function getCardDimensions(size: CardSize): { width: number; height: numb
 
 const QUEUE_VALUES = {
   spawnDelay: 100,
-  maxVisible: 30,
-  initialSpawnCount: 12,
+  maxVisible: 24,
+  initialSpawnCount: 14,
   initialStagger: 50,
   policy: 'FIFO',
 } as const;

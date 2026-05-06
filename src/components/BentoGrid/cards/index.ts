@@ -8,4 +8,5 @@ export { useSearchCardState } from './useSearchCardState';
 
 // Themed cards
 export { GameCard, type GameCardProps } from './GameCard';
+export { PhotoCard, type PhotoCardProps } from './PhotoCard';
 export { ProjectCard, type ProjectCardProps } from './ProjectCard';

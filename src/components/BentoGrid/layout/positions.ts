@@ -78,12 +78,20 @@ export function createCardPosition(
  *
  * Returns a Map of cardId → CardPosition including the search card.
  */
+export interface InitialPositionsResult {
+  positions: Map<string, CardPosition>;
+  grid: GridOccupancy;
+  /** Pixel offset applied to center the search card at origin.
+   *  Add this back to pixel coords before calling pixelToCell. */
+  originOffset: { x: number; y: number };
+}
+
 export function calculateInitialPositions(
   cards: CardData[],
   count: number,
   _rotationRange: number,
   sizeMode: CardSizeMode = 'mixed',
-): Map<string, CardPosition> {
+): InitialPositionsResult {
   const positions = new Map<string, CardPosition>();
   const grid = new GridOccupancy();
 
@@ -111,30 +119,21 @@ export function calculateInitialPositions(
     placements.push({ id: card.id, col: cell.col, row: cell.row, size });
   }
 
-  // Center all cards (including search) around origin
+  // Center all cards so the search card's center is at the origin (0,0).
+  // The camera starts at (0,0), so the search card appears screen-centered.
   if (placements.length > 0) {
-    const bounds = placements.reduce(
-      (acc, p) => {
-        const span = sizeToSpan(p.size);
-        return {
-          minCol: Math.min(acc.minCol, p.col),
-          maxCol: Math.max(acc.maxCol, p.col + span.cols),
-          minRow: Math.min(acc.minRow, p.row),
-          maxRow: Math.max(acc.maxRow, p.row + span.rows),
-        };
-      },
-      { minCol: Infinity, maxCol: -Infinity, minRow: Infinity, maxRow: -Infinity },
-    );
-
-    const offsetCol = Math.round((bounds.minCol + bounds.maxCol) / 2);
-    const offsetRow = Math.round((bounds.minRow + bounds.maxRow) / 2);
+    const searchPlacement = placements[0]; // search card is always first
+    const searchDims = getCardDimensions(searchPlacement.size);
+    const searchPixel = cellToPixel(searchPlacement.col, searchPlacement.row);
+    const centerX = searchPixel.x + searchDims.width / 2;
+    const centerY = searchPixel.y + searchDims.height / 2;
 
     for (const p of placements) {
       const dimensions = getCardDimensions(p.size);
-      const pixel = cellToPixel(p.col - offsetCol, p.row - offsetRow);
+      const pixel = cellToPixel(p.col, p.row);
       positions.set(p.id, {
-        x: pixel.x,
-        y: pixel.y,
+        x: pixel.x - centerX,
+        y: pixel.y - centerY,
         width: dimensions.width,
         height: dimensions.height,
         size: p.size,
@@ -143,7 +142,12 @@ export function calculateInitialPositions(
     }
   }
 
-  return positions;
+  const originOffset = placements.length > 0
+    ? { x: cellToPixel(placements[0].col, placements[0].row).x + getCardDimensions(placements[0].size).width / 2,
+        y: cellToPixel(placements[0].col, placements[0].row).y + getCardDimensions(placements[0].size).height / 2 }
+    : { x: 0, y: 0 };
+
+  return { positions, grid, originOffset };
 }
 
 /**

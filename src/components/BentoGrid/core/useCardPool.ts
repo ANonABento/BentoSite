@@ -55,7 +55,7 @@ export function useCardPool(options: UseCardPoolOptions): UseCardPoolReturn {
       filteredCards,
       Math.min(QUEUE.INITIAL_SPAWN_COUNT, maxVisible),
       rotationRange,
-    ),
+    ).positions,
   );
 
   const [queue, setQueueState] = useState<QueuedCard[]>(() => {
@@ -139,15 +139,15 @@ export function useCardPool(options: UseCardPoolOptions): UseCardPoolReturn {
   );
 
   const reset = useCallback(() => {
-    const initialVisible = calculateInitialPositions(
+    const result = calculateInitialPositions(
       filteredCards,
       Math.min(QUEUE.INITIAL_SPAWN_COUNT, maxVisible),
       rotationRange,
     );
 
-    setVisibleMap(initialVisible);
+    setVisibleMap(result.positions);
 
-    const visibleIds = new Set(initialVisible.keys());
+    const visibleIds = new Set(result.positions.keys());
     setQueue(createQueuedCards(filteredCards.filter((card) => !visibleIds.has(card.id))));
     lastSpawnTimeRef.current = 0;
   }, [filteredCards, maxVisible, rotationRange, setQueue, setVisibleMap]);
@@ -157,15 +157,15 @@ export function useCardPool(options: UseCardPoolOptions): UseCardPoolReturn {
       setFilterState({ searchTerm, category });
 
       const filtered = filterCards(cards, searchTerm, category);
-      const nextVisible = calculateInitialPositions(
+      const result = calculateInitialPositions(
         filtered,
         Math.min(QUEUE.INITIAL_SPAWN_COUNT, maxVisible),
         rotationRange,
       );
 
-      setVisibleMap(nextVisible);
+      setVisibleMap(result.positions);
 
-      const visibleIds = new Set(nextVisible.keys());
+      const visibleIds = new Set(result.positions.keys());
       setQueue(createQueuedCards(filtered.filter((card) => !visibleIds.has(card.id))));
       lastSpawnTimeRef.current = 0;
     },

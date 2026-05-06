@@ -38,7 +38,7 @@ export interface ThemeConfig {
   };
 }
 
-export type CardType = 'game' | 'project';
+export type CardType = 'game' | 'project' | 'photo';
 
 export interface BaseCardData {
   id: string;
@@ -69,7 +69,17 @@ export interface ProjectCardData extends BaseCardData {
   featured?: boolean;
 }
 
-export type CardData = GameCardData | ProjectCardData;
+export interface PhotoCardData extends BaseCardData {
+  type: 'photo';
+  src: string;
+  alt: string;
+  location: string;
+  year: string;
+  aspectRatio: number;
+  blurDataURL?: string;
+}
+
+export type CardData = GameCardData | ProjectCardData | PhotoCardData;
 
 export type CardSize = '1x1' | '2x1' | '1x2' | '2x2';
 

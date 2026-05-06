@@ -5,6 +5,7 @@ export type {
   CardData,
   CardPosition,
   GameCardData,
+  PhotoCardData,
   Position,
   ProjectCardData,
   SearchCardEdge,
@@ -32,6 +33,7 @@ export {
   getCardDimensions,
 } from './BentoGrid.constants';
 export { ProjectCard, type ProjectCardProps } from './cards/ProjectCard';
+export { PhotoCard, type PhotoCardProps } from './cards/PhotoCard';
 export { GameCard, type GameCardProps } from './cards/GameCard';
 export { BaseCard } from './cards/BaseCard';
 export { DefaultCard } from './cards/DefaultCard';

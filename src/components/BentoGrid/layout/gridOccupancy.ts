@@ -139,7 +139,12 @@ export class GridOccupancy {
 
   /**
    * Find the nearest available grid cell for a card of the given size,
-   * searching outward from (centerCol, centerRow) in a BFS spiral.
+   * searching outward from (centerCol, centerRow).
+   *
+   * At each radius ring, all valid positions are collected and the one
+   * closest to center (Euclidean distance) is chosen. This produces a
+   * balanced, roughly symmetric layout instead of the directional bias
+   * of a naive BFS spiral.
    *
    * Returns null if no position found within maxRadius.
    */
@@ -154,29 +159,39 @@ export class GridOccupancy {
       return { col: centerCol, row: centerRow };
     }
 
-    // BFS spiral outward
+    const { cols, rows } = sizeToSpan(size);
+
     for (let radius = 1; radius <= maxRadius; radius++) {
+      let best: { col: number; row: number } | null = null;
+      let bestDist = Infinity;
+
       // Walk the perimeter of the square at this radius
       for (let offset = -radius; offset <= radius; offset++) {
-        // Top edge
-        if (this.canPlace(centerCol + offset, centerRow - radius, size)) {
-          return { col: centerCol + offset, row: centerRow - radius };
-        }
-        // Bottom edge
-        if (this.canPlace(centerCol + offset, centerRow + radius, size)) {
-          return { col: centerCol + offset, row: centerRow + radius };
-        }
-        // Left edge (skip corners, already checked)
+        const candidates = [
+          { col: centerCol + offset, row: centerRow - radius }, // top
+          { col: centerCol + offset, row: centerRow + radius }, // bottom
+        ];
         if (offset !== -radius && offset !== radius) {
-          if (this.canPlace(centerCol - radius, centerRow + offset, size)) {
-            return { col: centerCol - radius, row: centerRow + offset };
-          }
-          // Right edge
-          if (this.canPlace(centerCol + radius, centerRow + offset, size)) {
-            return { col: centerCol + radius, row: centerRow + offset };
+          candidates.push(
+            { col: centerCol - radius, row: centerRow + offset }, // left
+            { col: centerCol + radius, row: centerRow + offset }, // right
+          );
+        }
+
+        for (const c of candidates) {
+          if (!this.canPlace(c.col, c.row, size)) continue;
+          // Distance from the card's center to the search center
+          const dx = c.col + cols / 2 - centerCol;
+          const dy = c.row + rows / 2 - centerRow;
+          const dist = dx * dx + dy * dy;
+          if (dist < bestDist) {
+            bestDist = dist;
+            best = c;
           }
         }
       }
+
+      if (best) return best;
     }
 
     return null;
