@@ -8,39 +8,6 @@ export function getRandomRotation(range: number): number {
   return (Math.random() - 0.5) * 2 * range;
 }
 
-/** @deprecated Use GridOccupancy.findNearest instead. Kept for test compat. */
-export function generateSpiralPositions(count: number): Array<{ col: number; row: number }> {
-  const positions: Array<{ col: number; row: number }> = [];
-  let col = 0;
-  let row = 0;
-  let direction = 0;
-  let stepsInDirection = 1;
-  let stepsTaken = 0;
-  let directionChanges = 0;
-
-  for (let i = 0; i < count; i++) {
-    positions.push({ col, row });
-
-    if (direction === 0) col++;
-    else if (direction === 1) row++;
-    else if (direction === 2) col--;
-    else row--;
-
-    stepsTaken++;
-    if (stepsTaken >= stepsInDirection) {
-      stepsTaken = 0;
-      direction = (direction + 1) % 4;
-      directionChanges++;
-
-      if (directionChanges % 2 === 0) {
-        stepsInDirection++;
-      }
-    }
-  }
-
-  return positions;
-}
-
 export function rectsOverlap(a: Rect, b: Rect, padding: number = GRID.GAP): boolean {
   return !(
     a.x + a.width + padding <= b.x ||
@@ -121,19 +88,23 @@ export function calculateInitialPositions(
 
   // Center all cards so the search card's center is at the origin (0,0).
   // The camera starts at (0,0), so the search card appears screen-centered.
+  let originOffset = { x: 0, y: 0 };
+
   if (placements.length > 0) {
     const searchPlacement = placements[0]; // search card is always first
     const searchDims = getCardDimensions(searchPlacement.size);
     const searchPixel = cellToPixel(searchPlacement.col, searchPlacement.row);
-    const centerX = searchPixel.x + searchDims.width / 2;
-    const centerY = searchPixel.y + searchDims.height / 2;
+    originOffset = {
+      x: searchPixel.x + searchDims.width / 2,
+      y: searchPixel.y + searchDims.height / 2,
+    };
 
     for (const p of placements) {
       const dimensions = getCardDimensions(p.size);
       const pixel = cellToPixel(p.col, p.row);
       positions.set(p.id, {
-        x: pixel.x - centerX,
-        y: pixel.y - centerY,
+        x: pixel.x - originOffset.x,
+        y: pixel.y - originOffset.y,
         width: dimensions.width,
         height: dimensions.height,
         size: p.size,
@@ -141,11 +112,6 @@ export function calculateInitialPositions(
       });
     }
   }
-
-  const originOffset = placements.length > 0
-    ? { x: cellToPixel(placements[0].col, placements[0].row).x + getCardDimensions(placements[0].size).width / 2,
-        y: cellToPixel(placements[0].col, placements[0].row).y + getCardDimensions(placements[0].size).height / 2 }
-    : { x: 0, y: 0 };
 
   return { positions, grid, originOffset };
 }

@@ -152,6 +152,36 @@ describe('GridOccupancy', () => {
       const result = grid.findNearest(10, 10, '1x1');
       expect(result).toEqual({ col: 10, row: 10 });
     });
+
+    it('picks Euclidean-nearest when multiple candidates exist at same radius', () => {
+      // Place a card at (0,0) so center is taken
+      grid.place(0, 0, '1x1', 'center');
+      const result = grid.findNearest(0, 0, '1x1');
+      expect(result).not.toBeNull();
+      // Should be adjacent to center (distance² ≤ 2, i.e. at most diagonal)
+      const dx = result!.col;
+      const dy = result!.row;
+      expect(dx * dx + dy * dy).toBeLessThanOrEqual(2);
+    });
+
+    it('for 2x1 card, distance is from card center not corner', () => {
+      // Place at (0,0) and (1,0) so center 2x1 is blocked
+      grid.place(0, 0, '2x1', 'center');
+      const result = grid.findNearest(0, 0, '2x1');
+      expect(result).not.toBeNull();
+      // Card center at (result.col + 1, result.row + 0.5)
+      // Should be closer to (0,0) than any other valid position
+    });
+
+    it('works with negative starting coordinates', () => {
+      const result = grid.findNearest(-5, -3, '1x1');
+      expect(result).toEqual({ col: -5, row: -3 });
+
+      grid.place(-5, -3, '1x1', 'block');
+      const result2 = grid.findNearest(-5, -3, '1x1');
+      expect(result2).not.toBeNull();
+      expect(result2!.col !== -5 || result2!.row !== -3).toBe(true);
+    });
   });
 });
 

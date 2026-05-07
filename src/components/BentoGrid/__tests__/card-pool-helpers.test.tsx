@@ -122,6 +122,36 @@ describe('BentoGrid calculateInitialPositions', () => {
     expect(Math.abs(centerY)).toBeLessThan(500);
   });
 
+  it('returns originOffset at search card pixel center', () => {
+    const { originOffset } = calculateInitialPositions(cards, 4, 0);
+    // Search card is 2x1: width=372, height=180. Center = (186, 90)
+    // Placed at cell (0,0) so pixel = (0,0), center = (186, 90)
+    expect(originOffset.x).toBe(186);
+    expect(originOffset.y).toBe(90);
+  });
+
+  it('returns a grid that reflects all placements', () => {
+    const { positions, grid } = calculateInitialPositions(cards, 4, 0);
+    // Every card in positions should have cells reserved in the grid
+    expect(grid.size).toBe(positions.size);
+  });
+
+  it('returns result with all three fields', () => {
+    const result = calculateInitialPositions(cards, 2, 0);
+    expect(result).toHaveProperty('positions');
+    expect(result).toHaveProperty('grid');
+    expect(result).toHaveProperty('originOffset');
+    expect(result.positions).toBeInstanceOf(Map);
+    expect(result.originOffset).toHaveProperty('x');
+    expect(result.originOffset).toHaveProperty('y');
+  });
+
+  it('with empty card list returns only search card', () => {
+    const { positions } = calculateInitialPositions([], 0, 0);
+    expect(positions.size).toBe(1);
+    expect(positions.has('__search__')).toBe(true);
+  });
+
   it('preserves featured project sizing', () => {
     const featuredOnly: ProjectCardData[] = [
       {

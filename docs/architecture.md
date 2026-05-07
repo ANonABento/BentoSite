@@ -27,7 +27,7 @@ graph TD
   Marketing --> Home["/<br/>Boot splash → Dashboard"]
   Marketing --> Projects["/projects<br/>BentoGrid (project archive)"]
   Marketing --> Playground["/playground<br/>BentoGrid (games hub)"]
-  Marketing --> Photography["/photography<br/>Image gallery"]
+  Marketing --> Photography["/photography<br/>BentoGrid (photo gallery)"]
 
   Home --> Boot["BootScreen<br/>(BentoOS, session-gated)"]
   Home --> Dashboard["DashboardLayout<br/>3D viewer · chat · skills"]
@@ -66,9 +66,9 @@ graph LR
   subgraph BentoGridSub["BentoGrid (components/BentoGrid)"]
     BG[BentoGrid.tsx]
     Views[views/<br/>DesktopCanvasView<br/>MobileScrollView]
-    Cards[cards/<br/>BaseCard + renderers]
-    Core[core/<br/>useCamera · useViewport<br/>useCardPool · useSpawnManager<br/>useBoardController · keyboard]
-    Layout[layout/<br/>gridOccupancy · positions<br/>cardSizes · exclusion]
+    Cards[cards/<br/>BaseCard · ProjectCard · GameCard<br/>PhotoCard · SearchMenuCard]
+    Core[core/<br/>useCamera · useViewport<br/>useBoardController (rAF spawn/despawn)<br/>useSearchCardState (ghost tracking)]
+    Layout[layout/<br/>gridOccupancy (radial findNearest)<br/>positions (originOffset centering)<br/>cardSizes (mixed/detail/2x2)]
     Physics[physics/<br/>engine · forces<br/>usePhysicsWorld]
 
     BG --> Views
@@ -146,14 +146,15 @@ graph LR
 graph TD
   Base["BaseCard<br/>(cards/BaseCard.tsx)"]
 
-  Base --> Project["ProjectCard<br/>title · technologies · thumbnail<br/>href = /?project=:id"]
-  Base --> Game["GameCard<br/>icon · gradient · best score<br/>href = /playground/:slug"]
-  Base --> Search["SearchMenuCard<br/>uses useSearchCardState<br/>physics-sticky search input"]
-  Base --> Info["InfoMenuCard<br/>uses useInfoCardState<br/>3 modes:<br/>free · edge bar · icon strip"]
+  Base --> Project["ProjectCard<br/>title · technologies · thumbnail"]
+  Base --> Game["GameCard<br/>icon · gradient · best score"]
+  Base --> Photo["PhotoCard<br/>full-bleed image · overlay metadata"]
+  Base --> Search["SearchMenuCard<br/>uses useSearchCardState<br/>ghost tracking + edge compression"]
   Base --> Default["DefaultCard<br/>generic fallback"]
 
   Project -. data .-> ProjectData["ProjectCardData<br/>(BentoGrid.types.ts)"]
   Game    -. data .-> GameData["GameCardData<br/>(BentoGrid.types.ts)"]
+  Photo   -. data .-> PhotoData["PhotoCardData<br/>(BentoGrid.types.ts)"]
 
   Base -. consumes .-> Theme["ThemeConfig<br/>(BentoGrid.constants → THEMES)"]
   Base -. opts in .-> Magnetic["[data-magnetic]<br/>→ AnimatedCursor pull"]
@@ -163,14 +164,17 @@ graph TD
   classDef child fill:#1f1f1f,stroke:#666,color:#fafafa
   classDef note fill:#0d0d0d,stroke:#333,color:#aaa,stroke-dasharray: 4 4
   class Base base
-  class Project,Game,Search,Info,Default child
-  class ProjectData,GameData,Theme,Magnetic,Anchor note
+  class Project,Game,Photo,Search,Default child
+  class ProjectData,GameData,PhotoData,Theme,Magnetic,Anchor note
 ```
 
 **Key contracts**
 
 - `BaseCard` renders an `<a href>` when `href` is provided; otherwise a `<div>`. Don't replace the anchor with a `button + router.push` — middle-click, copy-link, and right-click all rely on it.
 - Magnetic hover is opt-in via `BaseCard`'s `magnetic` prop, which sets `[data-magnetic]` on the actual hover target (anchor when present, wrapper otherwise). The cursor is the only consumer.
-- Card data is a discriminated union: `CardData = ProjectCardData | GameCardData`. The `BentoGrid` chooses the renderer from `card.type`.
-- `InfoMenuCard` has three layout modes driven by `compression`/`edge`: free (full card), compact bar (top/bottom edge), icon strip (left/right edge). Don't add a fourth mode without updating `useInfoCardState`.
+- Card data is a discriminated union: `CardData = ProjectCardData | GameCardData | PhotoCardData`. The `BentoGrid` chooses the renderer from `card.type`.
+- `SearchMenuCard` has three layout modes driven by `compression`/`edge`: free (full card), compact bar (top/bottom edge), icon strip (left/right edge).
+- **Card sizing** is controlled by `cardSizeMode` (`'mixed'` | `'detail'` | `'2x2'`). Photo cards are always 1x1. In `'detail'` mode, featured projects get 2x2, others 2x1.
+- **Grid centering**: `calculateInitialPositions` returns an `originOffset` that maps between pixel coordinates (shifted so search card center = origin) and grid cell coordinates. The tick loop in `useBoardController` applies this offset when converting viewport center → grid cell.
+- **Radial placement**: `GridOccupancy.findNearest` searches outward in concentric rings, picking the candidate closest to center by Euclidean distance for balanced, symmetric layouts.
 - The `?seed=1` / `?debug=queue` query params swap real card data for synthetic 80-card seeds (`debugSeed.ts`); the debug HUD in `DesktopCanvasView` is gated by `useDebugFlag()` (visible in development OR with `?debug=1`).

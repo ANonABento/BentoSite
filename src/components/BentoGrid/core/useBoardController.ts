@@ -303,7 +303,8 @@ export function useBoardController({
         const spawnCount = Math.min(deficit, nextQueue.length, maxVisible - nextVisible.size, 3);
 
         for (let i = 0; i < spawnCount; i++) {
-          const queuedCard = nextQueue.shift()!;
+          const queuedCard = nextQueue.shift();
+          if (!queuedCard) break;
           const size = getCardSizeForIndex(spawnCountRef.current, queuedCard.data, cardSizeMode);
           const dimensions = getCardDimensions(size);
 
@@ -342,7 +343,7 @@ export function useBoardController({
     visible,
     queue,
     cardDataMap,
-    filteredCount: Math.max(0, visible.size + queue.length - 1), // exclude search card
+    filteredCount: Math.max(0, visible.size + queue.length - (visible.has(SEARCH_CARD_ID) ? 1 : 0)),
     applyFilter,
     resetBoard,
     setPhysicsBridge,

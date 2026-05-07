@@ -136,17 +136,18 @@ src/
 │   │   ├── MobileTabs.tsx             # Mobile tab switcher
 │   │   └── index.ts
 │   │
-│   ├── BentoGrid/                     # Shared infinite grid (projects + playground)
+│   ├── BentoGrid/                     # Shared infinite grid (projects, playground, photography)
 │   │   ├── BentoGrid.tsx              # Top-level desktop/mobile router
-│   │   ├── BentoGrid.constants.ts     # Themes, breakpoints, IDs
-│   │   ├── BentoGrid.types.ts         # Card data + view types
+│   │   ├── BentoGrid.constants.ts     # Themes, breakpoints, IDs, queue limits
+│   │   ├── BentoGrid.types.ts         # Card data (project/game/photo) + view types
 │   │   ├── debugSeed.ts               # ?seed=1 / ?debug=queue dev seeding
-│   │   ├── core/                      # Camera, viewport, card pool, spawn,
-│   │   │                              # navigation, board controller, keyboard
+│   │   ├── core/                      # Camera, viewport, board controller (spawn/
+│   │   │                              # despawn rAF loop), card navigation, keyboard
 │   │   ├── physics/                   # Matter.js engine, forces, world binding
-│   │   ├── layout/                    # Grid occupancy, exclusions, sizes, positions
+│   │   ├── layout/                    # Grid occupancy (radial findNearest),
+│   │   │                              # card sizes (mixed/detail/2x2), positions
 │   │   ├── cards/                     # BaseCard + ProjectCard / GameCard /
-│   │   │                              # InfoMenuCard / SearchMenuCard / DefaultCard
+│   │   │                              # PhotoCard / SearchMenuCard / DefaultCard
 │   │   ├── views/                     # DesktopCanvasView / MobileScrollView
 │   │   └── __tests__/                 # Vitest specs
 │   │
@@ -404,7 +405,7 @@ BentoGrid (`/projects`, `/playground`):
 | Sitemap / robots | `src/app/sitemap.ts`, `src/app/robots.ts` |
 | BentoGrid root | `src/components/BentoGrid/BentoGrid.tsx` |
 | BentoGrid card shell | `src/components/BentoGrid/cards/BaseCard.tsx` |
-| Info card refactor | `src/components/BentoGrid/cards/InfoMenuCard.tsx` |
+| Search card state | `src/components/BentoGrid/cards/useSearchCardState.ts` |
 | 3D viewer entry | `src/components/Dimension/Dimension.tsx` |
 | Viewfinder (media tabs) | `src/components/Viewfinder/Viewfinder.tsx` |
 | Chat | `src/components/Chat/Chat.tsx` |

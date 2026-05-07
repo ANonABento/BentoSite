@@ -4,7 +4,11 @@ import { gotoDashboard } from './helpers';
 test.describe('Landing Page', () => {
   test('should display the bentOS boot screen', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByText(/ANonABento/i)).toBeVisible();
+    const bootScreen = page.locator('.crt-shell');
+
+    await expect(bootScreen).toBeVisible();
+    await expect(bootScreen.getByText('ANonABento', { exact: true })).toBeVisible();
+    await expect(bootScreen.getByText("ANonABento's Portfolio Website")).toBeVisible();
   });
 
   test('should render the dashboard view directly from the query param', async ({ page }) => {

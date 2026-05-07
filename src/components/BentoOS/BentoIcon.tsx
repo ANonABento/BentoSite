@@ -1,11 +1,15 @@
 'use client';
 
+import { useId } from 'react';
+
 interface BentoIconProps {
   size?: number;
   className?: string;
 }
 
 export function BentoIcon({ size = 16, className = '' }: BentoIconProps) {
+  const rawId = useId();
+  const svgId = rawId.replace(/:/g, '');
   const gap = Math.max(1, Math.round(size * 0.08));
   const leftWidth = Math.round(size * 0.45);
   const rightX = leftWidth + gap;
@@ -27,16 +31,16 @@ export function BentoIcon({ size = 16, className = '' }: BentoIconProps) {
       style={{ borderRadius: r, overflow: 'hidden' }}
     >
       <defs>
-        <filter id={`bento-icon-glow-${size}`} x="-25%" y="-25%" width="150%" height="150%">
+        <filter id={`${svgId}-bento-icon-glow`} x="-25%" y="-25%" width="150%" height="150%">
           <feDropShadow dx="0" dy="0" stdDeviation={Math.max(1, size * 0.035)} floodColor="var(--orange)" floodOpacity="0.45" />
           <feDropShadow dx="0" dy="0" stdDeviation={Math.max(1, size * 0.025)} floodColor="var(--purple)" floodOpacity="0.35" />
         </filter>
-        <pattern id={`bento-icon-lines-${size}`} width="1" height={Math.max(3, size * 0.04)} patternUnits="userSpaceOnUse">
+        <pattern id={`${svgId}-bento-icon-lines`} width="1" height={Math.max(3, size * 0.04)} patternUnits="userSpaceOnUse">
           <rect width="1" height="1" fill="rgba(255,255,255,0.16)" />
         </pattern>
       </defs>
 
-      <g filter={`url(#bento-icon-glow-${size})`}>
+      <g filter={`url(#${svgId}-bento-icon-glow)`}>
         <rect x={0} y={0} width={leftWidth} height={size} rx={r} fill="var(--orange)" />
         <rect x={rightX} y={0} width={rightWidth} height={tileHeight} rx={r * 0.75} fill="var(--purple)" />
         <rect
@@ -59,7 +63,7 @@ export function BentoIcon({ size = 16, className = '' }: BentoIconProps) {
           &gt;_
         </text>
       </g>
-      <rect width={size} height={size} fill={`url(#bento-icon-lines-${size})`} opacity="0.42" />
+      <rect width={size} height={size} fill={`url(#${svgId}-bento-icon-lines)`} opacity="0.42" />
     </svg>
   );
 }

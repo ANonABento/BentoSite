@@ -6,7 +6,6 @@ export {
 export {
   calculateInitialPositions,
   createCardPosition,
-  generateSpiralPositions,
   getRandomRotation,
   occupancyFromPositions,
   rectsOverlap,
