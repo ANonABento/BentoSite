@@ -6,9 +6,15 @@ interface BentoIconProps {
 }
 
 export function BentoIcon({ size = 16, className = '' }: BentoIconProps) {
-  const gap = Math.max(1, Math.round(size * 0.1));
-  const cellW = (size - gap) / 2;
-  const r = Math.max(1, Math.round(size * 0.15));
+  const gap = Math.max(1, Math.round(size * 0.08));
+  const leftWidth = Math.round(size * 0.45);
+  const rightX = leftWidth + gap;
+  const rightWidth = size - rightX;
+  const tileHeight = Math.round((size - gap) / 2);
+  const r = Math.max(2, Math.round(size * 0.13));
+  const terminalFontSize = Math.max(7, Math.round(size * 0.28));
+  const promptX = rightX + rightWidth * 0.22;
+  const promptY = tileHeight * 0.62;
 
   return (
     <svg
@@ -20,12 +26,40 @@ export function BentoIcon({ size = 16, className = '' }: BentoIconProps) {
       aria-hidden="true"
       style={{ borderRadius: r, overflow: 'hidden' }}
     >
-      {/* Left — full-height rectangle (orange) */}
-      <rect x={0} y={0} width={cellW} height={size} fill="var(--orange)" />
-      {/* Top-right — purple */}
-      <rect x={cellW + gap} y={0} width={cellW} height={cellW} fill="var(--purple)" />
-      {/* Bottom-right — orange accent */}
-      <rect x={cellW + gap} y={cellW + gap} width={cellW} height={cellW} fill="var(--orange)" />
+      <defs>
+        <filter id={`bento-icon-glow-${size}`} x="-25%" y="-25%" width="150%" height="150%">
+          <feDropShadow dx="0" dy="0" stdDeviation={Math.max(1, size * 0.035)} floodColor="var(--orange)" floodOpacity="0.45" />
+          <feDropShadow dx="0" dy="0" stdDeviation={Math.max(1, size * 0.025)} floodColor="var(--purple)" floodOpacity="0.35" />
+        </filter>
+        <pattern id={`bento-icon-lines-${size}`} width="1" height={Math.max(3, size * 0.04)} patternUnits="userSpaceOnUse">
+          <rect width="1" height="1" fill="rgba(255,255,255,0.16)" />
+        </pattern>
+      </defs>
+
+      <g filter={`url(#bento-icon-glow-${size})`}>
+        <rect x={0} y={0} width={leftWidth} height={size} rx={r} fill="var(--orange)" />
+        <rect x={rightX} y={0} width={rightWidth} height={tileHeight} rx={r * 0.75} fill="var(--purple)" />
+        <rect
+          x={rightX}
+          y={tileHeight + gap}
+          width={rightWidth}
+          height={size - tileHeight - gap}
+          rx={r * 0.75}
+          fill="var(--orange)"
+        />
+        <text
+          x={promptX}
+          y={promptY}
+          fill="rgba(255,255,255,0.92)"
+          fontFamily="var(--font-mono), monospace"
+          fontSize={terminalFontSize}
+          fontWeight="700"
+          dominantBaseline="middle"
+        >
+          &gt;_
+        </text>
+      </g>
+      <rect width={size} height={size} fill={`url(#bento-icon-lines-${size})`} opacity="0.42" />
     </svg>
   );
 }

@@ -12,8 +12,7 @@ import {
 import { useBoardController } from '../core/useBoardController';
 import { usePhysicsWorld } from '../physics';
 import { SEARCH_CARD_ID } from '../BentoGrid.constants';
-import { ArrowLeftIcon, ChevronDownIcon, CloseIcon, SearchIcon } from '@/components/ui/Icons';
-import { useDebugFlag } from '@/lib/use-debug-flag';
+import { ArrowLeftIcon, ChevronDownIcon, CloseIcon, RefreshIcon, SearchIcon } from '@/components/ui/Icons';
 import type { CardData, CardPosition, CardSizeMode, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
@@ -41,8 +40,6 @@ export function DesktopCanvasView({
   onBack,
 }: DesktopCanvasViewProps) {
   const windowSize = useWindowSize();
-  const debugEnabled = useDebugFlag();
-
   const navigation = useCamera({
     enabled: true,
     windowSize,
@@ -254,7 +251,6 @@ export function DesktopCanvasView({
                 searchTerm={searchState.searchTerm}
                 onSearchChange={searchState.setSearchTerm}
                 onBack={onBack}
-                breadcrumb={breadcrumb}
               />
             ) : (
               <FullSearchContent
@@ -263,11 +259,11 @@ export function DesktopCanvasView({
                 searchTerm={searchState.searchTerm}
                 category={searchState.category}
                 categories={categories}
-                breadcrumb={breadcrumb}
                 onToggleExpanded={searchState.toggleExpanded}
                 onSearchChange={searchState.setSearchTerm}
                 onCategoryChange={searchState.setCategory}
                 onBack={onBack}
+                onReset={navigation.reset}
                 totalCards={cards.length}
                 filteredCards={board.filteredCount}
               />
@@ -276,32 +272,6 @@ export function DesktopCanvasView({
         </div>
       </div>
 
-      <button
-        onClick={navigation.reset}
-        aria-label="Reset grid view"
-        className="fixed bottom-4 right-4 px-4 py-2 rounded-lg text-sm font-medium transition-all z-20"
-        style={{
-          background: theme.searchCard.background,
-          border: theme.searchCard.border,
-          color: theme.accent.primary,
-        }}
-      >
-        Reset View (R)
-      </button>
-
-      {debugEnabled && (
-        <div className="fixed bottom-4 left-4 text-xs text-white/50 font-mono z-20">
-          Camera: ({navigation.camera.x.toFixed(0)}, {navigation.camera.y.toFixed(0)}) z:{navigation.camera.zoom.toFixed(2)}
-          <br />
-          Visible: {board.visible.size} | Queue: {board.queue.length}
-          {focusedCardId && (
-            <>
-              <br />
-              Focus: {focusedCardId}
-            </>
-          )}
-        </div>
-      )}
     </>
   );
 }
@@ -330,25 +300,30 @@ function IconStripContent({ theme, onBack, onToggleExpanded, searchTerm }: {
   );
 }
 
-function FullSearchContent({ theme, expanded, searchTerm, category, categories, breadcrumb, onToggleExpanded, onSearchChange, onCategoryChange, onBack, totalCards, filteredCards }: {
+function FullSearchContent({ theme, expanded, searchTerm, category, categories, onToggleExpanded, onSearchChange, onCategoryChange, onBack, onReset, totalCards, filteredCards }: {
   theme: ThemeConfig;
   expanded: boolean;
   searchTerm: string;
   category: string | null;
   categories: string[];
-  breadcrumb?: string;
   onToggleExpanded: () => void;
   onSearchChange: (term: string) => void;
   onCategoryChange: (category: string | null) => void;
   onBack?: () => void;
+  onReset: () => void;
   totalCards: number;
   filteredCards: number;
 }) {
   return (
-    <div className="h-full min-w-0 p-4 flex flex-col gap-3">
+    <div className="h-full min-w-0 p-4 flex flex-col gap-2.5">
+      {/* Header: back + count + collapse */}
       <div className="flex items-center justify-between gap-2 min-w-0">
-        <span className="text-xs text-white/50 font-mono truncate">{breadcrumb || 'bentOS'}</span>
-        <div className="flex items-center gap-1 flex-shrink-0">
+        {onBack ? (
+          <button onClick={onBack} className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors">
+            <ArrowLeftIcon className="w-3.5 h-3.5" /><span>Back</span>
+          </button>
+        ) : <span />}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           <span className="text-[10px] text-white/40 font-mono">
             {filteredCards !== totalCards ? `${filteredCards}/${totalCards}` : totalCards}
           </span>
@@ -357,11 +332,8 @@ function FullSearchContent({ theme, expanded, searchTerm, category, categories, 
           </button>
         </div>
       </div>
-      {onBack && (
-        <button onClick={onBack} className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors w-fit">
-          <ArrowLeftIcon className="w-4 h-4" /><span>Back to Dashboard</span>
-        </button>
-      )}
+
+      {/* Search input */}
       <label className="flex items-center gap-2 rounded-md bg-white/5 border border-white/10 px-3 py-2">
         <SearchIcon className="w-4 h-4 text-white/40 flex-shrink-0" />
         <input type="text" placeholder="Search..." value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none" aria-label="Search cards" />
@@ -371,23 +343,30 @@ function FullSearchContent({ theme, expanded, searchTerm, category, categories, 
           </button>
         )}
       </label>
+
+      {/* Category filters */}
       {expanded && (
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5">
           <button onClick={() => onCategoryChange(null)} className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap ${category === null ? 'text-white' : 'text-white/60 hover:text-white/80'}`} style={{ background: category === null ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)', border: category === null ? `1px solid ${theme.accent.primary}50` : '1px solid transparent' }}>All</button>
           {categories.map((cat) => (
             <button key={cat} onClick={() => onCategoryChange(cat === category ? null : cat)} className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap ${category === cat ? 'text-white' : 'text-white/60 hover:text-white/80'}`} style={{ background: category === cat ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)', border: category === cat ? `1px solid ${theme.accent.primary}50` : '1px solid transparent' }}>{cat}</button>
           ))}
         </div>
       )}
+
+      {/* Footer: reset view */}
+      <button onClick={onReset} className="flex items-center justify-center gap-1.5 text-[11px] text-white/40 hover:text-white/70 transition-colors mt-auto">
+        <RefreshIcon className="w-3 h-3" />
+        <span>Reset View</span>
+      </button>
     </div>
   );
 }
 
-function CompactBarContent({ searchTerm, onSearchChange, onBack, breadcrumb }: {
+function CompactBarContent({ searchTerm, onSearchChange, onBack }: {
   searchTerm: string;
   onSearchChange: (term: string) => void;
   onBack?: () => void;
-  breadcrumb?: string;
 }) {
   return (
     <div className="h-full flex items-center gap-2 px-3">
@@ -396,7 +375,6 @@ function CompactBarContent({ searchTerm, onSearchChange, onBack, breadcrumb }: {
           <ArrowLeftIcon className="w-4 h-4 text-white/70" />
         </button>
       )}
-      <span className="text-xs text-white/40 font-mono truncate flex-shrink-0">{breadcrumb || 'bentOS'}</span>
       <label className="flex-1 min-w-0 flex items-center gap-2 rounded-md bg-white/5 border border-white/10 px-3 py-1.5">
         <SearchIcon className="w-4 h-4 text-white/40 flex-shrink-0" />
         <input type="text" placeholder="Search..." value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none" aria-label="Search cards" />
