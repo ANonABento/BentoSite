@@ -147,4 +147,14 @@ describe('PageTransition', () => {
     expect(shell).toHaveAttribute('data-exit-y', '');
     expect(shell).toHaveAttribute('data-exit-filter', '');
   });
+
+  it('renders full-screen BentoGrid routes without route animation', () => {
+    mockState.pathname = '/projects';
+
+    render(<PageTransition>Projects grid</PageTransition>);
+
+    expect(screen.queryByTestId('page-transition-presence')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('page-transition-shell')).not.toBeInTheDocument();
+    expect(screen.getByText('Projects grid')).toBeInTheDocument();
+  });
 });

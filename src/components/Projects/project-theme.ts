@@ -1,7 +1,7 @@
 import type { ProjectCategory, ProjectStatus } from '@/lib/projects-data';
 
 export const PROJECT_CATEGORY_THEMES: Record<
-  ProjectCategory,
+  string,
   {
     accent: string;
     muted: string;
@@ -58,6 +58,17 @@ export const PROJECT_CATEGORY_THEMES: Record<
     gradient: 'linear-gradient(135deg, rgba(239, 68, 68, 0.24), rgba(167, 139, 250, 0.16))',
   },
 };
+
+const CATEGORY_FALLBACK_THEME = {
+  accent: 'var(--text-muted)',
+  muted: 'var(--text-muted)',
+  icon: '📁',
+  gradient: 'linear-gradient(135deg, rgba(148, 163, 184, 0.22), rgba(12, 12, 20, 0.82))',
+};
+
+export function getProjectTheme(category: ProjectCategory) {
+  return PROJECT_CATEGORY_THEMES[category] ?? CATEGORY_FALLBACK_THEME;
+}
 
 export const PROJECT_STATUS_COPY: Record<
   ProjectStatus,

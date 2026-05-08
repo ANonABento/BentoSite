@@ -23,6 +23,8 @@ import {
   StationaryBackground,
 } from './scene';
 
+const VIEWFINDER_CLEAR_COLOR = '#050507';
+
 interface DimensionViewportProps {
   allowScreenshots: boolean;
   autoRotate: boolean;
@@ -56,6 +58,10 @@ function DimensionLoadingFallback() {
         performance={{ min: MIN_PERFORMANCE_SCALE }}
         dpr={[1, MOBILE_PIXEL_RATIO_MAX]}
         gl={{ antialias: false, powerPreference: 'high-performance' }}
+        style={{ background: VIEWFINDER_CLEAR_COLOR }}
+        onCreated={({ gl }) => {
+          gl.setClearColor(VIEWFINDER_CLEAR_COLOR, 1);
+        }}
       />
       <div
         className="absolute inset-0 flex items-center justify-center pointer-events-none"
@@ -98,6 +104,10 @@ export function DimensionViewport({
             powerPreference: 'high-performance',
             preserveDrawingBuffer: allowScreenshots,
           }}
+          style={{ background: VIEWFINDER_CLEAR_COLOR }}
+          onCreated={({ gl }) => {
+            gl.setClearColor(VIEWFINDER_CLEAR_COLOR, 1);
+          }}
         >
           <ambientLight intensity={0.3} />
           <pointLight position={[15, 15, 15]} intensity={0.8} />
@@ -135,7 +145,9 @@ export function DimensionViewport({
           }
 
           gl.autoClear = true;
+          gl.setClearColor(VIEWFINDER_CLEAR_COLOR, 1);
         }}
+        style={{ background: VIEWFINDER_CLEAR_COLOR }}
         ref={canvasRef}
       >
         <ambientLight intensity={0.3} />

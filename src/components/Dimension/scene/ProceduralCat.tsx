@@ -16,7 +16,7 @@ const CAT_INNER_EAR_COLOR = '#fb923c';
 const CAT_NOSE_COLOR = '#fb7185';
 const CAT_EYE_COLOR = '#0f172a';
 
-const SCALE = 1.4;
+const SCALE = 0.85;
 
 interface CatPart {
   geometry: THREE.BufferGeometry;

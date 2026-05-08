@@ -25,7 +25,7 @@ export function ThemeToggle() {
   if (!mounted) {
     return (
       <button
-        className="interactive-hover p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg focus-ring"
+        className="interactive-hover p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] focus-ring"
         aria-label="Toggle theme"
       >
         <SunIcon size={20} />
@@ -36,7 +36,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="interactive-hover p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg focus-ring"
+      className="interactive-hover p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] focus-ring"
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >
       {theme === 'dark' ? <SunIcon size={20} /> : <MoonIcon size={20} />}
@@ -62,10 +62,10 @@ export function ResumeButton({
       rel="noopener noreferrer"
       onClick={handleResumeClick}
       aria-label="Open resume PDF in a new tab"
-      className={`interactive-hover flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm
-        bg-[var(--orange)] hover:bg-[var(--orange-hover)] active:bg-[var(--orange-active)] text-[var(--text-on-accent)]
+      className={`interactive-hover flex items-center gap-2 px-4 py-2.5 font-medium text-sm font-mono
+        bg-transparent hover:bg-[var(--orange-muted)] active:bg-[var(--orange-active)] text-[var(--orange)]
         hover:shadow-[0_0_20px_var(--orange-muted)] hover:scale-105
-        border border-[var(--orange-hover)]/20
+        border border-[var(--orange)]/45
         focus-ring ${className}`}
     >
       <DocumentDownloadIcon size={16} />

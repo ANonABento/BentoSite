@@ -26,9 +26,9 @@ export function TerminalPrompt() {
   }, []);
 
   return (
-    <div className="font-mono text-xs text-[var(--orange)] tracking-wider whitespace-nowrap text-left">
+    <div className="font-crt text-sm sm:text-base md:text-lg text-[var(--orange)] tracking-[0.12em] whitespace-nowrap text-left">
       <div className="flex items-center">
-        <span className="text-[var(--text-muted)] mr-1">&gt;</span>
+        <span className="text-[var(--text-muted)] mr-2">&gt;</span>
         <span>{displayedText}</span>
         {!showCursor && displayedText.length < PROMPT_TEXT.length ? (
           <span className="animate-pulse">_</span>
@@ -39,7 +39,7 @@ export function TerminalPrompt() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.15 }}
-          className="mt-1"
+          className="mt-1 pl-[1.5ch]"
         >
           <span className="animate-blink">_</span>
         </motion.div>

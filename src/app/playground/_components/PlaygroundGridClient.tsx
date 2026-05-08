@@ -3,21 +3,16 @@
 import { useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
 import { BENTO_CARDS, getGameCards } from '@/components/Playground/BentoHub/BentoHub.config';
 import { createSeedGameCards, shouldUseBentoGridSeed } from '@/components/BentoGrid/debugSeed';
-import type {
-  CardData,
-  CardPosition,
-  GameCardData,
-  ThemeConfig,
+import {
+  BentoGrid,
+  type CardData,
+  type CardPosition,
+  type GameCardData,
+  type ThemeConfig,
 } from '@/components/BentoGrid';
 import { GameCard } from '@/components/BentoGrid/cards';
-
-const BentoGrid = dynamic(
-  () => import('@/components/BentoGrid').then((mod) => mod.BentoGrid),
-  { ssr: false }
-);
 
 function mapBentoCardToGameData(card: typeof BENTO_CARDS[number]): GameCardData {
   const categoryMap: Record<string, string> = {

@@ -96,7 +96,7 @@ export function HomeClient() {
     <LazyMotion features={domAnimation}>
       <main
         id="main-content"
-        className="h-screen overflow-hidden bg-[var(--background)] bg-grid transition-colors duration-300"
+        className="dashboard-crt h-screen overflow-hidden bg-[var(--background)] bg-grid transition-colors duration-300"
       >
         <DashboardLayout
           Viewfinder={Viewfinder}

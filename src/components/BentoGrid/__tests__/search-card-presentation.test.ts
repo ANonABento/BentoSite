@@ -35,6 +35,19 @@ describe('getSearchCardPresentation', () => {
     expect(presentation.compression).toBe(0);
     expect(presentation.width).toBe(cardWidth);
     expect(presentation.height).toBe(cardHeight);
+    expect(presentation.canvasWidth).toBe(cardWidth);
+    expect(presentation.canvasHeight).toBe(cardHeight);
+  });
+
+  it('keeps fixed overlay dimensions in screen pixels at non-default zoom', () => {
+    const presentation = present(
+      cameraForScreenPosition(windowSize.width / 2, windowSize.height / 2, 2),
+    );
+
+    expect(presentation.width).toBe(cardWidth * 2);
+    expect(presentation.height).toBe(cardHeight * 2);
+    expect(presentation.canvasWidth).toBe(cardWidth);
+    expect(presentation.canvasHeight).toBe(cardHeight);
   });
 
   it('starts side compression as soon as the regular slot crosses the left edge', () => {

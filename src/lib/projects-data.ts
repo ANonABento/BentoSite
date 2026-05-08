@@ -3,18 +3,11 @@
 
 import portfolioContent from '@/content/portfolio.json';
 
-export type ProjectCategory =
-  | 'Robotics'
-  | 'AI & Robotics'
-  | 'Hardware'
-  | 'Software'
-  | 'VR/AR'
-  | 'Competition'
-  | 'Accessibility'
-  | 'Games';
+export type ProjectCategory = string;
 export type ProjectStatus = 'Completed' | 'In Progress' | 'Archived';
 
 export interface ProjectMedia {
+  featuredImage?: string;
   images?: string[];
   pdf?: string;
   video?: string;
@@ -39,10 +32,10 @@ export interface Project {
   technologies: string[];
   thumbnail?: string;
   links: {
-    liveDemo?: string;
-    github?: string;
-    modelPath?: string;
-    docs?: string;
+  liveDemo?: string;
+  github?: string;
+  modelPath?: string;
+  docs?: string;
   };
   media?: ProjectMedia;
   featured?: boolean;
@@ -87,7 +80,13 @@ export function searchProjects(query: string, category: ProjectCategory | 'All')
 }
 
 export function getProjectThumbnail(project: Project): string | undefined {
-  return project.thumbnail ?? project.media?.images?.[0];
+  if (project.media?.featuredImage) return project.media.featuredImage;
+  if (project.media?.images?.[0]) return project.media.images[0];
+  return project.thumbnail;
+}
+
+export function getPortfolioSyncMeta() {
+  return (content as { sync?: { lastSyncedAt?: string; stale?: boolean; staleReason?: string } }).sync;
 }
 
 export function getProjectMediaTypes(project: Project): ProjectMediaType[] {

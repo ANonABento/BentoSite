@@ -53,6 +53,158 @@
   position: relative;
 }
 
+/* Dashboard structural defaults — apply in both themes. The CRT-themed dark
+   overrides live below, gated by the `.dark` ancestor class on <html>, so
+   light mode falls through to the normal theme tokens from theme.css. */
+.dashboard-crt {
+  position: relative;
+}
+
+.dashboard-shell {
+  position: relative;
+  z-index: 2;
+  margin: 6px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  overflow: hidden;
+  background: var(--glass-bg);
+}
+
+.dashboard-nav {
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.dashboard-nav a,
+.dashboard-nav button {
+  border-radius: 0;
+}
+
+.dashboard-panel {
+  border-radius: 0;
+  background: var(--glass-bg);
+  border-color: var(--border);
+}
+
+.dashboard-panel .glass,
+.dashboard-panel .glass-strong {
+  border-radius: 0;
+}
+
+/* ── Dark CRT theme overrides ─────────────────────────────────────────── */
+.dark .dashboard-crt {
+  --background: #050507;
+  --foreground: #f1ece4;
+  --border: rgba(224, 123, 60, 0.24);
+  --glass-bg: rgba(3, 3, 6, 0.78);
+  --glass-bg-strong: rgba(8, 8, 12, 0.9);
+  --glass-border: rgba(224, 123, 60, 0.22);
+  --text-primary: #fff4e8;
+  --text-secondary: rgba(255, 244, 232, 0.82);
+  --text-muted: rgba(255, 244, 232, 0.48);
+  --text-on-accent: #090705;
+  --grid-line: rgba(224, 123, 60, 0.07);
+  --shadow-color: rgba(0, 0, 0, 0.76);
+  --scrollbar-track: rgba(255, 255, 255, 0.025);
+  --scrollbar-thumb: rgba(224, 123, 60, 0.22);
+  --scrollbar-thumb-hover: rgba(224, 123, 60, 0.34);
+  background-color: #050507;
+  background-image:
+    radial-gradient(ellipse at 48% 24%, rgba(224, 123, 60, 0.035), transparent 48%),
+    radial-gradient(ellipse at center, transparent 54%, rgba(0, 0, 0, 0.58) 100%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.018),
+      rgba(255, 255, 255, 0.018) 1px,
+      rgba(0, 0, 0, 0.12) 2px,
+      rgba(0, 0, 0, 0.12) 4px
+    ),
+    var(--background);
+}
+
+.dark .dashboard-crt.bg-grid {
+  background-color: #050507;
+  background-image:
+    radial-gradient(ellipse at 48% 24%, rgba(224, 123, 60, 0.035), transparent 48%),
+    radial-gradient(ellipse at center, transparent 54%, rgba(0, 0, 0, 0.58) 100%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.018),
+      rgba(255, 255, 255, 0.018) 1px,
+      rgba(0, 0, 0, 0.12) 2px,
+      rgba(0, 0, 0, 0.12) 4px
+    ),
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size:
+    auto,
+    auto,
+    auto,
+    50px 50px,
+    50px 50px;
+}
+
+.dark .dashboard-crt::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(224, 123, 60, 0.018) 0,
+      rgba(167, 139, 250, 0.014) 1px,
+      transparent 3px
+    ),
+    radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.32) 100%);
+  mix-blend-mode: screen;
+  opacity: 0.22;
+}
+
+.dark .dashboard-shell {
+  border: 1px solid rgba(224, 123, 60, 0.16);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.026), transparent 24%),
+    rgba(2, 2, 4, 0.16);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+    inset 0 0 90px rgba(0, 0, 0, 0.36);
+}
+
+.dark .dashboard-nav {
+  text-shadow: 0 0 9px rgba(255, 255, 255, 0.12);
+}
+
+.dark .dashboard-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(0, 0, 0, 0.1)),
+    rgba(3, 3, 6, 0.92);
+  border-color: rgba(224, 123, 60, 0.24);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.018),
+    inset 0 0 42px rgba(0, 0, 0, 0.4),
+    0 0 26px rgba(224, 123, 60, 0.035);
+}
+
+.dark .dashboard-panel .glass,
+.dark .dashboard-panel .glass-strong {
+  background: rgba(5, 5, 8, 0.88);
+  border-color: rgba(224, 123, 60, 0.18);
+}
+
+/* ── Light theme dashboard polish ─────────────────────────────────────── */
+.light .dashboard-shell {
+  background: var(--glass-bg-strong);
+  box-shadow: 0 4px 30px var(--shadow-color);
+}
+
+.light .dashboard-panel {
+  background: var(--glass-bg-strong);
+  box-shadow: 0 4px 24px var(--shadow-color);
+}
+
 .glass-panel::before {
   content: '';
   position: absolute;

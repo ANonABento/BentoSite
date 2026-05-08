@@ -23,7 +23,7 @@ export function ViewfinderPanel({ selectedProject, Viewfinder, mobileHidden, sus
   // backdrop-filter: blur() on descendants.
   return (
     <motion.div
-      className={`flex-col min-h-0 overflow-hidden glass-panel rounded-2xl ${
+      className={`flex-col min-h-0 overflow-hidden glass-panel dashboard-panel ${
         isMobileVariant
           ? `md:hidden ${mobileHidden ? 'hidden' : 'flex flex-1'}`
           : 'hidden md:flex md:w-1/2'

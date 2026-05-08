@@ -3,21 +3,16 @@
 import { useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
 import { PROJECTS } from '@/lib/projects-data';
 import { ProjectCard } from '@/components/BentoGrid/cards';
 import { createSeedProjectCards, shouldUseBentoGridSeed } from '@/components/BentoGrid/debugSeed';
-import type {
-  CardData,
-  CardPosition,
-  ProjectCardData,
-  ThemeConfig,
+import {
+  BentoGrid,
+  type CardData,
+  type CardPosition,
+  type ProjectCardData,
+  type ThemeConfig,
 } from '@/components/BentoGrid';
-
-const BentoGrid = dynamic(
-  () => import('@/components/BentoGrid').then((mod) => mod.BentoGrid),
-  { ssr: false }
-);
 
 function mapProjectToCardData(project: typeof PROJECTS[number]): ProjectCardData {
   return {

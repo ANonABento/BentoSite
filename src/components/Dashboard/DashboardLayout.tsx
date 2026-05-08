@@ -106,13 +106,13 @@ export function DashboardLayout({
   return (
     <>
       <motion.div
-        className="flex flex-col h-screen"
+        className="flex flex-col h-screen dashboard-shell"
         variants={dashboardStagger}
         initial="hidden"
         animate={ready ? 'visible' : 'hidden'}
       >
         {/* Header — drops from top */}
-        <motion.div className="flex-shrink-0 p-4 md:p-6" variants={dashboardHeaderIn}>
+        <motion.div className="flex-shrink-0 px-4 pb-3 pt-4 md:px-6 md:pb-4 md:pt-5" variants={dashboardHeaderIn}>
           <Header
             name={PORTFOLIO_DATA.personal.name}
             tagline={PORTFOLIO_DATA.personal.title}
@@ -129,7 +129,7 @@ export function DashboardLayout({
         <MobileTabs activeSection={activeSection} onTabChange={setActiveSection} />
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col md:flex-row gap-5 px-4 pb-4 md:px-6 md:pb-6 min-h-0">
+        <div className="flex-1 flex flex-col md:flex-row gap-4 px-4 pb-4 md:px-6 md:pb-6 min-h-0">
           {/* Desktop Viewfinder */}
           <ViewfinderPanel
             selectedProject={selectedProject}
@@ -162,7 +162,7 @@ export function DashboardLayout({
                   }
                 }}
               >
-                <div className="glass-panel rounded-2xl overflow-hidden flex-shrink-0">
+                <div className="glass-panel dashboard-panel overflow-hidden flex-shrink-0">
                   <SkillsSection onAskAI={handleAskAboutSkill} />
                 </div>
                 <TerminalPanel
@@ -182,7 +182,7 @@ export function DashboardLayout({
           <div className="hidden md:flex md:w-1/2 flex-col gap-5 min-h-0">
             {/* Skills Section */}
             <motion.div
-              className="glass-panel rounded-2xl overflow-hidden flex-shrink-0"
+              className="glass-panel dashboard-panel overflow-hidden flex-shrink-0"
               variants={dashboardRightIn}
             >
               <SkillsSection onAskAI={handleAskAboutSkill} />

@@ -1,6 +1,9 @@
 name: CI
 
 on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * 1'
   push:
     branches: [main]
   pull_request:
@@ -36,6 +39,44 @@ jobs:
 
       - name: Run TypeScript type check
         run: npm run type-check
+
+  portfolio-schema-validation:
+    name: Validate Portfolio Schema
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate portfolio schema
+        run: npm run validate-portfolio-schema
+
+  portfolio-weekly-sync:
+    name: Scheduled Portfolio Sync
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync portfolio feed (non-blocking stale fallback)
+        run: npm run sync-portfolio -- --ci --dry-run
 
   unit-tests:
     name: Unit Tests

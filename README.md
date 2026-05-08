@@ -22,10 +22,22 @@ Next.js 16 portfolio site for Kevin Jiang with four main route surfaces:
 ```bash
 npm run dev
 npm run build
+npm run sync-portfolio
 npm run lint
 npm run type-check
 npm test
 ```
+
+### Portfolio sync workflow
+
+- Configure repo source + tokens in `scripts/portfolio-sync.config.json`.
+- Run `npm run sync-portfolio` locally to update `src/content/portfolio.json` from remote `.portfolio.json` files.
+- Push both regenerated `src/content/portfolio.json` and any manual curation changes to update the live site.
+
+The CI pipeline:
+- validates portfolio schema on pull requests (`npm run validate-portfolio-schema`)
+- runs a weekly/manual scheduled sync via GitHub Actions (`workflow_dispatch` and `cron` in `.github/workflows/ci.yml`)
+- uses a non-blocking stale fallback when GitHub API rate limits are encountered.
 
 ## Project Structure
 

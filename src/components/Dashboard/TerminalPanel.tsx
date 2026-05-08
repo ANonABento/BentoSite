@@ -30,7 +30,7 @@ export function TerminalPanel({
 }: TerminalPanelProps) {
   return (
     <motion.div
-      className="glass-panel rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0"
+      className="glass-panel dashboard-panel overflow-hidden flex-1 flex flex-col min-h-0"
       variants={dashboardPanelIn}
     >
       <SectionHeader

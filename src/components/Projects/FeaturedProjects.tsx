@@ -18,7 +18,7 @@ import {
   getFeaturedTechnologyFilterOptions,
 } from './FeaturedProjects.utils';
 import { FilterChip, SectionStat } from './FeaturedProjects.parts';
-import { PROJECT_CATEGORY_THEMES, PROJECT_STATUS_COPY } from './project-theme';
+import { getProjectTheme, PROJECT_STATUS_COPY } from './project-theme';
 
 const FEATURED_PROJECTS = getFeaturedProjects();
 const TECHNOLOGY_FILTERS = getFeaturedTechnologyFilterOptions(FEATURED_PROJECTS);
@@ -136,7 +136,7 @@ function SpotlightProjectCard({
   project: Project;
   onViewAll?: () => void;
 }) {
-  const theme = PROJECT_CATEGORY_THEMES[project.category];
+  const theme = getProjectTheme(project.category);
   const status = PROJECT_STATUS_COPY[project.status];
   const thumbnail = getProjectThumbnail(project);
   const completionDate = formatProjectDate(project.dateCompleted);
@@ -245,7 +245,7 @@ function CompactProjectCard({
 }) {
   const timelineLabel = getProjectTimelineLabel(project);
   const mediaTypes = getProjectMediaTypes(project);
-  const theme = PROJECT_CATEGORY_THEMES[project.category];
+  const theme = getProjectTheme(project.category);
 
   return (
     <div className="flex h-full flex-col">

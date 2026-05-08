@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "prebuild": "node scripts/sync-portfolio.mjs --ci",
     "start": "next start",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
@@ -16,6 +17,10 @@
     "e2e:ui": "playwright test --ui",
     "e2e:headed": "playwright test --headed",
     "analyze": "ANALYZE=true next build",
+    "sync-portfolio": "node scripts/sync-portfolio.mjs",
+    "sync-portfolio:dry-run": "node scripts/sync-portfolio.mjs --dry-run",
+    "sync-portfolio:validate": "node scripts/validate-portfolio-schema.mjs",
+    "validate-portfolio-schema": "node scripts/validate-portfolio-schema.mjs",
     "lighthouse": "lhci autorun",
     "size": "node scripts/check-bundle-size.mjs",
     "size:check": "node scripts/check-bundle-size.mjs --json"

@@ -45,8 +45,12 @@ interface SearchCardPresentation {
   compression: number;
   rawOffscreenDistance: number;
   screenPosition: Position;
+  /** CSS pixel dimensions for the fixed overlay. */
   width: number;
   height: number;
+  /** Canvas dimensions for collision/navigation layout while sticky. */
+  canvasWidth: number;
+  canvasHeight: number;
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -120,8 +124,10 @@ export function getSearchCardPresentation(
     edge,
     compression,
     rawOffscreenDistance: offscreenDistance,
-    width: width / camera.zoom,
-    height: height / camera.zoom,
+    width,
+    height,
+    canvasWidth: width / camera.zoom,
+    canvasHeight: height / camera.zoom,
     screenPosition: {
       x: compression > 0 ? clamp(screenCenter.x, minX, maxX) : screenCenter.x,
       y: compression > 0 ? clamp(screenCenter.y, minY, maxY) : screenCenter.y,
@@ -145,6 +151,8 @@ function getMobilePresentation(
     rawOffscreenDistance: 0,
     width,
     height,
+    canvasWidth: width,
+    canvasHeight: height,
     screenPosition: {
       x: windowSize.width / 2,
       y: SEARCH_CARD.EDGE_PADDING + height / 2,
@@ -186,6 +194,8 @@ export function useSearchCardState(
         rawOffscreenDistance: 0,
         width: SEARCH_CARD.EXPANDED_WIDTH,
         height: SEARCH_CARD.EXPANDED_HEIGHT,
+        canvasWidth: SEARCH_CARD.EXPANDED_WIDTH,
+        canvasHeight: SEARCH_CARD.EXPANDED_HEIGHT,
         screenPosition: { x: windowSize.width / 2, y: windowSize.height / 2 },
       };
     }
@@ -284,8 +294,8 @@ export function useSearchCardState(
     return {
       x: ghostPosRef.current.x,
       y: ghostPosRef.current.y,
-      width: effectivePresentation.width,
-      height: effectivePresentation.height,
+      width: effectivePresentation.canvasWidth,
+      height: effectivePresentation.canvasHeight,
       size: searchCardLayout.size,
       rotation: 0,
     };

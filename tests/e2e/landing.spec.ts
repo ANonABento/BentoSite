@@ -7,8 +7,9 @@ test.describe('Landing Page', () => {
     const bootScreen = page.locator('.crt-shell');
 
     await expect(bootScreen).toBeVisible();
-    await expect(bootScreen.getByText('ANonABento', { exact: true })).toBeVisible();
-    await expect(bootScreen.getByText("ANonABento's Portfolio Website")).toBeVisible();
+    await expect(bootScreen.getByText('ADMIN', { exact: true })).toBeVisible();
+    await expect(bootScreen.getByText('ANonABento // Portfolio')).toBeVisible();
+    await expect(bootScreen.getByText('CRT MODE')).toBeVisible();
   });
 
   test('should render the dashboard view directly from the query param', async ({ page }) => {

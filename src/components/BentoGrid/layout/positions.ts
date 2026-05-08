@@ -1,7 +1,7 @@
 import type { CardData, CardPosition, CardSize, CardSizeMode, Rect } from '../BentoGrid.types';
 import { GRID, SEARCH_CARD_ID } from '../BentoGrid.constants';
 import { getCardDimensions, getCardSizeForIndex } from './cardSizes';
-import { GridOccupancy, cellToPixel, sizeToSpan } from './gridOccupancy';
+import { GridOccupancy, cellToPixel } from './gridOccupancy';
 
 export function getRandomRotation(range: number): number {
   if (range === 0) return 0;

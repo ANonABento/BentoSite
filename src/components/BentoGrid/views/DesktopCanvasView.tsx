@@ -16,6 +16,14 @@ import { ArrowLeftIcon, ChevronDownIcon, CloseIcon, RefreshIcon, SearchIcon } fr
 import type { CardData, CardPosition, CardSizeMode, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
+function withoutSearchCard(layouts: Map<string, CardPosition>): Map<string, CardPosition> {
+  if (!layouts.has(SEARCH_CARD_ID)) return layouts;
+
+  const nextLayouts = new Map(layouts);
+  nextLayouts.delete(SEARCH_CARD_ID);
+  return nextLayouts;
+}
+
 interface DesktopCanvasViewProps {
   className?: string;
   cards: CardData[];
@@ -142,8 +150,13 @@ export function DesktopCanvasView({
     return () => cancelAnimationFrame(rafId);
   }, [navigation.cameraRef, getCurrentLayouts]);
 
+  const navigableLayouts = useMemo(
+    () => withoutSearchCard(displayLayouts),
+    [displayLayouts],
+  );
+
   const cardNavigation = useCardNavigation({
-    visible: displayLayouts,
+    visible: navigableLayouts,
     cards,
     onSelect: onCardSelect,
     enabled: true,

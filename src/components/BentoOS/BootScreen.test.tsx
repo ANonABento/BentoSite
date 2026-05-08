@@ -32,11 +32,13 @@ describe('BootScreen', () => {
   it('renders the CRT boot metadata and portfolio title', () => {
     render(<BootScreen onExiting={vi.fn()} onComplete={vi.fn()} />);
 
-    expect(screen.getByText('ANonABento')).toBeInTheDocument();
+    expect(screen.getByText('ADMIN')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'bentOS' })).toBeInTheDocument();
-    expect(screen.getByText("ANonABento's Portfolio Website")).toBeInTheDocument();
+    expect(screen.getByText('ANonABento // Portfolio')).toBeInTheDocument();
     expect(screen.getByText('BOOT')).toBeInTheDocument();
     expect(screen.getByText('v1.0.0')).toBeInTheDocument();
     expect(screen.getByText('CRT MODE')).toBeInTheDocument();
+    // Ready phase swaps the loading bar for the centered terminal prompt card.
+    expect(screen.getByText('INTERFACE READY')).toBeInTheDocument();
   });
 });

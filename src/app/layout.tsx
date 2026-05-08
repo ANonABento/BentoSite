@@ -1,5 +1,18 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import {
+  Geist,
+  Geist_Mono,
+  Pixelify_Sans,
+  VT323,
+  DotGothic16,
+  Press_Start_2P,
+  Workbench,
+  Silkscreen,
+  Major_Mono_Display,
+  Iceland,
+  Russo_One,
+  Squada_One,
+} from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { siteConfig } from '@/lib/site-config';
@@ -16,6 +29,85 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
+});
+
+// Pixelated display font for the bentOS wordmark on the boot screen.
+const pixelifySans = Pixelify_Sans({
+  variable: '--font-pixel',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+});
+
+// Bitmap CRT terminal font for diegetic boot chrome (corner status, footer).
+const vt323 = VT323({
+  variable: '--font-crt',
+  subsets: ['latin'],
+  weight: ['400'],
+  display: 'swap',
+});
+
+// Square-dot pixel display font alternative for the boot wordmark.
+const dotGothic = DotGothic16({
+  variable: '--font-dot',
+  subsets: ['latin'],
+  weight: ['400'],
+  display: 'swap',
+});
+
+// 8-bit arcade pixel font alternative for the boot wordmark.
+const pressStart = Press_Start_2P({
+  variable: '--font-arcade',
+  subsets: ['latin'],
+  weight: ['400'],
+  display: 'swap',
+});
+
+// Variable-axis pixel font — modern, sized via a single weight axis.
+const workbench = Workbench({
+  variable: '--font-workbench',
+  subsets: ['latin'],
+  display: 'swap',
+});
+
+// Small/medium pixel font — chunky square bitmap style.
+const silkscreen = Silkscreen({
+  variable: '--font-silkscreen',
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  display: 'swap',
+});
+
+// Geometric mono display — outlined glyphs, alternative pixel-adjacent vibe.
+const majorMono = Major_Mono_Display({
+  variable: '--font-mono-display',
+  subsets: ['latin'],
+  weight: ['400'],
+  display: 'swap',
+});
+
+// Iceland — geometric square mono with a CGA/Video-style character.
+const iceland = Iceland({
+  variable: '--font-iceland',
+  subsets: ['latin'],
+  weight: ['400'],
+  display: 'swap',
+});
+
+// Russo One — chunky square display, single weight.
+const russoOne = Russo_One({
+  variable: '--font-russo',
+  subsets: ['latin'],
+  weight: ['400'],
+  display: 'swap',
+});
+
+// Squada One — chunky square display, single weight.
+const squadaOne = Squada_One({
+  variable: '--font-squada',
+  subsets: ['latin'],
+  weight: ['400'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -95,7 +187,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${pixelifySans.variable} ${vt323.variable} ${dotGothic.variable} ${pressStart.variable} ${workbench.variable} ${silkscreen.variable} ${majorMono.variable} ${iceland.variable} ${russoOne.variable} ${squadaOne.variable} antialiased`}
       >
         <a href="#main-content" className="skip-to-content">
           Skip to main content

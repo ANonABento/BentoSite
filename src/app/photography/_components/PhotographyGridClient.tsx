@@ -4,21 +4,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
-import type {
-  CardData,
-  CardPosition,
-  PhotoCardData,
-  ThemeConfig,
+import {
+  BentoGrid,
+  type CardData,
+  type CardPosition,
+  type PhotoCardData,
+  type ThemeConfig,
 } from '@/components/BentoGrid';
 import { PhotoCard } from '@/components/BentoGrid/cards';
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon } from '@/components/ui/Icons';
 import type { PhotoItem } from './PhotographyGallery.types';
-
-const BentoGrid = dynamic(
-  () => import('@/components/BentoGrid').then((mod) => mod.BentoGrid),
-  { ssr: false },
-);
 
 function photoToCardData(photo: PhotoItem): PhotoCardData {
   return {

@@ -15,7 +15,7 @@ import {
   PlayCircleIcon,
 } from '@/components/ui/Icons';
 import { RESUME_URL } from '@/lib/constants';
-import { HeaderSocialLink, ResumeButton, TaskbarClock, ThemeToggle } from './Header.parts';
+import { HeaderSocialLink, ResumeButton, ThemeToggle } from './Header.parts';
 
 type CompactNavLink = {
   href: string;
@@ -159,13 +159,12 @@ export default function Header({
 
   if (compact) {
     return (
-      <header className="flex items-center justify-between px-4 py-3 glass rounded-xl">
+      <header className="dashboard-nav flex items-center justify-between px-3 py-2">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <BentoIcon size={20} />
+            <BentoIcon size={34} />
             <h1 className="text-base font-bold font-mono tracking-tight">
-              <span className="text-[var(--orange)]">bent</span>
-              <span className="text-[var(--purple)]">OS</span>
+              <span className="text-[var(--text-primary)]">bentOS</span>
             </h1>
           </div>
           <div className="hidden sm:block w-px h-5 bg-gradient-to-b from-transparent via-[var(--border)] to-transparent" />
@@ -174,7 +173,7 @@ export default function Header({
               key={link.href}
               href={link.href}
               onClick={link.onClick}
-              className="interactive-hover flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]"
+              className="interactive-hover flex items-center gap-2 px-3 py-1.5 text-sm font-medium font-mono text-[var(--text-secondary)] hover:text-[var(--orange)] hover:bg-[var(--glass-bg)]"
               aria-label={link.label}
             >
               {link.icon}
@@ -189,7 +188,7 @@ export default function Header({
               <button
                 key={link.id}
                 onClick={handleEmailClick}
-                className={`interactive-hover p-2 rounded-lg focus-ring ${
+                className={`interactive-hover p-2 focus-ring ${
                   copiedEmail
                     ? 'text-[var(--status-success)] bg-[var(--status-success-muted)]'
                     : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]'
@@ -204,7 +203,7 @@ export default function Header({
                 href={link.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="interactive-hover p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] rounded-lg focus-ring"
+                className="interactive-hover p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] focus-ring"
                 aria-label={link.label}
               >
                 {link.icon}
@@ -213,7 +212,6 @@ export default function Header({
           )}
           <ThemeToggle />
           <ResumeButton resumeUrl={resumeUrl} className="ml-1" />
-          <TaskbarClock />
         </nav>
       </header>
     );

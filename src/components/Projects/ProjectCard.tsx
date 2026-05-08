@@ -13,7 +13,7 @@ import {
 import { BLUR_PLACEHOLDERS } from '@/lib/image-utils';
 import { analytics } from '@/lib/analytics';
 import { TechBadge } from './TechBadge';
-import { PROJECT_CATEGORY_THEMES, PROJECT_STATUS_COPY } from './project-theme';
+import { getProjectTheme, PROJECT_STATUS_COPY } from './project-theme';
 import {
   Model3DIcon,
   ImageIcon,
@@ -42,7 +42,7 @@ const MEDIA_ICONS = {
 export function ProjectCard({ project, onSelectProject }: ProjectCardProps) {
   const [imageLoading, setImageLoading] = useState(true);
   const thumbnail = getProjectThumbnail(project);
-  const theme = PROJECT_CATEGORY_THEMES[project.category];
+  const theme = getProjectTheme(project.category);
   const mediaTypes = getProjectMediaTypes(project);
   const status = PROJECT_STATUS_COPY[project.status];
   const completionDate = formatProjectDate(project.dateCompleted);
