@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>bentOS Boot Font Lab</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #020204;
+        --screen: #08080b;
+        --phosphor: #f5f1e8;
+        --phosphor-dim: rgba(245, 241, 232, 0.72);
+        --orange: #f47b20;
+        --purple: #8d6bff;
+        --scan: rgba(0, 0, 0, 0.34);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(ellipse at center, rgba(244, 123, 32, 0.045), transparent 62%),
+          var(--bg);
+        color: var(--phosphor);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
+
+      main {
+        width: min(1440px, 100vw);
+        margin: 0 auto;
+        padding: 36px;
+      }
+
+      .lab-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 28px;
+        align-items: start;
+      }
+
+      .crt {
+        position: relative;
+        overflow: hidden;
+        min-height: 760px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 26px;
+        background:
+          radial-gradient(ellipse 80% 68% at 50% 48%, rgba(255, 255, 255, 0.055), transparent 44%),
+          radial-gradient(ellipse at center, var(--screen) 0%, #050507 58%, #010102 100%);
+        box-shadow:
+          inset 0 0 70px rgba(0, 0, 0, 0.78),
+          inset 0 0 160px rgba(0, 0, 0, 0.62);
+      }
+
+      .crt::before,
+      .crt::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .crt::before {
+        z-index: 5;
+        background:
+          repeating-linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0.018) 0,
+            rgba(255, 255, 255, 0.018) 1px,
+            var(--scan) 2px,
+            var(--scan) 4px
+          ),
+          radial-gradient(ellipse 106% 84% at center, transparent 46%, rgba(0, 0, 0, 0.58) 100%);
+        opacity: 0.9;
+      }
+
+      .crt::after {
+        z-index: 6;
+        background:
+          radial-gradient(ellipse 95% 35% at 50% -10%, rgba(255, 255, 255, 0.08), transparent 62%),
+          radial-gradient(ellipse 95% 82% at center, transparent 50%, rgba(0, 0, 0, 0.5) 100%);
+        mix-blend-mode: screen;
+        opacity: 0.35;
+      }
+
+      .screen-content {
+        position: relative;
+        z-index: 2;
+        min-height: 760px;
+        padding: 52px 62px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      .chrome {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        color: var(--phosphor-dim);
+        font-size: 18px;
+        line-height: 1.35;
+        letter-spacing: 0.08em;
+        text-shadow:
+          0 0 5px rgba(255, 255, 255, 0.22),
+          1px 0 0 rgba(244, 123, 32, 0.13),
+          -1px 0 0 rgba(141, 107, 255, 0.14);
+      }
+
+      .chrome strong {
+        color: var(--phosphor);
+        font-weight: 500;
+      }
+
+      .chrome .purple {
+        color: var(--purple);
+      }
+
+      .hero {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 28px;
+        transform: translateY(24px);
+      }
+
+      .wordmark-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 24px;
+      }
+
+      .wordmark {
+        width: min(760px, 58vw);
+        height: auto;
+        overflow: visible;
+        filter:
+          drop-shadow(0 0 5px rgba(255, 255, 255, 0.28))
+          drop-shadow(0 0 16px rgba(255, 245, 230, 0.14));
+      }
+
+      .wordmark path {
+        fill: var(--phosphor);
+        shape-rendering: crispEdges;
+      }
+
+      .bento-mark {
+        width: 86px;
+        height: 86px;
+        margin-top: 8px;
+        filter:
+          drop-shadow(0 0 8px rgba(244, 123, 32, 0.32))
+          drop-shadow(0 0 14px rgba(141, 107, 255, 0.16));
+      }
+
+      .subtitle,
+      .loading-label,
+      .footer {
+        color: var(--phosphor);
+        letter-spacing: 0.42em;
+        text-transform: uppercase;
+        text-shadow:
+          0 0 5px rgba(255, 255, 255, 0.24),
+          1px 0 0 rgba(244, 123, 32, 0.13),
+          -1px 0 0 rgba(141, 107, 255, 0.12);
+      }
+
+      .subtitle {
+        font-size: 18px;
+      }
+
+      .loading {
+        width: min(760px, 62vw);
+        margin-top: 44px;
+      }
+
+      .loading-label {
+        margin: 0 0 16px;
+        font-size: 22px;
+        letter-spacing: 0.18em;
+      }
+
+      .bar-row {
+        display: flex;
+        align-items: center;
+        gap: 26px;
+      }
+
+      .bar {
+        flex: 1;
+        display: grid;
+        grid-template-columns: repeat(13, 1fr);
+        gap: 12px;
+      }
+
+      .seg {
+        height: 34px;
+        border: 1px solid rgba(0, 0, 0, 0.6);
+        background:
+          repeating-linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0.11) 0,
+            rgba(255, 255, 255, 0.11) 1px,
+            transparent 1px,
+            transparent 3px
+          ),
+          var(--orange);
+        box-shadow:
+          0 0 9px rgba(244, 123, 32, 0.35),
+          inset 0 0 10px rgba(255, 255, 255, 0.08);
+      }
+
+      .seg.off {
+        background:
+          repeating-linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0.05) 0,
+            rgba(255, 255, 255, 0.05) 1px,
+            transparent 1px,
+            transparent 3px
+          ),
+          rgba(56, 64, 67, 0.45);
+        box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.55);
+      }
+
+      .percent {
+        min-width: 4ch;
+        color: var(--phosphor);
+        font-size: 32px;
+        letter-spacing: 0.04em;
+        text-shadow:
+          0 0 5px rgba(255, 255, 255, 0.24),
+          1px 0 0 rgba(244, 123, 32, 0.16),
+          -1px 0 0 rgba(141, 107, 255, 0.14);
+      }
+
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        font-size: 19px;
+        letter-spacing: 0.16em;
+      }
+
+      .panel {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 18px;
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .panel h1 {
+        margin: 0 0 12px;
+        font-size: 16px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .panel p {
+        margin: 0 0 14px;
+        color: rgba(255, 255, 255, 0.68);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .swatch {
+        display: grid;
+        gap: 14px;
+      }
+
+      .sample {
+        padding: 14px;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.32);
+      }
+
+      .sample svg {
+        width: 100%;
+        height: auto;
+      }
+
+      .sample-title {
+        margin-bottom: 10px;
+        color: rgba(255, 255, 255, 0.54);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      @media (max-width: 980px) {
+        main {
+          padding: 18px;
+        }
+
+        .lab-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .screen-content {
+          padding: 30px 26px;
+        }
+
+        .wordmark {
+          width: 72vw;
+        }
+
+        .bento-mark {
+          width: 54px;
+          height: 54px;
+        }
+
+        .subtitle {
+          font-size: 11px;
+        }
+
+        .loading {
+          width: 82vw;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="lab-grid">
+        <section class="crt" aria-label="Boot screen composition preview">
+          <div class="screen-content">
+            <div class="chrome">
+              <div>
+                <strong>ANonABento</strong><br />
+                v1.0.0
+              </div>
+              <div style="text-align: right">
+                <strong>BOOT</strong><br />
+                <span class="purple">CRT MODE</span>
+              </div>
+            </div>
+
+            <div class="hero">
+              <div class="wordmark-row">
+                <svg class="wordmark" viewBox="0 0 650 104" role="img" aria-label="bentOS custom glyph prototype">
+                  <path d="M0 0 H28 V35 H86 L106 55 V84 L86 104 H0 Z M28 54 V85 H75 L82 78 V61 L75 54 Z" />
+                  <path d="M122 35 H195 L214 54 V73 H150 V83 H214 V91 L201 104 H122 L103 85 V54 Z M150 53 L143 60 V64 H186 V60 L179 53 Z" />
+                  <path d="M231 35 H304 L323 54 V104 H295 V61 L288 54 H259 V104 H231 Z" />
+                  <path d="M356 12 H384 V35 H419 V54 H384 V78 L391 85 H419 V104 H377 L356 83 V54 H331 V35 H356 Z" />
+                  <path d="M455 12 H540 L562 34 V82 L540 104 H455 L433 82 V34 Z M469 35 L461 43 V73 L469 81 H526 L534 73 V43 L526 35 Z" />
+                  <path d="M584 12 H650 V35 H597 L590 42 V48 H630 L650 68 V84 L630 104 H566 V81 H617 L624 74 V68 H584 L566 50 V30 Z" />
+                </svg>
+
+                <svg class="bento-mark" viewBox="0 0 100 100" aria-hidden="true">
+                  <rect x="0" y="0" width="42" height="100" rx="8" fill="var(--orange)" />
+                  <rect x="52" y="0" width="48" height="44" rx="7" fill="var(--orange)" />
+                  <rect x="52" y="56" width="48" height="44" rx="7" fill="var(--purple)" />
+                  <text x="76" y="79" text-anchor="middle" fill="white" font-family="monospace" font-size="28">&gt;_</text>
+                </svg>
+              </div>
+
+              <div class="subtitle">ANONABENTO PORTFOLIO WEBSITE</div>
+
+              <div class="loading">
+                <div class="loading-label">LOADING SYSTEM MODULES</div>
+                <div class="bar-row">
+                  <div class="bar" aria-hidden="true">
+                    <span class="seg"></span>
+                    <span class="seg"></span>
+                    <span class="seg"></span>
+                    <span class="seg"></span>
+                    <span class="seg"></span>
+                    <span class="seg"></span>
+                    <span class="seg"></span>
+                    <span class="seg"></span>
+                    <span class="seg"></span>
+                    <span class="seg"></span>
+                    <span class="seg off"></span>
+                    <span class="seg off"></span>
+                    <span class="seg off"></span>
+                  </div>
+                  <div class="percent">78%</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="footer">
+              <span>SYS 05.07.26</span>
+              <span>PRESS ANY KEY</span>
+            </div>
+          </div>
+        </section>
+
+        <aside class="panel">
+          <h1>Font Lab</h1>
+          <p>
+            This is a project-local sketchpad for the custom glyph approach.
+            The big logo is SVG path geometry on a 104-unit grid, so we can
+            tune stroke width, chamfers, counters, and spacing before turning
+            it into a local font or a reusable wordmark.
+          </p>
+          <p>
+            Current direction: thinner than the generated reference, whiter
+            phosphor, left-anchored loading label, and no visible heavy bezel.
+          </p>
+
+          <div class="swatch">
+            <div class="sample">
+              <div class="sample-title">Logo Glyph Prototype</div>
+              <svg viewBox="0 0 650 104" aria-hidden="true">
+                <path fill="var(--phosphor)" d="M0 0 H28 V35 H86 L106 55 V84 L86 104 H0 Z M28 54 V85 H75 L82 78 V61 L75 54 Z M122 35 H195 L214 54 V73 H150 V83 H214 V91 L201 104 H122 L103 85 V54 Z M150 53 L143 60 V64 H186 V60 L179 53 Z M231 35 H304 L323 54 V104 H295 V61 L288 54 H259 V104 H231 Z M356 12 H384 V35 H419 V54 H384 V78 L391 85 H419 V104 H377 L356 83 V54 H331 V35 H356 Z M455 12 H540 L562 34 V82 L540 104 H455 L433 82 V34 Z M469 35 L461 43 V73 L469 81 H526 L534 73 V43 L526 35 Z M584 12 H650 V35 H597 L590 42 V48 H630 L650 68 V84 L630 104 H566 V81 H617 L624 74 V68 H584 L566 50 V30 Z" />
+              </svg>
+            </div>
+
+            <div class="sample">
+              <div class="sample-title">Terminal Text Target</div>
+              <div class="loading-label" style="font-size: 18px; margin: 0 0 12px">LOADING SYSTEM MODULES</div>
+              <div class="footer" style="font-size: 15px">
+                <span>SYS 05.07.26</span>
+                <span>PRESS ANY KEY</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </body>
+</html>
