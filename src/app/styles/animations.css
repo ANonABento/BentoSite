@@ -212,11 +212,10 @@
     inset 0 0 90px rgba(0, 0, 0, 0.82);
 }
 
-/* Boot variant: shell fills the viewport with CRT atmosphere only. */
+/* Boot variant: shell fills the viewport — pure deep-black, no warm tint.
+   Old CRTs sit in dark rooms; the only light comes from the phosphor itself. */
 .crt-shell.boot-shell {
-  background:
-    radial-gradient(ellipse 70% 60% at center, rgba(224, 123, 60, 0.04), transparent 65%),
-    radial-gradient(ellipse at center, #0a0a0f 0%, #050508 55%, #020204 100%);
+  background: #000;
   box-shadow: none;
 }
 
@@ -232,37 +231,41 @@
 }
 
 .boot-screen-surface {
+  /* Flat dark screen — no perspective, no border-radius, no corner pinch.
+     The very faint center lift is enough to imply a phosphor screen. */
   background:
-    radial-gradient(ellipse 75% 65% at center, rgba(255, 255, 255, 0.045) 0%, rgba(10, 10, 14, 0.92) 48%, rgba(2, 2, 4, 1) 100%),
-    linear-gradient(180deg, rgba(224, 123, 60, 0.04), rgba(167, 139, 250, 0.022));
+    radial-gradient(ellipse 80% 70% at center, #07070a 0%, #030305 52%, #000 100%);
 }
 
-/* Subtle barrel curvature without a visible TV frame. */
+/* Light vignette only — the four corners darken slightly toward black, but
+   the screen reads as flat. */
 .boot-glass {
   background:
-    radial-gradient(ellipse 95% 38% at 50% -8%, rgba(255, 255, 255, 0.07), transparent 62%),
-    radial-gradient(ellipse 75% 28% at 50% 108%, rgba(255, 255, 255, 0.03), transparent 60%),
-    radial-gradient(ellipse 105% 82% at center, transparent 48%, rgba(0, 0, 0, 0.42) 100%);
+    radial-gradient(ellipse 110% 92% at center, transparent 50%, rgba(0, 0, 0, 0.55) 100%);
 }
 
-/* Phosphor dot matrix — visible CRT pixel grid. Uses multiply so dark dots
-   carve into the bright title text, making it appear built from pixels. On
-   the dark background the dots are nearly invisible (multiply preserves dark). */
+/* Phosphor dot matrix — visible CRT pixel grid, aligned to the same 5px cell
+   as the wordmark's pixel mask so the two registrations don't moiré-fight.
+   Uses multiply so dark dots darken bright surfaces; black background is
+   already black so this layer is invisible there. */
+/* Phosphor dot matrix — values lifted *verbatim* from public/boot-font-lab.html
+   so the boot screen matches the lab reference. The dots are tiny circles in a
+   4x4 grid; multiply blend means they only darken bright surfaces (they're
+   nearly invisible on the dark background but visibly carve the wordmark). */
 .boot-dots {
   background-image:
-    /* Dark phosphor mask: each cell has a transparent center surrounded by
-       dark dots. Over bright text this reads as a pixel grid in the letters. */
     radial-gradient(
       circle at 50% 50%,
       transparent 0,
-      transparent 1.1px,
-      rgba(0, 0, 0, 0.55) 1.4px,
-      rgba(0, 0, 0, 0.55) 1.7px,
+      transparent 1.08px,
+      rgba(0, 0, 0, 0.46) 1.32px,
+      rgba(0, 0, 0, 0.46) 1.66px,
       transparent 2px
     );
   background-size: 4px 4px;
+  background-position: 0 0;
   mix-blend-mode: multiply;
-  opacity: 0.95;
+  opacity: 0.86;
 }
 
 /* Subtle horizontal scanline pass — a second layer that adds the row-by-row
@@ -282,31 +285,39 @@
   opacity: 0.7;
 }
 
-/* Soften the inherited .crt-effect overlays for the boot variant — the previous
-   pass was too glaring. We keep scanlines + roll but at lower contrast. */
+/* Boot variant: stronger scanlines for that authentic old-monitor feel — the
+   horizontal beam should be visibly carving rows, not just hinted. */
 .boot-screen-surface.crt-effect::before {
-  opacity: 0.32;
+  opacity: 0.7;
   background:
     repeating-linear-gradient(
       0deg,
-      rgba(255, 255, 255, 0.02),
-      rgba(255, 255, 255, 0.02) 1px,
-      rgba(0, 0, 0, 0.16) 2px,
-      rgba(0, 0, 0, 0.16) 4px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(224, 123, 60, 0.022) 0,
-      rgba(167, 139, 250, 0.018) 1px,
-      transparent 3px
+      rgba(255, 255, 255, 0.022) 0,
+      rgba(255, 255, 255, 0.022) 1px,
+      rgba(0, 0, 0, 0.42) 2px,
+      rgba(0, 0, 0, 0.42) 3px
     );
 }
 
+/* Boot variant: Trinitron-style RGB shadow mask + corner vignette pinch.
+   The 3px-period vertical R/G/B stripe at low alpha gives the unmistakable
+   subpixel-stripe sheen of an old monitor without crushing legibility. */
 .boot-screen-surface.crt-effect::after {
   background:
-    linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.025) 50%, transparent 100%),
-    radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.32) 100%);
-  background-size: 100% 38%, 100% 100%;
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 40, 40, 0.045) 0px,
+      rgba(255, 40, 40, 0.045) 1px,
+      rgba(40, 255, 90, 0.045) 1px,
+      rgba(40, 255, 90, 0.045) 2px,
+      rgba(60, 90, 255, 0.045) 2px,
+      rgba(60, 90, 255, 0.045) 3px
+    ),
+    radial-gradient(ellipse 105% 92% at center, transparent 38%, rgba(0, 0, 0, 0.65) 100%);
+  background-size: 3px 100%, 100% 100%;
+  opacity: 0.9;
+  mix-blend-mode: normal;
+  animation: none;
 }
 
 /* Disable chromatic aberration drop-shadow on boot content — it muddies the
@@ -321,18 +332,16 @@
   filter: none;
 }
 
-/* Centered terminal-prompt card — appears after the loading bar morphs out */
+/* Centered terminal-prompt card — appears after the loading bar morphs out.
+   No outer orange glow — the no-glow CRT mood demands a flat panel. */
 .boot-prompt-card {
   border: 1px solid rgba(224, 123, 60, 0.3);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(0, 0, 0, 0.15)),
-    rgba(4, 4, 8, 0.78);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(0, 0, 0, 0.2)),
+    rgba(2, 2, 4, 0.85);
   box-shadow:
-    inset 0 0 24px rgba(0, 0, 0, 0.7),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
-    0 0 32px rgba(224, 123, 60, 0.16);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+    inset 0 0 24px rgba(0, 0, 0, 0.78),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
 }
 
 .crt-screen::before {
@@ -411,48 +420,68 @@
     -2px 0 0 rgba(167, 139, 250, 0.24);
 }
 
-/* Shared sizing token so the bento logo scales with the title. */
+/* Boot wordmark composition tokens — promoted from public/boot-font-lab.html
+   (Orbitron 700 reference). Update the lab and these in lockstep. */
 .boot-title-row {
-  --boot-title-size: clamp(3.8rem, 11.6vw, 9.4rem);
-  gap: calc(var(--boot-title-size) * 0.035);
+  --boot-title-size: clamp(4rem, 12.6vw, 11.5rem);
+  --boot-logo-glow: 0.22;
+  gap: calc(var(--boot-title-size) * 0.07);
   font-size: var(--boot-title-size);
 }
 
+/* Bento icon as a peer of the wordmark — sized like the lab reference
+   (~0.42 of the title height) and lifted *above* the cap-line so it sits
+   visually higher than the letterforms (matches the user's reference). */
 .boot-title-logo {
-  width: calc(var(--boot-title-size) * 0.4);
-  height: calc(var(--boot-title-size) * 0.4);
-  margin-top: calc(var(--boot-title-size) * 0.02);
+  width: calc(var(--boot-title-size) * 0.42);
+  height: calc(var(--boot-title-size) * 0.42);
+  margin-top: calc(var(--boot-title-size) * -0.06);
 }
 
-/* Temporary live-text wordmark until we land a better licensed/custom asset. */
+/* Lab-faithful wordmark glow + extra phosphor halation. Old CRTs had bright
+   pixels bleed warm light into neighbouring rows; we approximate with two
+   stacked drop-shadows on the wordmark only (chrome text stays flat per the
+   no-glow CRT mood). The first is a tight white halo; the second is a wider
+   warm orange wash that reads as phosphor afterglow. */
 .boot-title {
-  color: #f4f1ec;
+  color: #f6f3ec;
   line-height: 0;
   filter:
-    drop-shadow(0 0 7px rgba(255, 255, 255, 0.26))
-    drop-shadow(0 0 18px rgba(255, 246, 232, 0.12));
+    drop-shadow(0 0 6px rgba(255, 246, 232, 0.22))
+    drop-shadow(0 0 14px rgba(244, 122, 32, 0.08))
+    drop-shadow(0 0 20px rgba(255, 246, 232, 0.04));
 }
 
+.boot-title .boot-title-text {
+  text-shadow:
+    0 0 4px rgba(255, 255, 255, calc(0.18 * 0.95)),
+    0 0 14px rgba(255, 246, 232, calc(0.18 * 0.52));
+}
+
+/* Lab-faithful wordmark: real Orbitron 700 letterforms, smooth and
+   anti-aliased. The "phosphor cell" look comes from the .boot-dots multiply
+   overlay punching dark dots through the bright text — exactly like the
+   public/boot-font-lab.html reference. */
 .boot-title-text {
-  font-family: var(--font-russo), var(--font-squada), var(--font-pixel), system-ui, sans-serif;
-  font-size: var(--boot-title-size, clamp(4rem, 15.2vw, 12.3rem));
-  font-weight: 400;
+  font-family: var(--font-orbitron), 'Orbitron', 'Russo One', 'Arial Black', system-ui, sans-serif;
+  font-size: var(--boot-title-size, clamp(4rem, 12.6vw, 11.5rem));
+  font-weight: 700;
   letter-spacing: 0;
   line-height: 0.82;
   text-transform: none;
-  text-shadow:
-    0 0 8px rgba(255, 255, 255, 0.22),
-    0 0 22px rgba(255, 246, 232, 0.12);
+  color: #f6f3ec;
+  text-shadow: none;
 }
 
-/* CRT mono utility for diegetic chrome (corner status, loading readouts, terminal prompt). */
+/* CRT mono utility for diegetic chrome (corner status, loading readouts, terminal prompt).
+   No white halo here — the boot screen is going for the dark old-CRT look,
+   not the warm phosphor-glow CRT look. Only chromatic R/G fringes remain. */
 .font-crt {
   font-family: var(--font-dot), var(--font-crt), 'Courier New', monospace;
   font-weight: 400;
   text-shadow:
-    0 0 4px rgba(255, 255, 255, 0.18),
-    1px 0 0 rgba(224, 123, 60, 0.1),
-    -1px 0 0 rgba(167, 139, 250, 0.12);
+    1px 0 0 rgba(224, 123, 60, 0.14),
+    -1px 0 0 rgba(167, 139, 250, 0.16);
 }
 
 /* Pixel sans utility for display copy (legacy / Pixelify Sans). */
@@ -466,25 +495,26 @@
   font-family: var(--font-dot), 'DotGothic16', 'Pixelify Sans', monospace;
 }
 
-/* Diegetic boot corner labels — bigger and rendered in the CRT bitmap font. */
+/* Diegetic boot corner labels — bigger and rendered in the CRT bitmap font.
+   Note: NO `text-transform: uppercase` here — the lab keeps the top corner in
+   mixed case ("ANonABento"). The bottom strings are typed in caps in JSX. */
 .boot-corner {
   font-family: var(--font-dot), var(--font-crt), 'Courier New', monospace;
-  font-size: 0.76rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+  font-size: 0.92rem;
+  letter-spacing: 0.16em;
   text-shadow:
-    0 0 4px rgba(255, 255, 255, 0.18),
-    1px 0 0 rgba(224, 123, 60, 0.1),
-    -1px 0 0 rgba(167, 139, 250, 0.12);
+    0 0 4px rgba(255, 255, 255, 0.22),
+    1px 0 0 rgba(244, 122, 32, 0.11),
+    -1px 0 0 rgba(142, 107, 255, 0.13);
 }
 @media (min-width: 640px) {
   .boot-corner {
-    font-size: 1rem;
+    font-size: 1.12rem;
   }
 }
 @media (min-width: 1024px) {
   .boot-corner {
-    font-size: 1.08rem;
+    font-size: 1.22rem;
   }
 }
 
@@ -497,6 +527,7 @@
     background-position: 0 140%, 0 0;
   }
 }
+
 
 @keyframes crt-flicker {
   0% {

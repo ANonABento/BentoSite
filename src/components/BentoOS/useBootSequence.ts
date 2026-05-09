@@ -4,13 +4,20 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 export type BootPhase = 'logo' | 'loading' | 'full' | 'ready' | 'done';
 
-const SEGMENT_COUNT = 16;
-const SEGMENTS_PER_MODULE = 6;
-const LOGO_FADE_DELAY = 300;
+const SEGMENT_COUNT = 13;
+const SEGMENTS_PER_MODULE = 5;
+// Phase 'loading' fires at LOGO_FADE_DELAY + 400. Logo snaps in @ 500ms;
+// top chrome @ 950ms; bottom chrome @ 1250ms; subtitle @ 1550ms; subtitle
+// done ~2334ms. 2000 here puts the bar at 2400ms — right after subtitle.
+const LOGO_FADE_DELAY = 2000;
 const ROLL_STAGGER = 60;
 const MIN_DISPLAY_MS = 800;
 const FULL_HOLD_MS = 500;
-const BOOT_PROGRESS_TARGETS = [6, 12, SEGMENT_COUNT];
+// The bar appears empty + label types in concurrently. Segments don't start
+// filling until the label is done so the user reads "label, then progress."
+// `LOADING SYSTEM MODULES` × 32ms/char ≈ 700ms.
+const BAR_LABEL_HOLD_MS = 720;
+const BOOT_PROGRESS_TARGETS = [5, 10, SEGMENT_COUNT];
 
 export function useBootSequence({ onExiting }: { onExiting: () => void }) {
   const [phase, setPhase] = useState<BootPhase>('logo');
@@ -133,10 +140,16 @@ export function useBootSequence({ onExiting }: { onExiting: () => void }) {
       return;
     }
 
-    barStartTimeRef.current = Date.now();
+    // Hold the bar empty while the label types in. We measure "bar started"
+    // from after the hold so MIN_DISPLAY_MS counts the actual fill duration,
+    // not the hold.
+    barStartTimeRef.current = Date.now() + BAR_LABEL_HOLD_MS;
 
     const timers = BOOT_PROGRESS_TARGETS.map((_, index) => {
-      return window.setTimeout(() => advanceBootProgress(), index * SEGMENTS_PER_MODULE * 20);
+      return window.setTimeout(
+        () => advanceBootProgress(),
+        BAR_LABEL_HOLD_MS + index * SEGMENTS_PER_MODULE * 20,
+      );
     });
 
     return () => {

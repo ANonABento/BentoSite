@@ -12,18 +12,24 @@ vi.mock('framer-motion', () => ({
     span: ({ children, ...props }: React.HTMLAttributes<HTMLSpanElement>) => (
       <span {...props}>{children}</span>
     ),
+    h1: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
+      <h1 {...props}>{children}</h1>
+    ),
+    p: ({ children, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (
+      <p {...props}>{children}</p>
+    ),
   },
 }));
 
 vi.mock('./useBootSequence', () => ({
   useBootSequence: () => ({
     completeBoot: vi.fn(),
-    filledSegments: 16,
+    filledSegments: 10,
     glitchOffset: 0,
-    isBarPhase: false,
-    isSkippable: true,
+    isBarPhase: true,
+    isSkippable: false,
     isVisible: true,
-    phase: 'ready',
+    phase: 'loading',
     showFlash: false,
   }),
 }));
@@ -32,13 +38,15 @@ describe('BootScreen', () => {
   it('renders the CRT boot metadata and portfolio title', () => {
     render(<BootScreen onExiting={vi.fn()} onComplete={vi.fn()} />);
 
-    expect(screen.getByText('ADMIN')).toBeInTheDocument();
+    // Text is rendered by <Typewriter> (types in over time); aria-label on the
+    // wrapper exposes the full string immediately for ATs and tests.
     expect(screen.getByRole('heading', { name: 'bentOS' })).toBeInTheDocument();
-    expect(screen.getByText('ANonABento // Portfolio')).toBeInTheDocument();
-    expect(screen.getByText('BOOT')).toBeInTheDocument();
-    expect(screen.getByText('v1.0.0')).toBeInTheDocument();
-    expect(screen.getByText('CRT MODE')).toBeInTheDocument();
-    // Ready phase swaps the loading bar for the centered terminal prompt card.
-    expect(screen.getByText('INTERFACE READY')).toBeInTheDocument();
+    expect(screen.getByLabelText('ANonABento')).toBeInTheDocument();
+    expect(screen.getByLabelText('v1.0.0')).toBeInTheDocument();
+    expect(screen.getByLabelText('BOOT')).toBeInTheDocument();
+    expect(screen.getByLabelText('CRT MODE')).toBeInTheDocument();
+    expect(screen.getByLabelText('ANONABENTO PORTFOLIO WEBSITE')).toBeInTheDocument();
+    expect(screen.getByLabelText('LOADING SYSTEM MODULES')).toBeInTheDocument();
+    expect(screen.getByLabelText('INTERFACE READY')).toBeInTheDocument();
   });
 });

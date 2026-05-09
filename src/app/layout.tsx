@@ -12,6 +12,7 @@ import {
   Iceland,
   Russo_One,
   Squada_One,
+  Orbitron,
 } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -110,6 +111,14 @@ const squadaOne = Squada_One({
   display: 'swap',
 });
 
+// Orbitron — geometric square sans used for the bentOS boot wordmark (700/800).
+const orbitron = Orbitron({
+  variable: '--font-orbitron',
+  subsets: ['latin'],
+  weight: ['700', '800'],
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
   // Basic metadata
   title: {
@@ -187,7 +196,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${pixelifySans.variable} ${vt323.variable} ${dotGothic.variable} ${pressStart.variable} ${workbench.variable} ${silkscreen.variable} ${majorMono.variable} ${iceland.variable} ${russoOne.variable} ${squadaOne.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${pixelifySans.variable} ${vt323.variable} ${dotGothic.variable} ${pressStart.variable} ${workbench.variable} ${silkscreen.variable} ${majorMono.variable} ${iceland.variable} ${russoOne.variable} ${squadaOne.variable} ${orbitron.variable} antialiased`}
       >
         <a href="#main-content" className="skip-to-content">
           Skip to main content
