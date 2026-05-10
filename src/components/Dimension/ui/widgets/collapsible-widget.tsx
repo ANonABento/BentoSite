@@ -160,16 +160,19 @@ export function CollapsibleWidget({
         `}
         onMouseDown={handleMouseDown}
       >
-        {/* Header keeps drag affordance on the shell while buttons handle toggling accessibly. */}
+        {/* Header keeps drag affordance on the shell while buttons handle toggling accessibly.
+            Border-b only when expanded — when collapsed, the header IS the entire visible
+            widget and the bottom border was rendering as a stray line under the chip. */}
         <div
           className={`
-            widget-header flex items-center justify-between px-4 py-3 border-b border-[var(--border)]
+            widget-header flex items-center justify-between px-4 py-3
+            ${isCollapsed ? '' : 'border-b border-[var(--border)]'}
             hover:bg-[var(--glass-bg)]
           `}
         >
           <button
             type="button"
-            className="flex min-w-0 flex-1 items-center space-x-2 rounded-md text-left focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50"
+            className="flex min-w-0 flex-1 items-center space-x-2 rounded-md text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--interactive)] focus-visible:ring-opacity-50"
             aria-expanded={!isCollapsed}
             aria-label={`Toggle ${title} panel`}
             onClick={onToggleCollapse}
@@ -184,7 +187,7 @@ export function CollapsibleWidget({
 
           <button
             type="button"
-            className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded hover:bg-[var(--glass-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--interactive)] focus:ring-opacity-50 active:scale-95 transform"
+            className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded hover:bg-[var(--glass-bg)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--interactive)] focus-visible:ring-opacity-50 active:scale-95 transform"
             title={isCollapsed ? 'Expand panel' : 'Collapse panel'}
             aria-label={isCollapsed ? `Expand ${title} panel` : `Collapse ${title} panel`}
             onClick={(e) => {

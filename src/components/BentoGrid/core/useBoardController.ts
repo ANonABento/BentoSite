@@ -21,6 +21,7 @@ import type {
   SpawnPhysicsBridge,
   ViewportBounds,
   CardSize,
+  Velocity,
 } from '../BentoGrid.types';
 import { GRID, QUEUE, SEARCH_CARD_ID } from '../BentoGrid.constants';
 import {
@@ -57,6 +58,9 @@ export interface BoardControllerReturn {
     camera: Camera,
     windowSize: { width: number; height: number },
     getCurrentLayouts: () => Map<string, CardPosition>,
+    /** Per-frame world-space camera delta. Used to bias spawn placement
+     *  toward the leading edge of the pan so cards stream in naturally. */
+    velocity?: Velocity,
   ) => void;
 }
 
@@ -171,12 +175,39 @@ export function useBoardController({
     [cards, maxVisible, rotationRange, cardSizeMode, setQueue, setVisible],
   );
 
+  /**
+   * Diff-style filter update — keeps any card whose filter membership didn't
+   * change at its current grid cell, releases cells of cards that no longer
+   * match, and queues newly-matching cards for normal off-viewport spawn.
+   *
+   * Avoids the "shuffle every card" effect of rebuilding from origin while
+   * still reusing the grid + origin offset so the search card stays put.
+   */
   const applyFilter = useCallback(
     (searchTerm: string, category: string | null) => {
       filterRef.current = { searchTerm, category };
-      rebuildFromFilter(searchTerm, category);
+
+      const filtered = filterCards(cards, searchTerm, category);
+      const matchingIds = new Set(filtered.map((card) => card.id));
+      const grid = gridRef.current;
+
+      const nextVisible = new Map<string, CardPosition>();
+      visibleRef.current.forEach((pos, cardId) => {
+        if (cardId === SEARCH_CARD_ID || matchingIds.has(cardId)) {
+          nextVisible.set(cardId, pos);
+        } else {
+          grid.release(cardId);
+        }
+      });
+
+      const nextQueue: QueuedCard[] = filtered
+        .filter((card) => !nextVisible.has(card.id))
+        .map((card) => ({ id: card.id, data: card, queuedAt: Date.now() }));
+
+      setVisible(nextVisible);
+      setQueue(nextQueue);
     },
-    [rebuildFromFilter],
+    [cards, setQueue, setVisible],
   );
 
   const resetBoard = useCallback(() => {
@@ -251,6 +282,7 @@ export function useBoardController({
       camera: Camera,
       windowSize: { width: number; height: number },
       getCurrentLayouts: () => Map<string, CardPosition>,
+      velocity: Velocity = { x: 0, y: 0 },
     ) => {
       const bounds = computeViewportBounds(camera, windowSize);
       const currentLayouts = getCurrentLayouts();
@@ -288,8 +320,19 @@ export function useBoardController({
         }
       });
 
+      // Adaptive cap: scale with viewport area so wide screens fill their
+      // corners. Floor uses the configured `maxVisible` so small displays
+      // never go below the original budget; ceiling keeps memory bounded.
+      const cellStep = GRID.CELL_SIZE + GRID.GAP;
+      const viewportCells = Math.ceil((bounds.width / cellStep) * (bounds.height / cellStep));
+      const ABS_MAX_VISIBLE = 60;
+      const dynamicMaxVisible = Math.min(
+        ABS_MAX_VISIBLE,
+        Math.max(maxVisible, Math.ceil(viewportCells * 1.3)),
+      );
+
       const totalCards = nextVisible.size + nextQueue.length;
-      const targetOnScreen = Math.min(maxVisible, totalCards);
+      const targetOnScreen = Math.min(dynamicMaxVisible, totalCards);
       const deficit = targetOnScreen - onScreenCount;
 
       if (deficit > 0 && nextQueue.length > 0) {
@@ -298,10 +341,26 @@ export function useBoardController({
         const offset = originOffsetRef.current;
         const viewCenterX = bounds.left + bounds.width / 2;
         const viewCenterY = bounds.top + bounds.height / 2;
-        const center = pixelToCell(viewCenterX + offset.x, viewCenterY + offset.y);
+
+        // Direction-aware anchor: when the camera is panning, push the search
+        // anchor toward the leading edge so new cards stream in from where the
+        // user is heading rather than the closest gap behind them.
+        // Camera transform translates content by camera.x/y, so a positive
+        // velocity.x means content moves right and the LEADING edge in world
+        // coords is the LEFT side — the anchor offset is the negation.
+        const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+        const VELOCITY_THRESHOLD = 0.5;
+        let anchorX = viewCenterX;
+        let anchorY = viewCenterY;
+        if (speed > VELOCITY_THRESHOLD) {
+          const reach = Math.min(bounds.width, bounds.height) * 0.4;
+          anchorX = viewCenterX - (velocity.x / speed) * reach;
+          anchorY = viewCenterY - (velocity.y / speed) * reach;
+        }
+        const center = pixelToCell(anchorX + offset.x, anchorY + offset.y);
 
         // Cap spawns per tick to prevent clustering
-        const spawnCount = Math.min(deficit, nextQueue.length, maxVisible - nextVisible.size, 3);
+        const spawnCount = Math.min(deficit, nextQueue.length, dynamicMaxVisible - nextVisible.size, 3);
 
         // Reject candidates that overlap the visible viewport — cards must
         // appear outside the screen and stream in as the user pans, not

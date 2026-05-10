@@ -8,6 +8,10 @@ import type { ControlPanelProps } from '../../Dimension.types';
 import { CollapsibleWidget } from './collapsible-widget';
 import { buttonTap } from '@/lib/animations';
 
+const CAMERA_PRESET_NAMES = [
+  'front', 'back', 'left', 'right', 'top', 'bottom', 'isometric', 'reset',
+] as const;
+
 export function ControlPanel({
   autoRotate,
   isWireframe,
@@ -19,13 +23,17 @@ export function ControlPanel({
   onFullscreen,
   onCameraPresets,
   onModelManager,
+  onCameraPresetSelect,
   isMobile,
   showCameraPresets,
   zoomLevel,
   rotationSpeed,
   onZoomChange,
   onRotationSpeedChange
-}: ControlPanelProps & { showCameraPresets?: boolean }) {
+}: ControlPanelProps & {
+  showCameraPresets?: boolean;
+  onCameraPresetSelect: (preset: string) => void;
+}) {
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
 
   React.useEffect(() => {
@@ -226,6 +234,43 @@ export function ControlPanel({
                 />
               </div>
             </div>
+
+            {/* Camera Presets — inline sub-section, expanded when toggled.
+                Lives inside the Controls widget so positioning is automatic
+                (flex column) instead of a free-floating sibling that would
+                collide with the expanded controls panel. */}
+            {showCameraPresets && (
+              <div className="border-t border-[var(--border)] pt-3 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+                    Camera Presets
+                  </span>
+                  <button
+                    type="button"
+                    onClick={onCameraPresets}
+                    className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-0.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--interactive)] focus-visible:ring-opacity-50"
+                    aria-label="Hide camera presets"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {CAMERA_PRESET_NAMES.map((name) => (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => onCameraPresetSelect(name)}
+                      className="px-3 py-1.5 text-xs rounded-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--interactive)] focus-visible:ring-opacity-50 bg-[var(--glass-bg)] border border-[var(--border)] hover:bg-[var(--purple-muted)] hover:border-[var(--purple)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] capitalize"
+                      aria-label={`Move camera to ${name} preset`}
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>

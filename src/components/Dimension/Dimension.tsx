@@ -3,11 +3,10 @@
 import type { DimensionViewerProps } from './Dimension.types';
 
 // Import UI components
-import { 
+import {
   ModelInfoDisplay,
-  ModelSelector, 
-  ControlPanel, 
-  CameraPresetsWidget,
+  ModelSelector,
+  ControlPanel,
 } from './Dimension.ui';
 
 import { AVAILABLE_MODELS } from './Dimension.config';
@@ -57,7 +56,8 @@ export default function DimensionViewer({
   return (
     <div
       ref={containerRef}
-      className={`w-full h-full bg-[var(--surface-deep)] relative ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}
+      className={`w-full h-full relative ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}
+      style={{ background: 'var(--viewfinder-bg)' }}
       role="region"
       aria-label={`3D model viewer showing ${selectedModel.name}. Keyboard shortcuts: R reset, Space toggle rotation, W wireframe, Z zoom to fit, C camera presets, M model selector, S screenshot, F fullscreen.`}
       tabIndex={0}
@@ -117,27 +117,8 @@ export default function DimensionViewer({
         </button>
       )}
 
-      {/* Camera Presets Widget - Auto-positioned directly under the control widget */}
-      {!minimal && showCameraPresets && (
-        <CameraPresetsWidget
-          presets={{
-            front: [0, 0, 10],
-            back: [0, 0, -10],
-            left: [-10, 0, 0],
-            right: [10, 0, 0],
-            top: [0, 10, 0],
-            bottom: [0, -10, 0],
-            isometric: [8, 8, 8],
-            reset: [0, 2, 8],
-          }}
-          onPresetSelect={handleCameraPreset}
-          onClose={() => setShowCameraPresets(false)}
-          autoPosition
-          isMobile={isMobile}
-        />
-      )}
-      
-      {/* Control Panel Overlay */}
+      {/* Control Panel Overlay — Camera Presets render as an inline sub-section
+          inside this widget when toggled, so positioning is automatic. */}
       {!minimal && (
         <ControlPanel
           autoRotate={autoRotate}
@@ -149,6 +130,7 @@ export default function DimensionViewer({
           onScreenshot={handleScreenshot}
           onFullscreen={handleFullscreen}
           onCameraPresets={() => setShowCameraPresets(!showCameraPresets)}
+          onCameraPresetSelect={handleCameraPreset}
           onModelManager={handleModelManager}
           selectedModelName={selectedModel.name}
           isMobile={isMobile}

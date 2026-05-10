@@ -120,15 +120,6 @@ export interface ErrorMessageProps {
   isMobile: boolean;
 }
 
-export interface CameraPresetsWidgetProps {
-  presets: Record<string, readonly [number, number, number]>;
-  onPresetSelect: (preset: string) => void;
-  onClose?: () => void;
-  defaultPosition?: { x: number; y: number }; // Made optional for auto-positioning
-  isMobile: boolean;
-  autoPosition?: boolean; // Add autoPosition prop
-}
-
 export interface DimensionViewerProps {
   /** Hide all UI controls for minimal/landing page view */
   minimal?: boolean;

@@ -60,6 +60,15 @@
   --boot-bar-fill: var(--orange);
   --boot-bar-glow: var(--orange-muted);
 
+  /* 3D viewer (Dimension) — read by React (useTheme) and forwarded to <Canvas>
+     and <Grid> since Three.js can't read CSS variables directly. */
+  --viewfinder-bg: #050507;
+  --viewfinder-grid-cell: rgba(224, 123, 60, 0.42);
+  --viewfinder-grid-section: rgba(224, 123, 60, 0.7);
+  --viewfinder-ambient: 0.32;
+  --viewfinder-key-intensity: 0.95;
+  --viewfinder-fill-intensity: 0.45;
+
   /* Status colors - semantic for badges and toasts */
   --status-success: #22c55e;
   --status-success-muted: rgba(34, 197, 94, 0.2);
@@ -146,6 +155,14 @@
   --overlay: rgba(0, 0, 0, 0.5);
   --overlay-strong: rgba(0, 0, 0, 0.7);
   --surface-deep: #f0f1f5;
+
+  /* 3D viewer (Dimension) — softer studio-light palette for light mode */
+  --viewfinder-bg: #e8eaef;
+  --viewfinder-grid-cell: rgba(168, 78, 24, 0.18);
+  --viewfinder-grid-section: rgba(168, 78, 24, 0.32);
+  --viewfinder-ambient: 0.6;
+  --viewfinder-key-intensity: 0.7;
+  --viewfinder-fill-intensity: 0.35;
 
   /* Status colors - adjusted for light mode */
   --status-success: #15803d;

@@ -67,7 +67,7 @@ export function useDimensionController({ modelPath }: { modelPath?: string } = {
   const [error, setError] = useState<ModelError | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [autoRotate, setAutoRotate] = useState(true);
-  const [isWireframe, setIsWireframe] = useState(true);
+  const [isWireframe, setIsWireframe] = useState(false);
   const [selectedModel, setSelectedModel] = useState<ModelInfo>(() => getInitialModel(modelPath));
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [showModelInfo, setShowModelInfo] = useState(true);

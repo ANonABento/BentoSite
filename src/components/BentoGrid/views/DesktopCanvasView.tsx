@@ -135,13 +135,28 @@ export function DesktopCanvasView({
   const boardTickRef = useRef(board.tick);
   useEffect(() => { boardTickRef.current = board.tick; }, [board.tick]);
 
+  // Track last camera position so we can derive per-frame velocity for the
+  // spawn anchor's direction-bias. Smoothed with a low-pass filter to avoid
+  // jitter on near-stationary frames.
+  const lastCameraRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const velocityRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
   useEffect(() => {
     let rafId: number;
 
     function loop() {
       const cam = navigation.cameraRef.current;
       if (cam) {
-        boardTickRef.current(cam, windowSizeRef.current, getCurrentLayouts);
+        const last = lastCameraRef.current;
+        const dx = cam.x - last.x;
+        const dy = cam.y - last.y;
+        // Exponential smoothing — keeps responsive while damping single-frame spikes.
+        velocityRef.current = {
+          x: velocityRef.current.x * 0.6 + dx * 0.4,
+          y: velocityRef.current.y * 0.6 + dy * 0.4,
+        };
+        lastCameraRef.current = { x: cam.x, y: cam.y };
+        boardTickRef.current(cam, windowSizeRef.current, getCurrentLayouts, velocityRef.current);
       }
       rafId = requestAnimationFrame(loop);
     }
