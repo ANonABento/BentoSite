@@ -20,6 +20,17 @@ interface DesktopCardLayerProps {
   onCardClick: (card: CardData) => void;
 }
 
+/**
+ * React key that includes the card's grid position. When the queue respawns
+ * a card at a new cell — including same-tick respawns where AnimatePresence
+ * would otherwise see "same key, new position" and run a spring transition
+ * across the viewport — the position-hashed key forces an unmount + fresh
+ * mount so the new component appears directly at its target with no flight.
+ */
+function presenceKey(cardId: string, layout: CardPosition): string {
+  return `${cardId}#${Math.round(layout.x)},${Math.round(layout.y)}@${layout.size}`;
+}
+
 export function DesktopCardLayer({
   layouts,
   cardDataMap,
@@ -39,10 +50,11 @@ export function DesktopCardLayer({
         if (!cardData) return null;
 
         const isFocused = focusedCardId === cardId;
+        const key = presenceKey(cardId, layout);
 
         if (renderCard) {
           return (
-            <Fragment key={cardId}>
+            <Fragment key={key}>
               {renderCard(
                 cardData,
                 layout,
@@ -57,7 +69,7 @@ export function DesktopCardLayer({
 
         return (
           <DefaultCard
-            key={cardId}
+            key={key}
             card={cardData}
             position={layout}
             theme={theme}

@@ -10,3 +10,7 @@ export { useSearchCardState } from './useSearchCardState';
 export { GameCard, type GameCardProps } from './GameCard';
 export { PhotoCard, type PhotoCardProps } from './PhotoCard';
 export { ProjectCard, type ProjectCardProps } from './ProjectCard';
+
+// Shared shell + hooks
+export { MediaCard, type MediaCardProps } from './MediaCard';
+export { useCardHover } from './useCardHover';

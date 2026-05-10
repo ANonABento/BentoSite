@@ -24,7 +24,11 @@ export function PageTransition({ children, className = '' }: PageTransitionProps
   const isInstantRoute = INSTANT_ROUTE_PATHS.has(pathname);
   const variants = prefersReducedMotion ? reducedPageTransition : pageTransition;
   const wrapperClassName = [
-    'relative min-h-screen bg-[var(--background)]',
+    // Canvas-style routes (BentoGrid) lock the wrapper to the viewport and
+    // hide overflow — `fixed inset-0` children must not leak a scrollbar.
+    isInstantRoute
+      ? 'relative h-screen overflow-hidden bg-[var(--background)]'
+      : 'relative min-h-screen bg-[var(--background)]',
     isInstantRoute ? '' : 'will-change-[opacity,transform,filter]',
     className,
   ].filter(Boolean).join(' ');

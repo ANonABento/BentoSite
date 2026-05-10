@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CardPosition, GameCardData, ProjectCardData, ThemeConfig } from '../BentoGrid.types';
@@ -121,7 +121,7 @@ describe('BentoGrid cards', () => {
     expect(shell).toHaveAttribute('data-while-hover', '{"scale":1.02}');
   });
 
-  it('renders project metadata and hover links through the shared shell', () => {
+  it('renders project metadata in the media-first overlay', () => {
     const project: ProjectCardData = {
       id: 'robot-arm',
       type: 'project',
@@ -138,15 +138,19 @@ describe('BentoGrid cards', () => {
 
     render(<ProjectCard card={project} position={{ ...position, size: '2x2' }} theme={theme} />);
 
+    // Status badge stays always-visible in the corner
     expect(screen.getByText('READY')).toBeInTheDocument();
+    // Title + tech badges live in the bottom overlay (always in DOM, CSS-hidden until hover)
     expect(screen.getByText('Robot Arm')).toBeInTheDocument();
     expect(screen.getByText('ROS2')).toBeInTheDocument();
+    expect(screen.getByText('A compact arm controller')).toBeInTheDocument();
+    // First N tech badges plus an overflow count
+    expect(screen.getByText('+2')).toBeInTheDocument();
 
-    const shell = screen.getByText('Robot Arm').closest('[data-animate]');
-    fireEvent.mouseEnter(shell!);
-
-    expect(screen.getByRole('link', { name: /code/i })).toHaveAttribute('href', project.links?.github);
-    expect(screen.getByRole('link', { name: /demo/i })).toHaveAttribute('href', project.links?.demo);
+    // github/demo buttons no longer live on the card — clicking the card
+    // navigates to the project detail surface where those links live.
+    expect(screen.queryByRole('link', { name: /code/i })).toBeNull();
+    expect(screen.queryByRole('link', { name: /demo/i })).toBeNull();
   });
 
   it('renders game cards when storage is unavailable and the source best score is zero', () => {

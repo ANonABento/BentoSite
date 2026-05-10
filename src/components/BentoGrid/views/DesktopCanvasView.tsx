@@ -199,18 +199,39 @@ export function DesktopCanvasView({
 
   const navBindings = navigation.bind();
 
+  // Tracks the timestamp of the last wheel event that reached the canvas
+  // pan handler. If the cursor crosses an element that normally swallows
+  // wheel (chip row, search input) WHILE a pan is in motion, that element
+  // checks this ref and lets the event bubble through so panning doesn't
+  // stutter mid-gesture. After ~100ms of inactivity, the element resumes
+  // its native behavior (chip scroll, text caret).
+  const panAtRef = useRef(0);
+  const handleWrapperWheel = useCallback(
+    (event: React.WheelEvent<HTMLDivElement>) => {
+      panAtRef.current = Date.now();
+      navBindings.onWheel?.(event);
+    },
+    [navBindings],
+  );
+
   return (
-    <>
-      {/* Gesture container — only the canvas layer lives here */}
-      <div
-        id="main-content"
-        className={['fixed inset-0 overflow-hidden isolate', className].filter(Boolean).join(' ')}
-        {...navBindings}
-        role="application"
-        aria-label={`${breadcrumb ?? 'Card grid'} interactive grid. Use arrow keys to focus cards, Enter to open, WASD to pan, and R to reset view.`}
-        tabIndex={-1}
-        style={{ ...navBindings.style, background: theme.background }}
-      >
+    // Single gesture container holds the canvas AND the search overlay so
+    // drag/wheel events on the search card's empty area bubble up here and
+    // pan the viewport. Button clicks and input focus still work — useGesture
+    // only fires onDrag past INTERACTION.dragThreshold (5px), so a click never
+    // registers as a pan.
+    <div
+      id="main-content"
+      className={['fixed inset-0 isolate', className].filter(Boolean).join(' ')}
+      {...navBindings}
+      onWheel={handleWrapperWheel}
+      role="application"
+      aria-label={`${breadcrumb ?? 'Card grid'} interactive grid. Use arrow keys to focus cards, Enter to open, WASD to pan, and R to reset view.`}
+      tabIndex={-1}
+      style={{ ...navBindings.style, background: theme.background }}
+    >
+      {/* Canvas layer — clips the transformed card grid */}
+      <div className="absolute inset-0 overflow-hidden">
         <div
           className="absolute will-change-transform"
           style={{
@@ -229,8 +250,10 @@ export function DesktopCanvasView({
         </div>
       </div>
 
-      {/* Search card — outside gesture container so buttons work */}
-      <div className="fixed inset-0 pointer-events-none z-10">
+      {/* Search overlay — `pointer-events-none` shell lets the canvas underneath
+          receive any non-card clicks; the panel itself is `pointer-events-auto`
+          but its events bubble up to the gesture handler on the wrapper. */}
+      <div className="absolute inset-0 pointer-events-none z-10">
         <div
           className="pointer-events-auto absolute"
           style={{
@@ -268,24 +291,22 @@ export function DesktopCanvasView({
             ) : (
               <FullSearchContent
                 theme={theme}
-                expanded={searchState.expanded}
                 searchTerm={searchState.searchTerm}
                 category={searchState.category}
                 categories={categories}
-                onToggleExpanded={searchState.toggleExpanded}
                 onSearchChange={searchState.setSearchTerm}
                 onCategoryChange={searchState.setCategory}
                 onBack={onBack}
                 onReset={navigation.reset}
                 totalCards={cards.length}
                 filteredCards={board.filteredCount}
+                panAtRef={panAtRef}
               />
             )}
           </div>
         </div>
       </div>
-
-    </>
+    </div>
   );
 }
 
@@ -313,65 +334,144 @@ function IconStripContent({ theme, onBack, onToggleExpanded, searchTerm }: {
   );
 }
 
-function FullSearchContent({ theme, expanded, searchTerm, category, categories, onToggleExpanded, onSearchChange, onCategoryChange, onBack, onReset, totalCards, filteredCards }: {
+/** Window after a pan during which we let wheel events bubble through
+ *  swallow-zones (chip row, search input) so cursor-cross mid-pan doesn't
+ *  stutter. ~100ms covers a typical trackpad wheel inter-event gap. */
+const MID_PAN_BUBBLE_WINDOW_MS = 120;
+
+function FullSearchContent({ theme, searchTerm, category, categories, onSearchChange, onCategoryChange, onBack, onReset, totalCards, filteredCards, panAtRef }: {
   theme: ThemeConfig;
-  expanded: boolean;
   searchTerm: string;
   category: string | null;
   categories: string[];
-  onToggleExpanded: () => void;
   onSearchChange: (term: string) => void;
   onCategoryChange: (category: string | null) => void;
   onBack?: () => void;
   onReset: () => void;
   totalCards: number;
   filteredCards: number;
+  panAtRef: React.MutableRefObject<number>;
 }) {
+  const allCount = filteredCards !== totalCards ? `${filteredCards}/${totalCards}` : `${totalCards}`;
+
+  // Stop pointer/wheel events from bubbling up to the canvas gesture handler
+  // for elements that need their own native interaction (text selection,
+  // native horizontal scroll). Buttons don't need this — useGesture's drag
+  // threshold (5px) keeps clicks from registering as pans.
+  // Wheel exception: if a pan is currently in motion, let the event bubble
+  // through so the pan continues smoothly when the cursor crosses this zone.
+  const stopGesture = {
+    onPointerDown: (event: React.PointerEvent) => event.stopPropagation(),
+    onWheel: (event: React.WheelEvent) => {
+      if (Date.now() - panAtRef.current < MID_PAN_BUBBLE_WINDOW_MS) return;
+      event.stopPropagation();
+    },
+  };
+
   return (
     <div className="h-full min-w-0 p-4 flex flex-col gap-2.5">
-      {/* Header: back + count + collapse */}
+      {/* Header: back left, reset right */}
       <div className="flex items-center justify-between gap-2 min-w-0">
         {onBack ? (
-          <button onClick={onBack} className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors"
+          >
             <ArrowLeftIcon className="w-3.5 h-3.5" /><span>Back</span>
           </button>
         ) : <span />}
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          <span className="text-[10px] text-white/40 font-mono">
-            {filteredCards !== totalCards ? `${filteredCards}/${totalCards}` : totalCards}
-          </span>
-          <button onClick={onToggleExpanded} className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors" aria-label={expanded ? 'Hide filters' : 'Show filters'} style={{ color: theme.accent.primary }}>
-            <ChevronDownIcon className="w-4 h-4 transition-transform" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
-          </button>
-        </div>
+        <button
+          onClick={onReset}
+          className="flex items-center gap-1.5 text-[11px] text-white/50 hover:text-white/80 transition-colors"
+          aria-label="Reset view"
+        >
+          <RefreshIcon className="w-3 h-3" />
+          <span>Reset</span>
+        </button>
       </div>
 
-      {/* Search input */}
-      <label className="flex items-center gap-2 rounded-md bg-white/5 border border-white/10 px-3 py-2">
+      {/* Search input — stop propagation so text selection drags don't pan. */}
+      <label
+        {...stopGesture}
+        className="flex items-center gap-2 rounded-md bg-white/5 border border-white/10 px-3 py-2"
+      >
         <SearchIcon className="w-4 h-4 text-white/40 flex-shrink-0" />
-        <input type="text" placeholder="Search..." value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none" aria-label="Search cards" />
+        <input
+          type="text"
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)}
+          className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none"
+          aria-label="Search cards"
+        />
         {searchTerm && (
-          <button onClick={() => onSearchChange('')} className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-white/10" aria-label="Clear search">
+          <button
+            onClick={() => onSearchChange('')}
+            className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-white/10"
+            aria-label="Clear search"
+          >
             <CloseIcon className="w-3 h-3 text-white/50" />
           </button>
         )}
       </label>
 
-      {/* Category filters */}
-      {expanded && (
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5">
-          <button onClick={() => onCategoryChange(null)} className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap ${category === null ? 'text-white' : 'text-white/60 hover:text-white/80'}`} style={{ background: category === null ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)', border: category === null ? `1px solid ${theme.accent.primary}50` : '1px solid transparent' }}>All</button>
+      {/* Category filters — single row, horizontal scroll. Right-edge fade
+          mask hints at overflow without showing a scrollbar. */}
+      <div
+        className="relative -mx-1 px-1"
+        style={{
+          maskImage:
+            categories.length > 0
+              ? 'linear-gradient(to right, black 0, black calc(100% - 24px), transparent 100%)'
+              : undefined,
+          WebkitMaskImage:
+            categories.length > 0
+              ? 'linear-gradient(to right, black 0, black calc(100% - 24px), transparent 100%)'
+              : undefined,
+        }}
+      >
+        <div
+          {...stopGesture}
+          className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5"
+        >
+          <button
+            onClick={() => onCategoryChange(null)}
+            className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${category === null ? 'text-white' : 'text-white/60 hover:text-white/80'}`}
+            style={{
+              background: category === null ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)',
+              border: category === null ? `1px solid ${theme.accent.primary}50` : '1px solid transparent',
+            }}
+          >
+            All ({allCount})
+          </button>
           {categories.map((cat) => (
-            <button key={cat} onClick={() => onCategoryChange(cat === category ? null : cat)} className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap ${category === cat ? 'text-white' : 'text-white/60 hover:text-white/80'}`} style={{ background: category === cat ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)', border: category === cat ? `1px solid ${theme.accent.primary}50` : '1px solid transparent' }}>{cat}</button>
+            <button
+              key={cat}
+              onClick={() => onCategoryChange(cat === category ? null : cat)}
+              className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${category === cat ? 'text-white' : 'text-white/60 hover:text-white/80'}`}
+              style={{
+                background: category === cat ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)',
+                border: category === cat ? `1px solid ${theme.accent.primary}50` : '1px solid transparent',
+              }}
+            >
+              {cat}
+            </button>
           ))}
         </div>
-      )}
+      </div>
 
-      {/* Footer: reset view */}
-      <button onClick={onReset} className="flex items-center justify-center gap-1.5 text-[11px] text-white/40 hover:text-white/70 transition-colors mt-auto">
-        <RefreshIcon className="w-3 h-3" />
-        <span>Reset View</span>
-      </button>
+      {/* Keyboard hints — pinned to bottom of the card, lo-fi terminal feel */}
+      <div className="mt-auto flex items-center justify-between gap-2 pt-1 text-[10px] font-mono uppercase tracking-wider text-white/35">
+        <span>
+          <span className="text-white/55">wasd</span> pan
+        </span>
+        <span>
+          <span className="text-white/55">R</span> reset
+        </span>
+        <span>
+          <span className="text-white/55">&#x21B5;</span> open
+        </span>
+      </div>
     </div>
   );
 }
@@ -388,7 +488,11 @@ function CompactBarContent({ searchTerm, onSearchChange, onBack }: {
           <ArrowLeftIcon className="w-4 h-4 text-white/70" />
         </button>
       )}
-      <label className="flex-1 min-w-0 flex items-center gap-2 rounded-md bg-white/5 border border-white/10 px-3 py-1.5">
+      <label
+        onPointerDown={(event) => event.stopPropagation()}
+        onWheel={(event) => event.stopPropagation()}
+        className="flex-1 min-w-0 flex items-center gap-2 rounded-md bg-white/5 border border-white/10 px-3 py-1.5"
+      >
         <SearchIcon className="w-4 h-4 text-white/40 flex-shrink-0" />
         <input type="text" placeholder="Search..." value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none" aria-label="Search cards" />
         {searchTerm && (

@@ -51,6 +51,10 @@ export class GridOccupancy {
   private cells = new Map<string, string>();
   /** cardId → list of "col,row" keys it occupies */
   private cardCells = new Map<string, string[]>();
+  /** Counter that rotates `findNearest` tie-breaking through quadrants
+   *  so cards at equal distance fan out symmetrically (N → E → S → W → …)
+   *  instead of always biasing toward top-left. */
+  private placementCount = 0;
 
   /** Check if a card of the given size can be placed at (col, row). */
   canPlace(col: number, row: number, size: CardSize): boolean {
@@ -106,6 +110,7 @@ export class GridOccupancy {
   clear(): void {
     this.cells.clear();
     this.cardCells.clear();
+    this.placementCount = 0;
   }
 
   /**
@@ -141,10 +146,14 @@ export class GridOccupancy {
    * Find the nearest available grid cell for a card of the given size,
    * searching outward from (centerCol, centerRow).
    *
-   * At each radius ring, all valid positions are collected and the one
-   * closest to center (Euclidean distance) is chosen. This produces a
-   * balanced, roughly symmetric layout instead of the directional bias
-   * of a naive BFS spiral.
+   * Each ring collects every valid candidate, scored by true center-to-center
+   * Euclidean distance (each cell's center is at `col + 0.5, row + 0.5`).
+   * Ties — frequent on the four cardinal/diagonal cells around the origin —
+   * are broken by an angular sort whose origin rotates 90° per placement, so
+   * cards fan out N → E → S → W → … instead of piling up in one quadrant.
+   *
+   * `opts.accept` lets the caller veto cells (e.g. cells that would overlap
+   * the visible viewport) without giving up the radial search semantics.
    *
    * Returns null if no position found within maxRadius.
    */
@@ -152,46 +161,79 @@ export class GridOccupancy {
     centerCol: number,
     centerRow: number,
     size: CardSize,
-    maxRadius = 20,
+    opts: {
+      maxRadius?: number;
+      accept?: (cell: { col: number; row: number }, size: CardSize) => boolean;
+    } = {},
   ): { col: number; row: number } | null {
-    // Check center first
-    if (this.canPlace(centerCol, centerRow, size)) {
+    const { maxRadius = 20, accept } = opts;
+
+    if (this.canPlace(centerCol, centerRow, size) && (!accept || accept({ col: centerCol, row: centerRow }, size))) {
+      this.placementCount++;
       return { col: centerCol, row: centerRow };
     }
 
     const { cols, rows } = sizeToSpan(size);
+    // True continuous center of the search-anchor cell.
+    const searchX = centerCol + 0.5;
+    const searchY = centerRow + 0.5;
 
     for (let radius = 1; radius <= maxRadius; radius++) {
-      let best: { col: number; row: number } | null = null;
-      let bestDist = Infinity;
+      const candidates: Array<{
+        col: number;
+        row: number;
+        distSq: number;
+        angle: number;
+      }> = [];
 
-      // Walk the perimeter of the square at this radius
       for (let offset = -radius; offset <= radius; offset++) {
-        const candidates = [
-          { col: centerCol + offset, row: centerRow - radius }, // top
-          { col: centerCol + offset, row: centerRow + radius }, // bottom
+        const cells = [
+          { col: centerCol + offset, row: centerRow - radius }, // top edge
+          { col: centerCol + offset, row: centerRow + radius }, // bottom edge
         ];
         if (offset !== -radius && offset !== radius) {
-          candidates.push(
-            { col: centerCol - radius, row: centerRow + offset }, // left
-            { col: centerCol + radius, row: centerRow + offset }, // right
+          cells.push(
+            { col: centerCol - radius, row: centerRow + offset }, // left edge
+            { col: centerCol + radius, row: centerRow + offset }, // right edge
           );
         }
 
-        for (const c of candidates) {
-          if (!this.canPlace(c.col, c.row, size)) continue;
-          // Distance from the card's center to the search center
-          const dx = c.col + cols / 2 - centerCol;
-          const dy = c.row + rows / 2 - centerRow;
-          const dist = dx * dx + dy * dy;
-          if (dist < bestDist) {
-            bestDist = dist;
-            best = c;
-          }
+        for (const cell of cells) {
+          if (!this.canPlace(cell.col, cell.row, size)) continue;
+          if (accept && !accept(cell, size)) continue;
+          // True center of the card placed at this anchor.
+          const cardCenterX = cell.col + cols / 2;
+          const cardCenterY = cell.row + rows / 2;
+          const dx = cardCenterX - searchX;
+          const dy = cardCenterY - searchY;
+          candidates.push({
+            col: cell.col,
+            row: cell.row,
+            distSq: dx * dx + dy * dy,
+            angle: Math.atan2(dy, dx),
+          });
         }
       }
 
-      if (best) return best;
+      if (candidates.length === 0) continue;
+
+      // Pick min distance; among ties, rotate quadrants per placement so the
+      // four cardinal/diagonal slots around the origin get filled evenly.
+      candidates.sort((a, b) => a.distSq - b.distSq);
+      const minDistSq = candidates[0].distSq;
+      const tied = candidates.filter((c) => c.distSq - minDistSq < 1e-9);
+
+      if (tied.length > 1) {
+        const baseAngle = (this.placementCount * Math.PI) / 2;
+        tied.sort((a, b) => {
+          const angA = ((a.angle - baseAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+          const angB = ((b.angle - baseAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+          return angA - angB;
+        });
+      }
+
+      this.placementCount++;
+      return { col: tied[0].col, row: tied[0].row };
     }
 
     return null;

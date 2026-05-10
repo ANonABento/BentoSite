@@ -133,7 +133,7 @@ describe('GridOccupancy', () => {
           grid.place(c, r, '1x1', `card-${c}-${r}`);
         }
       }
-      const result = grid.findNearest(0, 0, '1x1', 2);
+      const result = grid.findNearest(0, 0, '1x1', { maxRadius: 2 });
       expect(result).toBeNull();
     });
 
@@ -143,7 +143,7 @@ describe('GridOccupancy', () => {
           grid.place(c, r, '1x1', `card-${c}-${r}`);
         }
       }
-      const result = grid.findNearest(0, 0, '1x1', 5);
+      const result = grid.findNearest(0, 0, '1x1', { maxRadius: 5 });
       expect(result).not.toBeNull();
       expect(grid.canPlace(result!.col, result!.row, '1x1')).toBe(true);
     });

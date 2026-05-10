@@ -1,26 +1,20 @@
 'use client';
 
 /**
- * ProjectCard - Premium themed card for projects
+ * ProjectCard — media-first card for projects.
  *
- * Features:
- * - Clean, professional design
- * - Sharp corners, subtle shadows
- * - Thumbnail with status badge
- * - Tech badges and links
- * - Subtle primary accent on hover
+ * Thumbnail (or fallback icon) fills the card. Status badge and media
+ * indicators (3D etc.) sit in the corners. On hover/focus a bottom gradient
+ * overlay reveals the title, description, category, and a truncated row of
+ * tech badges. Card click navigates — github/demo links live on the project
+ * detail surface, not the card.
  */
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import Image from 'next/image';
 import type { ProjectCardData, CardPosition, ThemeConfig } from '../BentoGrid.types';
-import {
-  Model3DIcon,
-  GitHubIcon,
-  ExternalLinkIcon,
-} from '@/components/ui/Icons';
-import { BaseCard } from './BaseCard';
+import { Model3DIcon } from '@/components/ui/Icons';
+import { MediaCard } from './MediaCard';
 
 // =============================================================================
 // PROPS
@@ -83,7 +77,7 @@ function StatusBadge({ status }: { status?: ProjectStatus }) {
 
   return (
     <span
-      className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-semibold uppercase tracking-wider ${config.bg} ${config.text} border ${config.border}`}
+      className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-semibold uppercase tracking-wider backdrop-blur-sm ${config.bg} ${config.text} border ${config.border}`}
     >
       {config.label}
     </span>
@@ -101,9 +95,10 @@ function MediaIndicators({ card }: { card: ProjectCardData }) {
     indicators.push({ icon: <Model3DIcon size={10} />, label: '3D' });
   }
 
-  // Only show first 3 indicators max
-  return indicators.length > 0 ? (
-    <div className="absolute bottom-1.5 right-1.5 flex gap-1">
+  if (indicators.length === 0) return null;
+
+  return (
+    <div className="flex gap-1">
       {indicators.slice(0, 3).map(({ icon, label }) => (
         <span
           key={label}
@@ -114,7 +109,35 @@ function MediaIndicators({ card }: { card: ProjectCardData }) {
         </span>
       ))}
     </div>
-  ) : null;
+  );
+}
+
+// =============================================================================
+// TECH BADGES
+// =============================================================================
+
+const MAX_TECH_BADGES = 3;
+
+function TechBadges({ technologies }: { technologies?: string[] }) {
+  if (!technologies?.length) return null;
+  const visible = technologies.slice(0, MAX_TECH_BADGES);
+  const overflow = technologies.length - visible.length;
+
+  return (
+    <div className="flex flex-wrap gap-1">
+      {visible.map((tech) => (
+        <span
+          key={tech}
+          className="px-1.5 py-0.5 text-[9px] font-mono bg-white/10 text-white/80 border border-white/15 rounded"
+        >
+          {tech}
+        </span>
+      ))}
+      {overflow > 0 && (
+        <span className="text-[9px] font-mono text-white/60 self-center">+{overflow}</span>
+      )}
+    </div>
+  );
 }
 
 // =============================================================================
@@ -130,14 +153,30 @@ export function ProjectCard({
   isFocused = false,
   entranceIndex = 0,
 }: ProjectCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const isHighlighted = isHovered || isFocused;
 
-  const isLargeCard = position.size === '2x2' || position.size === '2x1';
+  const meta = (
+    <>
+      <div className="flex items-center gap-2">
+        <StatusBadge status={card.status} />
+        {card.category && (
+          <span
+            className="text-[9px] font-mono uppercase tracking-wider"
+            style={{ color: theme.accent.primary }}
+          >
+            {card.category}
+          </span>
+        )}
+      </div>
+      {card.description && (
+        <p className="line-clamp-2 text-xs text-white/75">{card.description}</p>
+      )}
+      <TechBadges technologies={card.technologies} />
+    </>
+  );
 
   return (
-    <BaseCard
+    <MediaCard
       id={card.id}
       position={position}
       theme={theme}
@@ -146,148 +185,34 @@ export function ProjectCard({
       onClick={onClick}
       href={href}
       ariaLabel={`Open ${card.title}`}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      shellClassName="group"
-      shellStyle={{
-        border: isHighlighted
-          ? `1px solid ${theme.accent.primary}40`
-          : theme.card.border,
-        boxShadow: isFocused
-          ? `0 0 0 3px ${theme.accent.primary}, ${theme.card.hoverShadow}`
-          : isHovered
-            ? `${theme.card.hoverShadow}, 0 0 20px ${theme.accent.primary}10`
-            : theme.card.shadow,
-      }}
+      title={card.title}
+      metaLines={meta}
+      topRight={<MediaIndicators card={card} />}
     >
-      {/* Thumbnail */}
-      <div className="relative w-full h-1/2 bg-black/20 overflow-hidden">
-          {card.thumbnail ? (
-            <>
-              {!imageLoaded && (
-                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent animate-pulse" />
-              )}
-              <Image
-                src={card.thumbnail}
-                alt={card.title}
-                fill
-                className={`object-cover transition-all duration-300 ${
-                  imageLoaded ? 'opacity-100' : 'opacity-0'
-                } ${isHovered ? 'scale-105' : 'scale-100'}`}
-                onLoad={() => setImageLoaded(true)}
-                sizes={`${position.width}px`}
-                placeholder="blur"
-                blurDataURL={BLUR_PLACEHOLDER}
-                draggable={false}
-              />
-            </>
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--primary-muted)] to-transparent">
-              <Model3DIcon size={32} className="text-[var(--text-muted)] opacity-50" />
-            </div>
+      {card.thumbnail ? (
+        <>
+          {!imageLoaded && (
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent animate-pulse" />
           )}
-
-          {/* Status badge */}
-          <div className="absolute top-2 left-2">
-            <StatusBadge status={card.status} />
-          </div>
-
-          {/* Media indicators */}
-          <MediaIndicators card={card} />
-
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-      </div>
-
-      {/* Content */}
-      <div className="p-3 flex flex-col h-[calc(50%-0px)]">
-          {/* Title */}
-          <h3
-            className={`font-semibold text-white line-clamp-1 ${
-              isLargeCard ? 'text-base' : 'text-sm'
-            }`}
-          >
-            {card.title}
-          </h3>
-
-          {/* Description - only on larger cards */}
-          {isLargeCard && card.description && (
-            <p className="text-[11px] text-white/50 line-clamp-2 mt-1">
-              {card.description}
-            </p>
-          )}
-
-          {/* Spacer */}
-          <div className="flex-1" />
-
-          {/* Category */}
-          <div className="mt-1">
-            <span
-              className="text-[9px] font-mono uppercase tracking-wider"
-              style={{ color: theme.accent.primary }}
-            >
-              {card.category}
-            </span>
-          </div>
-
-          {/* Tech badges - only on 2x2 cards */}
-          {position.size === '2x2' && card.technologies && (
-            <div className="flex flex-wrap gap-1 mt-1.5">
-              {card.technologies.slice(0, 4).map((tech) => (
-                <span
-                  key={tech}
-                  className="px-1.5 py-0.5 text-[9px] font-mono bg-white/5 text-white/60 border border-white/10 rounded"
-                >
-                  {tech}
-                </span>
-              ))}
-              {card.technologies.length > 4 && (
-                <span className="text-[9px] text-white/40">
-                  +{card.technologies.length - 4}
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Quick links on hover - only on large cards */}
-          {isHovered && isLargeCard && (card.links?.github || card.links?.demo) && (
-            <motion.div
-              className="flex gap-2 mt-2"
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              {card.links.github && (
-                <a
-                  href={card.links.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-1 px-2 py-1 text-[9px] font-medium bg-white/5 text-white/70 border border-white/10 rounded hover:text-white hover:bg-white/10 transition-colors"
-                >
-                  <GitHubIcon size={10} />
-                  <span>Code</span>
-                </a>
-              )}
-              {card.links.demo && (
-                <a
-                  href={card.links.demo}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-1 px-2 py-1 text-[9px] font-medium rounded transition-colors"
-                  style={{
-                    background: theme.accent.primary,
-                    color: 'white',
-                  }}
-                >
-                  <ExternalLinkIcon size={10} />
-                  <span>Demo</span>
-                </a>
-              )}
-            </motion.div>
-          )}
-      </div>
-    </BaseCard>
+          <Image
+            src={card.thumbnail}
+            alt={card.title}
+            fill
+            className={`object-cover transition-all duration-500 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            } group-hover:scale-105`}
+            onLoad={() => setImageLoaded(true)}
+            sizes={`${position.width}px`}
+            placeholder="blur"
+            blurDataURL={BLUR_PLACEHOLDER}
+            draggable={false}
+          />
+        </>
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--primary-muted)] to-transparent">
+          <Model3DIcon size={48} className="text-[var(--text-muted)] opacity-40" />
+        </div>
+      )}
+    </MediaCard>
   );
 }

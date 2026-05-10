@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   dashboardStagger,
-  dashboardHeaderIn,
   dashboardRightIn,
   tabContent,
 } from '@/lib/animations';
@@ -28,8 +27,6 @@ interface DashboardLayoutProps {
   closeShortcuts: () => void;
   /** Controls when the stagger entrance begins (set after boot exit) */
   ready: boolean;
-  /** When true, panels animate from hidden; otherwise they render in place. */
-  playEntrance: boolean;
   /** Initial project ID to load from URL */
   initialProjectId?: string;
 }
@@ -42,7 +39,6 @@ export function DashboardLayout({
   isShortcutsOpen,
   closeShortcuts,
   ready,
-  playEntrance,
   initialProjectId,
 }: DashboardLayoutProps) {
   const router = useRouter();
@@ -111,15 +107,16 @@ export function DashboardLayout({
       <motion.div
         className="flex flex-col h-screen overflow-hidden"
         variants={dashboardStagger}
-        // Use explicit 'visible' instead of `false` for the return-visit path:
-        // `initial={false}` has an inheritance quirk with variant children where
-        // a single child can occasionally stay wedged at the `hidden` state when
-        // the parent's animate flips from 'hidden' → 'visible' mid-mount.
-        initial={playEntrance ? 'hidden' : 'visible'}
+        // No `initial` prop: framer-motion defaults to the animate value, so
+        // there is no `visible → hidden` leg at mount during boot. Children
+        // inherit the label and animate hidden → visible exactly once when
+        // `ready` flips after boot exits.
         animate={ready ? 'visible' : 'hidden'}
       >
-        {/* Header — drops from top */}
-        <motion.div className="flex-shrink-0 px-4 pb-3 pt-4 md:px-6 md:pb-4 md:pt-5" variants={dashboardHeaderIn}>
+        {/* Header — always part of the OS chrome, not an entering panel.
+            Kept static (no motion) so it can never wedge at hidden state if
+            framer-motion's variant inheritance hiccups during boot exit. */}
+        <div className="flex-shrink-0 px-4 pb-3 pt-4 md:px-6 md:pb-4 md:pt-5">
           <Header
             name={PORTFOLIO_DATA.personal.name}
             tagline={PORTFOLIO_DATA.personal.title}
@@ -130,7 +127,7 @@ export function DashboardLayout({
             compact
             onProjectsClick={handleSeeProjects}
           />
-        </motion.div>
+        </div>
 
         {/* Mobile Tabs */}
         <MobileTabs activeSection={activeSection} onTabChange={setActiveSection} />

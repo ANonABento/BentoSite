@@ -90,7 +90,11 @@ export function BaseCard({
         y: position.y,
         rotate: position.rotation,
       }}
-      exit={{ opacity: 0, transition: { duration: 0.15 } }}
+      // Exit must complete on the same frame so AnimatePresence cannot reuse
+      // the existing DOM node if the card's id is respawned by the queue
+      // before exit finishes — that reuse would interpolate the node from its
+      // old position to the new one via spring, "flying" across the viewport.
+      exit={{ opacity: 0, transition: { duration: 0 } }}
       transition={{
         type: 'spring',
         stiffness: 300,

@@ -1,14 +1,12 @@
 'use client';
 
 /**
- * GameCard - Playful themed card for games/fidgets
+ * GameCard — media-first synthwave card for /playground.
  *
- * Features:
- * - Synthwave neon styling
- * - Pixel corner accents
- * - Scanline overlay
- * - Best score display
- * - Neon glow on hover
+ * The card's "media" is a big neon icon centered against the dark backdrop.
+ * Pixel corners, scanlines, and the bottom accent strip stay always-on (theme
+ * identity). On hover/focus the bottom gradient overlay reveals title,
+ * description, and best score. Accent color rotates per index.
  */
 
 import { useState } from 'react';
@@ -26,25 +24,25 @@ import {
   Gamepad2,
 } from 'lucide-react';
 import type { GameCardData, CardPosition, ThemeConfig } from '../BentoGrid.types';
-import { BaseCard } from './BaseCard';
+import { MediaCard } from './MediaCard';
 
 // =============================================================================
 // ICON MAPPING
 // =============================================================================
 
 const GAME_ICONS: Record<string, React.ReactNode> = {
-  reaction: <Zap className="w-6 h-6" />,
-  typing: <Keyboard className="w-6 h-6" />,
-  rhythm: <Music className="w-6 h-6" />,
-  minesweeper: <Grid3X3 className="w-6 h-6" />,
-  soundboard: <Volume2 className="w-6 h-6" />,
-  game2048: <Hash className="w-6 h-6" />,
-  '2048': <Hash className="w-6 h-6" />,
-  sorting: <BarChart2 className="w-6 h-6" />,
-  aim: <Crosshair className="w-6 h-6" />,
-  'aim-trainer': <Crosshair className="w-6 h-6" />,
-  pacman: <Ghost className="w-6 h-6" />,
-  default: <Gamepad2 className="w-6 h-6" />,
+  reaction: <Zap className="w-12 h-12" />,
+  typing: <Keyboard className="w-12 h-12" />,
+  rhythm: <Music className="w-12 h-12" />,
+  minesweeper: <Grid3X3 className="w-12 h-12" />,
+  soundboard: <Volume2 className="w-12 h-12" />,
+  game2048: <Hash className="w-12 h-12" />,
+  '2048': <Hash className="w-12 h-12" />,
+  sorting: <BarChart2 className="w-12 h-12" />,
+  aim: <Crosshair className="w-12 h-12" />,
+  'aim-trainer': <Crosshair className="w-12 h-12" />,
+  pacman: <Ghost className="w-12 h-12" />,
+  default: <Gamepad2 className="w-12 h-12" />,
 };
 
 // =============================================================================
@@ -54,7 +52,6 @@ const GAME_ICONS: Record<string, React.ReactNode> = {
 type AccentColor = 'pink' | 'purple' | 'cyan';
 
 const ACCENT_COLORS: Record<AccentColor, {
-  iconBg: string;
   iconText: string;
   scoreText: string;
   borderColor: string;
@@ -62,7 +59,6 @@ const ACCENT_COLORS: Record<AccentColor, {
   neonGlow: string;
 }> = {
   pink: {
-    iconBg: 'bg-[#ff007f]/15',
     iconText: 'text-[#ff007f]',
     scoreText: 'text-[#ff007f]',
     borderColor: '#ff007f',
@@ -70,7 +66,6 @@ const ACCENT_COLORS: Record<AccentColor, {
     neonGlow: '0 0 15px rgba(255, 0, 127, 0.5), 0 0 30px rgba(255, 0, 127, 0.25)',
   },
   purple: {
-    iconBg: 'bg-[#bf00ff]/15',
     iconText: 'text-[#bf00ff]',
     scoreText: 'text-[#bf00ff]',
     borderColor: '#bf00ff',
@@ -78,7 +73,6 @@ const ACCENT_COLORS: Record<AccentColor, {
     neonGlow: '0 0 15px rgba(191, 0, 255, 0.5), 0 0 30px rgba(191, 0, 255, 0.25)',
   },
   cyan: {
-    iconBg: 'bg-[#00ffff]/15',
     iconText: 'text-[#00ffff]',
     scoreText: 'text-[#00ffff]',
     borderColor: '#00ffff',
@@ -87,7 +81,6 @@ const ACCENT_COLORS: Record<AccentColor, {
   },
 };
 
-// Rotate through colors based on card index
 function getAccentColor(index: number): AccentColor {
   const colors: AccentColor[] = ['pink', 'purple', 'cyan'];
   return colors[((index % colors.length) + colors.length) % colors.length];
@@ -123,8 +116,6 @@ export function GameCard({
   entranceIndex = 0,
 }: GameCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  // Load best score from localStorage lazily (synchronous on first render).
-  // SSR is disabled for this page, so window is available when this renders.
   const [bestScore] = useState<string | null>(() => {
     if (typeof window === 'undefined' || !card.id) return null;
     try {
@@ -139,119 +130,115 @@ export function GameCard({
   const colors = ACCENT_COLORS[accentColor];
   const icon = GAME_ICONS[card.id] || GAME_ICONS[card.icon || 'default'] || GAME_ICONS.default;
 
+  const score = bestScore ?? (card.bestScore != null ? String(card.bestScore) : null);
+
+  const meta = (
+    <>
+      {card.description && (
+        <p className="line-clamp-2 text-xs text-white/75">{card.description}</p>
+      )}
+      {score != null ? (
+        <p className="font-mono text-[10px] uppercase tracking-wider flex gap-1.5 items-baseline">
+          <span className="text-white/50">Best</span>
+          <span className={`font-semibold ${colors.scoreText}`}>{score}</span>
+        </p>
+      ) : (
+        <p className="font-mono text-[10px] uppercase tracking-wider text-white/40">
+          Click to play
+        </p>
+      )}
+    </>
+  );
+
+  // Synthwave-themed shell border + neon glow on hover/focus
+  const shellStyle = {
+    background: '#1a1a1a',
+    border: `2px solid ${isHighlighted ? colors.borderColor : 'rgba(255, 255, 255, 0.08)'}`,
+    boxShadow: isFocused
+      ? `0 0 0 3px ${colors.borderColor}, ${colors.neonGlow}`
+      : isHovered
+        ? colors.neonGlow
+        : theme.card.shadow,
+  };
+
+  const pixelCornerOpacity = isHighlighted ? 0.85 : 0.4;
+
   return (
-    <BaseCard
+    <MediaCard
       id={card.id}
       position={position}
       theme={theme}
       isFocused={isFocused}
       entranceIndex={entranceIndex}
       onClick={onClick}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      shellClassName="rounded-xl bg-[#1a1a1a]/95 backdrop-blur-sm group relative"
-      shellStyle={{
-        background: '#1a1a1a',
-        border: `2px solid ${isHighlighted ? colors.borderColor : 'rgba(255, 255, 255, 0.08)'}`,
-        boxShadow: isFocused
-          ? `0 0 0 3px ${colors.borderColor}, ${colors.neonGlow}`
-          : isHovered
-            ? colors.neonGlow
-            : theme.card.shadow,
-      }}
+      ariaLabel={card.title}
+      title={card.title}
+      metaLines={meta}
+      shellStyle={shellStyle}
+      onHoverChange={setIsHovered}
+      shellExtras={
+        <>
+          {/* Pixel corner accents */}
+          <div
+            className="pointer-events-none absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 transition-opacity duration-200 z-[2]"
+            style={{ borderColor: colors.borderColor, opacity: pixelCornerOpacity }}
+          />
+          <div
+            className="pointer-events-none absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 transition-opacity duration-200 z-[2]"
+            style={{ borderColor: colors.borderColor, opacity: pixelCornerOpacity }}
+          />
+          <div
+            className="pointer-events-none absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 transition-opacity duration-200 z-[2]"
+            style={{ borderColor: colors.borderColor, opacity: pixelCornerOpacity }}
+          />
+          <div
+            className="pointer-events-none absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 transition-opacity duration-200 z-[2]"
+            style={{ borderColor: colors.borderColor, opacity: pixelCornerOpacity }}
+          />
+
+          {/* Scanline overlay */}
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.04] z-[1]"
+            style={{
+              backgroundImage:
+                'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.5) 2px, rgba(0,0,0,0.5) 4px)',
+            }}
+          />
+
+          {/* Diagonal neon wash on hover */}
+          <div
+            className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-[1]"
+            style={{
+              background: `linear-gradient(135deg, ${colors.glowColor} 0%, transparent 55%)`,
+            }}
+          />
+
+          {/* Bottom accent line slides in on hover */}
+          <div
+            className="pointer-events-none absolute bottom-0 left-0 right-0 h-[2px] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left z-[3]"
+            style={{
+              background: `linear-gradient(to right, ${colors.borderColor}, transparent)`,
+            }}
+          />
+        </>
+      }
     >
-        {/* Pixel corner accents */}
-        <div
-          className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 rounded-tl-sm transition-opacity duration-200"
-          style={{ borderColor: colors.borderColor, opacity: isHighlighted ? 0.8 : 0.4 }}
-        />
-        <div
-          className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 rounded-tr-sm transition-opacity duration-200"
-          style={{ borderColor: colors.borderColor, opacity: isHighlighted ? 0.8 : 0.4 }}
-        />
-        <div
-          className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 rounded-bl-sm transition-opacity duration-200"
-          style={{ borderColor: colors.borderColor, opacity: isHighlighted ? 0.8 : 0.4 }}
-        />
-        <div
-          className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 rounded-br-sm transition-opacity duration-200"
-          style={{ borderColor: colors.borderColor, opacity: isHighlighted ? 0.8 : 0.4 }}
-        />
-
-        {/* Scanline overlay */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.03]"
+      {/* Centered neon icon */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <motion.div
+          className={`flex items-center justify-center ${colors.iconText}`}
           style={{
-            backgroundImage:
-              'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.5) 2px, rgba(0,0,0,0.5) 4px)',
+            filter: `drop-shadow(0 0 10px ${colors.glowColor})`,
           }}
-        />
-
-        {/* Hover gradient overlay */}
-        <div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-          style={{
-            background: `linear-gradient(135deg, ${colors.glowColor} 0%, transparent 50%)`,
+          animate={{
+            scale: isHovered ? 1.08 : 1,
+            rotate: isHovered ? 4 : 0,
           }}
-        />
-
-        {/* Card content */}
-        <div className="relative z-10 p-4 h-full flex flex-col">
-          {/* Icon */}
-          <motion.div
-            className={`w-12 h-12 rounded-xl flex items-center justify-center ${colors.iconBg} ${colors.iconText} mb-3`}
-            whileHover={{ scale: 1.05, rotate: 5 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-          >
-            {icon}
-          </motion.div>
-
-          {/* Title */}
-          <h3 className="text-lg font-semibold text-white tracking-tight">
-            {card.title}
-          </h3>
-
-          {/* Description */}
-          {card.description && (
-            <p className="text-sm text-white/50 mt-1 line-clamp-2">
-              {card.description}
-            </p>
-          )}
-
-          {/* Spacer */}
-          <div className="flex-1" />
-
-          {/* Best score / Play prompt */}
-          <div className="flex items-center justify-between mt-2">
-            {bestScore != null || card.bestScore != null ? (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-white/40 uppercase tracking-wider">Best</span>
-                <span className={`font-mono font-semibold text-sm ${colors.scoreText}`}>
-                  {bestScore ?? card.bestScore}
-                </span>
-              </div>
-            ) : (
-              <span className="text-xs text-white/40">Click to play</span>
-            )}
-
-            {/* Play arrow (shows on hover) */}
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center ${colors.iconBg} ${colors.iconText} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom accent line (animates on hover) */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-[2px] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"
-          style={{
-            background: `linear-gradient(to right, ${colors.borderColor}, transparent)`,
-          }}
-        />
-    </BaseCard>
+          transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+        >
+          {icon}
+        </motion.div>
+      </div>
+    </MediaCard>
   );
 }

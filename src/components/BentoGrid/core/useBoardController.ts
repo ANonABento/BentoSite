@@ -20,6 +20,7 @@ import type {
   QueuedCard,
   SpawnPhysicsBridge,
   ViewportBounds,
+  CardSize,
 } from '../BentoGrid.types';
 import { GRID, QUEUE, SEARCH_CARD_ID } from '../BentoGrid.constants';
 import {
@@ -302,15 +303,44 @@ export function useBoardController({
         // Cap spawns per tick to prevent clustering
         const spawnCount = Math.min(deficit, nextQueue.length, maxVisible - nextVisible.size, 3);
 
+        // Reject candidates that overlap the visible viewport — cards must
+        // appear outside the screen and stream in as the user pans, not
+        // teleport into the middle of the visible area.
+        const isOutsideViewport = (
+          cell: { col: number; row: number },
+          cellSize: CardSize,
+        ): boolean => {
+          const dims = getCardDimensions(cellSize);
+          const pixel = cellToPixel(cell.col, cell.row);
+          const cardLeft = pixel.x - offset.x;
+          const cardTop = pixel.y - offset.y;
+          const cardRight = cardLeft + dims.width;
+          const cardBottom = cardTop + dims.height;
+          return (
+            cardRight <= bounds.left ||
+            cardLeft >= bounds.right ||
+            cardBottom <= bounds.top ||
+            cardTop >= bounds.bottom
+          );
+        };
+
         for (let i = 0; i < spawnCount; i++) {
           const queuedCard = nextQueue.shift();
           if (!queuedCard) break;
           const size = getCardSizeForIndex(spawnCountRef.current, queuedCard.data, cardSizeMode);
           const dimensions = getCardDimensions(size);
 
-          // Find nearest available grid cell from viewport center
-          const cell = grid.findNearest(center.col, center.row, size);
-          if (!cell) continue;
+          // Nearest free cell that sits OUTSIDE the visible viewport.
+          // If none is available within search radius this tick, skip — the
+          // queued card stays at the head and we try again next frame.
+          const cell = grid.findNearest(center.col, center.row, size, {
+            accept: isOutsideViewport,
+          });
+          if (!cell) {
+            // Put the card back at the head of the queue so we don't lose it.
+            nextQueue.unshift(queuedCard);
+            break;
+          }
 
           grid.place(cell.col, cell.row, size, queuedCard.id);
           // Convert grid cell back to pixel position with centering offset
