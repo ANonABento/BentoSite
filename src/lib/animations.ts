@@ -480,81 +480,66 @@ export const bentoSlotReveal: Variants = {
 
 export const unifiedGridCardEntranceDelay = (index = 0) => Math.min(index, 8) * 0.025;
 
-// Dashboard entrance — generic fallback (mobile tabs, etc.)
-// No scale/filter transforms — these break backdrop-filter on glass-panel children
-export const dashboardPanelIn: Variants = {
-  hidden: {
-    opacity: 0,
-    y: 12,
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.45,
-      ease: easings.easeOutQuart,
-    },
-  },
-};
+// Dashboard entrance — first-load reveal after boot.
+//
+// Each panel slides in from its docked side with an explicit delay baked in,
+// so the sequence reads as "OS chrome assembling" rather than a mechanical
+// simultaneous fade. Order: header → 3D viewer → terminal → skills.
+//
+// No scale/filter transforms — these create a new backdrop-root and break
+// backdrop-filter: blur() on .glass-panel descendants.
+const DASHBOARD_DURATION = 0.65;
+const DASHBOARD_TRANSLATE = 48;
+const DASHBOARD_DELAYS = {
+  header: 0,
+  left: 0.12,
+  bottom: 0.22,
+  right: 0.32,
+} as const;
 
-// Dashboard header — drops from top
+const dashboardTransition = (delay: number): Transition => ({
+  duration: DASHBOARD_DURATION,
+  ease: easings.easeOutQuart,
+  delay,
+});
+
+// Header — drops from above.
 export const dashboardHeaderIn: Variants = {
-  hidden: {
-    opacity: 0,
-    y: -20,
-  },
+  hidden: { opacity: 0, y: -20 },
+  visible: { opacity: 1, y: 0, transition: dashboardTransition(DASHBOARD_DELAYS.header) },
+};
+
+// 3D viewer — slides in from the left.
+export const dashboardLeftIn: Variants = {
+  hidden: { opacity: 0, x: -DASHBOARD_TRANSLATE },
+  visible: { opacity: 1, x: 0, transition: dashboardTransition(DASHBOARD_DELAYS.left) },
+};
+
+// Terminal — rises from below.
+export const dashboardBottomIn: Variants = {
+  hidden: { opacity: 0, y: DASHBOARD_TRANSLATE },
+  visible: { opacity: 1, y: 0, transition: dashboardTransition(DASHBOARD_DELAYS.bottom) },
+};
+
+// Skills column — slides in from the right.
+export const dashboardRightIn: Variants = {
+  hidden: { opacity: 0, x: DASHBOARD_TRANSLATE },
+  visible: { opacity: 1, x: 0, transition: dashboardTransition(DASHBOARD_DELAYS.right) },
+};
+
+// Generic fallback (mobile tabs, mobile viewfinder) — modest fade-up.
+export const dashboardPanelIn: Variants = {
+  hidden: { opacity: 0, y: 12 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.5,
-      ease: easings.easeOutQuart,
-    },
+    transition: { duration: 0.45, ease: easings.easeOutQuart },
   },
 };
 
-// Dashboard left panel — slides from left
-export const dashboardLeftIn: Variants = {
-  hidden: {
-    opacity: 0,
-    x: -24,
-  },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      duration: 0.5,
-      ease: easings.easeOutQuart,
-    },
-  },
-};
-
-// Dashboard right column — slides from right
-export const dashboardRightIn: Variants = {
-  hidden: {
-    opacity: 0,
-    x: 24,
-  },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      duration: 0.5,
-      ease: easings.easeOutQuart,
-    },
-  },
-};
-
-// Dashboard entrance orchestrator — staggers children after boot exit
+// Orchestrator — propagates `hidden`/`visible` labels to children via variant
+// inheritance. No `staggerChildren`; each child encodes its own delay above.
 export const dashboardStagger: Variants = {
-  hidden: {
-    opacity: 1,
-  },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0,
-    },
-  },
+  hidden: { opacity: 1 },
+  visible: { opacity: 1 },
 };

@@ -28,6 +28,8 @@ interface DashboardLayoutProps {
   closeShortcuts: () => void;
   /** Controls when the stagger entrance begins (set after boot exit) */
   ready: boolean;
+  /** When true, panels animate from hidden; otherwise they render in place. */
+  playEntrance: boolean;
   /** Initial project ID to load from URL */
   initialProjectId?: string;
 }
@@ -40,6 +42,7 @@ export function DashboardLayout({
   isShortcutsOpen,
   closeShortcuts,
   ready,
+  playEntrance,
   initialProjectId,
 }: DashboardLayoutProps) {
   const router = useRouter();
@@ -106,9 +109,13 @@ export function DashboardLayout({
   return (
     <>
       <motion.div
-        className="flex flex-col h-screen dashboard-shell"
+        className="flex flex-col h-screen overflow-hidden"
         variants={dashboardStagger}
-        initial="hidden"
+        // Use explicit 'visible' instead of `false` for the return-visit path:
+        // `initial={false}` has an inheritance quirk with variant children where
+        // a single child can occasionally stay wedged at the `hidden` state when
+        // the parent's animate flips from 'hidden' → 'visible' mid-mount.
+        initial={playEntrance ? 'hidden' : 'visible'}
         animate={ready ? 'visible' : 'hidden'}
       >
         {/* Header — drops from top */}
@@ -162,7 +169,7 @@ export function DashboardLayout({
                   }
                 }}
               >
-                <div className="glass-panel dashboard-panel overflow-hidden flex-shrink-0">
+                <div className="glass-panel dashboard-panel overflow-hidden flex-shrink-0 bento-corner-all">
                   <SkillsSection onAskAI={handleAskAboutSkill} />
                 </div>
                 <TerminalPanel
@@ -182,7 +189,7 @@ export function DashboardLayout({
           <div className="hidden md:flex md:w-1/2 flex-col gap-5 min-h-0">
             {/* Skills Section */}
             <motion.div
-              className="glass-panel dashboard-panel overflow-hidden flex-shrink-0"
+              className="glass-panel dashboard-panel overflow-hidden flex-shrink-0 bento-corner-tr"
               variants={dashboardRightIn}
             >
               <SkillsSection onAskAI={handleAskAboutSkill} />

@@ -7,6 +7,36 @@ interface BentoIconProps {
   className?: string;
 }
 
+interface CornerRadii {
+  tl?: number;
+  tr?: number;
+  br?: number;
+  bl?: number;
+}
+
+// Rect path with per-corner radii. Corners with radius 0 stay square — used to
+// flatten the tiles' inner edges so they read as one outlined bento composition.
+function tilePath(x: number, y: number, w: number, h: number, c: CornerRadii): string {
+  const tl = c.tl ?? 0;
+  const tr = c.tr ?? 0;
+  const br = c.br ?? 0;
+  const bl = c.bl ?? 0;
+  const arc = (rx: number, ex: number, ey: number) =>
+    rx > 0 ? `A${rx},${rx} 0 0 1 ${ex},${ey}` : `L${ex},${ey}`;
+  return [
+    `M${x + tl},${y}`,
+    `L${x + w - tr},${y}`,
+    arc(tr, x + w, y + tr),
+    `L${x + w},${y + h - br}`,
+    arc(br, x + w - br, y + h),
+    `L${x + bl},${y + h}`,
+    arc(bl, x, y + h - bl),
+    `L${x},${y + tl}`,
+    arc(tl, x + tl, y),
+    'Z',
+  ].join(' ');
+}
+
 export function BentoIcon({ size = 16, className = '' }: BentoIconProps) {
   const rawId = useId();
   const svgId = rawId.replace(/:/g, '');
@@ -15,9 +45,9 @@ export function BentoIcon({ size = 16, className = '' }: BentoIconProps) {
   const rightX = leftWidth + gap;
   const rightWidth = size - rightX;
   const tileHeight = Math.round((size - gap) / 2);
-  // Sharper inner radii — the previous logo felt rounded/soft.
+  // Outer perimeter radius — inner corners stay square so the three tiles
+  // read as one rounded bento outline.
   const r = Math.max(2, Math.round(size * 0.07));
-  const innerR = Math.max(1, Math.round(size * 0.05));
 
   // Bottom-right (purple) block geometry — used to fit the >_ glyph.
   const bottomY = tileHeight + gap;
@@ -49,16 +79,16 @@ export function BentoIcon({ size = 16, className = '' }: BentoIconProps) {
         </pattern>
       </defs>
 
-      <rect x={0} y={0} width={leftWidth} height={size} rx={r} fill="var(--orange)" />
-      <rect x={rightX} y={0} width={rightWidth} height={tileHeight} rx={innerR} fill="var(--orange)" />
-      <rect
-        x={rightX}
-        y={bottomY}
-        width={rightWidth}
-        height={bottomH}
-        rx={innerR}
+      <path d={tilePath(0, 0, leftWidth, size, { tl: r, bl: r })} fill="var(--orange)" />
+      <path
+        d={tilePath(rightX, 0, rightWidth, tileHeight, { tr: r })}
+        fill="var(--orange)"
+      />
+      <path
+        d={tilePath(rightX, bottomY, rightWidth, bottomH, { br: r })}
         fill="var(--purple)"
       />
+
       <text
         x={bottomCx}
         y={bottomCy}

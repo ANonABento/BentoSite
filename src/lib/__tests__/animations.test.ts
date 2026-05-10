@@ -31,7 +31,20 @@ import {
   bentoCardEntrance,
   bentoSlotReveal,
   unifiedGridCardEntranceDelay,
+  dashboardHeaderIn,
+  dashboardLeftIn,
+  dashboardBottomIn,
+  dashboardRightIn,
+  dashboardPanelIn,
+  dashboardStagger,
 } from '../animations';
+
+type StaticVisible = {
+  opacity: number;
+  x?: number;
+  y?: number;
+  transition: { duration: number; delay: number; ease: readonly number[] };
+};
 
 describe('animations utility', () => {
   describe('easings', () => {
@@ -311,6 +324,57 @@ describe('animations utility', () => {
       expect(visible.scale).toBe(1);
       expect(visible.transition.delay).toBeCloseTo(0.14);
       expect(visible.transition.duration).toBeLessThan(0.42);
+    });
+  });
+
+  describe('dashboard entrance variants', () => {
+    it('header drops from above with no delay', () => {
+      const visible = dashboardHeaderIn.visible as StaticVisible;
+      expect(dashboardHeaderIn.hidden).toMatchObject({ opacity: 0, y: -20 });
+      expect(visible).toMatchObject({ opacity: 1, y: 0 });
+      expect(visible.transition.delay).toBe(0);
+    });
+
+    it('3D viewer slides from the left after the header', () => {
+      const visible = dashboardLeftIn.visible as StaticVisible;
+      expect(dashboardLeftIn.hidden).toMatchObject({ opacity: 0, x: -48 });
+      expect(visible).toMatchObject({ opacity: 1, x: 0 });
+      expect(visible.transition.delay).toBeCloseTo(0.12);
+    });
+
+    it('terminal rises from below between viewer and skills', () => {
+      const visible = dashboardBottomIn.visible as StaticVisible;
+      expect(dashboardBottomIn.hidden).toMatchObject({ opacity: 0, y: 48 });
+      expect(visible).toMatchObject({ opacity: 1, y: 0 });
+      expect(visible.transition.delay).toBeCloseTo(0.22);
+    });
+
+    it('skills column slides from the right last', () => {
+      const visible = dashboardRightIn.visible as StaticVisible;
+      expect(dashboardRightIn.hidden).toMatchObject({ opacity: 0, x: 48 });
+      expect(visible).toMatchObject({ opacity: 1, x: 0 });
+      expect(visible.transition.delay).toBeCloseTo(0.32);
+    });
+
+    it('directional variants fire in header → left → bottom → right order', () => {
+      const delays = [
+        (dashboardHeaderIn.visible as StaticVisible).transition.delay,
+        (dashboardLeftIn.visible as StaticVisible).transition.delay,
+        (dashboardBottomIn.visible as StaticVisible).transition.delay,
+        (dashboardRightIn.visible as StaticVisible).transition.delay,
+      ];
+      const sorted = [...delays].sort((a, b) => a - b);
+      expect(delays).toEqual(sorted);
+    });
+
+    it('panel fallback uses a modest fade-up without horizontal motion', () => {
+      expect(dashboardPanelIn.hidden).toMatchObject({ opacity: 0, y: 12 });
+      expect(dashboardPanelIn.visible).toMatchObject({ opacity: 1, y: 0 });
+    });
+
+    it('orchestrator no longer staggers children — delays live on each variant', () => {
+      const visible = dashboardStagger.visible as { transition?: unknown };
+      expect(visible.transition).toBeUndefined();
     });
   });
 

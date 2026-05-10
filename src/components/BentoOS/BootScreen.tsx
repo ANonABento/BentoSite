@@ -56,7 +56,7 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
       {isVisible ? (
         <motion.div
           className="fixed inset-0 z-[100] overflow-hidden bg-black"
-          exit={{ opacity: 0, scale: 1.04 }}
+          exit={{ opacity: 0, scale: 0.96 }}
           transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
           onClick={isSkippable ? completeBoot : undefined}
         >

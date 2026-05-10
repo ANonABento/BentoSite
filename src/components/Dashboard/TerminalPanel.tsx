@@ -2,7 +2,7 @@
 
 import type { ChatFunctions, ChatbotProps } from '@/components/Chat';
 import { motion } from 'framer-motion';
-import { dashboardPanelIn } from '@/lib/animations';
+import { dashboardBottomIn } from '@/lib/animations';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
@@ -30,8 +30,8 @@ export function TerminalPanel({
 }: TerminalPanelProps) {
   return (
     <motion.div
-      className="glass-panel dashboard-panel overflow-hidden flex-1 flex flex-col min-h-0"
-      variants={dashboardPanelIn}
+      className="glass-panel dashboard-panel overflow-hidden flex-1 flex flex-col min-h-0 bento-corner-all md:rounded-none md:bento-corner-br"
+      variants={dashboardBottomIn}
     >
       <SectionHeader
         title="terminal"

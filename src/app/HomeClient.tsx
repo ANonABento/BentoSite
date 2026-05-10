@@ -91,6 +91,11 @@ export function HomeClient() {
   const showBoot = !startsInDashboard && bootState !== 'checking' && bootState !== 'complete';
   const dashboardReady =
     startsInDashboard || (bootState !== 'checking' && bootState !== 'booting');
+  // True only when boot played within this mount; `bootStateOverride` is
+  // null on subsequent visits and on `?view=dashboard` deep-links, so the
+  // dashboard skips its entrance there and PageTransition handles the fade.
+  const playEntrance =
+    bootStateOverride === 'exiting' || bootStateOverride === 'complete';
 
   return (
     <LazyMotion features={domAnimation}>
@@ -106,6 +111,7 @@ export function HomeClient() {
           isShortcutsOpen={isShortcutsOpen}
           closeShortcuts={closeShortcuts}
           ready={dashboardReady}
+          playEntrance={playEntrance}
         />
       </main>
       {showBoot ? (

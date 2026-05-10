@@ -25,8 +25,8 @@ export function ViewfinderPanel({ selectedProject, Viewfinder, mobileHidden, sus
     <motion.div
       className={`flex-col min-h-0 overflow-hidden glass-panel dashboard-panel ${
         isMobileVariant
-          ? `md:hidden ${mobileHidden ? 'hidden' : 'flex flex-1'}`
-          : 'hidden md:flex md:w-1/2'
+          ? `bento-corner-all md:hidden ${mobileHidden ? 'hidden' : 'flex flex-1'}`
+          : 'hidden md:flex md:w-1/2 md:bento-corner-tl md:bento-corner-bl'
       }`}
       variants={isMobileVariant ? dashboardPanelIn : dashboardLeftIn}
     >
