@@ -67,9 +67,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(STORAGE_KEY, newTheme);
   }, []);
 
+  // Functional setState so `toggleTheme` is stable across renders. Without
+  // this it captures the current `theme` in its closure, and any consumer
+  // that holds onto the reference (e.g. the keydown handler bound via a
+  // useEffect) reads a stale value after the first toggle.
   const toggleTheme = useCallback(() => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  }, [theme, setTheme]);
+    setThemeState((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      try {
+        localStorage.setItem(STORAGE_KEY, next);
+      } catch {
+        // localStorage may be unavailable (private mode, quota); fail open.
+      }
+      return next;
+    });
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>

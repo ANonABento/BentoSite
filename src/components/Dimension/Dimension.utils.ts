@@ -7,6 +7,8 @@ import {
   isMobileDevice as sharedIsMobileDevice,
 } from '@/lib/utils';
 import { PERFORMANCE } from '@/lib/constants';
+import { AVAILABLE_MODELS, DEFAULT_MODEL_PATH } from './Dimension.config';
+import type { ModelInfo } from './Dimension.types';
 
 export const formatFileSize = sharedFormatFileSize;
 export const isMobileDevice = sharedIsMobileDevice;
@@ -62,3 +64,45 @@ export const getLODScale = (baseScale: number, lodLevel: number): number => {
 export const formatPercentage = (value: number): number => {
   return Math.round(value);
 };
+
+/**
+ * Last-resort model record when `AVAILABLE_MODELS` is empty. Keeps the
+ * controller from ever returning `undefined` from `getInitialModel`.
+ */
+export function getFallbackModel(): ModelInfo {
+  return {
+    id: 'fallback',
+    name: 'No Models Available',
+    path: DEFAULT_MODEL_PATH,
+    thumbnail: '',
+    description: 'No models configured',
+    category: 'None',
+  };
+}
+
+/**
+ * Resolve the starting model for the viewer. If a `modelPath` is supplied
+ * (e.g. a project-specific asset), prefer the matching entry from
+ * `AVAILABLE_MODELS`; otherwise synthesize a lightweight stub so the
+ * viewer can still load the file. Falls back to the first available
+ * model, then to `getFallbackModel`.
+ */
+export function getInitialModel(modelPath?: string): ModelInfo {
+  if (modelPath) {
+    const existingModel = AVAILABLE_MODELS.find((model) => model.path === modelPath);
+    if (existingModel) {
+      return existingModel;
+    }
+
+    return {
+      id: `external-${modelPath}`,
+      name: 'Project Model',
+      path: modelPath,
+      thumbnail: '',
+      description: 'Model provided by the selected project.',
+      category: 'Project',
+    };
+  }
+
+  return AVAILABLE_MODELS[0] ?? getFallbackModel();
+}

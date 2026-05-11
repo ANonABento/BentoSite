@@ -14,12 +14,14 @@ function renderModel({
   onClick,
   isWireframe,
   rotationSpeed,
+  isMobile,
 }: {
   modelPath: string;
   autoRotate: boolean;
   onClick: () => void;
   isWireframe: boolean;
   rotationSpeed: number;
+  isMobile: boolean;
 }) {
   const format = getModelFormat(modelPath);
 
@@ -32,6 +34,7 @@ function renderModel({
         onClick={onClick}
         isWireframe={isWireframe}
         rotationSpeed={rotationSpeed}
+        isMobile={isMobile}
       />
     );
   }
@@ -44,6 +47,7 @@ function renderModel({
         onClick={onClick}
         isWireframe={isWireframe}
         rotationSpeed={rotationSpeed}
+        isMobile={isMobile}
       />
     );
   }
@@ -55,6 +59,7 @@ function renderModel({
       onClick={onClick}
       isWireframe={isWireframe}
       rotationSpeed={rotationSpeed}
+      isMobile={isMobile}
     />
   );
 }
@@ -66,9 +71,10 @@ export function ModelWrapper({
   onClick,
   isWireframe,
   rotationSpeed = 1,
+  isMobile,
 }: STLModelWrapperProps) {
   return (
-    <Suspense fallback={<SkeletonLoader />}>
+    <Suspense fallback={<SkeletonLoader isMobile={isMobile} />}>
       <SceneErrorBoundary onError={onError}>
         {renderModel({
           modelPath,
@@ -76,6 +82,7 @@ export function ModelWrapper({
           onClick,
           isWireframe,
           rotationSpeed,
+          isMobile,
         })}
       </SceneErrorBoundary>
     </Suspense>

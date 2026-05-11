@@ -9,9 +9,7 @@ export const ResponsiveOrbitControls = forwardRef<
   ResponsiveOrbitControlsProps
 >(function ResponsiveOrbitControls(
   {
-    autoRotate,
     isMobile,
-    rotationSpeed = 1,
     onZoomChange,
   },
   ref
@@ -33,12 +31,15 @@ export const ResponsiveOrbitControls = forwardRef<
     }
   }, [onZoomChange]);
 
+  // Auto-rotation is owned by the model's `useFrame` (model spins on its own
+  // axis, the camera and grid stay still). Drei's `autoRotate` would orbit
+  // the camera AROUND the model and stack with the model's self-rotation —
+  // the two un-synced motions are exactly the "non-smooth" feel.
   return (
     <OrbitControls
       ref={controlsRef}
       onChange={handleChange}
-      autoRotate={autoRotate}
-      autoRotateSpeed={2 * rotationSpeed}
+      autoRotate={false}
       enableZoom
       enablePan
       enableRotate

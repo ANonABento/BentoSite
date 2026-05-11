@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { isMobileDevice } from '../Dimension.utils';
+import { SkeletonUtils } from 'three-stdlib';
 
 interface GLTFModelProps {
   modelPath: string;
@@ -10,6 +10,7 @@ interface GLTFModelProps {
   onClick: () => void;
   isWireframe: boolean;
   rotationSpeed?: number;
+  isMobile: boolean;
 }
 
 export function GLTFModel({
@@ -18,10 +19,17 @@ export function GLTFModel({
   onClick,
   isWireframe,
   rotationSpeed = 1,
+  isMobile,
 }: GLTFModelProps) {
   const groupRef = useRef<THREE.Group>(null);
   const { scene } = useGLTF(modelPath);
-  const isMobile = useMemo(() => isMobileDevice(), []);
+
+  // `useGLTF` returns the SAME cached scene to every consumer. Mutating
+  // material flags or shadow casters on it leaks across instances and
+  // outlives this component. Clone so each render has its own subtree
+  // (SkeletonUtils.clone is the safe variant — handles skinned meshes,
+  // shares geometries, deep-clones materials).
+  const clonedScene = useMemo(() => SkeletonUtils.clone(scene), [scene]);
 
   useFrame((_, delta) => {
     if (groupRef.current && autoRotate) {
@@ -30,7 +38,7 @@ export function GLTFModel({
   });
 
   useEffect(() => {
-    scene.traverse((child) => {
+    clonedScene.traverse((child) => {
       if (!(child instanceof THREE.Mesh)) {
         return;
       }
@@ -48,11 +56,28 @@ export function GLTFModel({
       child.castShadow = !isMobile;
       child.receiveShadow = !isMobile;
     });
-  }, [isMobile, isWireframe, scene]);
+  }, [isMobile, isWireframe, clonedScene]);
+
+  // Dispose the cloned materials when the component unmounts (geometries
+  // are shared with the cache via SkeletonUtils.clone, so we don't touch
+  // those — drei's useGLTF.clear handles cache-level cleanup).
+  useEffect(() => {
+    return () => {
+      clonedScene.traverse((child) => {
+        if (!(child instanceof THREE.Mesh)) return;
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        for (const material of materials) {
+          if (material && typeof material.dispose === 'function') {
+            material.dispose();
+          }
+        }
+      });
+    };
+  }, [clonedScene]);
 
   return (
     <group ref={groupRef} onClick={onClick}>
-      <primitive object={scene} scale={1} />
+      <primitive object={clonedScene} scale={1} />
     </group>
   );
 }

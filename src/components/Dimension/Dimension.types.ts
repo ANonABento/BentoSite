@@ -7,13 +7,16 @@ export interface ModelInfo {
   name: string;
   path: string;
   thumbnail: string;
-  fileSize: number;
-  dimensions: {
+  // Optional metadata — undefined means "unknown" (e.g. a project-supplied
+  // mesh whose dimensions we never measured). 0 is a valid value (procedural
+  // meshes legitimately have no file size). The UI distinguishes the two.
+  fileSize?: number;
+  dimensions?: {
     width: number;
     height: number;
     depth: number;
   };
-  vertexCount: number;
+  vertexCount?: number;
   description: string;
   category: string;
   format?: ModelFormat; // Optional, defaults to 'stl' for backwards compatibility
@@ -38,9 +41,10 @@ export interface ControlPanelProps {
   onFullscreen: () => void;
   onCameraPresets: () => void;
   onModelManager: () => void;
+  /** Hide the "Models" tile + drop the M shortcut when only one model exists. */
+  enableModelManager?: boolean;
   selectedModelName: string;
   isMobile: boolean;
-  screenSize: { width: number; height: number };
   showCameraPresets?: boolean;
   // Slider controls
   zoomLevel: number;
@@ -63,9 +67,7 @@ export interface ModelInfoDisplayProps {
 }
 
 export interface ResponsiveOrbitControlsProps {
-  autoRotate: boolean;
   isMobile: boolean;
-  rotationSpeed?: number;
   zoomLevel?: number;
   onZoomChange?: (zoom: number) => void;
 }
@@ -77,6 +79,7 @@ export interface STLModelWrapperProps {
   onClick: () => void;
   isWireframe: boolean;
   rotationSpeed?: number;
+  isMobile: boolean;
 }
 
 export interface LODModelProps {
@@ -85,6 +88,7 @@ export interface LODModelProps {
   onClick: () => void;
   isWireframe: boolean;
   rotationSpeed?: number;
+  isMobile: boolean;
 }
 
 export interface BillboardTextProps {

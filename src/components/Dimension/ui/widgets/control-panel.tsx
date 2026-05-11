@@ -9,7 +9,7 @@ import { CollapsibleWidget } from './collapsible-widget';
 import { buttonTap } from '@/lib/animations';
 
 const CAMERA_PRESET_NAMES = [
-  'front', 'back', 'left', 'right', 'top', 'bottom', 'isometric', 'reset',
+  'front', 'back', 'left', 'right', 'top', 'bottom', 'isometric',
 ] as const;
 
 export function ControlPanel({
@@ -24,6 +24,7 @@ export function ControlPanel({
   onCameraPresets,
   onModelManager,
   onCameraPresetSelect,
+  enableModelManager = false,
   isMobile,
   showCameraPresets,
   zoomLevel,
@@ -135,7 +136,7 @@ export function ControlPanel({
       shortcut: 'S',
       description: 'Capture screenshot of current view'
     },
-    {
+    ...(enableModelManager ? [{
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -146,8 +147,8 @@ export function ControlPanel({
       active: false,
       shortcut: 'M',
       description: 'Open model manager'
-    }
-  ], [autoRotate, isWireframe, showCameraPresets, onToggleAutoRotate, onResetView, onZoomFit, onFullscreen, onToggleWireframe, onCameraPresets, onScreenshot, onModelManager]);
+    }] : [])
+  ], [autoRotate, isWireframe, enableModelManager, showCameraPresets, onToggleAutoRotate, onResetView, onZoomFit, onFullscreen, onToggleWireframe, onCameraPresets, onScreenshot, onModelManager]);
 
   const controlsIcon = (
     <svg className="w-4 h-4 text-[var(--interactive)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

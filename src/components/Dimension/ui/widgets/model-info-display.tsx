@@ -56,17 +56,23 @@ export function ModelInfoDisplay({ model, isMobile }: ModelInfoDisplayProps) {
                 <div className="bg-[var(--glass-bg)] rounded-lg p-2 space-y-2">
                   <div className="flex justify-between items-center">
                     <span className={`${DESIGN_SYSTEM.colors.text.tertiary} font-medium`}>File Size:</span>
-                    <span className={`${DESIGN_SYSTEM.colors.text.primary} font-mono text-xs`}>{formatFileSize(model.fileSize)}</span>
+                    <span className={`${DESIGN_SYSTEM.colors.text.primary} font-mono text-xs`}>
+                      {model.fileSize !== undefined ? formatFileSize(model.fileSize) : '—'}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={`${DESIGN_SYSTEM.colors.text.tertiary} font-medium`}>Dimensions:</span>
                     <span className={`${DESIGN_SYSTEM.colors.text.primary} font-mono text-xs`}>
-                      {model.dimensions.width} × {model.dimensions.height} × {model.dimensions.depth}
+                      {model.dimensions
+                        ? `${model.dimensions.width} × ${model.dimensions.height} × ${model.dimensions.depth}`
+                        : '—'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={`${DESIGN_SYSTEM.colors.text.tertiary} font-medium`}>Vertices:</span>
-                    <span className={`${DESIGN_SYSTEM.colors.text.primary} font-mono text-xs`}>{formatVertexCount(model.vertexCount)}</span>
+                    <span className={`${DESIGN_SYSTEM.colors.text.primary} font-mono text-xs`}>
+                      {model.vertexCount !== undefined ? formatVertexCount(model.vertexCount) : '—'}
+                    </span>
                   </div>
                 </div>
               )}

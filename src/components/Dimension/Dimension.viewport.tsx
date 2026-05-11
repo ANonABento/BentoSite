@@ -1,8 +1,8 @@
 'use client';
 
-import React, { RefObject, useMemo } from 'react';
+import React, { RefObject, useEffect } from 'react';
 import { useProgress } from '@react-three/drei';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import type { ModelError, ModelInfo } from './Dimension.types';
@@ -32,34 +32,62 @@ interface ViewerTheme {
 }
 
 /**
- * Reads `--viewfinder-*` CSS variables from :root so the WebGL canvas can
- * follow theme changes (Three.js can't read CSS vars directly). The current
- * theme is the dependency so this recomputes after the theme class on
- * `<html>` flips and the cascade has settled to the new values.
+ * WebGL needs concrete numbers/hexes — Three.js can't read CSS vars. We could
+ * pull them from the cascade with `getComputedStyle`, but ThemeProvider sets
+ * the html class inside a `useEffect` that runs AFTER render, so the cascade
+ * is one render behind during the very tick we'd read it. Result: the canvas
+ * lags one click behind the rest of the UI. Mirror the values from
+ * theme.css here so the JS source of truth flips synchronously with `theme`.
  */
-function readViewerTheme(theme: 'dark' | 'light'): ViewerTheme {
-  const ssrFallback: ViewerTheme = theme === 'light'
-    ? { bg: '#e8eaef', ambient: 0.6, keyIntensity: 0.7, fillIntensity: 0.35 }
-    : { bg: '#050507', ambient: 0.32, keyIntensity: 0.95, fillIntensity: 0.45 };
-  if (typeof window === 'undefined') return ssrFallback;
-  const root = window.getComputedStyle(document.documentElement);
-  const read = (name: string, fallback: string) =>
-    root.getPropertyValue(name).trim() || fallback;
-  const num = (value: string, fallback: number) => {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
-  };
-  return {
-    bg: read('--viewfinder-bg', ssrFallback.bg),
-    ambient: num(read('--viewfinder-ambient', String(ssrFallback.ambient)), ssrFallback.ambient),
-    keyIntensity: num(read('--viewfinder-key-intensity', String(ssrFallback.keyIntensity)), ssrFallback.keyIntensity),
-    fillIntensity: num(read('--viewfinder-fill-intensity', String(ssrFallback.fillIntensity)), ssrFallback.fillIntensity),
-  };
-}
+const VIEWER_THEMES: Record<'dark' | 'light', ViewerTheme> = {
+  dark: { bg: '#050507', ambient: 0.32, keyIntensity: 0.95, fillIntensity: 0.45 },
+  light: { bg: '#e8eaef', ambient: 0.6, keyIntensity: 0.7, fillIntensity: 0.35 },
+};
 
 function useViewerTheme(): ViewerTheme {
   const { theme } = useTheme();
-  return useMemo(() => readViewerTheme(theme), [theme]);
+  return VIEWER_THEMES[theme];
+}
+
+/**
+ * Re-applies the WebGL clear color whenever the theme bg changes. The
+ * Canvas's `onCreated` only fires once at mount, so without this the GPU
+ * keeps clearing to the original color until the canvas remounts (e.g. by
+ * switching viewfinder tabs). This child lives inside <Canvas>, picks up
+ * the renderer via `useThree`, and updates it imperatively.
+ */
+function ClearColorSync({ color }: { color: string }) {
+  const gl = useThree((state) => state.gl);
+  useEffect(() => {
+    gl.setClearColor(color, 1);
+  }, [gl, color]);
+  return null;
+}
+
+/**
+ * 3-point studio rig — directional key for crisp form, soft point fill
+ * from the opposite side, low ambient base. Shared between the error
+ * preview canvas and the main scene canvas so the lighting can't drift
+ * between the two surfaces.
+ */
+function StudioLighting({ theme, isMobile }: { theme: ViewerTheme; isMobile: boolean }) {
+  return (
+    <>
+      <ambientLight intensity={theme.ambient} />
+      <directionalLight
+        position={[10, 12, 8]}
+        intensity={isMobile ? theme.keyIntensity * 0.8 : theme.keyIntensity}
+        castShadow={!isMobile}
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+      />
+      <pointLight
+        position={[-8, 4, -6]}
+        intensity={isMobile ? theme.fillIntensity * 0.7 : theme.fillIntensity}
+        castShadow={false}
+      />
+    </>
+  );
 }
 
 interface DimensionViewportProps {
@@ -96,10 +124,9 @@ function DimensionLoadingFallback({ bg }: { bg: string }) {
         dpr={[1, MOBILE_PIXEL_RATIO_MAX]}
         gl={{ antialias: false, powerPreference: 'high-performance' }}
         style={{ background: bg }}
-        onCreated={({ gl }) => {
-          gl.setClearColor(bg, 1);
-        }}
-      />
+      >
+        <ClearColorSync color={bg} />
+      </Canvas>
       <div
         className="absolute inset-0 flex items-center justify-center pointer-events-none"
         style={{ zIndex: 1000 }}
@@ -144,15 +171,11 @@ export function DimensionViewport({
             preserveDrawingBuffer: allowScreenshots,
           }}
           style={{ background: viewerTheme.bg }}
-          onCreated={({ gl }) => {
-            gl.setClearColor(viewerTheme.bg, 1);
-          }}
         >
-          <ambientLight intensity={viewerTheme.ambient} />
-          <directionalLight position={[10, 12, 8]} intensity={viewerTheme.keyIntensity} />
-          <pointLight position={[-8, 4, -6]} intensity={viewerTheme.fillIntensity} />
-          <StationaryBackground />
-          <ResponsiveOrbitControls ref={controlsRef} autoRotate={autoRotate} isMobile={isMobile} />
+          <ClearColorSync color={viewerTheme.bg} />
+          <StudioLighting theme={viewerTheme} isMobile={isMobile} />
+          <StationaryBackground isMobile={isMobile} />
+          <ResponsiveOrbitControls ref={controlsRef} isMobile={isMobile} />
         </Canvas>
         <ErrorMessage error={error} onRetry={onRetry} isMobile={isMobile} />
       </div>
@@ -180,30 +203,16 @@ export function DimensionViewport({
             gl.shadowMap.enabled = true;
             gl.shadowMap.type = THREE.PCFSoftShadowMap;
           }
-
           gl.autoClear = true;
-          gl.setClearColor(viewerTheme.bg, 1);
+          // Clear color is owned by <ClearColorSync> below so it follows
+          // theme changes at runtime instead of being baked in at mount.
         }}
         style={{ background: viewerTheme.bg }}
         ref={canvasRef}
       >
-        {/* 3-point studio rig — directional key for crisp form, soft pointer
-            fill from the opposite side, low ambient base. Intensities follow
-            the theme so light mode reads brighter without blowing out. */}
-        <ambientLight intensity={viewerTheme.ambient} />
-        <directionalLight
-          position={[10, 12, 8]}
-          intensity={isMobile ? viewerTheme.keyIntensity * 0.8 : viewerTheme.keyIntensity}
-          castShadow={!isMobile}
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
-        />
-        <pointLight
-          position={[-8, 4, -6]}
-          intensity={isMobile ? viewerTheme.fillIntensity * 0.7 : viewerTheme.fillIntensity}
-          castShadow={false}
-        />
-        <StationaryBackground />
+        <ClearColorSync color={viewerTheme.bg} />
+        <StudioLighting theme={viewerTheme} isMobile={isMobile} />
+        <StationaryBackground isMobile={isMobile} />
         <ModelWrapper
           modelPath={selectedModel.path}
           onError={onError}
@@ -211,12 +220,11 @@ export function DimensionViewport({
           onClick={onModelClick}
           isWireframe={isWireframe}
           rotationSpeed={rotationSpeed}
+          isMobile={isMobile}
         />
         <ResponsiveOrbitControls
           ref={controlsRef}
-          autoRotate={autoRotate}
           isMobile={isMobile}
-          rotationSpeed={rotationSpeed}
           zoomLevel={zoomLevel}
           onZoomChange={onZoomLevelChange}
         />

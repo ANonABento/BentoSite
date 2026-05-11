@@ -1,13 +1,11 @@
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import { Box } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
-import { isMobileDevice } from '../Dimension.utils';
 import { SCENE_COLORS } from './constants';
 import { ResponsiveOrbitControls } from './ResponsiveOrbitControls';
 import { StationaryBackground } from './StationaryBackground';
 
-export function SkeletonLoader() {
-  const isMobile = useMemo(() => isMobileDevice(), []);
+export function SkeletonLoader({ isMobile }: { isMobile: boolean }) {
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
 
   return (
@@ -15,11 +13,11 @@ export function SkeletonLoader() {
       <ambientLight intensity={0.3} />
       <pointLight position={[15, 15, 15]} intensity={isMobile ? 0.6 : 0.8} />
       <pointLight position={[-10, 10, -10]} intensity={isMobile ? 0.2 : 0.4} />
-      <StationaryBackground />
+      <StationaryBackground isMobile={isMobile} />
       <Box position={[0, 0, 0]} scale={[1, 1, 1]} frustumCulled>
         <meshStandardMaterial color={SCENE_COLORS.skeleton} wireframe />
       </Box>
-      <ResponsiveOrbitControls ref={controlsRef} autoRotate isMobile={isMobile} />
+      <ResponsiveOrbitControls ref={controlsRef} isMobile={isMobile} />
     </>
   );
 }

@@ -13,6 +13,8 @@ import { AVAILABLE_MODELS } from './Dimension.config';
 import { DimensionViewport } from './Dimension.viewport';
 import { useDimensionController } from './useDimensionController';
 
+const HAS_MULTIPLE_MODELS = AVAILABLE_MODELS.length > 1;
+
 export default function DimensionViewer({
   minimal = false,
   modelPath,
@@ -40,7 +42,6 @@ export default function DimensionViewer({
     isWireframe,
     retryCount,
     rotationSpeed,
-    screenSize,
     selectedModel,
     setAutoRotate,
     setIsWireframe,
@@ -59,7 +60,7 @@ export default function DimensionViewer({
       className={`w-full h-full relative ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}
       style={{ background: 'var(--viewfinder-bg)' }}
       role="region"
-      aria-label={`3D model viewer showing ${selectedModel.name}. Keyboard shortcuts: R reset, Space toggle rotation, W wireframe, Z zoom to fit, C camera presets, M model selector, S screenshot, F fullscreen.`}
+      aria-label={`3D model viewer showing ${selectedModel.name}. Keyboard shortcuts: R reset, Space toggle rotation, W wireframe, Z zoom to fit, C camera presets, ${HAS_MULTIPLE_MODELS ? 'M model selector, ' : ''}S screenshot, F fullscreen.`}
       tabIndex={0}
     >
       {/* Model Selector Modal */}
@@ -132,9 +133,9 @@ export default function DimensionViewer({
           onCameraPresets={() => setShowCameraPresets(!showCameraPresets)}
           onCameraPresetSelect={handleCameraPreset}
           onModelManager={handleModelManager}
+          enableModelManager={HAS_MULTIPLE_MODELS}
           selectedModelName={selectedModel.name}
           isMobile={isMobile}
-          screenSize={screenSize}
           showCameraPresets={showCameraPresets}
           zoomLevel={zoomLevel}
           rotationSpeed={rotationSpeed}

@@ -148,7 +148,9 @@ export function ModelSelector({ models, selectedModel, onModelSelect, isMobile, 
                   <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-2 leading-relaxed">{model.description}</p>
                   <div className="flex items-center justify-between">
                     <span className="px-3 py-1 rounded-sm text-xs font-medium bg-[var(--purple-muted)] text-[var(--interactive)] border border-[var(--interactive)] border-opacity-30">{model.category}</span>
-                    <span className="text-xs text-[var(--text-muted)] font-mono">{formatFileSize(model.fileSize)}</span>
+                    <span className="text-xs text-[var(--text-muted)] font-mono">
+                      {model.fileSize !== undefined ? formatFileSize(model.fileSize) : '—'}
+                    </span>
                   </div>
                 </div>
               ))}

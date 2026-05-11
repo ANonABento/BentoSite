@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
@@ -8,7 +8,6 @@ import {
   getDistanceFromCamera,
   getLODLevel,
   getLODScale,
-  isMobileDevice,
 } from '../Dimension.utils';
 import { SCENE_COLORS } from './constants';
 
@@ -18,13 +17,13 @@ export function LODModel({
   onClick,
   isWireframe,
   rotationSpeed = 1,
+  isMobile,
 }: LODModelProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const { camera } = useThree();
   const fpsRef = useRef(60);
   const frameCountRef = useRef(0);
   const lastTimeRef = useRef(0);
-  const isMobile = useMemo(() => isMobileDevice(), []);
   const [lodLevel, setLodLevel] = useState(0);
   const geometry = useLoader(STLLoader, modelPath);
 
@@ -63,14 +62,6 @@ export function LODModel({
 
   const scale = getLODScale(0.01, lodLevel);
 
-  const materialProps = useMemo(
-    () => ({
-      color: SCENE_COLORS.model,
-      wireframe: isWireframe,
-    }),
-    [isWireframe]
-  );
-
   return (
     <mesh
       ref={meshRef}
@@ -82,7 +73,7 @@ export function LODModel({
       receiveShadow={!isMobile}
       frustumCulled
     >
-      <meshStandardMaterial {...materialProps} />
+      <meshStandardMaterial color={SCENE_COLORS.model} wireframe={isWireframe} />
     </mesh>
   );
 }

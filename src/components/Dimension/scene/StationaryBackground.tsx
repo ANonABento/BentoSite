@@ -1,7 +1,5 @@
-import { useMemo } from 'react';
 import { Grid } from '@react-three/drei';
 import { GRID_POSITIONS, GRID_ROTATIONS, GRID_SIZE } from '../Dimension.config';
-import { isMobileDevice } from '../Dimension.utils';
 import { GRID_STYLE } from './constants';
 import { useTheme } from '@/lib/theme-context';
 
@@ -10,28 +8,19 @@ interface ThemedGridStyle {
   sectionColor: string;
 }
 
-/** Reads `--viewfinder-grid-*` from :root so grid lines flip with the theme. */
-function readThemedGridStyle(theme: 'dark' | 'light'): ThemedGridStyle {
-  const fallback: ThemedGridStyle = theme === 'light'
-    ? { cellColor: 'rgba(168, 78, 24, 0.18)', sectionColor: 'rgba(168, 78, 24, 0.32)' }
-    : { cellColor: GRID_STYLE.cellColor, sectionColor: GRID_STYLE.sectionColor };
-  if (typeof window === 'undefined') return fallback;
-  const root = window.getComputedStyle(document.documentElement);
-  const read = (name: string, defaultValue: string) =>
-    root.getPropertyValue(name).trim() || defaultValue;
-  return {
-    cellColor: read('--viewfinder-grid-cell', fallback.cellColor),
-    sectionColor: read('--viewfinder-grid-section', fallback.sectionColor),
-  };
-}
+/** Mirrored from theme.css to avoid the html-class cascade lag — see the
+ *  comment on VIEWER_THEMES in Dimension.viewport.tsx. */
+const GRID_THEMES: Record<'dark' | 'light', ThemedGridStyle> = {
+  dark: { cellColor: GRID_STYLE.cellColor, sectionColor: GRID_STYLE.sectionColor },
+  light: { cellColor: 'rgba(168, 78, 24, 0.18)', sectionColor: 'rgba(168, 78, 24, 0.32)' },
+};
 
 function useThemedGridStyle(): ThemedGridStyle {
   const { theme } = useTheme();
-  return useMemo(() => readThemedGridStyle(theme), [theme]);
+  return GRID_THEMES[theme];
 }
 
-export function StationaryBackground() {
-  const isMobile = useMemo(() => isMobileDevice(), []);
+export function StationaryBackground({ isMobile }: { isMobile: boolean }) {
   const fadeDistance = isMobile ? 20 : 30;
   const { cellColor, sectionColor } = useThemedGridStyle();
 
