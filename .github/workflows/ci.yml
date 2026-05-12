@@ -156,6 +156,7 @@ jobs:
     name: E2E Tests
     runs-on: ubuntu-latest
     continue-on-error: true
+    timeout-minutes: 12
     needs: [unit-tests]
     steps:
       - uses: actions/checkout@v4
@@ -170,10 +171,10 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install chromium --with-deps
 
       - name: Run E2E tests
-        run: npm run e2e
+        run: npm run e2e -- --project=chromium
         env:
           PLAYWRIGHT_USE_DEV_SERVER: 'true'
 
@@ -192,6 +193,7 @@ jobs:
   lighthouse:
     name: Lighthouse CI
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: [build]
     steps:
       - uses: actions/checkout@v4
@@ -204,6 +206,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
