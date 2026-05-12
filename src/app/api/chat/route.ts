@@ -1,20 +1,31 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
-import { SYSTEM_PROMPT, PORTFOLIO_DATA } from '@/lib/portfolio-context';
+import {
+  buildAssistantInstructions,
+  checkChatGuardrails,
+  createDemoResponse,
+  formatRetrievedContext,
+  getDefaultPortfolioContext,
+  getLatestUserMessage,
+  PORTFOLIO_DATA,
+  retrievePortfolioContext,
+  type ChatMessage,
+} from '@/lib/chat-knowledge';
 
 // Constants
 const MAX_MESSAGE_LENGTH = 4000;
 const MAX_MESSAGES_COUNT = 20;
 const MAX_TOTAL_CONTENT_LENGTH = 50000;
+const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
+const GEMINI_GENERATE_URL_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+const DEFAULT_OPENAI_MODEL = 'gpt-5.4-mini';
+const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash';
 
-// Initialize Gemini AI only if API key is available
-const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+type ChatProvider = 'demo' | 'google' | 'openai';
 
-export interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
+const openaiApiKey = process.env.OPENAI_API_KEY;
+const googleApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
+const openaiModel = process.env.OPENAI_CHAT_MODEL || DEFAULT_OPENAI_MODEL;
+const geminiModel = process.env.GEMINI_CHAT_MODEL || DEFAULT_GEMINI_MODEL;
 
 // Validate message structure
 function isValidMessage(msg: unknown): msg is ChatMessage {
@@ -29,20 +40,196 @@ function isValidMessage(msg: unknown): msg is ChatMessage {
   );
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    // Check for API key
-    if (!genAI) {
-      return NextResponse.json(
-        {
-          error: 'API key not configured',
-          message: "I'm currently in demo mode. Please configure the Gemini API key to enable full AI responses.",
-          isDemoMode: true,
-        },
-        { status: 503 }
-      );
+function formatConversation(messages: ChatMessage[]): string {
+  return messages
+    .map((message) => `${message.role === 'user' ? 'User' : 'Assistant'}: ${message.content}`)
+    .join('\n\n');
+}
+
+function resolveChatProvider(): ChatProvider {
+  const configured = process.env.CHAT_PROVIDER?.toLowerCase();
+  if (configured === 'google' || configured === 'gemini') {
+    return googleApiKey ? 'google' : 'demo';
+  }
+
+  if (configured === 'openai') {
+    return openaiApiKey ? 'openai' : 'demo';
+  }
+
+  if (googleApiKey) return 'google';
+  if (openaiApiKey) return 'openai';
+  return 'demo';
+}
+
+function parseOpenAIText(payload: unknown): string | null {
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    'output_text' in payload &&
+    typeof payload.output_text === 'string'
+  ) {
+    return payload.output_text;
+  }
+
+  if (!payload || typeof payload !== 'object' || !('output' in payload) || !Array.isArray(payload.output)) {
+    return null;
+  }
+
+  const textParts: string[] = [];
+  for (const item of payload.output) {
+    if (!item || typeof item !== 'object' || !('content' in item) || !Array.isArray(item.content)) {
+      continue;
     }
 
+    for (const content of item.content) {
+      if (
+        content &&
+        typeof content === 'object' &&
+        'text' in content &&
+        typeof content.text === 'string'
+      ) {
+        textParts.push(content.text);
+      }
+    }
+  }
+
+  return textParts.length > 0 ? textParts.join('\n').trim() : null;
+}
+
+async function generateOpenAIResponse(messages: ChatMessage[], instructions: string): Promise<string> {
+  const response = await fetch(OPENAI_RESPONSES_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${openaiApiKey}`,
+    },
+    body: JSON.stringify({
+      model: openaiModel,
+      instructions,
+      input: formatConversation(messages),
+      max_output_tokens: 700,
+      metadata: {
+        app: 'bentosite',
+        surface: 'portfolio-chat',
+      },
+    }),
+  });
+
+  const payload: unknown = await response.json().catch(() => null);
+  if (!response.ok) {
+    const message =
+      payload &&
+      typeof payload === 'object' &&
+      'error' in payload &&
+      payload.error &&
+      typeof payload.error === 'object' &&
+      'message' in payload.error &&
+      typeof payload.error.message === 'string'
+        ? payload.error.message
+        : `OpenAI request failed with status ${response.status}`;
+    throw new Error(message);
+  }
+
+  const text = parseOpenAIText(payload);
+  if (!text) {
+    throw new Error('OpenAI response did not include text output');
+  }
+
+  return text;
+}
+
+function toGeminiContents(messages: ChatMessage[]) {
+  return messages.map((message) => ({
+    role: message.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: message.content }],
+  }));
+}
+
+function parseGeminiText(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object' || !('candidates' in payload) || !Array.isArray(payload.candidates)) {
+    return null;
+  }
+
+  const textParts: string[] = [];
+  for (const candidate of payload.candidates) {
+    if (
+      !candidate ||
+      typeof candidate !== 'object' ||
+      !('content' in candidate) ||
+      !candidate.content ||
+      typeof candidate.content !== 'object' ||
+      !('parts' in candidate.content) ||
+      !Array.isArray(candidate.content.parts)
+    ) {
+      continue;
+    }
+
+    for (const part of candidate.content.parts) {
+      if (part && typeof part === 'object' && 'text' in part && typeof part.text === 'string') {
+        textParts.push(part.text);
+      }
+    }
+  }
+
+  return textParts.length > 0 ? textParts.join('\n').trim() : null;
+}
+
+async function generateGeminiResponse(messages: ChatMessage[], instructions: string): Promise<string> {
+  const response = await fetch(`${GEMINI_GENERATE_URL_BASE}/${geminiModel}:generateContent`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': googleApiKey ?? '',
+    },
+    body: JSON.stringify({
+      systemInstruction: {
+        parts: [{ text: instructions }],
+      },
+      contents: toGeminiContents(messages),
+      generationConfig: {
+        maxOutputTokens: 700,
+        temperature: 0.2,
+      },
+    }),
+  });
+
+  const payload: unknown = await response.json().catch(() => null);
+  if (!response.ok) {
+    const message =
+      payload &&
+      typeof payload === 'object' &&
+      'error' in payload &&
+      payload.error &&
+      typeof payload.error === 'object' &&
+      'message' in payload.error &&
+      typeof payload.error.message === 'string'
+        ? payload.error.message
+        : `Gemini request failed with status ${response.status}`;
+    throw new Error(message);
+  }
+
+  const text = parseGeminiText(payload);
+  if (!text) {
+    throw new Error('Gemini response did not include text output');
+  }
+
+  return text;
+}
+
+async function generateProviderResponse(
+  provider: Exclude<ChatProvider, 'demo'>,
+  messages: ChatMessage[],
+  instructions: string
+): Promise<string> {
+  if (provider === 'google') {
+    return generateGeminiResponse(messages, instructions);
+  }
+
+  return generateOpenAIResponse(messages, instructions);
+}
+
+export async function POST(request: NextRequest) {
+  try {
     let body: unknown;
     try {
       body = await request.json();
@@ -92,31 +279,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use Gemini 1.5 Flash for fast, free responses
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const latestUserMessage = getLatestUserMessage(validMessages);
+    const provider = resolveChatProvider();
+    const guardrail = checkChatGuardrails(latestUserMessage);
+    if (!guardrail.allowed) {
+      return NextResponse.json({
+        message: guardrail.response,
+        isDemoMode: provider === 'demo',
+        provider,
+      });
+    }
 
-    // Limit conversation history to last 10 messages to avoid bloat
+    const retrievedSections = retrievePortfolioContext(latestUserMessage);
+    const groundedSections = retrievedSections.length > 0
+      ? retrievedSections
+      : getDefaultPortfolioContext();
+    const retrievedContext = formatRetrievedContext(groundedSections);
+    const instructions = buildAssistantInstructions(retrievedContext);
     const recentMessages = validMessages.slice(-10);
-    const conversationHistory = recentMessages
-      .map((msg) => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
-      .join('\n\n');
 
-    // Create the full prompt with system context
-    const fullPrompt = `${SYSTEM_PROMPT}
-
-## Conversation History
-${conversationHistory}
-
-Please respond to the user's latest message in a helpful and friendly manner. Keep your response concise (2-4 sentences for simple questions, more for complex ones).`;
-
-    // Generate response
-    const result = await model.generateContent(fullPrompt);
-    const response = result.response;
-    const text = response.text();
+    if (provider === 'demo') {
+      return NextResponse.json({
+        message: createDemoResponse(latestUserMessage, retrievedContext),
+        isDemoMode: true,
+        provider,
+      });
+    }
 
     return NextResponse.json({
-      message: text,
+      message: await generateProviderResponse(provider, recentMessages, instructions),
       isDemoMode: false,
+      provider,
     });
   } catch (error) {
     // Log error for debugging (in production, use proper logging)
