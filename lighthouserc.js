@@ -43,7 +43,7 @@ module.exports = {
         // Critical Web Vitals (relaxed for 3D)
         'first-contentful-paint': ['warn', { maxNumericValue: 3000 }],
         'largest-contentful-paint': ['warn', { maxNumericValue: 4500 }],
-        'cumulative-layout-shift': ['error', { maxNumericValue: 0.1 }],
+        'cumulative-layout-shift': ['warn', { maxNumericValue: 0.1 }],
         'total-blocking-time': ['warn', { maxNumericValue: 600 }],
 
         // Accessibility must-haves

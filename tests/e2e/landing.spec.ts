@@ -7,9 +7,11 @@ test.describe('Landing Page', () => {
     const bootScreen = page.locator('.crt-shell');
 
     await expect(bootScreen).toBeVisible();
-    await expect(bootScreen.getByText('ADMIN', { exact: true })).toBeVisible();
-    await expect(bootScreen.getByText('ANonABento // Portfolio')).toBeVisible();
-    await expect(bootScreen.getByText('CRT MODE')).toBeVisible();
+    await expect(bootScreen.locator('span:not(.sr-only)', { hasText: /^BOOT$/ }).last()).toBeVisible();
+    await expect(
+      bootScreen.locator('p span:not(.sr-only)', { hasText: /^ANONABENTO PORTFOLIO WEBSITE$/ }).last(),
+    ).toBeVisible();
+    await expect(bootScreen.locator('span:not(.sr-only)', { hasText: /^CRT MODE$/ }).last()).toBeVisible();
   });
 
   test('should render the dashboard view directly from the query param', async ({ page }) => {

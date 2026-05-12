@@ -13,6 +13,25 @@ interface BootScreenProps {
 
 const SEGMENT_COUNT = 13;
 
+function TypedText({
+  text,
+  className,
+  startDelay,
+  speed,
+}: {
+  text: string;
+  className?: string;
+  startDelay?: number;
+  speed?: number;
+}) {
+  return (
+    <span className={className}>
+      <span className="sr-only">{text}</span>
+      <Typewriter text={text} startDelay={startDelay} speed={speed} />
+    </span>
+  );
+}
+
 function getBootStatus(phase: string) {
   if (phase === 'ready') {
     return {
@@ -153,20 +172,12 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
                     "boot log" rhythm than 4 simultaneous typewriters. */}
                 <div className="boot-corner flex items-start justify-between gap-4 leading-tight">
                   <div className="text-left">
-                    <div className="text-white/85" aria-label="ANonABento">
-                      <Typewriter text="ANonABento" startDelay={950} speed={30} />
-                    </div>
-                    <div className="mt-1 text-white/45" aria-label="v1.0.0">
-                      <Typewriter text="v1.0.0" startDelay={950} speed={30} />
-                    </div>
+                    <TypedText text="ANonABento" className="block text-white/85" startDelay={950} speed={30} />
+                    <TypedText text="v1.0.0" className="mt-1 block text-white/45" startDelay={950} speed={30} />
                   </div>
                   <div className="text-right">
-                    <div className="text-white" aria-label="BOOT">
-                      <Typewriter text="BOOT" startDelay={950} speed={30} />
-                    </div>
-                    <div className="mt-1 text-[var(--purple)]" aria-label="CRT MODE">
-                      <Typewriter text="CRT MODE" startDelay={950} speed={30} />
-                    </div>
+                    <TypedText text="BOOT" className="block text-white" startDelay={950} speed={30} />
+                    <TypedText text="CRT MODE" className="mt-1 block text-[var(--purple)]" startDelay={950} speed={30} />
                   </div>
                 </div>
 
@@ -198,8 +209,8 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
                     </div>
                     <p
                       className="font-crt uppercase text-white whitespace-nowrap text-[0.85rem] tracking-[0.34em] sm:text-base sm:tracking-[0.4em] md:text-lg"
-                      aria-label="ANONABENTO PORTFOLIO WEBSITE"
                     >
+                      <span className="sr-only">ANONABENTO PORTFOLIO WEBSITE</span>
                       <Typewriter
                         text="ANONABENTO PORTFOLIO WEBSITE"
                         startDelay={1550}
@@ -221,8 +232,8 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
                         >
                           <div
                             className="mb-4 self-start uppercase text-left text-base tracking-[0.22em] text-white sm:text-xl sm:tracking-[0.22em]"
-                            aria-label={bootStatus.progressLabel}
                           >
+                            <span className="sr-only">{bootStatus.progressLabel}</span>
                             <Typewriter
                               text={bootStatus.progressLabel}
                               speed={32}
@@ -274,12 +285,8 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
                 </div>
 
                 <div className="boot-corner flex items-end justify-between text-white">
-                  <span aria-label="SYS 05.07.26">
-                    <Typewriter text="SYS 05.07.26" startDelay={1250} speed={30} />
-                  </span>
-                  <span aria-label="INTERFACE READY">
-                    <Typewriter text="INTERFACE READY" startDelay={1250} speed={30} />
-                  </span>
+                  <TypedText text="SYS 05.07.26" startDelay={1250} speed={30} />
+                  <TypedText text="INTERFACE READY" startDelay={1250} speed={30} />
                 </div>
               </div>
             </div>
