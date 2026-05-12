@@ -38,15 +38,15 @@ describe('BootScreen', () => {
   it('renders the CRT boot metadata and portfolio title', () => {
     render(<BootScreen onExiting={vi.fn()} onComplete={vi.fn()} />);
 
-    // Text is rendered by <Typewriter> (types in over time); aria-label on the
-    // wrapper exposes the full string immediately for ATs and tests.
+    // Text is rendered by <Typewriter> (types in over time); sr-only text
+    // exposes the full string immediately for ATs and tests.
     expect(screen.getByRole('heading', { name: 'bentOS' })).toBeInTheDocument();
-    expect(screen.getByLabelText('ANonABento')).toBeInTheDocument();
-    expect(screen.getByLabelText('v1.0.0')).toBeInTheDocument();
-    expect(screen.getByLabelText('BOOT')).toBeInTheDocument();
-    expect(screen.getByLabelText('CRT MODE')).toBeInTheDocument();
-    expect(screen.getByLabelText('ANONABENTO PORTFOLIO WEBSITE')).toBeInTheDocument();
-    expect(screen.getByLabelText('LOADING SYSTEM MODULES')).toBeInTheDocument();
-    expect(screen.getByLabelText('INTERFACE READY')).toBeInTheDocument();
+    expect(screen.getByText('ANonABento', { selector: '.sr-only' })).toBeInTheDocument();
+    expect(screen.getByText('v1.0.0', { selector: '.sr-only' })).toBeInTheDocument();
+    expect(screen.getByText('BOOT', { selector: '.sr-only' })).toBeInTheDocument();
+    expect(screen.getByText('CRT MODE', { selector: '.sr-only' })).toBeInTheDocument();
+    expect(screen.getByText('ANONABENTO PORTFOLIO WEBSITE', { selector: '.sr-only' })).toBeInTheDocument();
+    expect(screen.getByText('LOADING SYSTEM MODULES', { selector: '.sr-only' })).toBeInTheDocument();
+    expect(screen.getByText('INTERFACE READY', { selector: '.sr-only' })).toBeInTheDocument();
   });
 });
