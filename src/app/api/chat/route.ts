@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
 import {
   buildAssistantInstructions,
   checkChatGuardrails,
@@ -20,12 +22,37 @@ const GEMINI_GENERATE_URL_BASE = 'https://generativelanguage.googleapis.com/v1be
 const DEFAULT_OPENAI_MODEL = 'gpt-5.4-mini';
 const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash';
 
+// Rate limit: 10 chat sends per 60s per IP, sliding window.
+// When UPSTASH_REDIS_REST_URL / _TOKEN are unset (e.g. local dev), the
+// limiter is null and the route serves traffic unthrottled — degrade safely.
+const CHAT_RATELIMIT_REQUESTS = 10;
+const CHAT_RATELIMIT_WINDOW = '60 s' as const;
+
+const ratelimit =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Ratelimit({
+        redis: Redis.fromEnv(),
+        limiter: Ratelimit.slidingWindow(CHAT_RATELIMIT_REQUESTS, CHAT_RATELIMIT_WINDOW),
+        analytics: true,
+        prefix: 'bentosite-chat',
+      })
+    : null;
+
 type ChatProvider = 'demo' | 'google' | 'openai';
 
 const openaiApiKey = process.env.OPENAI_API_KEY;
 const googleApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
 const openaiModel = process.env.OPENAI_CHAT_MODEL || DEFAULT_OPENAI_MODEL;
 const geminiModel = process.env.GEMINI_CHAT_MODEL || DEFAULT_GEMINI_MODEL;
+
+function getClientIp(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) {
+    const first = forwarded.split(',')[0]?.trim();
+    if (first) return first;
+  }
+  return request.headers.get('x-real-ip') ?? 'anonymous';
+}
 
 // Validate message structure
 function isValidMessage(msg: unknown): msg is ChatMessage {
@@ -230,6 +257,29 @@ async function generateProviderResponse(
 
 export async function POST(request: NextRequest) {
   try {
+    if (ratelimit) {
+      const ip = getClientIp(request);
+      const result = await ratelimit.limit(ip);
+      if (!result.success) {
+        const retryAfterSec = Math.max(1, Math.ceil((result.reset - Date.now()) / 1000));
+        return NextResponse.json(
+          {
+            error: 'Rate limit exceeded',
+            message: `Too many chat requests. Try again in ${retryAfterSec}s, or email ${PORTFOLIO_DATA.personal.email} directly.`,
+          },
+          {
+            status: 429,
+            headers: {
+              'Retry-After': String(retryAfterSec),
+              'X-RateLimit-Limit': String(result.limit),
+              'X-RateLimit-Remaining': String(result.remaining),
+              'X-RateLimit-Reset': String(result.reset),
+            },
+          }
+        );
+      }
+    }
+
     let body: unknown;
     try {
       body = await request.json();
