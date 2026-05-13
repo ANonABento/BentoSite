@@ -26,9 +26,20 @@ export function TerminalPrompt() {
   }, []);
 
   return (
-    <div className="font-crt text-sm sm:text-base md:text-lg text-[var(--orange)] tracking-[0.12em] whitespace-nowrap text-left">
+    <div
+      className="font-crt text-sm sm:text-base md:text-lg tracking-[0.12em] whitespace-nowrap text-left"
+      style={{
+        color: 'var(--boot-orange)',
+        // Override .font-crt's purple chromatic fringe — on orange text it
+        // pulls the hue toward brown. Use a warm-only halation instead.
+        textShadow:
+          '0 0 6px rgba(244, 122, 32, 0.28), 1px 0 0 rgba(244, 122, 32, 0.18)',
+      }}
+    >
       <div className="flex items-center">
-        <span className="text-[var(--text-muted)] mr-2">&gt;</span>
+        <span className="text-[var(--text-muted)] mr-2" style={{ textShadow: 'none' }}>
+          &gt;
+        </span>
         <span>{displayedText}</span>
         {!showCursor && displayedText.length < PROMPT_TEXT.length ? (
           <span className="animate-pulse">_</span>

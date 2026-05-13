@@ -54,11 +54,13 @@
   --radius-bento-inner: 0.5rem;
   --radius-bento-element: 0.375rem;
 
-  /* Boot screen */
+  /* Boot screen — fixed bright orange so the boot prompt matches the
+     BentoIcon tiles' perceived color on black, regardless of theme. */
   --boot-bg: #08080c;
   --boot-bar-track: rgba(255, 255, 255, 0.06);
   --boot-bar-fill: var(--orange);
   --boot-bar-glow: var(--orange-muted);
+  --boot-orange: #e07b3c;
 
   /* 3D viewer (Dimension) — read by React (useTheme) and forwarded to <Canvas>
      and <Grid> since Three.js can't read CSS variables directly. */

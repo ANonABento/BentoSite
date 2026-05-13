@@ -125,47 +125,6 @@ export function useChatSubmit({ inputRef, messagesRef, setMessages }: UseChatSub
     setError(null);
   }, []);
 
-  const handleFeedback = useCallback(
-    async (messageId: string, feedback: 'positive' | 'negative') => {
-      const message = messagesRef.current.find((candidate) => candidate.id === messageId);
-      if (!message) {
-        return;
-      }
-
-      const newFeedback = message.feedback === feedback ? null : feedback;
-
-      setMessages((previousMessages) => {
-        const updatedMessages = previousMessages.map((candidate) =>
-          candidate.id === messageId
-            ? { ...candidate, feedback: newFeedback }
-            : candidate
-        );
-        messagesRef.current = updatedMessages;
-        return updatedMessages;
-      });
-
-      if (!newFeedback) {
-        return;
-      }
-
-      try {
-        await fetch(API_ENDPOINTS.FEEDBACK, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messageId,
-            feedback: newFeedback,
-            messageContent: message.content,
-            timestamp: Date.now(),
-          }),
-        });
-      } catch {
-        // Feedback is best-effort only.
-      }
-    },
-    [messagesRef, setMessages]
-  );
-
   const sendMessage = useCallback(
     async (content: string) => {
       const trimmedContent = content.trim();
@@ -266,7 +225,6 @@ export function useChatSubmit({ inputRef, messagesRef, setMessages }: UseChatSub
     error,
     isDemoMode,
     sendMessage,
-    handleFeedback,
     clearError,
   };
 }

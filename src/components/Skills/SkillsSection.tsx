@@ -18,6 +18,8 @@ type SkillCategory = 'hardware' | 'software' | 'tools';
 
 interface SkillsSectionProps {
   onAskAI?: (skill: string) => void;
+  isExpanded?: boolean;
+  onExpandedChange?: (next: boolean) => void;
 }
 
 const categoryConfig: Record<SkillCategory, { label: string; dotColor: string }> = {
@@ -118,9 +120,23 @@ function CategorySection({
   );
 }
 
-export function SkillsSection({ onAskAI }: SkillsSectionProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+export function SkillsSection({
+  onAskAI,
+  isExpanded: isExpandedProp,
+  onExpandedChange,
+}: SkillsSectionProps) {
+  const [internalExpanded, setInternalExpanded] = useState(true);
+  const isControlled = isExpandedProp !== undefined;
+  const isExpanded = isControlled ? isExpandedProp : internalExpanded;
   const { skills } = PORTFOLIO_DATA;
+
+  const handleToggle = useCallback(() => {
+    const next = !isExpanded;
+    if (!isControlled) {
+      setInternalExpanded(next);
+    }
+    onExpandedChange?.(next);
+  }, [isControlled, isExpanded, onExpandedChange]);
 
   return (
     <div>
@@ -133,7 +149,7 @@ export function SkillsSection({ onAskAI }: SkillsSectionProps) {
         mono
         collapsible
         isExpanded={isExpanded}
-        onToggle={() => setIsExpanded(!isExpanded)}
+        onToggle={handleToggle}
       />
 
       {/* Content */}

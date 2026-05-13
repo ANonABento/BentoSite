@@ -21,7 +21,11 @@ import { getProjectById } from '@/lib/projects-data';
 interface DashboardLayoutProps {
   Viewfinder: ComponentType<{ project: Project | null; minimal?: boolean; suspended?: boolean }>;
   Chatbot: ComponentType<ChatbotProps>;
-  SkillsSection: ComponentType<{ onAskAI?: (skill: string) => void }>;
+  SkillsSection: ComponentType<{
+    onAskAI?: (skill: string) => void;
+    isExpanded?: boolean;
+    onExpandedChange?: (next: boolean) => void;
+  }>;
   KeyboardShortcutsModal: ComponentType<{ isOpen: boolean; onClose: () => void }>;
   isShortcutsOpen: boolean;
   closeShortcuts: () => void;
@@ -51,6 +55,8 @@ export function DashboardLayout({
     return null;
   });
   const [chatFns, setChatFns] = useState<ChatFunctions | null>(null);
+  const [skillsExpanded, setSkillsExpanded] = useState(true);
+  const hasAutoCollapsedRef = useRef(false);
   const isMountedRef = useRef(true);
   const mobileChatRef = useRef<HTMLDivElement>(null);
   const pendingChatMessageRef = useRef<string | null>(null);
@@ -65,7 +71,23 @@ export function DashboardLayout({
   const handleClearChat = useCallback(() => {
     chatFns?.clear();
     chatFns?.focusInput();
+    hasAutoCollapsedRef.current = false;
+    setSkillsExpanded(true);
   }, [chatFns]);
+
+  const handleUserMessage = useCallback(() => {
+    if (hasAutoCollapsedRef.current) return;
+    hasAutoCollapsedRef.current = true;
+    setSkillsExpanded(false);
+  }, []);
+
+  const handleSkillsExpandedChange = useCallback((next: boolean) => {
+    setSkillsExpanded(next);
+    if (next) {
+      // User re-opened the panel — don't auto-collapse again this session.
+      hasAutoCollapsedRef.current = true;
+    }
+  }, []);
 
   const handleViewResume = useCallback(() => {
     window.open(RESUME_URL, '_blank', 'noopener,noreferrer');
@@ -167,7 +189,11 @@ export function DashboardLayout({
                 }}
               >
                 <div className="glass-panel dashboard-panel overflow-hidden flex-shrink-0 bento-corner-all">
-                  <SkillsSection onAskAI={handleAskAboutSkill} />
+                  <SkillsSection
+                    onAskAI={handleAskAboutSkill}
+                    isExpanded={skillsExpanded}
+                    onExpandedChange={handleSkillsExpandedChange}
+                  />
                 </div>
                 <TerminalPanel
                   Chatbot={Chatbot}
@@ -175,6 +201,7 @@ export function DashboardLayout({
                   onClearChat={handleClearChat}
                   onViewResume={handleViewResume}
                   onSeeProjects={handleSeeProjects}
+                  onUserMessage={handleUserMessage}
                 />
               </motion.div>
             )}
@@ -189,7 +216,11 @@ export function DashboardLayout({
               className="glass-panel dashboard-panel overflow-hidden flex-shrink-0 bento-corner-tr"
               variants={dashboardRightIn}
             >
-              <SkillsSection onAskAI={handleAskAboutSkill} />
+              <SkillsSection
+                onAskAI={handleAskAboutSkill}
+                isExpanded={skillsExpanded}
+                onExpandedChange={handleSkillsExpandedChange}
+              />
             </motion.div>
 
             {/* Terminal */}
@@ -199,6 +230,7 @@ export function DashboardLayout({
               onClearChat={handleClearChat}
               onViewResume={handleViewResume}
               onSeeProjects={handleSeeProjects}
+              onUserMessage={handleUserMessage}
             />
           </div>
         </div>

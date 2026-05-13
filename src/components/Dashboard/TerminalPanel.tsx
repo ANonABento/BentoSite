@@ -19,6 +19,7 @@ interface TerminalPanelProps {
   onClearChat: () => void;
   onViewResume: () => void;
   onSeeProjects: () => void;
+  onUserMessage?: () => void;
 }
 
 export function TerminalPanel({
@@ -27,6 +28,7 @@ export function TerminalPanel({
   onClearChat,
   onViewResume,
   onSeeProjects,
+  onUserMessage,
 }: TerminalPanelProps) {
   return (
     <motion.div
@@ -55,6 +57,7 @@ export function TerminalPanel({
             onReady={onChatReady}
             onViewResume={onViewResume}
             onSeeProjects={onSeeProjects}
+            onUserMessage={onUserMessage}
           />
         </ErrorBoundary>
       </div>

@@ -70,7 +70,7 @@ export function SectionHeader({
     return (
       <button
         onClick={onToggle}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-[var(--glass-bg)] transition-colors active:scale-[0.98]"
+        className="w-full px-4 py-3 flex items-center justify-between hover:bg-[var(--glass-bg)] transition-colors"
         style={{ borderBottom: '1px solid transparent', borderImage: 'linear-gradient(90deg, transparent, var(--border), transparent) 1' }}
         aria-expanded={isExpanded}
       >

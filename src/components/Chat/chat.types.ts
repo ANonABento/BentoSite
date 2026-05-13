@@ -3,7 +3,6 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: number;
-  feedback?: 'positive' | 'negative' | null;
 }
 
 export interface ChatFunctions {
@@ -17,4 +16,5 @@ export interface ChatbotProps {
   onReady?: (fns: ChatFunctions) => void;
   onViewResume?: () => void;
   onSeeProjects?: () => void;
+  onUserMessage?: () => void;
 }

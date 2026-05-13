@@ -49,7 +49,15 @@
       "description": "Python + ROS2 control and calibration toolkit for the OpenArm robotic platform. Supports reading wrist joint positions, calibrating motion ranges, and integrates seamlessly with ROS2 for robotic simulation and control. Features multi-camera AprilTag perception with covariance-based accuracy filtering.",
       "category": "Robotics",
       "status": "Completed",
-      "technologies": ["Python", "ROS2", "OpenCV", "Fusion 360", "Dynamixel", "AprilTag", "Three.js"],
+      "technologies": [
+        "Python",
+        "ROS2",
+        "OpenCV",
+        "Fusion 360",
+        "Dynamixel",
+        "AprilTag",
+        "Three.js"
+      ],
       "links": {
         "github": "https://github.com/ANonABento",
         "modelPath": "/models/placeholder.stl"
@@ -72,7 +80,16 @@
       "description": "ROS2-based robotic head integrating LLMs, speech recognition, vision, and servo control for human-like interactions. Features GPU-accelerated CUDA pipeline, 12-servo organic mesh design, and real-time speech workflow using Whisper and llama.cpp.",
       "category": "AI & Robotics",
       "status": "Completed",
-      "technologies": ["Python", "PyTorch", "llama.cpp", "Whisper", "ESP32", "FreeRTOS", "Blender", "ROS2"],
+      "technologies": [
+        "Python",
+        "PyTorch",
+        "llama.cpp",
+        "Whisper",
+        "ESP32",
+        "FreeRTOS",
+        "Blender",
+        "ROS2"
+      ],
       "links": {
         "github": "https://github.com/ANonABento"
       },
@@ -95,7 +112,15 @@
       "description": "Modular robot platform controlled through Snap Spectacles AR glasses. End-to-end gesture-to-motion pipeline using Snap API, Flask, HiveMQ MQTT, and ROS2. Sub-100ms latency with NVIDIA Jetson Nano for on-device AI inference.",
       "category": "VR/AR",
       "status": "Completed",
-      "technologies": ["JavaScript", "Python", "Jetson Nano", "Docker", "MQTT", "ROS2", "Flask"],
+      "technologies": [
+        "JavaScript",
+        "Python",
+        "Jetson Nano",
+        "Docker",
+        "MQTT",
+        "ROS2",
+        "Flask"
+      ],
       "links": {
         "github": "https://github.com/ANonABento"
       },
@@ -116,7 +141,14 @@
       "description": "AAC device featuring a wrist-mounted keyboard with only 5 GPIO buttons. Uses trie and fuzzy search algorithms for predictive text. 3D-printed housing with STM32 microcontroller. Received 99% grade with comprehensive documentation.",
       "category": "Accessibility",
       "status": "Completed",
-      "technologies": ["C", "STM32", "FSM", "OnShape", "3D-Printing", "UART"],
+      "technologies": [
+        "C",
+        "STM32",
+        "FSM",
+        "OnShape",
+        "3D-Printing",
+        "UART"
+      ],
       "links": {
         "github": "https://github.com/ANonABento",
         "docs": "https://docs.google.com/document/d/example"
@@ -131,7 +163,14 @@
       "description": "ESP32-based haptic feedback gloves for VR with spring-loaded potentiometers and servo-assisted haptics. 3D-printed custom mounts for precise finger tracking. Designed for sub-100ms sensory resistance in VR applications.",
       "category": "VR/AR",
       "status": "Completed",
-      "technologies": ["C++", "ESP32", "Arduino", "3D-Printing", "Cura", "Soldering"],
+      "technologies": [
+        "C++",
+        "ESP32",
+        "Arduino",
+        "3D-Printing",
+        "Cura",
+        "Soldering"
+      ],
       "links": {
         "github": "https://github.com/ANonABento",
         "docs": "https://docs.google.com/document/d/example"
@@ -153,7 +192,14 @@
       "description": "Lead builder and programmer for team Devolotics at FIRST Tech Challenge World Championship. Built rubber band tensioned drone launcher, autonomous program using splines, and multiple CAD-designed mechanisms with machined aluminum and 3D-printed components.",
       "category": "Competition",
       "status": "Completed",
-      "technologies": ["Java", "OpenCV", "OnShape", "3D-Printing", "Motor Control", "Mecanum Drive"],
+      "technologies": [
+        "Java",
+        "OpenCV",
+        "OnShape",
+        "3D-Printing",
+        "Motor Control",
+        "Mecanum Drive"
+      ],
       "links": {
         "github": "https://github.com/ANonABento"
       },
@@ -177,7 +223,12 @@
       "description": "Double-layer PCBs for controller subsystems with 0 ERC/DRC violations. Soldered SMD boards including IMU and power control circuits.",
       "category": "Hardware",
       "status": "Completed",
-      "technologies": ["Altium Designer", "Oscilloscope", "Soldering", "SMD Assembly"],
+      "technologies": [
+        "Altium Designer",
+        "Oscilloscope",
+        "Soldering",
+        "SMD Assembly"
+      ],
       "links": {
         "github": "https://github.com/ANonABento"
       },
@@ -198,7 +249,13 @@
       "description": "Best Overall winner at UWGDC Game Jam Fall 2024. Developed complex game logic using C# scripting in Unity with physics, colliders, and AI. Utilized finite state machines for smooth animation transitions.",
       "category": "Games",
       "status": "Completed",
-      "technologies": ["C#", "Unity", "Blender", "OpenCV", "FSM"],
+      "technologies": [
+        "C#",
+        "Unity",
+        "Blender",
+        "OpenCV",
+        "FSM"
+      ],
       "links": {
         "github": "https://github.com/ANonABento"
       },
@@ -218,7 +275,14 @@
       "description": "Android apps with CameraX object detection, AIML chatbot integration, and MBROLA text-to-speech synthesis.",
       "category": "Software",
       "status": "Completed",
-      "technologies": ["Java", "Android Studio", "OpenCV", "AIML", "TTS", "CameraX"],
+      "technologies": [
+        "Java",
+        "Android Studio",
+        "OpenCV",
+        "AIML",
+        "TTS",
+        "CameraX"
+      ],
       "links": {
         "github": "https://github.com/ANonABento"
       },
@@ -238,44 +302,76 @@
       "company": "Hamming AI",
       "role": "Software Engineer",
       "location": "Austin, Texas, United States",
-      "coordinates": { "lat": 30.2672, "lng": -97.7431 },
+      "coordinates": {
+        "lat": 30.2672,
+        "lng": -97.7431
+      },
       "period": "Dec 2025 - Present",
       "description": "YC S24 startup building AI-powered developer tools.",
       "type": "work",
-      "technologies": ["Python", "AI/ML", "Full Stack"]
+      "technologies": [
+        "Python",
+        "AI/ML",
+        "Full Stack"
+      ]
     },
     {
       "id": "reazon",
       "company": "Reazon Human Interaction Lab",
       "role": "Robotics Engineer",
       "location": "Akihabara, Tokyo, Japan",
-      "coordinates": { "lat": 35.6984, "lng": 139.7731 },
+      "coordinates": {
+        "lat": 35.6984,
+        "lng": 139.7731
+      },
       "period": "Jun 2025 - Aug 2025",
       "description": "Designed lightweight exoskeleton wrist controller with Dynamixel actuators. Built multi-camera AprilTag tracking system with 20% accuracy improvement. Developed interactive Three.js web interface for remote calibration.",
       "type": "work",
-      "technologies": ["Python", "ROS2", "Fusion 360", "Three.js", "OpenCV"]
+      "technologies": [
+        "Python",
+        "ROS2",
+        "Fusion 360",
+        "Three.js",
+        "OpenCV"
+      ]
     },
     {
       "id": "midnight-sun",
       "company": "Midnight Sun",
       "role": "Hardware Developer",
       "location": "Waterloo, Ontario, Canada",
-      "coordinates": { "lat": 43.4643, "lng": -80.5204 },
+      "coordinates": {
+        "lat": 43.4643,
+        "lng": -80.5204
+      },
       "period": "Sep 2024 - Apr 2025",
       "description": "Designed and routed double-layer PCBs for controller subsystem. Maintained 0 ERC/DRC violations across all layers. Soldered and tested multiple SMD boards including IMU and power control circuits.",
       "type": "work",
-      "technologies": ["Altium Designer", "PCB Design", "Soldering", "Oscilloscope"]
+      "technologies": [
+        "Altium Designer",
+        "PCB Design",
+        "Soldering",
+        "Oscilloscope"
+      ]
     },
     {
       "id": "zenith",
       "company": "Zenith Energy Corporation",
       "role": "Front-End Developer",
       "location": "Toronto, Ontario, Canada",
-      "coordinates": { "lat": 43.6532, "lng": -79.3832 },
+      "coordinates": {
+        "lat": 43.6532,
+        "lng": -79.3832
+      },
       "period": "Sep 2022 - Jan 2023",
       "description": "Developed and deployed client-facing e-commerce sites on Wix and Shopify. Reduced handover time with modular templates and simplified CMS workflows. Created cohesive brand identity with custom graphics.",
       "type": "work",
-      "technologies": ["JavaScript", "Shopify", "Wix", "Adobe Photoshop"]
+      "technologies": [
+        "JavaScript",
+        "Shopify",
+        "Wix",
+        "Adobe Photoshop"
+      ]
     }
   ],
   "education": [
@@ -285,7 +381,16 @@
       "degree": "BASc in Computer Engineering",
       "period": "Sept 2024 - Present",
       "location": "Waterloo, Ontario, Canada",
-      "coordinates": { "lat": 43.4723, "lng": -80.5449 }
+      "coordinates": {
+        "lat": 43.4723,
+        "lng": -80.5449
+      }
     }
-  ]
+  ],
+  "sync": {
+    "source": "github/ci",
+    "lastSyncedAt": "2026-05-13T22:27:44.639Z",
+    "stale": false,
+    "staleReason": ""
+  }
 }

@@ -5,18 +5,15 @@ import ReactMarkdown from 'react-markdown';
 import { useHasMounted } from '@/lib/use-has-mounted';
 import type { Message } from '../chat.types';
 import { CopyButton } from './CopyButton';
-import { FeedbackButtons } from './FeedbackButtons';
 
 interface MessageItemProps {
   message: Message;
   onCopySuccess: () => void;
-  onFeedback: (messageId: string, feedback: 'positive' | 'negative') => void;
 }
 
 export const MessageItem = memo(function MessageItem({
   message,
   onCopySuccess,
-  onFeedback,
 }: MessageItemProps) {
   const hasMounted = useHasMounted();
   const timeStr = hasMounted
@@ -56,11 +53,6 @@ export const MessageItem = memo(function MessageItem({
       <div className="markdown-content font-mono text-sm">
         <ReactMarkdown>{message.content}</ReactMarkdown>
       </div>
-      <FeedbackButtons
-        messageId={message.id}
-        currentFeedback={message.feedback}
-        onFeedback={onFeedback}
-      />
     </div>
   );
 });

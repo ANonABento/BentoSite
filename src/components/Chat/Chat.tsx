@@ -4,12 +4,17 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useToast } from '@/components/ui/Toast';
 import { useChatMessages, useChatSubmit } from './Chat.hooks';
 import { ChatInput } from './parts/ChatInput';
+import { CommandHints } from './parts/CommandHints';
 import { MessageItem } from './parts/MessageItem';
-import { QuickActions } from './parts/QuickActions';
-import { SuggestedQuestions } from './parts/SuggestedQuestions';
 import type { ChatbotProps } from './chat.types';
+import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 
-export default function Chatbot({ onReady, onViewResume, onSeeProjects }: ChatbotProps) {
+export default function Chatbot({
+  onReady,
+  onViewResume,
+  onSeeProjects,
+  onUserMessage,
+}: ChatbotProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { success: toastSuccess } = useToast();
   const {
@@ -27,7 +32,6 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
     error,
     isDemoMode,
     sendMessage,
-    handleFeedback,
     clearError,
   } = useChatSubmit({
     inputRef,
@@ -52,12 +56,22 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
     clearChat();
   }, [clearChat, clearError]);
 
-  const sendMessageRef = useRef(sendMessage);
+  const sendUserMessage = useCallback(
+    (content: string) => {
+      const trimmed = content.trim();
+      if (!trimmed) return;
+      onUserMessage?.();
+      sendMessage(content);
+    },
+    [onUserMessage, sendMessage]
+  );
+
+  const sendUserMessageRef = useRef(sendUserMessage);
   const clearChatRef = useRef(clear);
 
   useEffect(() => {
-    sendMessageRef.current = sendMessage;
-  }, [sendMessage]);
+    sendUserMessageRef.current = sendUserMessage;
+  }, [sendUserMessage]);
 
   useEffect(() => {
     clearChatRef.current = clear;
@@ -66,7 +80,7 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
   useEffect(() => {
     if (onReady) {
       onReady({
-        send: (content: string) => sendMessageRef.current(content),
+        send: (content: string) => sendUserMessageRef.current(content),
         addAssistant,
         clear: () => clearChatRef.current(),
         focusInput: () => inputRef.current?.focus(),
@@ -77,25 +91,36 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
   const handleSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      sendMessage(input);
+      sendUserMessage(input);
     },
-    [input, sendMessage]
+    [input, sendUserMessage]
   );
 
   const handleSuggestedQuestion = useCallback(
     (question: string) => {
-      sendMessage(question);
+      sendUserMessage(question);
       inputRef.current?.focus();
     },
-    [sendMessage]
+    [sendUserMessage]
   );
 
   return (
     <div className="flex flex-col h-full" role="region" aria-label="Chat assistant">
-      {isDemoMode && (
+      {(isDemoMode || error) && (
         <div className="flex-shrink-0 px-4 py-2 bg-[var(--status-warning-muted)] border-b border-[var(--status-warning)]">
           <p className="text-xs font-mono text-[var(--status-warning)]">
-            <span className="font-semibold">DEMO MODE:</span> AI responses are limited. Configure API key for full functionality.
+            <span className="font-semibold">{error ? 'CHAT ERROR:' : 'HEADS UP:'}</span>{' '}
+            {error
+              ? 'something went wrong (rate limit, API issue, or service hiccup).'
+              : "chat's in fallback mode — answers are limited."}{' '}
+            For a direct reply, email{' '}
+            <a
+              href={`mailto:${PORTFOLIO_DATA.personal.email}`}
+              className="underline underline-offset-2 hover:text-[var(--text-primary)]"
+            >
+              {PORTFOLIO_DATA.personal.email}
+            </a>
+            .
           </p>
         </div>
       )}
@@ -112,7 +137,6 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
             key={message.id}
             message={message}
             onCopySuccess={handleCopied}
-            onFeedback={handleFeedback}
           />
         ))}
 
@@ -133,14 +157,12 @@ export default function Chatbot({ onReady, onViewResume, onSeeProjects }: Chatbo
         <div ref={messagesEndRef} />
       </div>
 
-      {messages.length <= 2 && (
-        <SuggestedQuestions disabled={isLoading} onSelect={handleSuggestedQuestion} />
-      )}
-
-      <QuickActions
+      <CommandHints
+        disabled={isLoading}
+        onSelectQuestion={handleSuggestedQuestion}
         onViewResume={onViewResume}
         onSeeProjects={onSeeProjects}
-        disabled={isLoading}
+        showSuggestions={messages.length <= 2}
       />
 
       <ChatInput

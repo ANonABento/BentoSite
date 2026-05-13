@@ -176,7 +176,6 @@ describe('constants', () => {
   describe('API_ENDPOINTS', () => {
     it('should export API endpoint paths', () => {
       expect(API_ENDPOINTS.CHAT).toBe('/api/chat');
-      expect(API_ENDPOINTS.FEEDBACK).toBe('/api/feedback');
     });
   });
 });

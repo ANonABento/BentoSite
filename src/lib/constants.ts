@@ -128,7 +128,6 @@ export const Z_INDEX = {
 
 export const API_ENDPOINTS = {
   CHAT: '/api/chat',
-  FEEDBACK: '/api/feedback',
 } as const;
 
 // === EXTERNAL URLS ===
