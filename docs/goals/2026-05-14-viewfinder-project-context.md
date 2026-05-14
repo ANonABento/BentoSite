@@ -217,4 +217,110 @@ Use `AskUserQuestion` for at most 2–3 round-trips total in this whole goal. If
 
 ## Outcome
 
-_(Fill in after shipping. Format: bullet list of milestones with commit SHAs, then a "deferred" section.)_
+Shipped (May 14, 2026):
+
+- **da4e9c3 — Dashboard re-skins to project on `/?project=<id>`.**
+  - `page.tsx` now reads the `project` query param via
+    `useSyncExternalStore` (mirroring the existing `view=dashboard`
+    pattern) and passes it as `initialProjectId` to `DashboardLayout`.
+    Project deep-links additionally bypass the boot splash.
+  - `DashboardLayout`: switched `selectedProject` from `useState`-with-
+    init (which froze the SSR value of `undefined`) to a `useMemo`
+    derived from `initialProjectId`. New `useEffect` auto-sends `Tell
+    me about <project.name>` once the chat is ready; the existing
+    `/api/chat` starter map returns the canned rundown without burning
+    Gemini quota. The auto-collapse ref is pre-marked so the synthetic
+    user message doesn't fold the tools panel away — in project mode
+    the tools panel is the whole point.
+  - `SkillsSection`: accepts an optional `selectedProject`. When set,
+    the header swaps to `"project tools"`/`> <project-id>` and the body
+    renders project-mode buckets (HARDWARE/STACK/TOOLING/MISC) using
+    the same color tokens as the generic three-category view.
+  - `src/lib/skill-categories.ts`: regex-driven categorizer with
+    case-insensitive dedupe and canonical ordering. Misc bucket only
+    appears when there are unmatched techs.
+  - **Tests added**: 9 skill-categories specs, 3 SkillsSection render
+    specs, 1 chat-knowledge contract spec (every project's
+    `Tell me about <name>` opener resolves to a non-null starter). All
+    310 specs green.
+
+- **3cae862 — Wire `unity-game-dev` to itch.io profile.**
+  - Added `media.game = { type: "itch", url: "https://anonabento.itch.io/" }`
+    so the project surfaces a `PLAY` tab. The profile URL isn't a true
+    iframe-embed target — `GameViewer` detects this and falls through
+    to its "Open game" CTA, which is still the right UX.
+
+- **b11b724 — Extend `/update-portfolio` with multi-asset Viewfinder flow.**
+  - `flows/project.md`: new Step 6 "Multi-asset wiring" with six
+    per-asset sub-flows (3D model, video, PDF, website, game, map),
+    each documenting where to save the file, the viewer caveats
+    (X-Frame-Options, HTTPS-only, itch embed-vs-profile, multi-mesh
+    URDF bundles), and validation steps. Branch A (GitHub repo)
+    auto-scrapes 3D files, README video links, and PDFs to pre-fill
+    defaults rather than asking from scratch.
+  - `schemas/project.fields.md`: OPTIONAL tier rewritten as a richer
+    table mapping each field to the Viewfinder tab it surfaces, with
+    viewer caveats inline. File path conventions updated for the
+    per-project model sub-directory convention (`public/models/<id>/`).
+
+### CI status
+
+`type-check && lint && test && build` — all four green. 310 tests
+passed (was 297 before — +13 new). Production build successful in 3.3s.
+
+### Dogfood evidence
+
+Verified via Playwright across three projects on `localhost:4000`:
+
+- `/?project=robotic-arm-puppeteer` → `project tools` header with
+  HARDWARE/STACK/TOOLING containing Dynamixel, Python+ROS2+OpenCV+
+  AprilTag+Flask+Three.js, Fusion 360+MuJoCo+Isaac Sim+MeshCat. Chat
+  auto-opens with the project rundown.
+- `/?project=expressive-ai-robot-head` → project tools shows ESP32/
+  FreeRTOS in HARDWARE; Python/PyTorch/CUDA/llama.cpp/Whisper/Silero
+  VAD/Zonos/ROS2/OpenCV in STACK; Blender/Fusion 360 in TOOLING.
+- `/?project=unity-game-dev` → Viewfinder has PLAY + MAP tabs; skills
+  show STACK (C#/Unity/Emgu OpenCV/FSM/Visual Studio) + TOOLING
+  (Blender).
+- `/?project=bentosite` → Viewfinder has Gallery + Website + Map.
+- `/?view=dashboard` → generic mode unchanged (system info / HW_MODULES
+  / SW_STACK / DEV_TOOLS).
+- Clear button correctly resets the chat to its post-clear greeting
+  while keeping the skills panel in project mode (the URL still names
+  a project — clearing the chat shouldn't navigate away).
+
+Screenshots saved to `.playwright-mcp/` (gitignored worktree dir).
+
+### Deferred / open
+
+- **Real 3D model wiring** — Goal DoD item not yet ticked.
+  - Searched Kevin's accessible repos (`ANonABento/*`,
+    `reazon-research/*`, `MaidReal/*`). The only candidate was
+    `reazon-research/openarm_robosuite_models` (PUBLIC, contains the
+    OpenArm meshes for robotic-arm-puppeteer) but it's a multi-mesh
+    URDF/MJCF bundle with ~30 split STLs/OBJs per-link — the viewer
+    loads one file. Composing a unified GLB is out of scope for this
+    pass.
+  - Path forward: Kevin uses the new `/update-portfolio` 3D sub-flow
+    once he has a unified GLB exported from Fusion 360 (the
+    `robotic-arm-puppeteer.json` doc already mentions Fusion 360
+    CAD).
+- **Map per-project highlights** — confirmed via AskUserQuestion that
+  Kevin wants the map to stay as life-experience locations only.
+  Documented as a standing preference in
+  `.claude/skills/update-portfolio/schemas/project.fields.md` and the
+  skill's Map sub-flow.
+- **Specific itch.io game URL** — Kevin noted "within itch, theres
+  like 4 games"; shipped the profile URL as the entry point (CTA
+  fallback). Switching to a specific game URL is a one-line edit
+  via `/update-portfolio` when he picks a headline.
+- **Per-project assets for the other 18 projects** — left as stubs.
+  The skill extension makes adding them a one-AskUserQuestion-flow
+  task.
+
+### Header naming choice
+
+Picked `"project tools"` (header) with `"> <project-id>"` (subtitle)
+without asking — matches the goal doc's first example and reuses the
+existing terminal-prompt aesthetic. If Kevin prefers `"project stack"`
+or another label, it's a one-line edit in `SkillsSection.tsx:170`.
