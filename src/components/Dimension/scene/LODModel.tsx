@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
@@ -11,6 +11,9 @@ import {
 } from '../Dimension.utils';
 import { SCENE_COLORS } from './constants';
 
+const BASE_SCALE = 0.01;
+const FPS_WINDOW_MS = 500;
+
 export function LODModel({
   modelPath = DEFAULT_MODEL_PATH,
   autoRotate,
@@ -20,60 +23,69 @@ export function LODModel({
   isMobile,
 }: LODModelProps) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
   const { camera } = useThree();
   const fpsRef = useRef(60);
-  const frameCountRef = useRef(0);
-  const lastTimeRef = useRef(0);
-  const [lodLevel, setLodLevel] = useState(0);
+  const fpsSamplesRef = useRef<number[]>([]);
+  const lodLevelRef = useRef(0);
   const geometry = useLoader(STLLoader, modelPath);
 
-  useFrame((_, delta) => {
-    if (meshRef.current && autoRotate) {
-      meshRef.current.rotation.x += delta * 0.2 * rotationSpeed;
-      meshRef.current.rotation.y += delta * 0.3 * rotationSpeed;
-    }
+  useEffect(() => {
+    const material = materialRef.current;
+    return () => {
+      material?.dispose();
+    };
+  }, []);
 
-    const currentTime = performance.now();
-    if (lastTimeRef.current === 0) {
-      lastTimeRef.current = currentTime;
-    }
-
-    frameCountRef.current += 1;
-    if (currentTime < lastTimeRef.current + 1000) {
+  useFrame(({ clock }, delta) => {
+    const mesh = meshRef.current;
+    if (!mesh) {
       return;
     }
 
-    fpsRef.current = Math.round(
-      (frameCountRef.current * 1000) / (currentTime - lastTimeRef.current)
-    );
-    frameCountRef.current = 0;
-    lastTimeRef.current = currentTime;
+    if (autoRotate) {
+      mesh.rotation.x += delta * 0.2 * rotationSpeed;
+      mesh.rotation.y += delta * 0.3 * rotationSpeed;
+    }
+
+    const currentTime = clock.elapsedTime * 1000;
+    const samples = fpsSamplesRef.current;
+    samples.push(currentTime);
+    while (samples.length > 1 && samples[0] < currentTime - FPS_WINDOW_MS) {
+      samples.shift();
+    }
+
+    if (samples.length > 1) {
+      const elapsed = samples[samples.length - 1] - samples[0];
+      if (elapsed > 0) {
+        fpsRef.current = Math.round(((samples.length - 1) * 1000) / elapsed);
+      }
+    }
 
     const distanceFromCamera = getDistanceFromCamera(
       camera.position,
-      meshRef.current?.position
+      mesh.position
     );
     const nextLodLevel = getLODLevel(distanceFromCamera, isMobile, fpsRef.current);
 
-    setLodLevel((previousLevel) =>
-      previousLevel !== nextLodLevel ? nextLodLevel : previousLevel
-    );
+    if (lodLevelRef.current !== nextLodLevel) {
+      lodLevelRef.current = nextLodLevel;
+      mesh.scale.setScalar(getLODScale(BASE_SCALE, nextLodLevel));
+    }
   });
-
-  const scale = getLODScale(0.01, lodLevel);
 
   return (
     <mesh
       ref={meshRef}
       geometry={geometry}
-      scale={scale}
+      scale={BASE_SCALE}
       position={[0, 0, 0]}
       onClick={onClick}
       castShadow={!isMobile}
       receiveShadow={!isMobile}
       frustumCulled
     >
-      <meshStandardMaterial color={SCENE_COLORS.model} wireframe={isWireframe} />
+      <meshStandardMaterial ref={materialRef} color={SCENE_COLORS.model} wireframe={isWireframe} />
     </mesh>
   );
 }
