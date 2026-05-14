@@ -1,0 +1,19 @@
+{
+  "id": "the-closet",
+  "name": "TheCloset",
+  "shortDescription": "ICS4 Final Project — a Java game with a horror/mystery vibe (the icon shows a glowing doorway). Description stub — fill in via the repo or a quick blurb.",
+  "description": "ICS4 Final Project — a Java application with a horror/mystery aesthetic, judging by the title-card icon (a glowing closet door against a dark background).\n\nThis card is a stub. Point me at a README, gameplay screenshot, or a one-paragraph synopsis and I'll flesh it out.",
+  "category": "Software",
+  "status": "Completed",
+  "technologies": [
+    "Java"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento/TheCloset"
+  },
+  "media": {
+    "featuredImage": "/projects/the-closet/hero.jpg"
+  },
+  "featured": false,
+  "dateCompleted": "2024-06"
+}

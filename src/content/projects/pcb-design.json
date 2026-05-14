@@ -13,9 +13,7 @@
     "Soldering",
     "Oscilloscope"
   ],
-  "links": {
-    "github": "https://github.com/ANonABento"
-  },
+  "links": {},
   "media": {
     "featuredImage": "/projects/pcb-design/hero.jpg"
   },

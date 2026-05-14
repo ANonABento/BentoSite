@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-14T06:59:19.544Z",
+  "generatedAt": "2026-05-14T07:09:13.016Z",
   "projects": [
     {
       "id": "bentosite",
@@ -79,7 +79,7 @@
       "id": "shoulder-cupid",
       "name": "ShoulderCupid",
       "shortDescription": "Wearable AI dating coach — ESP32-CAM smart glasses extract emotional cues, AI whispers contextual advice through earbuds. Won MLH Best Use of Solana at MakeUofT 2026.",
-      "description": "ShoulderCupid is a wearable AI coach for real-time dating interactions. An ESP32-CAM mounted in smart glasses streams video to extract emotional data (heart rate, breathing rate) from the target. An ultrasonic sensor tracks distance, triggering different coaching modes. The system combines live speech transcription, AI-generated contextual advice via Google Gemini, and text-to-speech (ElevenLabs) whispered through earbuds. Users pick from AI coaches with different personalities before each session.\n\nWon **MLH Best Use of Solana** at MakeUofT 2026.",
+      "description": "ShoulderCupid is a wearable AI coach for real-time dating interactions. An ESP32-CAM mounted in smart glasses streams video to extract emotional data (heart rate, breathing rate) from the target. An ultrasonic sensor tracks distance, triggering different coaching modes. The system combines live speech transcription, AI-generated contextual advice via Google Gemini, and text-to-speech (ElevenLabs) whispered through earbuds. Users pick from AI coaches with different personalities before each session.\n\nRepos: [`ShoulderCupid`](https://github.com/LoveAtMakeUofT26/ShoulderCupid) (app) · [`hardware`](https://github.com/LoveAtMakeUofT26/hardware) (firmware).\n\nWon **MLH Best Use of Solana** at MakeUofT 2026.",
       "category": "Hackathon",
       "status": "Completed",
       "technologies": [
@@ -101,6 +101,7 @@
         "Blender"
       ],
       "links": {
+        "github": "https://github.com/LoveAtMakeUofT26/ShoulderCupid",
         "docs": "https://devpost.com/software/shouldercupid-0y6b5d"
       },
       "featured": true,
@@ -239,6 +240,7 @@
         "Lens Studio"
       ],
       "links": {
+        "github": "https://github.com/KushalPraja/kenesis",
         "docs": "https://devpost.com/software/steven-lvnh4w"
       },
       "media": {
@@ -251,7 +253,7 @@
       "id": "expressive-ai-robot-head",
       "name": "Expressive AI Robot Head",
       "shortDescription": "ROS2 robotic head that fuses LLM reasoning, speech, vision, and 12-servo control to push AI from text into physical interaction. Submitted as 'MaidReal Head' to the OpenAI Open Model Hackathon.",
-      "description": "A ROS2-based robotic head that integrates large language models (LLMs), speech, vision, and servo control to push AI beyond text into physical interaction — engaging more humanlike communication with AI through robots.\n\nHighlights:\n- Built a GPU-accelerated pipeline with CUDA and PyTorch, optimizing VRAM usage to run fully locally on Ubuntu/WSL2.\n- Implemented a real-time speech workflow: Silero VAD → Whisper (STT) → llama.cpp (running GPT-OSS-20B) → Zonos (TTS).\n- Designed a 12-servo robotic head combining organic mesh modeling in Blender with parametric solids in Fusion 360.\n- Controlled servos through ROS2 with a mapping layer that unites LLM reasoning, audio analysis, and OpenCV tracking.\n\nSubmitted to the OpenAI Open Model Hackathon (September 2025) as 'MaidReal Head'.",
+      "description": "A ROS2-based robotic head that integrates large language models (LLMs), speech, vision, and servo control to push AI beyond text into physical interaction — engaging more humanlike communication with AI through robots.\n\nHighlights:\n- Built a GPU-accelerated pipeline with CUDA and PyTorch, optimizing VRAM usage to run fully locally on Ubuntu/WSL2.\n- Implemented a real-time speech workflow: Silero VAD → Whisper (STT) → llama.cpp (running GPT-OSS-20B) → Zonos (TTS).\n- Designed a 12-servo robotic head combining organic mesh modeling in Blender with parametric solids in Fusion 360.\n- Controlled servos through ROS2 with a mapping layer that unites LLM reasoning, audio analysis, and OpenCV tracking.\n\nRepos: [`MaidReal/Head`](https://github.com/MaidReal/Head) (hardware + firmware) · [`MaidReal/brain`](https://github.com/MaidReal/brain) (LLM + speech pipeline).\n\nSubmitted to the OpenAI Open Model Hackathon (September 2025) as 'MaidReal Head'.",
       "category": "AI & Robotics",
       "status": "Completed",
       "technologies": [
@@ -270,6 +272,7 @@
         "OpenCV"
       ],
       "links": {
+        "github": "https://github.com/MaidReal/Head",
         "docs": "https://devpost.com/software/maidreal-head-v1"
       },
       "media": {
@@ -282,7 +285,7 @@
       "id": "robotic-arm-puppeteer",
       "name": "Robotic Arm Puppeteer",
       "shortDescription": "Python + ROS2 control and calibration toolkit for the OpenArm platform — multi-camera AprilTag perception, Dynamixel motor SDK integration, and a Flask + Three.js web UI for live calibration.",
-      "description": "A Python + ROS2 based control and calibration toolkit for the OpenArm robotic platform, designed to make puppeteering, simulation, and data collection for sim training more intuitive, cost-effective, and accurate. It supports reading wrist joint positions, calibrating motion ranges, and integrates seamlessly with ROS2 for robotic simulation and control.\n\nHighlights:\n- Built a Python + ROS2 environment, integrating the Dynamixel motor SDK for encoder reading and writing through serial.\n- Implemented a multi-camera AprilTag perception system using OpenCV ArUco with covariance-based accuracy filtering.\n- Created an auto-calibration pipeline that generates reusable YAML configs for custom AprilTag bundle layouts.\n- Bridged with ROS2 for teleoperation and visualization via Rviz2, MuJoCo, Isaac Sim, and MeshCat.\n- Published fused 6DoF poses as ROS2 TF topics to support inverse kinematics and teleoperation downstream.\n- Designed multiple ergonomic controllers and modular AprilTag mounts with print-in-place joints in Fusion 360.\n- Configured and daisy-chained Dynamixel motors via U2D2 — unique IDs, voltage and current limits, the full bring-up.\n- Built a local Flask + Three.js web tool for real-time encoder visualization, interactive calibration, and JSON storage.",
+      "description": "A Python + ROS2 based control and calibration toolkit for the OpenArm robotic platform, designed to make puppeteering, simulation, and data collection for sim training more intuitive, cost-effective, and accurate. It supports reading wrist joint positions, calibrating motion ranges, and integrates seamlessly with ROS2 for robotic simulation and control.\n\nHighlights:\n- Built a Python + ROS2 environment, integrating the Dynamixel motor SDK for encoder reading and writing through serial.\n- Implemented a multi-camera AprilTag perception system using OpenCV ArUco with covariance-based accuracy filtering.\n- Created an auto-calibration pipeline that generates reusable YAML configs for custom AprilTag bundle layouts.\n- Bridged with ROS2 for teleoperation and visualization via Rviz2, MuJoCo, Isaac Sim, and MeshCat.\n- Published fused 6DoF poses as ROS2 TF topics to support inverse kinematics and teleoperation downstream.\n- Designed multiple ergonomic controllers and modular AprilTag mounts with print-in-place joints in Fusion 360.\n- Configured and daisy-chained Dynamixel motors via U2D2 — unique IDs, voltage and current limits, the full bring-up.\n- Built a local Flask + Three.js web tool for real-time encoder visualization, interactive calibration, and JSON storage.\n\nRepos: [`kirigirisu`](https://github.com/reazon-research/kirigirisu) (puppeteering system) · [`atCAM`](https://github.com/reazon-research/atCAM) (multi-camera AprilTag perception).",
       "category": "Robotics",
       "status": "Completed",
       "technologies": [
@@ -299,7 +302,8 @@
         "Three.js"
       ],
       "links": {
-        "github": "https://github.com/ANonABento/htn_ros2_control_on_jetson_nano"
+        "github": "https://github.com/reazon-research/kirigirisu",
+        "docs": "https://github.com/reazon-research/atCAM"
       },
       "media": {
         "featuredImage": "/projects/robotic-arm-puppeteer/hero.jpg"
@@ -322,9 +326,7 @@
         "Soldering",
         "Oscilloscope"
       ],
-      "links": {
-        "github": "https://github.com/ANonABento"
-      },
+      "links": {},
       "media": {
         "featuredImage": "/projects/pcb-design/hero.jpg"
       },
@@ -346,6 +348,7 @@
         "3D-Printing"
       ],
       "links": {
+        "github": "https://github.com/LoveAtMakeUofT26/hardware",
         "docs": "https://devpost.com/software/littercaching"
       },
       "featured": false,
@@ -394,7 +397,7 @@
         "Visual Studio"
       ],
       "links": {
-        "github": "https://github.com/ANonABento/Face-Recognition-For-Turret"
+        "liveDemo": "https://anonabento.itch.io/"
       },
       "media": {
         "featuredImage": "/projects/unity-game-dev/hero.jpg"
@@ -417,9 +420,7 @@
         "Cura",
         "Soldering"
       ],
-      "links": {
-        "github": "https://github.com/ANonABento"
-      },
+      "links": {},
       "media": {
         "featuredImage": "/projects/vr-haptic-gloves/hero.jpg"
       },
@@ -427,10 +428,10 @@
       "dateCompleted": "2024-10"
     },
     {
-      "id": "java-android-apps",
-      "name": "Java & Android Applications",
-      "shortDescription": "Android apps and Java utilities — CameraX object detection that web-scrapes decomposition times, an AIML chatbot with MBROLA text-to-speech, and Processing sketches.",
-      "description": "A set of Java work across Android Studio, Eclipse, and Processing — combining CameraX-based real-time object detection, AIML chatbots, and natural-sounding speech synthesis.\n\nHighlights:\n- Made an Android Studio app that detects objects with CameraX and web-scrapes decomposition times from a database.\n- Built an interactive chatbot using AIML (Artificial Intelligence Markup Language) for conversational logic in Eclipse IDE.\n- Incorporated MBROLA and FreeTTS for natural-sounding speech synthesis, enhancing user interaction.\n- Designed an intuitive interface for easy use and optimized for backwards compatibility on various Androids.",
+      "id": "decompos-it",
+      "name": "Decompos_It",
+      "shortDescription": "Android app that detects objects with CameraX, then web-scrapes decomposition times from an environmental database to show how long the item takes to decompose.",
+      "description": "ICS4U environmental-assignment Android app: snap a photo with CameraX, run real-time object labeling, then web-scrape decomposition times for the detected item from an environmental database.\n\nHighlights:\n- Built with Android Studio + CameraX for camera capture and live preview.\n- Real-time item labeling via on-device computer vision.\n- Web-scraping pipeline pulls decomposition times (months/years) keyed to object class, with notes on factors like paper type, moisture, temperature, and microbial activity.\n- Designed an intuitive UI optimized for backwards compatibility across Android versions.",
       "category": "Software",
       "status": "Completed",
       "technologies": [
@@ -438,17 +439,32 @@
         "Android Studio",
         "CameraX",
         "OpenCV",
-        "AIML",
-        "MBROLA",
-        "FreeTTS",
-        "Eclipse",
-        "Processing"
+        "Web Scraping"
       ],
       "links": {
         "github": "https://github.com/ANonABento/Decompos_It"
       },
       "media": {
-        "featuredImage": "/projects/java-android-apps/hero.jpg"
+        "featuredImage": "/projects/decompos-it/hero.jpg"
+      },
+      "featured": false,
+      "dateCompleted": "2024-06"
+    },
+    {
+      "id": "the-closet",
+      "name": "TheCloset",
+      "shortDescription": "ICS4 Final Project — a Java game with a horror/mystery vibe (the icon shows a glowing doorway). Description stub — fill in via the repo or a quick blurb.",
+      "description": "ICS4 Final Project — a Java application with a horror/mystery aesthetic, judging by the title-card icon (a glowing closet door against a dark background).\n\nThis card is a stub. Point me at a README, gameplay screenshot, or a one-paragraph synopsis and I'll flesh it out.",
+      "category": "Software",
+      "status": "Completed",
+      "technologies": [
+        "Java"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento/TheCloset"
+      },
+      "media": {
+        "featuredImage": "/projects/the-closet/hero.jpg"
       },
       "featured": false,
       "dateCompleted": "2024-06"

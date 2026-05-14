@@ -2,7 +2,7 @@
   "id": "expressive-ai-robot-head",
   "name": "Expressive AI Robot Head",
   "shortDescription": "ROS2 robotic head that fuses LLM reasoning, speech, vision, and 12-servo control to push AI from text into physical interaction. Submitted as 'MaidReal Head' to the OpenAI Open Model Hackathon.",
-  "description": "A ROS2-based robotic head that integrates large language models (LLMs), speech, vision, and servo control to push AI beyond text into physical interaction — engaging more humanlike communication with AI through robots.\n\nHighlights:\n- Built a GPU-accelerated pipeline with CUDA and PyTorch, optimizing VRAM usage to run fully locally on Ubuntu/WSL2.\n- Implemented a real-time speech workflow: Silero VAD → Whisper (STT) → llama.cpp (running GPT-OSS-20B) → Zonos (TTS).\n- Designed a 12-servo robotic head combining organic mesh modeling in Blender with parametric solids in Fusion 360.\n- Controlled servos through ROS2 with a mapping layer that unites LLM reasoning, audio analysis, and OpenCV tracking.\n\nSubmitted to the OpenAI Open Model Hackathon (September 2025) as 'MaidReal Head'.",
+  "description": "A ROS2-based robotic head that integrates large language models (LLMs), speech, vision, and servo control to push AI beyond text into physical interaction — engaging more humanlike communication with AI through robots.\n\nHighlights:\n- Built a GPU-accelerated pipeline with CUDA and PyTorch, optimizing VRAM usage to run fully locally on Ubuntu/WSL2.\n- Implemented a real-time speech workflow: Silero VAD → Whisper (STT) → llama.cpp (running GPT-OSS-20B) → Zonos (TTS).\n- Designed a 12-servo robotic head combining organic mesh modeling in Blender with parametric solids in Fusion 360.\n- Controlled servos through ROS2 with a mapping layer that unites LLM reasoning, audio analysis, and OpenCV tracking.\n\nRepos: [`MaidReal/Head`](https://github.com/MaidReal/Head) (hardware + firmware) · [`MaidReal/brain`](https://github.com/MaidReal/brain) (LLM + speech pipeline).\n\nSubmitted to the OpenAI Open Model Hackathon (September 2025) as 'MaidReal Head'.",
   "category": "AI & Robotics",
   "status": "Completed",
   "technologies": [
@@ -21,6 +21,7 @@
     "OpenCV"
   ],
   "links": {
+    "github": "https://github.com/MaidReal/Head",
     "docs": "https://devpost.com/software/maidreal-head-v1"
   },
   "media": {

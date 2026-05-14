@@ -1,0 +1,23 @@
+{
+  "id": "decompos-it",
+  "name": "Decompos_It",
+  "shortDescription": "Android app that detects objects with CameraX, then web-scrapes decomposition times from an environmental database to show how long the item takes to decompose.",
+  "description": "ICS4U environmental-assignment Android app: snap a photo with CameraX, run real-time object labeling, then web-scrape decomposition times for the detected item from an environmental database.\n\nHighlights:\n- Built with Android Studio + CameraX for camera capture and live preview.\n- Real-time item labeling via on-device computer vision.\n- Web-scraping pipeline pulls decomposition times (months/years) keyed to object class, with notes on factors like paper type, moisture, temperature, and microbial activity.\n- Designed an intuitive UI optimized for backwards compatibility across Android versions.",
+  "category": "Software",
+  "status": "Completed",
+  "technologies": [
+    "Java",
+    "Android Studio",
+    "CameraX",
+    "OpenCV",
+    "Web Scraping"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento/Decompos_It"
+  },
+  "media": {
+    "featuredImage": "/projects/decompos-it/hero.jpg"
+  },
+  "featured": false,
+  "dateCompleted": "2024-06"
+}

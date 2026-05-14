@@ -2,7 +2,7 @@
   "id": "shoulder-cupid",
   "name": "ShoulderCupid",
   "shortDescription": "Wearable AI dating coach — ESP32-CAM smart glasses extract emotional cues, AI whispers contextual advice through earbuds. Won MLH Best Use of Solana at MakeUofT 2026.",
-  "description": "ShoulderCupid is a wearable AI coach for real-time dating interactions. An ESP32-CAM mounted in smart glasses streams video to extract emotional data (heart rate, breathing rate) from the target. An ultrasonic sensor tracks distance, triggering different coaching modes. The system combines live speech transcription, AI-generated contextual advice via Google Gemini, and text-to-speech (ElevenLabs) whispered through earbuds. Users pick from AI coaches with different personalities before each session.\n\nWon **MLH Best Use of Solana** at MakeUofT 2026.",
+  "description": "ShoulderCupid is a wearable AI coach for real-time dating interactions. An ESP32-CAM mounted in smart glasses streams video to extract emotional data (heart rate, breathing rate) from the target. An ultrasonic sensor tracks distance, triggering different coaching modes. The system combines live speech transcription, AI-generated contextual advice via Google Gemini, and text-to-speech (ElevenLabs) whispered through earbuds. Users pick from AI coaches with different personalities before each session.\n\nRepos: [`ShoulderCupid`](https://github.com/LoveAtMakeUofT26/ShoulderCupid) (app) · [`hardware`](https://github.com/LoveAtMakeUofT26/hardware) (firmware).\n\nWon **MLH Best Use of Solana** at MakeUofT 2026.",
   "category": "Hackathon",
   "status": "Completed",
   "technologies": [
@@ -24,6 +24,7 @@
     "Blender"
   ],
   "links": {
+    "github": "https://github.com/LoveAtMakeUofT26/ShoulderCupid",
     "docs": "https://devpost.com/software/shouldercupid-0y6b5d"
   },
   "featured": true,
