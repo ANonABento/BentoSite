@@ -1,0 +1,35 @@
+{
+  "id": "bentosite",
+  "name": "bentOS — This Portfolio",
+  "shortDescription": "The site you're on. A Next.js + Three.js portfolio with a 3D viewer, Matter.js BentoGrid, grounded chat assistant, and a boot-screen OS theme.",
+  "description": "bentOS is Kevin's personal portfolio, built as an interactive OS-themed surface rather than a static resume. Features include a boot splash gate, a procedural 3D cat in a Three.js viewer with LOD and FPS-aware perf, an infinite Matter.js-driven BentoGrid for /projects and /playground, a Gemini-backed chat assistant that only answers from grounded portfolio content, eight playable mini-games, and a long-form /scrollable view with a globe of life locations. Strict TypeScript, Tailwind CSS variables for theming, Vitest + Playwright tests, Lighthouse CI, and bundle-size budgets enforced on every PR. Content (projects, photos, talking points) is file-based JSON and rebuilt automatically by an update-portfolio agent skill.",
+  "category": "Software",
+  "status": "In Progress",
+  "technologies": [
+    "Next.js",
+    "React",
+    "TypeScript",
+    "Three.js",
+    "@react-three/fiber",
+    "matter-js",
+    "Tailwind CSS",
+    "framer-motion"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento/BentoSite",
+    "liveDemo": "https://kevinjiang.dev",
+    "docs": "https://github.com/ANonABento/BentoSite/blob/main/CLAUDE.md"
+  },
+  "media": {
+    "featuredImage": "/projects/bentosite/hero.png",
+    "images": [
+      "/projects/bentosite/hero.png",
+      "/projects/bentosite/projects.png",
+      "/projects/bentosite/playground.png",
+      "/projects/bentosite/mobile.png"
+    ],
+    "website": "https://kevinjiang.dev"
+  },
+  "featured": true,
+  "dateCompleted": "2026-05"
+}
