@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 const TYPEWRITER_SPEED = 35;
 const PROMPT_TEXT = 'system ready - press any key:';
@@ -46,14 +46,14 @@ export function TerminalPrompt() {
         ) : null}
       </div>
       {showCursor ? (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.15 }}
           className="mt-1 pl-[1.5ch]"
         >
           <span className="animate-blink">_</span>
-        </motion.div>
+        </m.div>
       ) : null}
     </div>
   );

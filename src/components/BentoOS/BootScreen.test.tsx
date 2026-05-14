@@ -3,9 +3,8 @@ import type React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { BootScreen } from './BootScreen';
 
-vi.mock('framer-motion', () => ({
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
-  motion: {
+vi.mock('framer-motion', () => {
+  const motionMock = {
     div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
       <div {...props}>{children}</div>
     ),
@@ -18,8 +17,14 @@ vi.mock('framer-motion', () => ({
     p: ({ children, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (
       <p {...props}>{children}</p>
     ),
-  },
-}));
+  };
+
+  return {
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
+    motion: motionMock,
+    m: motionMock,
+  };
+});
 
 vi.mock('./useBootSequence', () => ({
   useBootSequence: () => ({

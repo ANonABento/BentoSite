@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { BentoIcon } from './BentoIcon';
 import { TerminalPrompt } from './TerminalPrompt';
 import { Typewriter } from './Typewriter';
@@ -73,7 +73,7 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
   return (
     <AnimatePresence onExitComplete={onComplete}>
       {isVisible ? (
-        <motion.div
+        <m.div
           className="fixed inset-0 z-[100] overflow-hidden bg-black"
           exit={{ opacity: 0, scale: 0.96 }}
           transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
@@ -89,7 +89,7 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
 
           <AnimatePresence>
             {showFlash ? (
-              <motion.div
+              <m.div
                 className="absolute inset-0 z-[20] pointer-events-none"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -114,7 +114,7 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
                     }}
                   />
                 ) : null}
-              </motion.div>
+              </m.div>
             ) : null}
           </AnimatePresence>
 
@@ -133,14 +133,14 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
                 Cubic-bezier matches the rest of the boot animations so the
                 vocabulary stays consistent.
               */}
-              <motion.div
+              <m.div
                 className="absolute inset-x-0 top-0 bg-black pointer-events-none z-[10]"
                 initial={{ height: '49.8%' }}
                 animate={{ height: '0%' }}
                 transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1], delay: 0.05 }}
                 aria-hidden="true"
               />
-              <motion.div
+              <m.div
                 className="absolute inset-x-0 bottom-0 bg-black pointer-events-none z-[10]"
                 initial={{ height: '49.8%' }}
                 animate={{ height: '0%' }}
@@ -149,7 +149,7 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
               />
               {/* Power-on flash — simple horizontal + vertical white lines
                   that briefly light up at the slit as the shutters retract. */}
-              <motion.div
+              <m.div
                 className="absolute left-0 right-0 top-1/2 -translate-y-1/2 bg-white pointer-events-none z-[11]"
                 style={{ height: 2, boxShadow: '0 0 10px 2px rgba(255, 255, 255, 0.65)' }}
                 initial={{ opacity: 0.95, scaleX: 0.4 }}
@@ -157,7 +157,7 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
                 transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
                 aria-hidden="true"
               />
-              <motion.div
+              <m.div
                 className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 bg-white pointer-events-none z-[11]"
                 style={{ width: 2, boxShadow: '0 0 10px 2px rgba(255, 255, 255, 0.55)' }}
                 initial={{ opacity: 0.85, scaleY: 0.35 }}
@@ -187,7 +187,7 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
                       {/* Logo arrives first — snaps in (scale + fade) right
                           after the shutters retract. The chrome / subtitle
                           then "print" themselves *around* the brand mark. */}
-                      <motion.h1
+                      <m.h1
                         className="boot-title boot-title-text relative"
                         aria-label="bentOS"
                         initial={{ opacity: 0, scale: 0.92 }}
@@ -195,8 +195,8 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
                         transition={{ delay: 0.5, duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
                       >
                         bentOS
-                      </motion.h1>
-                      <motion.div
+                      </m.h1>
+                      <m.div
                         className="boot-title-logo hidden sm:block"
                         initial={{ opacity: 0, scale: 0.92 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -205,7 +205,7 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
                         <div className="boot-logo-mark relative w-full h-full">
                           <BentoIcon size={120} className="w-full h-full" />
                         </div>
-                      </motion.div>
+                      </m.div>
                     </div>
                     <p
                       className="font-crt uppercase text-white whitespace-nowrap text-[0.85rem] tracking-[0.34em] sm:text-base sm:tracking-[0.4em] md:text-lg"
@@ -222,7 +222,7 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
                   <div className="relative flex w-full max-w-[760px] flex-col items-stretch gap-5 min-h-[120px] sm:min-h-[136px]">
                     <AnimatePresence mode="wait">
                       {isBarPhase ? (
-                        <motion.div
+                        <m.div
                           key="bar"
                           className="w-full font-crt"
                           initial={{ opacity: 0, y: 6 }}
@@ -267,9 +267,9 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
                               {bootStatus.progressValue ?? `${progressPercent}%`}
                             </span>
                           </div>
-                        </motion.div>
+                        </m.div>
                       ) : phase === 'ready' ? (
-                        <motion.div
+                        <m.div
                           key="prompt"
                           className="boot-prompt-card flex items-center gap-3 px-5 py-4 sm:px-6 sm:py-5"
                           initial={{ opacity: 0, scale: 0.94, filter: 'blur(3px)' }}
@@ -278,7 +278,7 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
                           transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1], delay: 0.05 }}
                         >
                           <TerminalPrompt />
-                        </motion.div>
+                        </m.div>
                       ) : null}
                     </AnimatePresence>
                   </div>
@@ -291,7 +291,7 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
               </div>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       ) : null}
     </AnimatePresence>
   );

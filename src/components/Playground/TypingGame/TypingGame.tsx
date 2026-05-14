@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { useState, useCallback } from 'react';
 import { Keyboard } from 'lucide-react';
 import { GameLayout, ResultsScreen, CountdownOverlay } from '../shared';
@@ -94,7 +94,7 @@ export function TypingGame() {
         <AnimatePresence mode="wait">
           {/* Idle state - Settings */}
           {showIdle && (
-            <motion.div
+            <m.div
               key="idle"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -103,14 +103,14 @@ export function TypingGame() {
               className="text-center w-full max-w-lg"
             >
               {/* Icon */}
-              <motion.div
+              <m.div
                 className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[var(--purple)]/10 text-[var(--purple)] mb-6"
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 transition={springs.bouncy}
               >
                 <Keyboard className="w-10 h-10" />
-              </motion.div>
+              </m.div>
 
               <h2 className="text-4xl sm:text-5xl font-bold text-[var(--pg-text-primary)] mb-4 tracking-tight">
                 Typing Speed
@@ -125,7 +125,7 @@ export function TypingGame() {
                 <span className="pg-label block mb-3">Duration</span>
                 <div className="flex gap-2 justify-center">
                   {TYPING_CONFIG.durations.map((d) => (
-                    <motion.button
+                    <m.button
                       key={d}
                       onClick={() => setDuration(d)}
                       aria-label={`Set typing test duration to ${d} seconds`}
@@ -142,7 +142,7 @@ export function TypingGame() {
                       whileTap={{ scale: 0.98 }}
                     >
                       {d}s
-                    </motion.button>
+                    </m.button>
                   ))}
                 </div>
               </div>
@@ -152,7 +152,7 @@ export function TypingGame() {
                 <span className="pg-label block mb-3">Difficulty</span>
                 <div className="flex gap-2 justify-center">
                   {TYPING_CONFIG.difficulties.map((d) => (
-                    <motion.button
+                    <m.button
                       key={d}
                       onClick={() => setDifficulty(d)}
                       aria-label={`Set typing difficulty to ${d}`}
@@ -169,14 +169,14 @@ export function TypingGame() {
                       whileTap={{ scale: 0.98 }}
                     >
                       {d}
-                    </motion.button>
+                    </m.button>
                   ))}
                 </div>
               </div>
 
               {/* Best score if exists */}
               {scores?.bestWPM && (
-                <motion.div
+                <m.div
                   className="pg-surface-panel mb-8 inline-flex items-center gap-2 rounded-full px-4 py-2"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -186,10 +186,10 @@ export function TypingGame() {
                   <span className="font-mono font-semibold text-[var(--purple)]">
                     {scores.bestWPM} WPM
                   </span>
-                </motion.div>
+                </m.div>
               )}
 
-              <motion.button
+              <m.button
                 onClick={startGame}
                 className="pg-button pg-button-primary text-lg px-10 py-4"
                 aria-label="Start typing speed test"
@@ -197,13 +197,13 @@ export function TypingGame() {
                 whileTap={{ scale: 0.98 }}
               >
                 Start Test
-              </motion.button>
-            </motion.div>
+              </m.button>
+            </m.div>
           )}
 
           {/* Game state */}
           {showGame && (
-            <motion.div
+            <m.div
               key="game"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -248,20 +248,20 @@ export function TypingGame() {
               </div>
 
               {/* Help text */}
-              <motion.p
+              <m.p
                 className="text-center text-[var(--pg-text-muted)] text-sm mt-6"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
                 Click anywhere and start typing
-              </motion.p>
-            </motion.div>
+              </m.p>
+            </m.div>
           )}
 
           {/* Results */}
           {showResults && result && (
-            <motion.div
+            <m.div
               key="results"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -279,7 +279,7 @@ export function TypingGame() {
                   { label: 'Correct', value: result.correctChars },
                 ]}
               />
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>

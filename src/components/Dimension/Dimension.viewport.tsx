@@ -186,6 +186,7 @@ export function DimensionViewport({
     <React.Suspense fallback={<DimensionLoadingFallback bg={viewerTheme.bg} />}>
       <Canvas
         aria-label={`${selectedModel.name} interactive 3D scene`}
+        role="img"
         camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
         key={`canvas-${selectedModel.id}-${retryCount}`}
         performance={{ min: MIN_PERFORMANCE_SCALE }}

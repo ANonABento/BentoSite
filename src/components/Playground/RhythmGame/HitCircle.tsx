@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { HitRating } from '../Playground.types';
 import { APPROACH_TIME, HIT_CIRCLE_SIZE } from './RhythmGame.config';
@@ -85,7 +85,7 @@ export function HitCircle({
   const pulseOpacity = Math.sin(approachProgress * Math.PI * 4) * 0.2 + 0.8;
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, scale: 0.5 }}
       animate={{
         opacity: hit ? 0 : 1,
@@ -160,7 +160,7 @@ export function HitCircle({
 
       {/* Hit feedback text */}
       {hit && rating && (
-        <motion.div
+        <m.div
           initial={{ y: 0, opacity: 1, scale: 1 }}
           animate={{ y: -40, opacity: 0, scale: 1.2 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -175,12 +175,12 @@ export function HitCircle({
           }}
         >
           {rating}
-        </motion.div>
+        </m.div>
       )}
 
       {/* Ripple effect on hit */}
       {hit && (
-        <motion.div
+        <m.div
           initial={{ scale: 1, opacity: 0.5 }}
           animate={{ scale: 3, opacity: 0 }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -190,6 +190,6 @@ export function HitCircle({
           }}
         />
       )}
-    </motion.div>
+    </m.div>
   );
 }

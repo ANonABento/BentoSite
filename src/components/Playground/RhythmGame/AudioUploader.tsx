@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useState, useRef, useCallback } from 'react';
 import { Upload, Music, Loader2, AlertCircle, X } from 'lucide-react';
 import { useAudioAnalysis, RhythmGameMode } from './audio';
@@ -84,7 +84,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
   }, []);
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
@@ -95,7 +95,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
         <h3 className="text-xl font-semibold text-[var(--pg-text-primary)]">
           Upload Audio
         </h3>
-        <motion.button
+        <m.button
           type="button"
           onClick={onCancel}
           aria-label="Cancel audio upload"
@@ -104,7 +104,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
           whileTap={{ scale: 0.95 }}
         >
           <X className="w-5 h-5" />
-        </motion.button>
+        </m.button>
       </div>
 
       {/* File drop zone */}
@@ -163,7 +163,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
 
       {/* Song info inputs */}
       {file && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           className="mt-4 space-y-3"
@@ -203,7 +203,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
             </label>
             <div className="flex gap-2 mt-1">
               {DIFFICULTY_OPTIONS.map((option) => (
-                <motion.button
+                <m.button
                   type="button"
                   key={option.value}
                   onClick={() => setDifficulty(option.value)}
@@ -220,16 +220,16 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
                   whileTap={{ scale: 0.98 }}
                 >
                   {option.label}
-                </motion.button>
+                </m.button>
               ))}
             </div>
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {/* Analysis progress */}
       {isAnalyzing && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="pg-surface-panel pg-border-soft mt-4 rounded-xl p-4"
@@ -245,12 +245,12 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
               </p>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {/* Analysis results preview */}
       {analysis && !isAnalyzing && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="mt-4 p-4 rounded-xl bg-[var(--pg-bg-elevated)] border border-[var(--pg-game-success)]/30"
@@ -281,12 +281,12 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
               <p className="text-xs text-[var(--pg-text-muted)]">Notes</p>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {/* Error message */}
       {error && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="mt-4 p-4 rounded-xl bg-[var(--pg-game-error)]/10 border border-[var(--pg-game-error)]/30"
@@ -295,11 +295,11 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
             <AlertCircle className="w-5 h-5 text-[var(--pg-game-error)]" />
             <p className="text-sm text-[var(--pg-game-error)]">{error}</p>
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {/* Action button */}
-      <motion.button
+      <m.button
         type="button"
         onClick={handleAnalyze}
         disabled={!file || isAnalyzing}
@@ -315,7 +315,7 @@ export function AudioUploader({ mode, onBeatmapGenerated, onCancel }: AudioUploa
         whileTap={file && !isAnalyzing ? { scale: 0.99 } : {}}
       >
         {isAnalyzing ? 'Analyzing...' : 'Generate Beatmap'}
-      </motion.button>
-    </motion.div>
+      </m.button>
+    </m.div>
   );
 }
