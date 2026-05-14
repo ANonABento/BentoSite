@@ -17,7 +17,11 @@
     "liveDemo": "https://anonabento.itch.io/"
   },
   "media": {
-    "featuredImage": "/projects/unity-game-dev/hero.jpg"
+    "featuredImage": "/projects/unity-game-dev/hero.jpg",
+    "game": {
+      "type": "itch",
+      "url": "https://anonabento.itch.io/"
+    }
   },
   "featured": false,
   "dateCompleted": "2024-11"

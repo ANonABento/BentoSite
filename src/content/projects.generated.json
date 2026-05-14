@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-14T07:49:07.209Z",
+  "generatedAt": "2026-05-14T15:40:30.087Z",
   "projects": [
     {
       "id": "bentosite",
@@ -409,7 +409,11 @@
         "liveDemo": "https://anonabento.itch.io/"
       },
       "media": {
-        "featuredImage": "/projects/unity-game-dev/hero.jpg"
+        "featuredImage": "/projects/unity-game-dev/hero.jpg",
+        "game": {
+          "type": "itch",
+          "url": "https://anonabento.itch.io/"
+        }
       },
       "featured": false,
       "dateCompleted": "2024-11"
