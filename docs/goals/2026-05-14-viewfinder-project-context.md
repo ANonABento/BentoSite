@@ -244,13 +244,13 @@ Shipped (May 14, 2026):
     `Tell me about <name>` opener resolves to a non-null starter). All
     310 specs green.
 
-- **3cae862 — Wire `unity-game-dev` to itch.io profile.**
+- **c35e0dc — Wire `unity-game-dev` to itch.io profile.**
   - Added `media.game = { type: "itch", url: "https://anonabento.itch.io/" }`
     so the project surfaces a `PLAY` tab. The profile URL isn't a true
     iframe-embed target — `GameViewer` detects this and falls through
     to its "Open game" CTA, which is still the right UX.
 
-- **b11b724 — Extend `/update-portfolio` with multi-asset Viewfinder flow.**
+- **ba84ca1 — Extend `/update-portfolio` with multi-asset Viewfinder flow.**
   - `flows/project.md`: new Step 6 "Multi-asset wiring" with six
     per-asset sub-flows (3D model, video, PDF, website, game, map),
     each documenting where to save the file, the viewer caveats
