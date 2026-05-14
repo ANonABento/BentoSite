@@ -48,7 +48,7 @@ export function ImageViewer({ images }: ImageViewerProps) {
           className={`object-contain transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
           onLoad={() => setIsLoading(false)}
           sizes="(max-width: 768px) 100vw, 50vw"
-          priority
+          priority={currentIndex === 0}
           placeholder="blur"
           blurDataURL={BLUR_DATA_URL}
         />
