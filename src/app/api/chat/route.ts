@@ -362,10 +362,9 @@ export async function POST(request: NextRequest) {
       provider,
     });
   } catch (error) {
-    // Log error for debugging (in production, use proper logging)
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Chat API error:', error);
-    }
+    // Always log so Vercel function logs capture the upstream provider error.
+    // Safe because Vercel logs are private to the project owner.
+    console.error('Chat API error:', error);
 
     // Return proper 500 status for server errors
     return NextResponse.json(
