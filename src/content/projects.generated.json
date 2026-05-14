@@ -1,0 +1,258 @@
+{
+  "generatedAt": "2026-05-14T00:28:49.389Z",
+  "projects": [
+    {
+      "id": "robotic-arm-puppeteer",
+      "name": "Robotic Arm Puppeteer",
+      "shortDescription": "Python + ROS2 control and calibration toolkit for the OpenArm robotic platform with multi-camera AprilTag perception and 20% improved accuracy.",
+      "description": "Python + ROS2 control and calibration toolkit for the OpenArm robotic platform. Supports reading wrist joint positions, calibrating motion ranges, and integrates seamlessly with ROS2 for robotic simulation and control. Features multi-camera AprilTag perception with covariance-based accuracy filtering.",
+      "category": "Robotics",
+      "status": "Completed",
+      "technologies": [
+        "Python",
+        "ROS2",
+        "OpenCV",
+        "Fusion 360",
+        "Dynamixel",
+        "AprilTag",
+        "Three.js"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento",
+        "modelPath": "/models/placeholder.stl"
+      },
+      "media": {
+        "images": [
+          "https://picsum.photos/seed/robot1/800/600",
+          "https://picsum.photos/seed/robot2/800/600",
+          "https://picsum.photos/seed/robot3/800/600"
+        ],
+        "website": "https://ros.org"
+      },
+      "featured": true,
+      "dateCompleted": "2025-08"
+    },
+    {
+      "id": "expressive-ai-robot-head",
+      "name": "Expressive AI Robot Head",
+      "shortDescription": "ROS2-based robotic head with LLM integration, speech recognition, and 12-servo organic mesh design for human-like interactions.",
+      "description": "ROS2-based robotic head integrating LLMs, speech recognition, vision, and servo control for human-like interactions. Features GPU-accelerated CUDA pipeline, 12-servo organic mesh design, and real-time speech workflow using Whisper and llama.cpp.",
+      "category": "AI & Robotics",
+      "status": "Completed",
+      "technologies": [
+        "Python",
+        "PyTorch",
+        "llama.cpp",
+        "Whisper",
+        "ESP32",
+        "FreeRTOS",
+        "Blender",
+        "ROS2"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento"
+      },
+      "media": {
+        "images": [
+          "https://picsum.photos/seed/aihead1/800/600",
+          "https://picsum.photos/seed/aihead2/800/600",
+          "https://picsum.photos/seed/aihead3/800/600",
+          "https://picsum.photos/seed/aihead4/800/600"
+        ],
+        "video": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      },
+      "featured": true,
+      "dateCompleted": "2025-06"
+    },
+    {
+      "id": "ar-gesture-robot",
+      "name": "AR Gesture Controlled Robot",
+      "shortDescription": "Modular robot platform controlled through Snap Spectacles AR glasses with sub-100ms latency gesture-to-motion pipeline.",
+      "description": "Modular robot platform controlled through Snap Spectacles AR glasses. End-to-end gesture-to-motion pipeline using Snap API, Flask, HiveMQ MQTT, and ROS2. Sub-100ms latency with NVIDIA Jetson Nano for on-device AI inference.",
+      "category": "VR/AR",
+      "status": "Completed",
+      "technologies": [
+        "JavaScript",
+        "Python",
+        "Jetson Nano",
+        "Docker",
+        "MQTT",
+        "ROS2",
+        "Flask"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento"
+      },
+      "media": {
+        "images": [
+          "https://picsum.photos/seed/arbot1/800/600",
+          "https://picsum.photos/seed/arbot2/800/600"
+        ],
+        "website": "https://www.spectacles.com"
+      },
+      "featured": true,
+      "dateCompleted": "2025-04"
+    },
+    {
+      "id": "pcb-design",
+      "name": "PCB Design & Assembly",
+      "shortDescription": "Double-layer PCBs for controller subsystems with 0 ERC/DRC violations. Soldered SMD boards including IMU and power control circuits.",
+      "description": "Double-layer PCBs for controller subsystems with 0 ERC/DRC violations. Soldered SMD boards including IMU and power control circuits.",
+      "category": "Hardware",
+      "status": "Completed",
+      "technologies": [
+        "Altium Designer",
+        "Oscilloscope",
+        "Soldering",
+        "SMD Assembly"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento"
+      },
+      "media": {
+        "images": [
+          "https://picsum.photos/seed/pcb1/800/600",
+          "https://picsum.photos/seed/pcb2/800/600",
+          "https://picsum.photos/seed/pcb3/800/600"
+        ]
+      },
+      "featured": false,
+      "dateCompleted": "2025-04"
+    },
+    {
+      "id": "one-handed-keyboard",
+      "name": "One Handed Keyboard",
+      "shortDescription": "AAC wrist-mounted keyboard device with only 5 GPIO buttons, trie-based predictive text, and fuzzy search. Received 99% grade.",
+      "description": "AAC device featuring a wrist-mounted keyboard with only 5 GPIO buttons. Uses trie and fuzzy search algorithms for predictive text. 3D-printed housing with STM32 microcontroller. Received 99% grade with comprehensive documentation.",
+      "category": "Accessibility",
+      "status": "Completed",
+      "technologies": [
+        "C",
+        "STM32",
+        "FSM",
+        "OnShape",
+        "3D-Printing",
+        "UART"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento",
+        "docs": "https://docs.google.com/document/d/example"
+      },
+      "featured": false,
+      "dateCompleted": "2024-12"
+    },
+    {
+      "id": "unity-game-dev",
+      "name": "Unity Game Development",
+      "shortDescription": "Best Overall winner at UWGDC Game Jam Fall 2024. Complex game logic with physics, colliders, AI, and finite state machines.",
+      "description": "Best Overall winner at UWGDC Game Jam Fall 2024. Developed complex game logic using C# scripting in Unity with physics, colliders, and AI. Utilized finite state machines for smooth animation transitions.",
+      "category": "Games",
+      "status": "Completed",
+      "technologies": [
+        "C#",
+        "Unity",
+        "Blender",
+        "OpenCV",
+        "FSM"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento"
+      },
+      "media": {
+        "game": {
+          "type": "itch",
+          "url": "https://bakudas.itch.io/roguelike-deckbuilder"
+        }
+      },
+      "featured": false,
+      "dateCompleted": "2024-11"
+    },
+    {
+      "id": "vr-haptic-gloves",
+      "name": "VR Haptic Gloves",
+      "shortDescription": "ESP32-based haptic feedback gloves for VR with spring-loaded potentiometers and servo-assisted haptics for precise finger tracking.",
+      "description": "ESP32-based haptic feedback gloves for VR with spring-loaded potentiometers and servo-assisted haptics. 3D-printed custom mounts for precise finger tracking. Designed for sub-100ms sensory resistance in VR applications.",
+      "category": "VR/AR",
+      "status": "Completed",
+      "technologies": [
+        "C++",
+        "ESP32",
+        "Arduino",
+        "3D-Printing",
+        "Cura",
+        "Soldering"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento",
+        "docs": "https://docs.google.com/document/d/example"
+      },
+      "media": {
+        "images": [
+          "https://picsum.photos/seed/vrglove1/800/600",
+          "https://picsum.photos/seed/vrglove2/800/600",
+          "https://picsum.photos/seed/vrglove3/800/600"
+        ]
+      },
+      "featured": false,
+      "dateCompleted": "2024-10"
+    },
+    {
+      "id": "java-android-apps",
+      "name": "Java & Android Applications",
+      "shortDescription": "Android apps with CameraX object detection, AIML chatbot integration, and MBROLA text-to-speech synthesis.",
+      "description": "Android apps with CameraX object detection, AIML chatbot integration, and MBROLA text-to-speech synthesis.",
+      "category": "Software",
+      "status": "Completed",
+      "technologies": [
+        "Java",
+        "Android Studio",
+        "OpenCV",
+        "AIML",
+        "TTS",
+        "CameraX"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento"
+      },
+      "media": {
+        "images": [
+          "https://picsum.photos/seed/android1/800/600",
+          "https://picsum.photos/seed/android2/800/600"
+        ]
+      },
+      "featured": false,
+      "dateCompleted": "2024-06"
+    },
+    {
+      "id": "ftc-robotics",
+      "name": "FIRST Tech Challenge Robot",
+      "shortDescription": "Lead builder and programmer for team Devolotics at World Championship. Built drone launcher, autonomous program, and CAD mechanisms.",
+      "description": "Lead builder and programmer for team Devolotics at FIRST Tech Challenge World Championship. Built rubber band tensioned drone launcher, autonomous program using splines, and multiple CAD-designed mechanisms with machined aluminum and 3D-printed components.",
+      "category": "Competition",
+      "status": "Completed",
+      "technologies": [
+        "Java",
+        "OpenCV",
+        "OnShape",
+        "3D-Printing",
+        "Motor Control",
+        "Mecanum Drive"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento"
+      },
+      "media": {
+        "images": [
+          "https://picsum.photos/seed/ftc1/800/600",
+          "https://picsum.photos/seed/ftc2/800/600",
+          "https://picsum.photos/seed/ftc3/800/600",
+          "https://picsum.photos/seed/ftc4/800/600",
+          "https://picsum.photos/seed/ftc5/800/600"
+        ],
+        "video": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      },
+      "featured": false,
+      "dateCompleted": "2024-04"
+    }
+  ]
+}

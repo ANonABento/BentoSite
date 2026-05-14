@@ -1,0 +1,31 @@
+{
+  "id": "robotic-arm-puppeteer",
+  "name": "Robotic Arm Puppeteer",
+  "shortDescription": "Python + ROS2 control and calibration toolkit for the OpenArm robotic platform with multi-camera AprilTag perception and 20% improved accuracy.",
+  "description": "Python + ROS2 control and calibration toolkit for the OpenArm robotic platform. Supports reading wrist joint positions, calibrating motion ranges, and integrates seamlessly with ROS2 for robotic simulation and control. Features multi-camera AprilTag perception with covariance-based accuracy filtering.",
+  "category": "Robotics",
+  "status": "Completed",
+  "technologies": [
+    "Python",
+    "ROS2",
+    "OpenCV",
+    "Fusion 360",
+    "Dynamixel",
+    "AprilTag",
+    "Three.js"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento",
+    "modelPath": "/models/placeholder.stl"
+  },
+  "media": {
+    "images": [
+      "https://picsum.photos/seed/robot1/800/600",
+      "https://picsum.photos/seed/robot2/800/600",
+      "https://picsum.photos/seed/robot3/800/600"
+    ],
+    "website": "https://ros.org"
+  },
+  "featured": true,
+  "dateCompleted": "2025-08"
+}

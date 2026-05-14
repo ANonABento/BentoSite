@@ -1,5 +1,16 @@
 import portfolioContent from '@/content/portfolio.json';
+import talkingPointsContent from '@/content/talking-points.generated.json';
 import { PROJECTS } from '@/lib/projects-data';
+
+interface TalkingPoint {
+  id: string;
+  title: string;
+  content: string;
+  keywords?: string[];
+}
+
+const TALKING_POINTS: TalkingPoint[] =
+  (talkingPointsContent as { points?: TalkingPoint[] }).points ?? [];
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -72,6 +83,7 @@ const PUBLIC_TOPICS = [
     project.category,
     ...project.technologies,
   ]),
+  ...TALKING_POINTS.flatMap((point) => [point.title, ...(point.keywords ?? [])]),
 ]
   .map(normalizeText)
   .filter((topic) => topic.length > 2);
@@ -233,6 +245,16 @@ function buildKnowledgeSections(): KnowledgeSection[] {
       keywords: tokenize('contact email github linkedin reach hire message'),
     },
     ...PORTFOLIO_DATA.projects.map(projectToSection),
+    ...TALKING_POINTS.map((point) => ({
+      id: `talking-point:${point.id}`,
+      title: point.title,
+      content: point.content,
+      keywords: [
+        point.title,
+        point.content,
+        ...(point.keywords ?? []),
+      ].flatMap(tokenize),
+    })),
   ];
 }
 

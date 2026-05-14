@@ -1,0 +1,27 @@
+{
+  "id": "java-android-apps",
+  "name": "Java & Android Applications",
+  "shortDescription": "Android apps with CameraX object detection, AIML chatbot integration, and MBROLA text-to-speech synthesis.",
+  "description": "Android apps with CameraX object detection, AIML chatbot integration, and MBROLA text-to-speech synthesis.",
+  "category": "Software",
+  "status": "Completed",
+  "technologies": [
+    "Java",
+    "Android Studio",
+    "OpenCV",
+    "AIML",
+    "TTS",
+    "CameraX"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento"
+  },
+  "media": {
+    "images": [
+      "https://picsum.photos/seed/android1/800/600",
+      "https://picsum.photos/seed/android2/800/600"
+    ]
+  },
+  "featured": false,
+  "dateCompleted": "2024-06"
+}

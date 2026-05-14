@@ -85,7 +85,7 @@ src/
 │   ├── clipboard.ts        # Copy-to-clipboard helper
 │   ├── image-utils.ts      # Blur placeholder helpers
 │   ├── portfolio-context.ts# Static portfolio data for chat/dashboard
-│   ├── projects-data.ts    # Project list
+│   ├── projects-data.ts    # Project list (reads src/content/projects.generated.json)
 │   ├── map-data.ts         # Location data for the globe viewer
 │   ├── site-config.ts      # SEO/site metadata (`bentOS`, social links)
 │   ├── use-debug-flag.ts   # Debug HUD gate (dev OR ?debug=1, SSR-safe)
@@ -182,13 +182,23 @@ src/
 │   ├── seo/JsonLd.tsx                 # Inline JSON-LD <script>
 │   └── ui/                            # See above
 │
-└── content/                # Static portfolio content (portfolio.json)
+└── content/                # Portfolio content — see src/content/AGENTS.md
+    ├── portfolio.json              # bio, skills, experience, education, contact
+    ├── projects/<id>.json          # one project per file (source of truth)
+    ├── projects.generated.json     # built from projects/ — DO NOT EDIT
+    ├── talking-points/<id>.json    # FAQ-style chat assistant content
+    └── talking-points.generated.json  # built — DO NOT EDIT
 
 public/
 ├── models/
 │   └── placeholder.stl     # Sample STL (the default model is procedural — no file)
-└── photos/, og-image.png, …
+└── photos/                 # <slug>.jpg + <slug>.json sidecar; manifest auto-built
 ```
+
+> **Updating portfolio content** (projects, photos, bio, chat talking points)?
+> Read [`src/content/AGENTS.md`](src/content/AGENTS.md) — the content playbook.
+> The `update-portfolio` skill in `.claude/skills/` automates this from any
+> Claude Code session run with `cwd=bentosite` (including from choomfie / Discord).
 
 ---
 

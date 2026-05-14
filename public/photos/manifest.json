@@ -31,16 +31,6 @@
       "height": 2000
     },
     {
-      "id": "night-bus",
-      "src": "/photos/night-bus.jpg",
-      "alt": "A cinematic night transit window with reflected city color",
-      "title": "Night Bus",
-      "location": "Vancouver",
-      "year": "2025",
-      "width": 1800,
-      "height": 1350
-    },
-    {
       "id": "machine-quiet",
       "src": "/photos/machine-quiet.jpg",
       "alt": "A quiet close-up of machined forms in low light",
@@ -49,6 +39,16 @@
       "year": "2025",
       "width": 1600,
       "height": 2000
+    },
+    {
+      "id": "night-bus",
+      "src": "/photos/night-bus.jpg",
+      "alt": "A cinematic night transit window with reflected city color",
+      "title": "Night Bus",
+      "location": "Vancouver",
+      "year": "2025",
+      "width": 1800,
+      "height": 1350
     },
     {
       "id": "orange-hour",

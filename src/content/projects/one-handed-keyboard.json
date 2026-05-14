@@ -1,0 +1,22 @@
+{
+  "id": "one-handed-keyboard",
+  "name": "One Handed Keyboard",
+  "shortDescription": "AAC wrist-mounted keyboard device with only 5 GPIO buttons, trie-based predictive text, and fuzzy search. Received 99% grade.",
+  "description": "AAC device featuring a wrist-mounted keyboard with only 5 GPIO buttons. Uses trie and fuzzy search algorithms for predictive text. 3D-printed housing with STM32 microcontroller. Received 99% grade with comprehensive documentation.",
+  "category": "Accessibility",
+  "status": "Completed",
+  "technologies": [
+    "C",
+    "STM32",
+    "FSM",
+    "OnShape",
+    "3D-Printing",
+    "UART"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento",
+    "docs": "https://docs.google.com/document/d/example"
+  },
+  "featured": false,
+  "dateCompleted": "2024-12"
+}

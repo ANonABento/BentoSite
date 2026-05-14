@@ -1,0 +1,29 @@
+{
+  "id": "ar-gesture-robot",
+  "name": "AR Gesture Controlled Robot",
+  "shortDescription": "Modular robot platform controlled through Snap Spectacles AR glasses with sub-100ms latency gesture-to-motion pipeline.",
+  "description": "Modular robot platform controlled through Snap Spectacles AR glasses. End-to-end gesture-to-motion pipeline using Snap API, Flask, HiveMQ MQTT, and ROS2. Sub-100ms latency with NVIDIA Jetson Nano for on-device AI inference.",
+  "category": "VR/AR",
+  "status": "Completed",
+  "technologies": [
+    "JavaScript",
+    "Python",
+    "Jetson Nano",
+    "Docker",
+    "MQTT",
+    "ROS2",
+    "Flask"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento"
+  },
+  "media": {
+    "images": [
+      "https://picsum.photos/seed/arbot1/800/600",
+      "https://picsum.photos/seed/arbot2/800/600"
+    ],
+    "website": "https://www.spectacles.com"
+  },
+  "featured": true,
+  "dateCompleted": "2025-04"
+}

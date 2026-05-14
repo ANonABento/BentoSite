@@ -1,0 +1,26 @@
+{
+  "id": "unity-game-dev",
+  "name": "Unity Game Development",
+  "shortDescription": "Best Overall winner at UWGDC Game Jam Fall 2024. Complex game logic with physics, colliders, AI, and finite state machines.",
+  "description": "Best Overall winner at UWGDC Game Jam Fall 2024. Developed complex game logic using C# scripting in Unity with physics, colliders, and AI. Utilized finite state machines for smooth animation transitions.",
+  "category": "Games",
+  "status": "Completed",
+  "technologies": [
+    "C#",
+    "Unity",
+    "Blender",
+    "OpenCV",
+    "FSM"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento"
+  },
+  "media": {
+    "game": {
+      "type": "itch",
+      "url": "https://bakudas.itch.io/roguelike-deckbuilder"
+    }
+  },
+  "featured": false,
+  "dateCompleted": "2024-11"
+}

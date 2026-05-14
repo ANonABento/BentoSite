@@ -1,0 +1,26 @@
+{
+  "id": "pcb-design",
+  "name": "PCB Design & Assembly",
+  "shortDescription": "Double-layer PCBs for controller subsystems with 0 ERC/DRC violations. Soldered SMD boards including IMU and power control circuits.",
+  "description": "Double-layer PCBs for controller subsystems with 0 ERC/DRC violations. Soldered SMD boards including IMU and power control circuits.",
+  "category": "Hardware",
+  "status": "Completed",
+  "technologies": [
+    "Altium Designer",
+    "Oscilloscope",
+    "Soldering",
+    "SMD Assembly"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento"
+  },
+  "media": {
+    "images": [
+      "https://picsum.photos/seed/pcb1/800/600",
+      "https://picsum.photos/seed/pcb2/800/600",
+      "https://picsum.photos/seed/pcb3/800/600"
+    ]
+  },
+  "featured": false,
+  "dateCompleted": "2025-04"
+}

@@ -1,32 +1,31 @@
 # Portfolio Content
 
-Edit `portfolio.json` to update site content. This file is the single source of truth for:
-- Personal info
-- About copy
-- Skills
-- Projects
-- Experience
-- Education
+Single source of truth for everything the public site shows about Kevin.
 
-Notes:
-- `projects` drives both the featured grid and the projects modal.
-- The `/projects` BentoGrid page also maps this data into project cards through `src/lib/projects-data.ts`.
-- Use `featured: true` to surface a project in the featured grid.
-- `category` and `technologies` are used by project filtering/search surfaces.
-- `description` is the longer summary; `shortDescription` is used in cards.
-- `media` supports `images`, `video`, `website`, `pdf`, and `game`.
+## Layout
 
-## Sync with portfolio-sync
+```
+src/content/
+├── portfolio.json                  # bio, skills, experience, education, contact
+├── projects/<id>.json              # one project per file (source)
+├── projects.generated.json         # built from projects/ (DO NOT EDIT)
+├── talking-points/<id>.json        # FAQ-style content for the chat assistant
+└── talking-points.generated.json   # built from talking-points/ (DO NOT EDIT)
+```
 
-`portfolio-sync` now treats `src/content/portfolio.json` as the canonical generated feed.
+## How to update
 
-- `npm run sync-portfolio`  
-  Fetches each GitHub repo in your configured owner and regenerates `portfolio.json` from `.portfolio.json` files.
+See **[AGENTS.md](AGENTS.md)** in this directory for the full playbook
+(adding projects, photos, talking points, bio, swapping the resume).
 
-- `npm run sync-portfolio:dry-run`  
-  Prints the generated feed to stdout without writing files.
+## Quick commands
 
-- `npm run sync-portfolio:validate`  
-  Validates the current `src/content/portfolio.json` against the portfolio schema.
+```bash
+npm run sync              # regenerate everything + validate
+npm run sync:projects     # rebuild projects.generated.json + talking-points.generated.json
+npm run sync:photos       # rebuild public/photos/manifest.json from sidecars
+npm run validate:content  # validate portfolio.json schema
+```
 
-If GitHub rate limits are hit, the command keeps the existing portfolio data and marks the sync metadata as stale so the UI can display a fallback badge.
+`npm run dev` and `npm run build` invoke `npm run sync` automatically via
+the `predev` / `prebuild` hooks, so the generated files are always fresh.

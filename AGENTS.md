@@ -2,6 +2,10 @@
 
 Quick reference for AI agents working on this codebase.
 
+> **Updating portfolio content** (projects, photos, bio, chat talking points)?
+> See [`src/content/AGENTS.md`](src/content/AGENTS.md) — the content playbook.
+> This file is for code work.
+
 ## Project Overview
 
 This repo is a Next.js 16 portfolio site for Kevin Jiang with:

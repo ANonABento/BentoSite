@@ -1,7 +1,11 @@
 // Projects Data - Kevin Jiang's portfolio projects
 // Used by ProjectsModal for the portfolio showcase
+//
+// Source: src/content/projects/<id>.json files, compiled into
+// src/content/projects.generated.json by `npm run sync:projects`.
+// Do not edit projects.generated.json by hand.
 
-import portfolioContent from '@/content/portfolio.json';
+import projectsContent from '@/content/projects.generated.json';
 
 export type ProjectCategory = string;
 export type ProjectStatus = 'Completed' | 'In Progress' | 'Archived';
@@ -42,7 +46,7 @@ export interface Project {
   dateCompleted?: string;
 }
 
-const content = portfolioContent as { projects: Project[] };
+const content = projectsContent as { projects: Project[] };
 
 export const PROJECTS: Project[] = content.projects;
 
@@ -83,10 +87,6 @@ export function getProjectThumbnail(project: Project): string | undefined {
   if (project.media?.featuredImage) return project.media.featuredImage;
   if (project.media?.images?.[0]) return project.media.images[0];
   return project.thumbnail;
-}
-
-export function getPortfolioSyncMeta() {
-  return (content as { sync?: { lastSyncedAt?: string; stale?: boolean; staleReason?: string } }).sync;
 }
 
 export function getProjectMediaTypes(project: Project): ProjectMediaType[] {

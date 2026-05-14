@@ -1,22 +1,9 @@
 'use client';
 
 import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
-import { getPortfolioSyncMeta } from '@/lib/projects-data';
-
-const portfolioSyncMeta = getPortfolioSyncMeta();
 
 interface ScrollableFooterProps {
   onScrollToSection: (id: string) => void;
-}
-
-function formatSyncDate(value?: string): string {
-  if (!value) return 'Unknown';
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return 'Unknown';
-  return parsed.toLocaleString(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  });
 }
 
 export function ScrollableFooter({ onScrollToSection }: ScrollableFooterProps) {
@@ -63,20 +50,10 @@ export function ScrollableFooter({ onScrollToSection }: ScrollableFooterProps) {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-[var(--border)] flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="pt-8 border-t border-[var(--border)]">
           <p className="text-sm text-[var(--text-muted)]">
             &copy; {new Date().getFullYear()} {PORTFOLIO_DATA.personal.name}. Built with Next.js & Three.js
           </p>
-          <div
-            className={`text-xs px-3 py-2 rounded-full inline-flex items-center border ${
-              portfolioSyncMeta?.stale
-                ? 'border-amber-400/60 bg-amber-400/10 text-amber-200'
-                : 'border-[var(--border)] bg-[var(--glass-bg)] text-[var(--text-muted)]'
-            }`}
-          >
-            {portfolioSyncMeta?.stale ? 'stale sync' : 'synced'}: {formatSyncDate(portfolioSyncMeta?.lastSyncedAt)}
-            {portfolioSyncMeta?.staleReason ? ` · ${portfolioSyncMeta.staleReason}` : ''}
-          </div>
         </div>
       </div>
     </footer>
