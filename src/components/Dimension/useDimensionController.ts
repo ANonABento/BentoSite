@@ -17,10 +17,18 @@ import {
 import { getInitialModel } from './Dimension.utils';
 import type { ModelError, ModelInfo } from './Dimension.types';
 
+function getInitialAutoRotate() {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return true;
+  }
+
+  return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 export function useDimensionController({ modelPath }: { modelPath?: string } = {}) {
   const [error, setError] = useState<ModelError | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-  const [autoRotate, setAutoRotate] = useState(true);
+  const [autoRotate, setAutoRotate] = useState(getInitialAutoRotate);
   const [isWireframe, setIsWireframe] = useState(false);
   const [selectedModel, setSelectedModel] = useState<ModelInfo>(() => getInitialModel(modelPath));
   const [showModelSelector, setShowModelSelector] = useState(false);

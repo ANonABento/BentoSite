@@ -1,5 +1,6 @@
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
 import * as THREE from 'three';
+import { useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import type { ResponsiveOrbitControlsProps } from '../Dimension.types';
@@ -16,10 +17,13 @@ export const ResponsiveOrbitControls = forwardRef<
 ) {
   const controlsRef = useRef<OrbitControlsImpl>(null!);
   const lastZoomRef = useRef(-1);
+  const invalidate = useThree((state) => state.invalidate);
 
   useImperativeHandle(ref, () => controlsRef.current);
 
   const handleChange = useCallback(() => {
+    invalidate();
+
     if (!controlsRef.current || !onZoomChange) {
       return;
     }
@@ -29,7 +33,7 @@ export const ResponsiveOrbitControls = forwardRef<
       lastZoomRef.current = distance;
       onZoomChange(distance);
     }
-  }, [onZoomChange]);
+  }, [invalidate, onZoomChange]);
 
   // Auto-rotation is owned by the model's `useFrame` (model spins on its own
   // axis, the camera and grid stay still). Drei's `autoRotate` would orbit

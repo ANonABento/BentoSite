@@ -57,10 +57,11 @@ function useViewerTheme(): ViewerTheme {
  * the renderer via `useThree`, and updates it imperatively.
  */
 function ClearColorSync({ color }: { color: string }) {
-  const gl = useThree((state) => state.gl);
+  const { gl, invalidate } = useThree();
   useEffect(() => {
     gl.setClearColor(color, 1);
-  }, [gl, color]);
+    invalidate();
+  }, [gl, invalidate, color]);
   return null;
 }
 
@@ -119,6 +120,7 @@ function DimensionLoadingFallback({ bg }: { bg: string }) {
       <span className="sr-only">Loading 3D model...</span>
       <Canvas
         aria-label="Loading 3D model scene"
+        frameloop="demand"
         camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
         performance={{ min: MIN_PERFORMANCE_SCALE }}
         dpr={[1, MOBILE_PIXEL_RATIO_MAX]}
@@ -162,6 +164,7 @@ export function DimensionViewport({
       <div className="w-full h-full" style={{ background: viewerTheme.bg }}>
         <Canvas
           aria-label="3D model error preview"
+          frameloop="demand"
           camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
           performance={{ min: MIN_PERFORMANCE_SCALE }}
           dpr={[1, isMobile ? MOBILE_PIXEL_RATIO_MAX : 2]}
@@ -187,6 +190,7 @@ export function DimensionViewport({
       <Canvas
         aria-label={`${selectedModel.name} interactive 3D scene`}
         role="img"
+        frameloop={autoRotate ? 'always' : 'demand'}
         camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
         key={`canvas-${selectedModel.id}-${retryCount}`}
         performance={{ min: MIN_PERFORMANCE_SCALE }}
