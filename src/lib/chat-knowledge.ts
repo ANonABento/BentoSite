@@ -349,6 +349,158 @@ Verified portfolio context:
 ${context}`;
 }
 
+// ---------------------------------------------------------------------------
+// Canned starter responses
+// ---------------------------------------------------------------------------
+// For predictable opener queries (suggested-question chips, project-card
+// rundowns, etc.) we return a deterministic response WITHOUT calling the LLM.
+// Saves Gemini quota, ~1s of latency, and guarantees the same wording every
+// time someone clicks the same chip. Follow-up questions still hit the LLM,
+// which sees the canned response as prior assistant context.
+
+function formatProjectRundown(project: (typeof PORTFOLIO_DATA.projects)[number]): string {
+  const lines: string[] = [
+    `**${project.name}** — ${project.category}`,
+    '',
+    project.shortDescription,
+  ];
+
+  if (project.description && project.description !== project.shortDescription) {
+    lines.push('', '**What it does**', project.description);
+  }
+
+  if (project.technologies && project.technologies.length > 0) {
+    lines.push('', '**Tech stack**', project.technologies.join(', '));
+  }
+
+  const meta: string[] = [];
+  if (project.status) meta.push(`Status: ${project.status}`);
+  if (project.dateCompleted) meta.push(`Date: ${project.dateCompleted}`);
+  if (meta.length > 0) {
+    lines.push('', meta.join(' · '));
+  }
+
+  const links: string[] = [];
+  if (project.github) links.push(`[GitHub](${project.github})`);
+  links.push(`[Project page](/projects/${project.id})`);
+  lines.push('', links.join(' · '));
+
+  lines.push(
+    '',
+    '_Ask a follow-up for deeper detail — how it was built, specific tradeoffs, what would change with more time, etc._',
+  );
+
+  return lines.join('\n');
+}
+
+function formatRoboticsSummary(): string {
+  const roboticsProjects = PORTFOLIO_DATA.projects.filter((project) =>
+    /robot|robotic/i.test(`${project.category} ${project.shortDescription} ${project.description}`),
+  );
+  const roboticsExperience = PORTFOLIO_DATA.experience.filter((entry) =>
+    /robot|robotic/i.test(`${entry.role} ${entry.description}`),
+  );
+
+  const lines: string[] = ['**Robotics experience**', ''];
+
+  if (roboticsExperience.length > 0) {
+    lines.push('**Industry**');
+    for (const entry of roboticsExperience) {
+      lines.push(`- ${entry.role} at ${entry.company} (${entry.period}) — ${entry.description}`);
+    }
+    lines.push('');
+  }
+
+  if (roboticsProjects.length > 0) {
+    lines.push('**Projects**');
+    for (const project of roboticsProjects) {
+      lines.push(`- **${project.name}** — ${project.shortDescription}`);
+    }
+    lines.push('');
+  }
+
+  lines.push('_Ask about any specific project, technology, or experience for the full story._');
+  return lines.join('\n');
+}
+
+function formatTechProjects(tech: string): string {
+  const matching = PORTFOLIO_DATA.projects.filter((project) =>
+    project.technologies.some((projectTech) =>
+      normalizeText(projectTech) === normalizeText(tech),
+    ),
+  );
+
+  if (matching.length === 0) {
+    return `No projects in the portfolio explicitly tagged with ${tech}. Ask me what Kevin has used it for, or pick a project to dive into.`;
+  }
+
+  const lines: string[] = [`**${tech} projects**`, ''];
+  for (const project of matching) {
+    const link = project.github
+      ? ` ([GitHub](${project.github}))`
+      : '';
+    lines.push(`- **${project.name}** — ${project.shortDescription}${link}`);
+  }
+  lines.push('', '_Ask for deeper detail on any of these._');
+  return lines.join('\n');
+}
+
+const STARTER_RESPONSES: Map<string, string> = (() => {
+  const map = new Map<string, string>();
+
+  // Project rundowns — match the exact text the suggested-question chips
+  // send, plus a few natural variants.
+  for (const project of PORTFOLIO_DATA.projects) {
+    const rundown = formatProjectRundown(project);
+    const triggers = [
+      `Tell me about ${project.name}`,
+      `How does ${project.name} work?`,
+      `How does ${project.name} work`,
+      `What is ${project.name}?`,
+      `What is ${project.name}`,
+      `Tell me about the ${project.name}`,
+      project.name,
+    ];
+    for (const trigger of triggers) {
+      map.set(normalizeText(trigger), rundown);
+    }
+  }
+
+  // "What's your robotics experience?" — generated robotics overview
+  for (const trigger of [
+    "What's your robotics experience?",
+    'What is your robotics experience?',
+    'Tell me about your robotics experience',
+    'Robotics experience',
+  ]) {
+    map.set(normalizeText(trigger), formatRoboticsSummary());
+  }
+
+  // "Tell me about your <tech> projects" — for top hardware/software skills
+  // that appear in the suggested-question rotation
+  const candidateTechs = [
+    ...PORTFOLIO_DATA.skills.hardware,
+    ...PORTFOLIO_DATA.skills.software,
+  ];
+  for (const tech of candidateTechs) {
+    const summary = formatTechProjects(tech);
+    for (const trigger of [
+      `Tell me about your ${tech} projects`,
+      `Tell me about your ${tech} project`,
+      `What ${tech} projects do you have?`,
+      `${tech} projects`,
+    ]) {
+      map.set(normalizeText(trigger), summary);
+    }
+  }
+
+  return map;
+})();
+
+export function getStarterResponse(query: string): string | null {
+  return STARTER_RESPONSES.get(normalizeText(query)) ?? null;
+}
+
 export function createDemoResponse(message: string, context: string): string {
   const normalized = normalizeText(message);
 

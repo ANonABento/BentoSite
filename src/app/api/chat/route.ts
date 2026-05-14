@@ -8,6 +8,7 @@ import {
   formatRetrievedContext,
   getDefaultPortfolioContext,
   getLatestUserMessage,
+  getStarterResponse,
   PORTFOLIO_DATA,
   retrievePortfolioContext,
   type ChatMessage,
@@ -417,6 +418,18 @@ export async function POST(request: NextRequest) {
         message: guardrail.response,
         isDemoMode: provider === 'demo',
         provider,
+      });
+    }
+
+    // Fast path for predictable openers (project rundowns, common suggested
+    // questions). Saves quota and ~1s of latency; follow-ups still hit the LLM.
+    const starterResponse = getStarterResponse(latestUserMessage);
+    if (starterResponse) {
+      return NextResponse.json({
+        message: starterResponse,
+        isDemoMode: false,
+        provider,
+        cached: true,
       });
     }
 

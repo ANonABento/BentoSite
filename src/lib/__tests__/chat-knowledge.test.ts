@@ -5,6 +5,7 @@ import {
   createDemoResponse,
   formatRetrievedContext,
   getDefaultPortfolioContext,
+  getStarterResponse,
   retrievePortfolioContext,
 } from '@/lib/chat-knowledge';
 
@@ -56,5 +57,38 @@ describe('chat knowledge grounding', () => {
 
     expect(response).toContain('k69jiang@uwaterloo.ca');
     expect(response).toContain('GitHub');
+  });
+
+  describe('canned starter responses', () => {
+    it('returns a deterministic rundown for "Tell me about <project>"', () => {
+      const response = getStarterResponse('Tell me about Robotic Arm Puppeteer');
+
+      expect(response).not.toBeNull();
+      expect(response).toContain('Robotic Arm Puppeteer');
+      // Should include the project page link
+      expect(response).toMatch(/\[Project page\]\(\/projects\/robotic-arm-puppeteer\)/);
+      // Should invite follow-ups (cues the LLM-handled deeper-dive path)
+      expect(response).toMatch(/follow-up/i);
+    });
+
+    it('matches "How does <project> work?" suggested-question chip text', () => {
+      const response = getStarterResponse('How does Expressive AI Robot Head work?');
+
+      expect(response).not.toBeNull();
+      expect(response).toContain('Expressive AI Robot Head');
+    });
+
+    it('returns a robotics summary for "What\'s your robotics experience?"', () => {
+      const response = getStarterResponse("What's your robotics experience?");
+
+      expect(response).not.toBeNull();
+      expect(response).toMatch(/robotics experience/i);
+    });
+
+    it('returns null for follow-up questions so the LLM handles them', () => {
+      expect(getStarterResponse('how does the rag in your chat work?')).toBeNull();
+      expect(getStarterResponse('what tradeoffs did you make for the robot head?')).toBeNull();
+      expect(getStarterResponse('compare those two projects')).toBeNull();
+    });
   });
 });
