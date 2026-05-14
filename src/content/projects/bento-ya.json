@@ -17,6 +17,9 @@
   "links": {
     "github": "https://github.com/ANonABento/bento-ya"
   },
+  "media": {
+    "featuredImage": "/projects/bento-ya/hero.png"
+  },
   "featured": true,
   "dateCompleted": "2026"
 }

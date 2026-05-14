@@ -16,6 +16,9 @@
     "github": "https://github.com/ANonABento/slothing",
     "liveDemo": "https://slothing.work"
   },
+  "media": {
+    "featuredImage": "/projects/slothing/hero.png"
+  },
   "featured": false,
   "dateCompleted": "2026"
 }

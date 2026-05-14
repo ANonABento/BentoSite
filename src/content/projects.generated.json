@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-14T05:33:25.007Z",
+  "generatedAt": "2026-05-14T06:59:19.544Z",
   "projects": [
     {
       "id": "bentosite",
@@ -125,6 +125,9 @@
       "links": {
         "github": "https://github.com/ANonABento/bento-ya"
       },
+      "media": {
+        "featuredImage": "/projects/bento-ya/hero.png"
+      },
       "featured": true,
       "dateCompleted": "2026"
     },
@@ -187,6 +190,9 @@
       "links": {
         "github": "https://github.com/ANonABento/slothing",
         "liveDemo": "https://slothing.work"
+      },
+      "media": {
+        "featuredImage": "/projects/slothing/hero.png"
       },
       "featured": false,
       "dateCompleted": "2026"
