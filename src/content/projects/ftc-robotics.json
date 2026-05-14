@@ -1,8 +1,8 @@
 {
   "id": "ftc-robotics",
-  "name": "FIRST Tech Challenge Robot",
-  "shortDescription": "Lead builder and programmer for team Devolotics at World Championship. Built drone launcher, autonomous program, and CAD mechanisms.",
-  "description": "Lead builder and programmer for team Devolotics at FIRST Tech Challenge World Championship. Built rubber band tensioned drone launcher, autonomous program using splines, and multiple CAD-designed mechanisms with machined aluminum and 3D-printed components.",
+  "name": "FIRST Tech Challenge — Team Devolotics",
+  "shortDescription": "Lead builder and programmer for team Devolotics at the FIRST Tech Challenge World Championship. Built the drone launcher, deposit system, autonomous program, and CAD mechanisms.",
+  "description": "Competed at the FIRST Tech Challenge World Championship as the lead builder and programmer for team Devolotics (19498).\n\nHighlights:\n- Main contributions toward Pluto's deposit system, gate opener, hang, drone launcher, and the autonomous program.\n- Modeled various mechanisms using CAD, incorporating machined aluminum, polycarbonate, and 3D-printed components.\n- Created a rubber-band-tensioned drone launcher with a latch mechanism and spring absorption using just a single servo.\n- Programmed mecanum drive movement through splines and robot behaviour for an autonomous cycle.",
   "category": "Competition",
   "status": "Completed",
   "technologies": [
@@ -11,20 +11,11 @@
     "OnShape",
     "3D-Printing",
     "Motor Control",
-    "Mecanum Drive"
+    "Mecanum Drive",
+    "Manufacturing"
   ],
   "links": {
-    "github": "https://github.com/ANonABento"
-  },
-  "media": {
-    "images": [
-      "https://picsum.photos/seed/ftc1/800/600",
-      "https://picsum.photos/seed/ftc2/800/600",
-      "https://picsum.photos/seed/ftc3/800/600",
-      "https://picsum.photos/seed/ftc4/800/600",
-      "https://picsum.photos/seed/ftc5/800/600"
-    ],
-    "video": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    "github": "https://github.com/ANonABento/19498-Devolotics-Centerstage-2023-2024"
   },
   "featured": false,
   "dateCompleted": "2024-04"

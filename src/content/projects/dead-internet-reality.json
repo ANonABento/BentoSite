@@ -1,0 +1,22 @@
+{
+  "id": "dead-internet-reality",
+  "name": "DeadInternetTheory",
+  "shortDescription": "Local-first marketing and content agent orchestrator — research, generate, approve, and publish across platforms with human-in-the-loop audit trails.",
+  "description": "DeadInternetTheory is a local-first marketing and content-agent orchestrator. Users plug in a product or content lane, configure supervised marketing/content agents, research relevant communities and approved sources, then generate posts, scripts, images, voice/video assets — with human approval gates, dry-run scheduling, export, and publishing through owned or authorized social accounts.\n\nCurrently a pivoting MVP: FastAPI backend, Next.js frontend, Celery/Redis workers, Postgres models, tests, and extensive planning docs. The direction expands marketing operations into a full content-production pipeline with agent handoffs, source provenance, human approval, and audit trails.",
+  "category": "AI & Software",
+  "status": "In Progress",
+  "technologies": [
+    "Python",
+    "FastAPI",
+    "TypeScript",
+    "Next.js",
+    "Celery",
+    "Redis",
+    "PostgreSQL"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento/dead-internet-reality"
+  },
+  "featured": false,
+  "dateCompleted": "2026"
+}

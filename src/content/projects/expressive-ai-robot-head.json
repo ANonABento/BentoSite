@@ -1,31 +1,28 @@
 {
   "id": "expressive-ai-robot-head",
   "name": "Expressive AI Robot Head",
-  "shortDescription": "ROS2-based robotic head with LLM integration, speech recognition, and 12-servo organic mesh design for human-like interactions.",
-  "description": "ROS2-based robotic head integrating LLMs, speech recognition, vision, and servo control for human-like interactions. Features GPU-accelerated CUDA pipeline, 12-servo organic mesh design, and real-time speech workflow using Whisper and llama.cpp.",
+  "shortDescription": "ROS2 robotic head that fuses LLM reasoning, speech, vision, and 12-servo control to push AI from text into physical interaction.",
+  "description": "A ROS2-based robotic head that integrates large language models (LLMs), speech, vision, and servo control to push AI beyond text into physical interaction — engaging more humanlike communication with AI through robots.\n\nHighlights:\n- Built a GPU-accelerated pipeline with CUDA and PyTorch, optimizing VRAM usage to run fully locally on Ubuntu/WSL2.\n- Implemented a real-time speech workflow: Silero VAD → Whisper (STT) → llama.cpp (running GPT-OSS-20B) → Zonos (TTS).\n- Designed a 12-servo robotic head combining organic mesh modeling in Blender with parametric solids in Fusion 360.\n- Controlled servos through ROS2 with a mapping layer that unites LLM reasoning, audio analysis, and OpenCV tracking.\n- Submitted as 'MaidReal Head' on Devpost.",
   "category": "AI & Robotics",
   "status": "Completed",
   "technologies": [
     "Python",
     "PyTorch",
+    "CUDA",
     "llama.cpp",
     "Whisper",
+    "Silero VAD",
+    "Zonos",
+    "ROS2",
     "ESP32",
     "FreeRTOS",
     "Blender",
-    "ROS2"
+    "Fusion 360",
+    "OpenCV"
   ],
   "links": {
-    "github": "https://github.com/ANonABento"
-  },
-  "media": {
-    "images": [
-      "https://picsum.photos/seed/aihead1/800/600",
-      "https://picsum.photos/seed/aihead2/800/600",
-      "https://picsum.photos/seed/aihead3/800/600",
-      "https://picsum.photos/seed/aihead4/800/600"
-    ],
-    "video": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    "github": "https://github.com/ANonABento",
+    "docs": "https://devpost.com/software/maidreal-head-v1"
   },
   "featured": true,
   "dateCompleted": "2025-06"

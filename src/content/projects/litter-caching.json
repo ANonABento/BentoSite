@@ -1,0 +1,19 @@
+{
+  "id": "litter-caching",
+  "name": "LitterCaching",
+  "shortDescription": "Geocaching, but you save the world. Environmental geocaching focused on litter collection — one cache at a time.",
+  "description": "LitterCaching reframes geocaching around an environmental goal: participants don't hunt hidden treasure, they hunt and collect litter. The app surfaces nearby litter hotspots, lets users log clean-ups, and gamifies environmental impact.",
+  "category": "Hackathon",
+  "status": "Completed",
+  "technologies": [
+    "Geolocation",
+    "Web",
+    "Mobile",
+    "Mapping"
+  ],
+  "links": {
+    "docs": "https://devpost.com/software/littercaching"
+  },
+  "featured": false,
+  "dateCompleted": "2025"
+}

@@ -1,26 +1,23 @@
 {
   "id": "java-android-apps",
   "name": "Java & Android Applications",
-  "shortDescription": "Android apps with CameraX object detection, AIML chatbot integration, and MBROLA text-to-speech synthesis.",
-  "description": "Android apps with CameraX object detection, AIML chatbot integration, and MBROLA text-to-speech synthesis.",
+  "shortDescription": "Android apps and Java utilities — CameraX object detection that web-scrapes decomposition times, an AIML chatbot with MBROLA text-to-speech, and Processing sketches.",
+  "description": "A set of Java work across Android Studio, Eclipse, and Processing — combining CameraX-based real-time object detection, AIML chatbots, and natural-sounding speech synthesis.\n\nHighlights:\n- Made an Android Studio app that detects objects with CameraX and web-scrapes decomposition times from a database.\n- Built an interactive chatbot using AIML (Artificial Intelligence Markup Language) for conversational logic in Eclipse IDE.\n- Incorporated MBROLA and FreeTTS for natural-sounding speech synthesis, enhancing user interaction.\n- Designed an intuitive interface for easy use and optimized for backwards compatibility on various Androids.",
   "category": "Software",
   "status": "Completed",
   "technologies": [
     "Java",
     "Android Studio",
+    "CameraX",
     "OpenCV",
     "AIML",
-    "TTS",
-    "CameraX"
+    "MBROLA",
+    "FreeTTS",
+    "Eclipse",
+    "Processing"
   ],
   "links": {
-    "github": "https://github.com/ANonABento"
-  },
-  "media": {
-    "images": [
-      "https://picsum.photos/seed/android1/800/600",
-      "https://picsum.photos/seed/android2/800/600"
-    ]
+    "github": "https://github.com/ANonABento/Decompos_It"
   },
   "featured": false,
   "dateCompleted": "2024-06"

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-14T05:02:28.333Z",
+  "generatedAt": "2026-05-14T05:20:16.362Z",
   "projects": [
     {
       "id": "bentosite",
@@ -37,32 +37,173 @@
       "dateCompleted": "2026-05"
     },
     {
+      "id": "component-cop",
+      "name": "component-cop",
+      "shortDescription": "Chrome DevTools extension that audits React apps for component duplication, inconsistent styling, and hardcoded colors.",
+      "description": "component-cop is a Chrome DevTools extension that audits a running React app in real time. It flags component duplication (similar trees that could be consolidated), inconsistent styling across the page, and hardcoded color values that should be design tokens — giving frontend engineers a fast, in-browser way to find drift before it ships.",
+      "category": "Software",
+      "status": "Completed",
+      "technologies": [
+        "TypeScript",
+        "Chrome Extension API",
+        "DevTools Protocol",
+        "React"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento/component-cop"
+      },
+      "featured": false,
+      "dateCompleted": "2026-05"
+    },
+    {
+      "id": "clanker-spanker",
+      "name": "clanker-spanker",
+      "shortDescription": "macOS desktop app that monitors GitHub pull requests and automatically fixes CI failures and code-review comments using Claude.",
+      "description": "clanker-spanker is a Tauri-based macOS desktop app that watches your GitHub PRs and automatically resolves blockers — CI failures, code-review comments, requested changes — by dispatching Claude with a curated context window for each PR. Reduces the manual round-trip between 'PR opened' and 'PR mergeable'.",
+      "category": "AI & Software",
+      "status": "Completed",
+      "technologies": [
+        "Rust",
+        "Tauri",
+        "TypeScript",
+        "GitHub API",
+        "Claude API"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento/clanker-spanker"
+      },
+      "featured": false,
+      "dateCompleted": "2026-03"
+    },
+    {
+      "id": "bento-ya",
+      "name": "bento-ya",
+      "shortDescription": "Tauri desktop app for orchestrating AI coding agents — a kanban board where columns are pipeline stages with trigger-driven automation.",
+      "description": "bento-ya is a Tauri desktop application for orchestrating AI coding agents through a kanban-style board. Each column is a pipeline stage with optional on_entry / on_exit triggers — describe the automation in natural language and the app generates the trigger config, or drop into an advanced editor for actions like spawn_cli, move_column, run_script, and create_pr.\n\nHighlights:\n- Per-task agent panel with embedded tmux-backed terminal, semantic transcript, lifecycle controls (Hold / Stop / Kill), and live model + thinking-effort selectors.\n- v2.0 adds GitHub PR auto-create on column exit, per-task git worktree isolation, and a DAG dependency UI with hover-reveal bezier lines and cycle detection.\n- v2.1 adds full per-task xterm.js terminals — WebGL renderer, 10k-line scrollback, Unicode 11, theme-reactive, lazy PTY sessions spawned on panel open.",
+      "category": "AI & Software",
+      "status": "In Progress",
+      "technologies": [
+        "Rust",
+        "Tauri",
+        "TypeScript",
+        "React",
+        "xterm.js",
+        "tmux",
+        "SQLite"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento/bento-ya"
+      },
+      "featured": true,
+      "dateCompleted": "2026"
+    },
+    {
+      "id": "choomfie",
+      "name": "choomfie",
+      "shortDescription": "Personal AI agent powered by the Claude Code CLI — Discord, terminal, persistent memory, and a custom skill system.",
+      "description": "choomfie is Kevin's personal AI agent built on top of the Claude Code CLI. It runs as a long-lived daemon that's reachable from Discord and a local terminal, with persistent memory across sessions and a pluggable skill system for invoking tools, services, and bespoke workflows.\n\nBuilt as a multi-surface assistant rather than a one-off chatbot — Discord for casual conversation, terminal for power use, and a skill registry for deterministic actions.",
+      "category": "AI & Software",
+      "status": "In Progress",
+      "technologies": [
+        "TypeScript",
+        "Shell",
+        "Python",
+        "Claude Code CLI",
+        "Discord API"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento/choomfie"
+      },
+      "featured": false,
+      "dateCompleted": "2026"
+    },
+    {
+      "id": "dead-internet-reality",
+      "name": "DeadInternetTheory",
+      "shortDescription": "Local-first marketing and content agent orchestrator — research, generate, approve, and publish across platforms with human-in-the-loop audit trails.",
+      "description": "DeadInternetTheory is a local-first marketing and content-agent orchestrator. Users plug in a product or content lane, configure supervised marketing/content agents, research relevant communities and approved sources, then generate posts, scripts, images, voice/video assets — with human approval gates, dry-run scheduling, export, and publishing through owned or authorized social accounts.\n\nCurrently a pivoting MVP: FastAPI backend, Next.js frontend, Celery/Redis workers, Postgres models, tests, and extensive planning docs. The direction expands marketing operations into a full content-production pipeline with agent handoffs, source provenance, human approval, and audit trails.",
+      "category": "AI & Software",
+      "status": "In Progress",
+      "technologies": [
+        "Python",
+        "FastAPI",
+        "TypeScript",
+        "Next.js",
+        "Celery",
+        "Redis",
+        "PostgreSQL"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento/dead-internet-reality"
+      },
+      "featured": false,
+      "dateCompleted": "2026"
+    },
+    {
+      "id": "slothing",
+      "name": "Slothing",
+      "shortDescription": "Open-source, privacy-first job-application command center. Build tailored resumes and cover letters, track opportunities, and prep for interviews — self-host free or use slothing.work.",
+      "description": "Slothing is an open-source, privacy-first job-application assistant. Users upload career documents, build tailored resumes and cover letters in one workspace, track opportunities, and prepare for interviews — with AI doing the heavy lifting while their data stays under their control.\n\nThe product inverts the typical job-tool model: pay weekly only while actively searching ($6.99/week or $19.99/month on the hosted version at slothing.work), or self-host this repo for free forever. Hosted = same OSS code + a small proprietary billing module under an open-core split.",
+      "category": "AI & Software",
+      "status": "In Progress",
+      "technologies": [
+        "TypeScript",
+        "JavaScript",
+        "Next.js",
+        "AI",
+        "AGPL-3"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento/slothing",
+        "liveDemo": "https://slothing.work"
+      },
+      "featured": false,
+      "dateCompleted": "2026"
+    },
+    {
+      "id": "taser-derby",
+      "name": "TaserDerby",
+      "shortDescription": "Digital stakes, physical consequence. A derby-based betting mini-game that tases you when you lose.",
+      "description": "TaserDerby pairs a single-player race-betting web app with a custom physical device that delivers a real (low-voltage) shock when you lose. It exists to make a point about the gap between digital risk and embodied consequence.\n\nBuilt as two projects:\n- The hardware controller (`TaserDerby` repo, C++) that drives the shock circuit.\n- The web frontend (`TaserDerbyWebsite`, JavaScript) that runs the race and bet flow.",
+      "category": "Hackathon",
+      "status": "Completed",
+      "technologies": [
+        "C++",
+        "JavaScript",
+        "HTML",
+        "CSS",
+        "Hardware",
+        "Electronics"
+      ],
+      "links": {
+        "github": "https://github.com/ANonABento/TaserDerby",
+        "docs": "https://devpost.com/software/taserderby"
+      },
+      "featured": false,
+      "dateCompleted": "2025-11"
+    },
+    {
       "id": "robotic-arm-puppeteer",
       "name": "Robotic Arm Puppeteer",
-      "shortDescription": "Python + ROS2 control and calibration toolkit for the OpenArm robotic platform with multi-camera AprilTag perception and 20% improved accuracy.",
-      "description": "Python + ROS2 control and calibration toolkit for the OpenArm robotic platform. Supports reading wrist joint positions, calibrating motion ranges, and integrates seamlessly with ROS2 for robotic simulation and control. Features multi-camera AprilTag perception with covariance-based accuracy filtering.",
+      "shortDescription": "Python + ROS2 control and calibration toolkit for the OpenArm platform — multi-camera AprilTag perception, Dynamixel motor SDK integration, and a Flask + Three.js web UI for live calibration.",
+      "description": "A Python + ROS2 based control and calibration toolkit for the OpenArm robotic platform, designed to make puppeteering, simulation, and data collection for sim training more intuitive, cost-effective, and accurate. It supports reading wrist joint positions, calibrating motion ranges, and integrates seamlessly with ROS2 for robotic simulation and control.\n\nHighlights:\n- Built a Python + ROS2 environment, integrating the Dynamixel motor SDK for encoder reading and writing through serial.\n- Implemented a multi-camera AprilTag perception system using OpenCV ArUco with covariance-based accuracy filtering.\n- Created an auto-calibration pipeline that generates reusable YAML configs for custom AprilTag bundle layouts.\n- Bridged with ROS2 for teleoperation and visualization via Rviz2, MuJoCo, Isaac Sim, and MeshCat.\n- Published fused 6DoF poses as ROS2 TF topics to support inverse kinematics and teleoperation downstream.\n- Designed multiple ergonomic controllers and modular AprilTag mounts with print-in-place joints in Fusion 360.\n- Configured and daisy-chained Dynamixel motors via U2D2 — unique IDs, voltage and current limits, the full bring-up.\n- Built a local Flask + Three.js web tool for real-time encoder visualization, interactive calibration, and JSON storage.",
       "category": "Robotics",
       "status": "Completed",
       "technologies": [
         "Python",
         "ROS2",
         "OpenCV",
-        "Fusion 360",
-        "Dynamixel",
         "AprilTag",
+        "Dynamixel",
+        "Fusion 360",
+        "MuJoCo",
+        "Isaac Sim",
+        "MeshCat",
+        "Flask",
         "Three.js"
       ],
       "links": {
-        "github": "https://github.com/ANonABento",
-        "modelPath": "/models/placeholder.stl"
-      },
-      "media": {
-        "images": [
-          "https://picsum.photos/seed/robot1/800/600",
-          "https://picsum.photos/seed/robot2/800/600",
-          "https://picsum.photos/seed/robot3/800/600"
-        ],
-        "website": "https://ros.org"
+        "github": "https://github.com/ANonABento/htn_ros2_control_on_jetson_nano"
       },
       "featured": true,
       "dateCompleted": "2025-08"
@@ -70,31 +211,28 @@
     {
       "id": "expressive-ai-robot-head",
       "name": "Expressive AI Robot Head",
-      "shortDescription": "ROS2-based robotic head with LLM integration, speech recognition, and 12-servo organic mesh design for human-like interactions.",
-      "description": "ROS2-based robotic head integrating LLMs, speech recognition, vision, and servo control for human-like interactions. Features GPU-accelerated CUDA pipeline, 12-servo organic mesh design, and real-time speech workflow using Whisper and llama.cpp.",
+      "shortDescription": "ROS2 robotic head that fuses LLM reasoning, speech, vision, and 12-servo control to push AI from text into physical interaction.",
+      "description": "A ROS2-based robotic head that integrates large language models (LLMs), speech, vision, and servo control to push AI beyond text into physical interaction — engaging more humanlike communication with AI through robots.\n\nHighlights:\n- Built a GPU-accelerated pipeline with CUDA and PyTorch, optimizing VRAM usage to run fully locally on Ubuntu/WSL2.\n- Implemented a real-time speech workflow: Silero VAD → Whisper (STT) → llama.cpp (running GPT-OSS-20B) → Zonos (TTS).\n- Designed a 12-servo robotic head combining organic mesh modeling in Blender with parametric solids in Fusion 360.\n- Controlled servos through ROS2 with a mapping layer that unites LLM reasoning, audio analysis, and OpenCV tracking.\n- Submitted as 'MaidReal Head' on Devpost.",
       "category": "AI & Robotics",
       "status": "Completed",
       "technologies": [
         "Python",
         "PyTorch",
+        "CUDA",
         "llama.cpp",
         "Whisper",
+        "Silero VAD",
+        "Zonos",
+        "ROS2",
         "ESP32",
         "FreeRTOS",
         "Blender",
-        "ROS2"
+        "Fusion 360",
+        "OpenCV"
       ],
       "links": {
-        "github": "https://github.com/ANonABento"
-      },
-      "media": {
-        "images": [
-          "https://picsum.photos/seed/aihead1/800/600",
-          "https://picsum.photos/seed/aihead2/800/600",
-          "https://picsum.photos/seed/aihead3/800/600",
-          "https://picsum.photos/seed/aihead4/800/600"
-        ],
-        "video": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        "github": "https://github.com/ANonABento",
+        "docs": "https://devpost.com/software/maidreal-head-v1"
       },
       "featured": true,
       "dateCompleted": "2025-06"
@@ -102,8 +240,8 @@
     {
       "id": "ar-gesture-robot",
       "name": "AR Gesture Controlled Robot",
-      "shortDescription": "Modular robot platform controlled through Snap Spectacles AR glasses with sub-100ms latency gesture-to-motion pipeline.",
-      "description": "Modular robot platform controlled through Snap Spectacles AR glasses. End-to-end gesture-to-motion pipeline using Snap API, Flask, HiveMQ MQTT, and ROS2. Sub-100ms latency with NVIDIA Jetson Nano for on-device AI inference.",
+      "shortDescription": "Modular robot controlled through Snap Spectacles AR — finger gestures move and grab objects in the physical world with sub-100ms latency.",
+      "description": "Built a modular robot platform controlled through Snap Spectacles, enabling natural gesture-based navigation and robotic-arm manipulation. Teleoperation feels as natural as moving your own hands.\n\nHighlights:\n- Developed an end-to-end gesture-to-motion pipeline: Snap API → Flask server → HiveMQ MQTT → ROS2 nodes.\n- Implemented on NVIDIA Jetson Nano, handling motor drivers, camera streaming, and AI inference fully on-device.\n- Created a Lens Studio AR application for gesture recognition and live camera streaming back to the AR glasses.\n- Designed a mobile 2-wheel drive base with modular chassis attachments, including a 3DoF robotic arm.\n- Optimized the system for sub-100ms latency and introduced an MQTT communication layer that scales to multi-robot scenarios.\n- Submitted on Devpost as 'Kenesis'.",
       "category": "VR/AR",
       "status": "Completed",
       "technologies": [
@@ -113,17 +251,12 @@
         "Docker",
         "MQTT",
         "ROS2",
-        "Flask"
+        "Flask",
+        "Lens Studio"
       ],
       "links": {
-        "github": "https://github.com/ANonABento"
-      },
-      "media": {
-        "images": [
-          "https://picsum.photos/seed/arbot1/800/600",
-          "https://picsum.photos/seed/arbot2/800/600"
-        ],
-        "website": "https://www.spectacles.com"
+        "github": "https://github.com/ANonABento",
+        "docs": "https://devpost.com/software/steven-lvnh4w"
       },
       "featured": true,
       "dateCompleted": "2025-04"
@@ -131,73 +264,122 @@
     {
       "id": "pcb-design",
       "name": "PCB Design & Assembly",
-      "shortDescription": "Double-layer PCBs for controller subsystems with 0 ERC/DRC violations. Soldered SMD boards including IMU and power control circuits.",
-      "description": "Double-layer PCBs for controller subsystems with 0 ERC/DRC violations. Soldered SMD boards including IMU and power control circuits.",
+      "shortDescription": "Designed and routed double-layer PCBs in Altium Designer with zero ERC/DRC violations. Hand-assembled SMD boards including IMU and power-control circuits.",
+      "description": "Picked up the full PCB design and assembly workflow — from schematic capture in Altium Designer through routing, fabrication review, and hand-assembly of SMD components.\n\nHighlights:\n- Onboarded by learning the process for developing a circuit board from start to finish in Altium Designer.\n- Created a controller board's breakout for debugging, adding features like pull-ups for I²C communication lines.\n- Sought mentorship from hardware leads to design the schematic with the correct components in Altium Designer.\n- Cleanly routed all the ports utilizing vias and traces, resulting in 0 errors and uniform spacing throughout.\n- Assembled and soldered PCBs (e.g. an IMU board) using surface-mount components, lead solder, and a hot plate.",
       "category": "Hardware",
       "status": "Completed",
       "technologies": [
         "Altium Designer",
-        "Oscilloscope",
+        "Schematic Design",
+        "PCB Routing",
+        "SMD Assembly",
         "Soldering",
-        "SMD Assembly"
+        "Oscilloscope"
       ],
       "links": {
         "github": "https://github.com/ANonABento"
-      },
-      "media": {
-        "images": [
-          "https://picsum.photos/seed/pcb1/800/600",
-          "https://picsum.photos/seed/pcb2/800/600",
-          "https://picsum.photos/seed/pcb3/800/600"
-        ]
       },
       "featured": false,
       "dateCompleted": "2025-04"
     },
     {
+      "id": "litter-caching",
+      "name": "LitterCaching",
+      "shortDescription": "Geocaching, but you save the world. Environmental geocaching focused on litter collection — one cache at a time.",
+      "description": "LitterCaching reframes geocaching around an environmental goal: participants don't hunt hidden treasure, they hunt and collect litter. The app surfaces nearby litter hotspots, lets users log clean-ups, and gamifies environmental impact.",
+      "category": "Hackathon",
+      "status": "Completed",
+      "technologies": [
+        "Geolocation",
+        "Web",
+        "Mobile",
+        "Mapping"
+      ],
+      "links": {
+        "docs": "https://devpost.com/software/littercaching"
+      },
+      "featured": false,
+      "dateCompleted": "2025"
+    },
+    {
+      "id": "shoulder-cupid",
+      "name": "ShoulderCupid",
+      "shortDescription": "Hackathon Winner — Cupid lost his bow, so he whispers the secrets of love directly in your ear. A wearable AI matchmaker.",
+      "description": "ShoulderCupid is a hackathon-winning wearable that puts a tiny 'shoulder cupid' on your shoulder, listening to the conversation and whispering AI-driven love advice in your ear in real time.",
+      "category": "Hackathon",
+      "status": "Completed",
+      "technologies": [
+        "AI",
+        "Speech-to-Text",
+        "TTS",
+        "Wearable",
+        "Hardware"
+      ],
+      "links": {
+        "docs": "https://devpost.com/software/shouldercupid-0y6b5d"
+      },
+      "featured": true,
+      "dateCompleted": "2025"
+    },
+    {
+      "id": "snapfire",
+      "name": "SnapFire",
+      "shortDescription": "Hackathon Winner — never nap without having the Snap. A nap-timer application built for Snap devices.",
+      "description": "SnapFire is a nap-timer application built natively for Snap devices. It won its hackathon track for tight integration with the Snap platform and a focused, polished UX.",
+      "category": "Hackathon",
+      "status": "Completed",
+      "technologies": [
+        "Snap Platform",
+        "Lens Studio",
+        "JavaScript"
+      ],
+      "links": {
+        "docs": "https://devpost.com/software/snapfire"
+      },
+      "featured": true,
+      "dateCompleted": "2025"
+    },
+    {
       "id": "one-handed-keyboard",
       "name": "One Handed Keyboard",
-      "shortDescription": "AAC wrist-mounted keyboard device with only 5 GPIO buttons, trie-based predictive text, and fuzzy search. Received 99% grade.",
-      "description": "AAC device featuring a wrist-mounted keyboard with only 5 GPIO buttons. Uses trie and fuzzy search algorithms for predictive text. 3D-printed housing with STM32 microcontroller. Received 99% grade with comprehensive documentation.",
+      "shortDescription": "Wrist-mounted AAC keyboard with only 5 GPIO buttons, trie-based predictive text, and STM32 firmware over UART. Project submission received a 99% grade.",
+      "description": "An AAC (augmentative and alternative communication) device in the form of a wrist-mounted keyboard, offering a more intuitive typing experience through simplified sequential input and predictive text for mobility-limited users.\n\nHighlights:\n- Designed a wrist-mounted keyboard with full functionality and autocorrect in software using only 5 GPIO buttons.\n- Fabricated the housing using CAD software, ensuring structural stability when typing and adjustability for user comfort.\n- Built and assembled a high-functioning transmitter, capable of transmitting data through UART over a meter long.\n- Programmed and integrated system components using STM32Cube, with wiring plans made in Altium Designer.\n- Combined a trie and fuzzy-search algorithm for an advanced word prediction system, allowing shortcuts for words.\n- Project submission received an overall 99% grade with thorough written documentation.",
       "category": "Accessibility",
       "status": "Completed",
       "technologies": [
         "C",
         "STM32",
+        "STM32Cube",
+        "GPIO",
+        "UART",
         "FSM",
         "OnShape",
         "3D-Printing",
-        "UART"
+        "Altium Designer"
       ],
       "links": {
-        "github": "https://github.com/ANonABento",
-        "docs": "https://docs.google.com/document/d/example"
+        "github": "https://github.com/ANonABento/SeqKeyTransmitter"
       },
       "featured": false,
       "dateCompleted": "2024-12"
     },
     {
       "id": "unity-game-dev",
-      "name": "Unity Game Development",
-      "shortDescription": "Best Overall winner at UWGDC Game Jam Fall 2024. Complex game logic with physics, colliders, AI, and finite state machines.",
-      "description": "Best Overall winner at UWGDC Game Jam Fall 2024. Developed complex game logic using C# scripting in Unity with physics, colliders, and AI. Utilized finite state machines for smooth animation transitions.",
+      "name": "C# Apps & Games",
+      "shortDescription": "C# applications and Unity 2D/3D games — won Best Overall at UWGDC Game Jam Fall 2024. Includes computer-vision-driven projects and FSM-based gameplay.",
+      "description": "A collection of C# work spanning vision-driven applications and Unity games — including the Best Overall winner at UWGDC Game Jam Fall 2024.\n\nHighlights:\n- Wrote C# code in Visual Studio 2022 using Emgu OpenCV as the computer-vision element for a larger alarm system.\n- Developed complex game logic using C# scripting in Unity for 2D and 3D games (physics, colliders, AI logic).\n- Utilized finite state machines for smooth animation transitions and character behaviour, leading to more interactivity.\n- Employed version control (Git) to manage codebase changes and collaborate with teammates effectively.\n- Conducted extensive testing and debugging to identify and fix issues, ensuring a polished final product.",
       "category": "Games",
       "status": "Completed",
       "technologies": [
         "C#",
         "Unity",
+        "Emgu OpenCV",
+        "FSM",
         "Blender",
-        "OpenCV",
-        "FSM"
+        "Visual Studio"
       ],
       "links": {
-        "github": "https://github.com/ANonABento"
-      },
-      "media": {
-        "game": {
-          "type": "itch",
-          "url": "https://bakudas.itch.io/roguelike-deckbuilder"
-        }
+        "github": "https://github.com/ANonABento/Face-Recognition-For-Turret"
       },
       "featured": false,
       "dateCompleted": "2024-11"
@@ -205,8 +387,8 @@
     {
       "id": "vr-haptic-gloves",
       "name": "VR Haptic Gloves",
-      "shortDescription": "ESP32-based haptic feedback gloves for VR with spring-loaded potentiometers and servo-assisted haptics for precise finger tracking.",
-      "description": "ESP32-based haptic feedback gloves for VR with spring-loaded potentiometers and servo-assisted haptics. 3D-printed custom mounts for precise finger tracking. Designed for sub-100ms sensory resistance in VR applications.",
+      "shortDescription": "ESP32-based haptic gloves with spring-loaded potentiometers for finger position and servo-driven tactile feedback for VR emulation.",
+      "description": "A pair of VR haptic gloves built from scratch — combining custom electronics, soldering, and 3D-printed fittings to give VR a real sense of touch.\n\nHighlights:\n- Soldered together an ESP32 with various electronic components, badge reels, 3D prints, and 22 AWG wire.\n- Incorporated spring-loaded potentiometers to measure precise positioning of fingers, enabling emulation in VR.\n- Utilized servos to create a haptic feedback system, providing realistic tactile responses based on virtual interactions.\n- 3D-printed tailored custom fittings with a range of lightweight materials: PLA, TPU, and PETG.",
       "category": "VR/AR",
       "status": "Completed",
       "technologies": [
@@ -218,15 +400,7 @@
         "Soldering"
       ],
       "links": {
-        "github": "https://github.com/ANonABento",
-        "docs": "https://docs.google.com/document/d/example"
-      },
-      "media": {
-        "images": [
-          "https://picsum.photos/seed/vrglove1/800/600",
-          "https://picsum.photos/seed/vrglove2/800/600",
-          "https://picsum.photos/seed/vrglove3/800/600"
-        ]
+        "github": "https://github.com/ANonABento"
       },
       "featured": false,
       "dateCompleted": "2024-10"
@@ -234,35 +408,32 @@
     {
       "id": "java-android-apps",
       "name": "Java & Android Applications",
-      "shortDescription": "Android apps with CameraX object detection, AIML chatbot integration, and MBROLA text-to-speech synthesis.",
-      "description": "Android apps with CameraX object detection, AIML chatbot integration, and MBROLA text-to-speech synthesis.",
+      "shortDescription": "Android apps and Java utilities — CameraX object detection that web-scrapes decomposition times, an AIML chatbot with MBROLA text-to-speech, and Processing sketches.",
+      "description": "A set of Java work across Android Studio, Eclipse, and Processing — combining CameraX-based real-time object detection, AIML chatbots, and natural-sounding speech synthesis.\n\nHighlights:\n- Made an Android Studio app that detects objects with CameraX and web-scrapes decomposition times from a database.\n- Built an interactive chatbot using AIML (Artificial Intelligence Markup Language) for conversational logic in Eclipse IDE.\n- Incorporated MBROLA and FreeTTS for natural-sounding speech synthesis, enhancing user interaction.\n- Designed an intuitive interface for easy use and optimized for backwards compatibility on various Androids.",
       "category": "Software",
       "status": "Completed",
       "technologies": [
         "Java",
         "Android Studio",
+        "CameraX",
         "OpenCV",
         "AIML",
-        "TTS",
-        "CameraX"
+        "MBROLA",
+        "FreeTTS",
+        "Eclipse",
+        "Processing"
       ],
       "links": {
-        "github": "https://github.com/ANonABento"
-      },
-      "media": {
-        "images": [
-          "https://picsum.photos/seed/android1/800/600",
-          "https://picsum.photos/seed/android2/800/600"
-        ]
+        "github": "https://github.com/ANonABento/Decompos_It"
       },
       "featured": false,
       "dateCompleted": "2024-06"
     },
     {
       "id": "ftc-robotics",
-      "name": "FIRST Tech Challenge Robot",
-      "shortDescription": "Lead builder and programmer for team Devolotics at World Championship. Built drone launcher, autonomous program, and CAD mechanisms.",
-      "description": "Lead builder and programmer for team Devolotics at FIRST Tech Challenge World Championship. Built rubber band tensioned drone launcher, autonomous program using splines, and multiple CAD-designed mechanisms with machined aluminum and 3D-printed components.",
+      "name": "FIRST Tech Challenge — Team Devolotics",
+      "shortDescription": "Lead builder and programmer for team Devolotics at the FIRST Tech Challenge World Championship. Built the drone launcher, deposit system, autonomous program, and CAD mechanisms.",
+      "description": "Competed at the FIRST Tech Challenge World Championship as the lead builder and programmer for team Devolotics (19498).\n\nHighlights:\n- Main contributions toward Pluto's deposit system, gate opener, hang, drone launcher, and the autonomous program.\n- Modeled various mechanisms using CAD, incorporating machined aluminum, polycarbonate, and 3D-printed components.\n- Created a rubber-band-tensioned drone launcher with a latch mechanism and spring absorption using just a single servo.\n- Programmed mecanum drive movement through splines and robot behaviour for an autonomous cycle.",
       "category": "Competition",
       "status": "Completed",
       "technologies": [
@@ -271,20 +442,11 @@
         "OnShape",
         "3D-Printing",
         "Motor Control",
-        "Mecanum Drive"
+        "Mecanum Drive",
+        "Manufacturing"
       ],
       "links": {
-        "github": "https://github.com/ANonABento"
-      },
-      "media": {
-        "images": [
-          "https://picsum.photos/seed/ftc1/800/600",
-          "https://picsum.photos/seed/ftc2/800/600",
-          "https://picsum.photos/seed/ftc3/800/600",
-          "https://picsum.photos/seed/ftc4/800/600",
-          "https://picsum.photos/seed/ftc5/800/600"
-        ],
-        "video": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        "github": "https://github.com/ANonABento/19498-Devolotics-Centerstage-2023-2024"
       },
       "featured": false,
       "dateCompleted": "2024-04"

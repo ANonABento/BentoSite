@@ -1,21 +1,23 @@
 {
   "id": "one-handed-keyboard",
   "name": "One Handed Keyboard",
-  "shortDescription": "AAC wrist-mounted keyboard device with only 5 GPIO buttons, trie-based predictive text, and fuzzy search. Received 99% grade.",
-  "description": "AAC device featuring a wrist-mounted keyboard with only 5 GPIO buttons. Uses trie and fuzzy search algorithms for predictive text. 3D-printed housing with STM32 microcontroller. Received 99% grade with comprehensive documentation.",
+  "shortDescription": "Wrist-mounted AAC keyboard with only 5 GPIO buttons, trie-based predictive text, and STM32 firmware over UART. Project submission received a 99% grade.",
+  "description": "An AAC (augmentative and alternative communication) device in the form of a wrist-mounted keyboard, offering a more intuitive typing experience through simplified sequential input and predictive text for mobility-limited users.\n\nHighlights:\n- Designed a wrist-mounted keyboard with full functionality and autocorrect in software using only 5 GPIO buttons.\n- Fabricated the housing using CAD software, ensuring structural stability when typing and adjustability for user comfort.\n- Built and assembled a high-functioning transmitter, capable of transmitting data through UART over a meter long.\n- Programmed and integrated system components using STM32Cube, with wiring plans made in Altium Designer.\n- Combined a trie and fuzzy-search algorithm for an advanced word prediction system, allowing shortcuts for words.\n- Project submission received an overall 99% grade with thorough written documentation.",
   "category": "Accessibility",
   "status": "Completed",
   "technologies": [
     "C",
     "STM32",
+    "STM32Cube",
+    "GPIO",
+    "UART",
     "FSM",
     "OnShape",
     "3D-Printing",
-    "UART"
+    "Altium Designer"
   ],
   "links": {
-    "github": "https://github.com/ANonABento",
-    "docs": "https://docs.google.com/document/d/example"
+    "github": "https://github.com/ANonABento/SeqKeyTransmitter"
   },
   "featured": false,
   "dateCompleted": "2024-12"

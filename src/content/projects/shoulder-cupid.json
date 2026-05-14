@@ -1,0 +1,20 @@
+{
+  "id": "shoulder-cupid",
+  "name": "ShoulderCupid",
+  "shortDescription": "Hackathon Winner — Cupid lost his bow, so he whispers the secrets of love directly in your ear. A wearable AI matchmaker.",
+  "description": "ShoulderCupid is a hackathon-winning wearable that puts a tiny 'shoulder cupid' on your shoulder, listening to the conversation and whispering AI-driven love advice in your ear in real time.",
+  "category": "Hackathon",
+  "status": "Completed",
+  "technologies": [
+    "AI",
+    "Speech-to-Text",
+    "TTS",
+    "Wearable",
+    "Hardware"
+  ],
+  "links": {
+    "docs": "https://devpost.com/software/shouldercupid-0y6b5d"
+  },
+  "featured": true,
+  "dateCompleted": "2025"
+}

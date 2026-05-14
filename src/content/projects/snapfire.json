@@ -1,0 +1,18 @@
+{
+  "id": "snapfire",
+  "name": "SnapFire",
+  "shortDescription": "Hackathon Winner — never nap without having the Snap. A nap-timer application built for Snap devices.",
+  "description": "SnapFire is a nap-timer application built natively for Snap devices. It won its hackathon track for tight integration with the Snap platform and a focused, polished UX.",
+  "category": "Hackathon",
+  "status": "Completed",
+  "technologies": [
+    "Snap Platform",
+    "Lens Studio",
+    "JavaScript"
+  ],
+  "links": {
+    "docs": "https://devpost.com/software/snapfire"
+  },
+  "featured": true,
+  "dateCompleted": "2025"
+}

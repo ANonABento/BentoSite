@@ -1,25 +1,20 @@
 {
   "id": "pcb-design",
   "name": "PCB Design & Assembly",
-  "shortDescription": "Double-layer PCBs for controller subsystems with 0 ERC/DRC violations. Soldered SMD boards including IMU and power control circuits.",
-  "description": "Double-layer PCBs for controller subsystems with 0 ERC/DRC violations. Soldered SMD boards including IMU and power control circuits.",
+  "shortDescription": "Designed and routed double-layer PCBs in Altium Designer with zero ERC/DRC violations. Hand-assembled SMD boards including IMU and power-control circuits.",
+  "description": "Picked up the full PCB design and assembly workflow — from schematic capture in Altium Designer through routing, fabrication review, and hand-assembly of SMD components.\n\nHighlights:\n- Onboarded by learning the process for developing a circuit board from start to finish in Altium Designer.\n- Created a controller board's breakout for debugging, adding features like pull-ups for I²C communication lines.\n- Sought mentorship from hardware leads to design the schematic with the correct components in Altium Designer.\n- Cleanly routed all the ports utilizing vias and traces, resulting in 0 errors and uniform spacing throughout.\n- Assembled and soldered PCBs (e.g. an IMU board) using surface-mount components, lead solder, and a hot plate.",
   "category": "Hardware",
   "status": "Completed",
   "technologies": [
     "Altium Designer",
-    "Oscilloscope",
+    "Schematic Design",
+    "PCB Routing",
+    "SMD Assembly",
     "Soldering",
-    "SMD Assembly"
+    "Oscilloscope"
   ],
   "links": {
     "github": "https://github.com/ANonABento"
-  },
-  "media": {
-    "images": [
-      "https://picsum.photos/seed/pcb1/800/600",
-      "https://picsum.photos/seed/pcb2/800/600",
-      "https://picsum.photos/seed/pcb3/800/600"
-    ]
   },
   "featured": false,
   "dateCompleted": "2025-04"

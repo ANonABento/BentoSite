@@ -1,0 +1,22 @@
+{
+  "id": "bento-ya",
+  "name": "bento-ya",
+  "shortDescription": "Tauri desktop app for orchestrating AI coding agents — a kanban board where columns are pipeline stages with trigger-driven automation.",
+  "description": "bento-ya is a Tauri desktop application for orchestrating AI coding agents through a kanban-style board. Each column is a pipeline stage with optional on_entry / on_exit triggers — describe the automation in natural language and the app generates the trigger config, or drop into an advanced editor for actions like spawn_cli, move_column, run_script, and create_pr.\n\nHighlights:\n- Per-task agent panel with embedded tmux-backed terminal, semantic transcript, lifecycle controls (Hold / Stop / Kill), and live model + thinking-effort selectors.\n- v2.0 adds GitHub PR auto-create on column exit, per-task git worktree isolation, and a DAG dependency UI with hover-reveal bezier lines and cycle detection.\n- v2.1 adds full per-task xterm.js terminals — WebGL renderer, 10k-line scrollback, Unicode 11, theme-reactive, lazy PTY sessions spawned on panel open.",
+  "category": "AI & Software",
+  "status": "In Progress",
+  "technologies": [
+    "Rust",
+    "Tauri",
+    "TypeScript",
+    "React",
+    "xterm.js",
+    "tmux",
+    "SQLite"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento/bento-ya"
+  },
+  "featured": true,
+  "dateCompleted": "2026"
+}

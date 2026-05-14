@@ -1,8 +1,8 @@
 {
   "id": "vr-haptic-gloves",
   "name": "VR Haptic Gloves",
-  "shortDescription": "ESP32-based haptic feedback gloves for VR with spring-loaded potentiometers and servo-assisted haptics for precise finger tracking.",
-  "description": "ESP32-based haptic feedback gloves for VR with spring-loaded potentiometers and servo-assisted haptics. 3D-printed custom mounts for precise finger tracking. Designed for sub-100ms sensory resistance in VR applications.",
+  "shortDescription": "ESP32-based haptic gloves with spring-loaded potentiometers for finger position and servo-driven tactile feedback for VR emulation.",
+  "description": "A pair of VR haptic gloves built from scratch — combining custom electronics, soldering, and 3D-printed fittings to give VR a real sense of touch.\n\nHighlights:\n- Soldered together an ESP32 with various electronic components, badge reels, 3D prints, and 22 AWG wire.\n- Incorporated spring-loaded potentiometers to measure precise positioning of fingers, enabling emulation in VR.\n- Utilized servos to create a haptic feedback system, providing realistic tactile responses based on virtual interactions.\n- 3D-printed tailored custom fittings with a range of lightweight materials: PLA, TPU, and PETG.",
   "category": "VR/AR",
   "status": "Completed",
   "technologies": [
@@ -14,15 +14,7 @@
     "Soldering"
   ],
   "links": {
-    "github": "https://github.com/ANonABento",
-    "docs": "https://docs.google.com/document/d/example"
-  },
-  "media": {
-    "images": [
-      "https://picsum.photos/seed/vrglove1/800/600",
-      "https://picsum.photos/seed/vrglove2/800/600",
-      "https://picsum.photos/seed/vrglove3/800/600"
-    ]
+    "github": "https://github.com/ANonABento"
   },
   "featured": false,
   "dateCompleted": "2024-10"

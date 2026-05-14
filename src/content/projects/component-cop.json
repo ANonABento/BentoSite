@@ -1,0 +1,19 @@
+{
+  "id": "component-cop",
+  "name": "component-cop",
+  "shortDescription": "Chrome DevTools extension that audits React apps for component duplication, inconsistent styling, and hardcoded colors.",
+  "description": "component-cop is a Chrome DevTools extension that audits a running React app in real time. It flags component duplication (similar trees that could be consolidated), inconsistent styling across the page, and hardcoded color values that should be design tokens — giving frontend engineers a fast, in-browser way to find drift before it ships.",
+  "category": "Software",
+  "status": "Completed",
+  "technologies": [
+    "TypeScript",
+    "Chrome Extension API",
+    "DevTools Protocol",
+    "React"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento/component-cop"
+  },
+  "featured": false,
+  "dateCompleted": "2026-05"
+}

@@ -1,25 +1,20 @@
 {
   "id": "unity-game-dev",
-  "name": "Unity Game Development",
-  "shortDescription": "Best Overall winner at UWGDC Game Jam Fall 2024. Complex game logic with physics, colliders, AI, and finite state machines.",
-  "description": "Best Overall winner at UWGDC Game Jam Fall 2024. Developed complex game logic using C# scripting in Unity with physics, colliders, and AI. Utilized finite state machines for smooth animation transitions.",
+  "name": "C# Apps & Games",
+  "shortDescription": "C# applications and Unity 2D/3D games — won Best Overall at UWGDC Game Jam Fall 2024. Includes computer-vision-driven projects and FSM-based gameplay.",
+  "description": "A collection of C# work spanning vision-driven applications and Unity games — including the Best Overall winner at UWGDC Game Jam Fall 2024.\n\nHighlights:\n- Wrote C# code in Visual Studio 2022 using Emgu OpenCV as the computer-vision element for a larger alarm system.\n- Developed complex game logic using C# scripting in Unity for 2D and 3D games (physics, colliders, AI logic).\n- Utilized finite state machines for smooth animation transitions and character behaviour, leading to more interactivity.\n- Employed version control (Git) to manage codebase changes and collaborate with teammates effectively.\n- Conducted extensive testing and debugging to identify and fix issues, ensuring a polished final product.",
   "category": "Games",
   "status": "Completed",
   "technologies": [
     "C#",
     "Unity",
+    "Emgu OpenCV",
+    "FSM",
     "Blender",
-    "OpenCV",
-    "FSM"
+    "Visual Studio"
   ],
   "links": {
-    "github": "https://github.com/ANonABento"
-  },
-  "media": {
-    "game": {
-      "type": "itch",
-      "url": "https://bakudas.itch.io/roguelike-deckbuilder"
-    }
+    "github": "https://github.com/ANonABento/Face-Recognition-For-Turret"
   },
   "featured": false,
   "dateCompleted": "2024-11"

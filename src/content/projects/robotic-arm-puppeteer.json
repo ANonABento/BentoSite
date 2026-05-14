@@ -1,30 +1,25 @@
 {
   "id": "robotic-arm-puppeteer",
   "name": "Robotic Arm Puppeteer",
-  "shortDescription": "Python + ROS2 control and calibration toolkit for the OpenArm robotic platform with multi-camera AprilTag perception and 20% improved accuracy.",
-  "description": "Python + ROS2 control and calibration toolkit for the OpenArm robotic platform. Supports reading wrist joint positions, calibrating motion ranges, and integrates seamlessly with ROS2 for robotic simulation and control. Features multi-camera AprilTag perception with covariance-based accuracy filtering.",
+  "shortDescription": "Python + ROS2 control and calibration toolkit for the OpenArm platform — multi-camera AprilTag perception, Dynamixel motor SDK integration, and a Flask + Three.js web UI for live calibration.",
+  "description": "A Python + ROS2 based control and calibration toolkit for the OpenArm robotic platform, designed to make puppeteering, simulation, and data collection for sim training more intuitive, cost-effective, and accurate. It supports reading wrist joint positions, calibrating motion ranges, and integrates seamlessly with ROS2 for robotic simulation and control.\n\nHighlights:\n- Built a Python + ROS2 environment, integrating the Dynamixel motor SDK for encoder reading and writing through serial.\n- Implemented a multi-camera AprilTag perception system using OpenCV ArUco with covariance-based accuracy filtering.\n- Created an auto-calibration pipeline that generates reusable YAML configs for custom AprilTag bundle layouts.\n- Bridged with ROS2 for teleoperation and visualization via Rviz2, MuJoCo, Isaac Sim, and MeshCat.\n- Published fused 6DoF poses as ROS2 TF topics to support inverse kinematics and teleoperation downstream.\n- Designed multiple ergonomic controllers and modular AprilTag mounts with print-in-place joints in Fusion 360.\n- Configured and daisy-chained Dynamixel motors via U2D2 — unique IDs, voltage and current limits, the full bring-up.\n- Built a local Flask + Three.js web tool for real-time encoder visualization, interactive calibration, and JSON storage.",
   "category": "Robotics",
   "status": "Completed",
   "technologies": [
     "Python",
     "ROS2",
     "OpenCV",
-    "Fusion 360",
-    "Dynamixel",
     "AprilTag",
+    "Dynamixel",
+    "Fusion 360",
+    "MuJoCo",
+    "Isaac Sim",
+    "MeshCat",
+    "Flask",
     "Three.js"
   ],
   "links": {
-    "github": "https://github.com/ANonABento",
-    "modelPath": "/models/placeholder.stl"
-  },
-  "media": {
-    "images": [
-      "https://picsum.photos/seed/robot1/800/600",
-      "https://picsum.photos/seed/robot2/800/600",
-      "https://picsum.photos/seed/robot3/800/600"
-    ],
-    "website": "https://ros.org"
+    "github": "https://github.com/ANonABento/htn_ros2_control_on_jetson_nano"
   },
   "featured": true,
   "dateCompleted": "2025-08"

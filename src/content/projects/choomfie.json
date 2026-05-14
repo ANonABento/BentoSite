@@ -1,0 +1,20 @@
+{
+  "id": "choomfie",
+  "name": "choomfie",
+  "shortDescription": "Personal AI agent powered by the Claude Code CLI — Discord, terminal, persistent memory, and a custom skill system.",
+  "description": "choomfie is Kevin's personal AI agent built on top of the Claude Code CLI. It runs as a long-lived daemon that's reachable from Discord and a local terminal, with persistent memory across sessions and a pluggable skill system for invoking tools, services, and bespoke workflows.\n\nBuilt as a multi-surface assistant rather than a one-off chatbot — Discord for casual conversation, terminal for power use, and a skill registry for deterministic actions.",
+  "category": "AI & Software",
+  "status": "In Progress",
+  "technologies": [
+    "TypeScript",
+    "Shell",
+    "Python",
+    "Claude Code CLI",
+    "Discord API"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento/choomfie"
+  },
+  "featured": false,
+  "dateCompleted": "2026"
+}

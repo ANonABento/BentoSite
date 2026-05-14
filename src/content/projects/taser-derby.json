@@ -1,0 +1,22 @@
+{
+  "id": "taser-derby",
+  "name": "TaserDerby",
+  "shortDescription": "Digital stakes, physical consequence. A derby-based betting mini-game that tases you when you lose.",
+  "description": "TaserDerby pairs a single-player race-betting web app with a custom physical device that delivers a real (low-voltage) shock when you lose. It exists to make a point about the gap between digital risk and embodied consequence.\n\nBuilt as two projects:\n- The hardware controller (`TaserDerby` repo, C++) that drives the shock circuit.\n- The web frontend (`TaserDerbyWebsite`, JavaScript) that runs the race and bet flow.",
+  "category": "Hackathon",
+  "status": "Completed",
+  "technologies": [
+    "C++",
+    "JavaScript",
+    "HTML",
+    "CSS",
+    "Hardware",
+    "Electronics"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento/TaserDerby",
+    "docs": "https://devpost.com/software/taserderby"
+  },
+  "featured": false,
+  "dateCompleted": "2025-11"
+}

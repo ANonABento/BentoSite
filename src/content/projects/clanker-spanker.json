@@ -1,0 +1,20 @@
+{
+  "id": "clanker-spanker",
+  "name": "clanker-spanker",
+  "shortDescription": "macOS desktop app that monitors GitHub pull requests and automatically fixes CI failures and code-review comments using Claude.",
+  "description": "clanker-spanker is a Tauri-based macOS desktop app that watches your GitHub PRs and automatically resolves blockers — CI failures, code-review comments, requested changes — by dispatching Claude with a curated context window for each PR. Reduces the manual round-trip between 'PR opened' and 'PR mergeable'.",
+  "category": "AI & Software",
+  "status": "Completed",
+  "technologies": [
+    "Rust",
+    "Tauri",
+    "TypeScript",
+    "GitHub API",
+    "Claude API"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento/clanker-spanker"
+  },
+  "featured": false,
+  "dateCompleted": "2026-03"
+}
