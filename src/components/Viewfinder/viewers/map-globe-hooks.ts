@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { loadLandMaskTexture } from './map-texture';
 
@@ -24,6 +24,7 @@ function readCssVar(variableName: string, fallback: string): string {
 
 export function useGlobePalette(): GlobePalette {
   const [palette, setPalette] = useState<GlobePalette>(DEFAULT_GLOBE_PALETTE);
+  const updateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const updatePalette = () => {
@@ -34,16 +35,32 @@ export function useGlobePalette(): GlobePalette {
         highlight: readCssVar('--orange', DEFAULT_GLOBE_PALETTE.highlight),
       });
     };
+    const scheduleUpdatePalette = () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+
+      updateTimeoutRef.current = setTimeout(() => {
+        updateTimeoutRef.current = null;
+        updatePalette();
+      }, 50);
+    };
 
     updatePalette();
 
-    const observer = new MutationObserver(updatePalette);
+    const observer = new MutationObserver(scheduleUpdatePalette);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class', 'style'],
     });
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+        updateTimeoutRef.current = null;
+      }
+    };
   }, []);
 
   return palette;
