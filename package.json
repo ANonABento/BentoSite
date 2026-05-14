@@ -22,6 +22,7 @@
     "sync:projects": "node scripts/build-content.mjs",
     "sync:photos": "node scripts/sync-photos.mjs",
     "validate:content": "node scripts/validate-content.mjs",
+    "validate-portfolio-schema": "node scripts/validate-content.mjs",
     "lighthouse": "lhci autorun",
     "size": "node scripts/check-bundle-size.mjs",
     "size:check": "node scripts/check-bundle-size.mjs --json"
