@@ -61,7 +61,7 @@ export interface BoardControllerReturn {
     /** Per-frame world-space camera delta. Used to bias spawn placement
      *  toward the leading edge of the pan so cards stream in naturally. */
     velocity?: Velocity,
-  ) => void;
+  ) => boolean;
 }
 
 function createQueuedCards(cards: CardData[]): QueuedCard[] {
@@ -420,10 +420,11 @@ export function useBoardController({
         }
       }
 
-      if (!changed) return;
+      if (!changed) return false;
 
       setVisible(nextVisible);
       setQueue(nextQueue);
+      return true;
     },
     [cardDataMap, maxVisible, rotationRange, cardSizeMode, setQueue, setVisible],
   );

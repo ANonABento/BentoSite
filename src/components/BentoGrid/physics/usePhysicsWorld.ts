@@ -27,6 +27,24 @@ export function usePhysicsWorld({
   const engineRef = useRef<PhysicsEngine | null>(null);
   const targetsRef = useRef<Map<string, Position>>(new Map());
   const settlingIntervalRef = useRef<number | null>(null);
+  const pendingSettlingTicksRef = useRef(0);
+
+  const markSettlingNeeded = useCallback(() => {
+    pendingSettlingTicksRef.current = 3;
+  }, []);
+
+  const hasAwakeBodies = useCallback(() => {
+    const engine = engineRef.current;
+    if (!engine) return false;
+
+    for (const body of engine.bodies.values()) {
+      if (!body.isStatic && !body.isSleeping) {
+        return true;
+      }
+    }
+
+    return false;
+  }, []);
 
   useEffect(() => {
     if (!enabled) {
@@ -74,7 +92,8 @@ export function usePhysicsWorld({
 
     syncBodiesWithLayouts(engine, layouts, false);
     targetsRef.current = extractTargets(layouts);
-  }, [enabled, layouts]);
+    markSettlingNeeded();
+  }, [enabled, layouts, markSettlingNeeded]);
 
   useEffect(() => {
     const engine = engineRef.current;
@@ -85,18 +104,28 @@ export function usePhysicsWorld({
       settlingIntervalRef.current = null;
     }
 
+    let mounted = true;
     const config = isMobile ? PHYSICS_MOBILE : PHYSICS;
     settlingIntervalRef.current = window.setInterval(() => {
+      if (!mounted) return;
+
+      const hasPendingSettling = pendingSettlingTicksRef.current > 0;
+      if (!hasPendingSettling && !hasAwakeBodies()) {
+        return;
+      }
+
+      pendingSettlingTicksRef.current = Math.max(0, pendingSettlingTicksRef.current - 1);
       applySettlingForces(engine.bodies, targetsRef.current, config.settlingStrength);
     }, 16);
 
     return () => {
+      mounted = false;
       if (settlingIntervalRef.current) {
         clearInterval(settlingIntervalRef.current);
         settlingIntervalRef.current = null;
       }
     };
-  }, [enabled, isMobile]);
+  }, [enabled, hasAwakeBodies, isMobile]);
 
   const addCard = useCallback((cardId: string, position: CardPosition) => {
     const engine = engineRef.current;
@@ -107,16 +136,19 @@ export function usePhysicsWorld({
       x: position.x + position.width / 2,
       y: position.y + position.height / 2,
     });
-  }, []);
+    markSettlingNeeded();
+  }, [markSettlingNeeded]);
 
   const removeCard = useCallback((cardId: string) => {
     engineRef.current?.removeBody(cardId);
     targetsRef.current.delete(cardId);
-  }, []);
+    markSettlingNeeded();
+  }, [markSettlingNeeded]);
 
   const applyEntranceBurst = useCallback((cardId: string, center: Position = { x: 0, y: 0 }) => {
     engineRef.current?.applyEntranceBurst(cardId, center);
-  }, []);
+    markSettlingNeeded();
+  }, [markSettlingNeeded]);
 
   const updateSearchCard = useCallback((layout: CardLayout, isStatic: boolean) => {
     const engine = engineRef.current;
@@ -125,16 +157,19 @@ export function usePhysicsWorld({
     const existing = engine.getBody(layout.id);
     if (!existing) {
       engine.addBody(layout.id, layout, isStatic);
+      markSettlingNeeded();
     } else if (
       engine.layouts.get(layout.id)?.width !== layout.width ||
       engine.layouts.get(layout.id)?.height !== layout.height
     ) {
       engine.removeBody(layout.id);
       engine.addBody(layout.id, layout, isStatic);
+      markSettlingNeeded();
     } else {
       engine.layouts.set(layout.id, layout);
       engine.setStatic(layout.id, isStatic);
       engine.setPosition(layout.id, layout.x + layout.width / 2, layout.y + layout.height / 2);
+      markSettlingNeeded();
     }
 
     if (isStatic) {
@@ -147,15 +182,17 @@ export function usePhysicsWorld({
     }
 
     engine.wakeAllBodies();
-  }, []);
+  }, [markSettlingNeeded]);
 
   const updateTargets = useCallback((newLayouts: Map<string, CardPosition>) => {
     targetsRef.current = extractTargets(newLayouts);
-  }, []);
+    markSettlingNeeded();
+  }, [markSettlingNeeded]);
 
   return {
     positions,
     isReady: enabled,
+    hasAwakeBodies,
     addCard,
     removeCard,
     applyEntranceBurst,
