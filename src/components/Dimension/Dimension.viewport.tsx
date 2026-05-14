@@ -3,7 +3,6 @@
 import React, { RefObject, useEffect } from 'react';
 import { useProgress } from '@react-three/drei';
 import { Canvas, useThree } from '@react-three/fiber';
-import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import type { ModelError, ModelInfo } from './Dimension.types';
 import {
@@ -78,14 +77,10 @@ function StudioLighting({ theme, isMobile }: { theme: ViewerTheme; isMobile: boo
       <directionalLight
         position={[10, 12, 8]}
         intensity={isMobile ? theme.keyIntensity * 0.8 : theme.keyIntensity}
-        castShadow={!isMobile}
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
       />
       <pointLight
         position={[-8, 4, -6]}
         intensity={isMobile ? theme.fillIntensity * 0.7 : theme.fillIntensity}
-        castShadow={false}
       />
     </>
   );
@@ -202,13 +197,8 @@ export function DimensionViewport({
         }}
         onCreated={({ gl }) => {
           if (isMobile) {
-            gl.shadowMap.enabled = false;
             gl.setPixelRatio(Math.min(window.devicePixelRatio, MOBILE_PIXEL_RATIO_MAX));
-          } else {
-            gl.shadowMap.enabled = true;
-            gl.shadowMap.type = THREE.PCFSoftShadowMap;
           }
-          gl.autoClear = true;
           // Clear color is owned by <ClearColorSync> below so it follows
           // theme changes at runtime instead of being baked in at mount.
         }}

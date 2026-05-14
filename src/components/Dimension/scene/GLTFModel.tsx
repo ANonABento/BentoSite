@@ -10,7 +10,6 @@ interface GLTFModelProps {
   onClick: () => void;
   isWireframe: boolean;
   rotationSpeed?: number;
-  isMobile: boolean;
 }
 
 export function GLTFModel({
@@ -19,7 +18,6 @@ export function GLTFModel({
   onClick,
   isWireframe,
   rotationSpeed = 1,
-  isMobile,
 }: GLTFModelProps) {
   const groupRef = useRef<THREE.Group>(null);
   const { scene } = useGLTF(modelPath);
@@ -52,11 +50,8 @@ export function GLTFModel({
       } else if (child.material instanceof THREE.MeshStandardMaterial) {
         child.material.wireframe = isWireframe;
       }
-
-      child.castShadow = !isMobile;
-      child.receiveShadow = !isMobile;
     });
-  }, [isMobile, isWireframe, clonedScene]);
+  }, [isWireframe, clonedScene]);
 
   // Dispose the cloned materials when the component unmounts (geometries
   // are shared with the cache via SkeletonUtils.clone, so we don't touch

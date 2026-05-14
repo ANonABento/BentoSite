@@ -34,7 +34,6 @@ function renderModel({
         onClick={onClick}
         isWireframe={isWireframe}
         rotationSpeed={rotationSpeed}
-        isMobile={isMobile}
       />
     );
   }
@@ -47,7 +46,6 @@ function renderModel({
         onClick={onClick}
         isWireframe={isWireframe}
         rotationSpeed={rotationSpeed}
-        isMobile={isMobile}
       />
     );
   }

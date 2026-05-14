@@ -7,7 +7,6 @@ interface ProceduralCatProps {
   onClick: () => void;
   isWireframe: boolean;
   rotationSpeed?: number;
-  isMobile: boolean;
 }
 
 const CAT_BODY_COLOR = '#d97706'; // warm orange tabby
@@ -129,7 +128,6 @@ export function ProceduralCat({
   onClick,
   isWireframe,
   rotationSpeed = 1,
-  isMobile,
 }: ProceduralCatProps) {
   const groupRef = useRef<THREE.Group>(null);
   const parts = useMemo(() => buildCatParts(), []);
@@ -159,8 +157,6 @@ export function ProceduralCat({
             geometry={part.geometry}
             position={part.position}
             rotation={part.rotation}
-            castShadow={!isMobile}
-            receiveShadow={!isMobile}
           >
             <meshStandardMaterial
               color={mat.color}

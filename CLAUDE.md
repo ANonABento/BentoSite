@@ -238,7 +238,7 @@ A shared infinite grid backing `/projects` and `/playground`:
 - Loaders dispatched in `scene/ModelWrapper.tsx` by `format`: `procedural` (default cat from primitives), `stl`, or `gltf`/`glb`.
 - Default model is a **procedural cat** (`scene/ProceduralCat.tsx`) — no external asset, no network fetch. `Dimension.config.ts` exports `PROCEDURAL_CAT_PATH` as the sentinel for `DEFAULT_MODEL_PATH`.
 - LOD switching (`scene/LODModel.tsx`) reacts to FPS via `PERFORMANCE.LOW_FPS_THRESHOLD`.
-- Mobile tweaks: shadows off, pixel ratio capped at `1.5`, lower LOD thresholds, broader zoom range (see table below).
+- Mobile tweaks: pixel ratio capped at `1.5`, lower LOD thresholds, broader zoom range (see table below).
 
 ### Animated cursor (`components/cursor`)
 
@@ -347,7 +347,7 @@ These are recurring traps from recent T1–T7 work — read before changing the 
     Use `/models/foo.glb`, not `/public/models/foo.glb`.
 
 11. **Mobile detection changes rendering, not just layout.**
-    Shadows, pixel ratio, LOD thresholds, and zoom range all branch on `isMobile`. Manually verify both viewports when changing the viewer.
+    Pixel ratio, LOD thresholds, light intensity, and zoom range all branch on `isMobile`. Manually verify both viewports when changing the viewer.
 
 12. **Cursor opt-in via `magnetic` prop.**
     Magnetic hover targets only register when an element has `[data-magnetic]`. Cards expose this via `BaseCard`'s `magnetic` prop — don't sprinkle the attribute by hand.
@@ -361,7 +361,6 @@ These are recurring traps from recent T1–T7 work — read before changing the 
 
 | Optimization | Desktop | Mobile |
 |--------------|---------|--------|
-| Shadows | PCFSoftShadowMap | Disabled |
 | Pixel ratio | Native | ≤ 1.5× |
 | LOD | Higher detail | Lower detail |
 | Lighting | Full intensity | Reduced |

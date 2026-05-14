@@ -81,8 +81,6 @@ export function LODModel({
       scale={BASE_SCALE}
       position={[0, 0, 0]}
       onClick={onClick}
-      castShadow={!isMobile}
-      receiveShadow={!isMobile}
       frustumCulled
     >
       <meshStandardMaterial ref={materialRef} color={SCENE_COLORS.model} wireframe={isWireframe} />
