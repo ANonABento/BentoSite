@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect, ComponentType } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo, ComponentType } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -25,6 +25,7 @@ interface DashboardLayoutProps {
     onAskAI?: (skill: string) => void;
     isExpanded?: boolean;
     onExpandedChange?: (next: boolean) => void;
+    selectedProject?: Project | null;
   }>;
   KeyboardShortcutsModal: ComponentType<{ isOpen: boolean; onClose: () => void }>;
   isShortcutsOpen: boolean;
@@ -47,19 +48,23 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<'3d' | 'chat'>('3d');
-  // Load initial project from URL param if provided
-  const [selectedProject] = useState<Project | null>(() => {
-    if (initialProjectId) {
-      return getProjectById(initialProjectId) || null;
-    }
-    return null;
-  });
+  // Derive (don't `useState`) so we react when `initialProjectId` changes after
+  // hydration — useSyncExternalStore in the parent returns undefined on SSR
+  // and the real value on the client, and `useState(init)` would lock in the
+  // SSR value forever.
+  const selectedProject = useMemo<Project | null>(
+    () => (initialProjectId ? getProjectById(initialProjectId) ?? null : null),
+    [initialProjectId],
+  );
   const [chatFns, setChatFns] = useState<ChatFunctions | null>(null);
   const [skillsExpanded, setSkillsExpanded] = useState(true);
   const hasAutoCollapsedRef = useRef(false);
   const isMountedRef = useRef(true);
   const mobileChatRef = useRef<HTMLDivElement>(null);
   const pendingChatMessageRef = useRef<string | null>(null);
+  // Tracks the project id we've already auto-prompted the chat about so we
+  // don't re-send the rundown on re-render or after the user clears the chat.
+  const projectPromptSentForRef = useRef<string | null>(null);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -123,6 +128,21 @@ export function DashboardLayout({
     pendingChatMessageRef.current = null;
     fns.focusInput();
   }, []);
+
+  // On `?project=<id>` deep-link, auto-send the canned "Tell me about <name>"
+  // opener once the chat is ready — the /api/chat starter map turns this into
+  // a deterministic rundown without burning Gemini quota.
+  //
+  // We also mark the auto-collapse ref as "used" so the project-tools panel
+  // doesn't collapse when this synthetic user-message fires `onUserMessage`.
+  // In project mode the tools panel is the whole point; keep it visible.
+  useEffect(() => {
+    if (!chatFns || !selectedProject) return;
+    if (projectPromptSentForRef.current === selectedProject.id) return;
+    projectPromptSentForRef.current = selectedProject.id;
+    hasAutoCollapsedRef.current = true;
+    chatFns.send(`Tell me about ${selectedProject.name}`);
+  }, [chatFns, selectedProject]);
 
   return (
     <>
@@ -193,6 +213,7 @@ export function DashboardLayout({
                     onAskAI={handleAskAboutSkill}
                     isExpanded={skillsExpanded}
                     onExpandedChange={handleSkillsExpandedChange}
+                    selectedProject={selectedProject}
                   />
                 </div>
                 <TerminalPanel
@@ -220,6 +241,7 @@ export function DashboardLayout({
                 onAskAI={handleAskAboutSkill}
                 isExpanded={skillsExpanded}
                 onExpandedChange={handleSkillsExpandedChange}
+                selectedProject={selectedProject}
               />
             </motion.div>
 

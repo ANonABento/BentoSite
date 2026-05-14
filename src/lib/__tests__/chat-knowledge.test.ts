@@ -8,6 +8,7 @@ import {
   getStarterResponse,
   retrievePortfolioContext,
 } from '@/lib/chat-knowledge';
+import { PROJECTS } from '@/lib/projects-data';
 
 describe('chat knowledge grounding', () => {
   it('retrieves relevant project context for robotics questions', () => {
@@ -89,6 +90,16 @@ describe('chat knowledge grounding', () => {
       expect(getStarterResponse('how does the rag in your chat work?')).toBeNull();
       expect(getStarterResponse('what tradeoffs did you make for the robot head?')).toBeNull();
       expect(getStarterResponse('compare those two projects')).toBeNull();
+    });
+
+    it('has a registered rundown for every project (the dashboard auto-send contract)', () => {
+      // DashboardLayout sends `Tell me about <project.name>` on /?project=<id>
+      // mount. That string MUST resolve to a canned starter for every project
+      // or visitors get an empty pre-prompt instead of the rundown.
+      for (const project of PROJECTS) {
+        const trigger = `Tell me about ${project.name}`;
+        expect(getStarterResponse(trigger), `no starter for "${trigger}"`).not.toBeNull();
+      }
     });
   });
 });

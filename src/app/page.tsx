@@ -52,7 +52,18 @@ function getDashboardQuerySnapshot(): boolean {
     return false;
   }
 
-  return new URLSearchParams(window.location.search).get('view') === 'dashboard';
+  const params = new URLSearchParams(window.location.search);
+  // Both `?view=dashboard` and `?project=<id>` are dashboard deep-links —
+  // visitors arriving on either skip the boot splash and land on the dashboard.
+  return params.get('view') === 'dashboard' || params.has('project');
+}
+
+function getProjectQuerySnapshot(): string | undefined {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+
+  return new URLSearchParams(window.location.search).get('project') ?? undefined;
 }
 
 function getBootStateSnapshot(): BootState {
@@ -68,6 +79,11 @@ export default function Home() {
     subscribeToLocationChanges,
     getDashboardQuerySnapshot,
     () => false
+  );
+  const initialProjectId = useSyncExternalStore(
+    subscribeToLocationChanges,
+    getProjectQuerySnapshot,
+    () => undefined
   );
   const sessionBootState = useSyncExternalStore(
     subscribeToLocationChanges,
@@ -106,6 +122,7 @@ export default function Home() {
           isShortcutsOpen={isShortcutsOpen}
           closeShortcuts={closeShortcuts}
           ready={dashboardReady}
+          initialProjectId={initialProjectId}
         />
       </main>
       {showBoot ? (

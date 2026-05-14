@@ -6,6 +6,11 @@ import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 import { staggerFast, scaleIn, buttonTap } from '@/lib/animations';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { analytics } from '@/lib/analytics';
+import type { Project } from '@/lib/projects-data';
+import {
+  categorizeTechnologies,
+  type CategorizedKey,
+} from '@/lib/skill-categories';
 
 // CPU/chip icon for system info
 const SystemIcon = (
@@ -20,6 +25,8 @@ interface SkillsSectionProps {
   onAskAI?: (skill: string) => void;
   isExpanded?: boolean;
   onExpandedChange?: (next: boolean) => void;
+  /** When set, the panel re-skins to that project's tech stack */
+  selectedProject?: Project | null;
 }
 
 const categoryConfig: Record<SkillCategory, { label: string; dotColor: string }> = {
@@ -35,6 +42,19 @@ const categoryConfig: Record<SkillCategory, { label: string; dotColor: string }>
     label: 'DEV_TOOLS',
     dotColor: 'bg-[var(--text-muted)]',
   },
+};
+
+// Map the project-mode bucket keys onto the same visual treatment as the
+// generic three-category view, so the panel chrome stays identical when it
+// re-skins.
+const projectCategoryConfig: Record<
+  CategorizedKey,
+  { dotColor: string; tone: SkillCategory }
+> = {
+  hardware: { dotColor: 'bg-[var(--orange)]', tone: 'hardware' },
+  stack: { dotColor: 'bg-[var(--purple)]', tone: 'software' },
+  tooling: { dotColor: 'bg-[var(--text-muted)]', tone: 'tools' },
+  misc: { dotColor: 'bg-[var(--text-muted)]', tone: 'tools' },
 };
 
 function SkillTag({
@@ -76,17 +96,20 @@ function SkillTag({
 }
 
 function CategorySection({
-  category,
+  label,
+  dotColor,
+  tone,
   skills,
   onAskAI,
   isExpanded
 }: {
-  category: SkillCategory;
+  label: string;
+  dotColor: string;
+  tone: SkillCategory;
   skills: string[];
   onAskAI?: (skill: string) => void;
   isExpanded: boolean;
 }) {
-  const config = categoryConfig[category];
   const textColorClass: Record<SkillCategory, string> = {
     hardware: 'text-[var(--orange)]',
     software: 'text-[var(--purple)]',
@@ -96,9 +119,9 @@ function CategorySection({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <div className={`flex items-center gap-2 ${textColorClass[category]}`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor} animate-pulse`} />
-          <span className="text-xs font-semibold font-mono uppercase tracking-wider">{config.label}</span>
+        <div className={`flex items-center gap-2 ${textColorClass[tone]}`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${dotColor} animate-pulse`} />
+          <span className="text-xs font-semibold font-mono uppercase tracking-wider">{label}</span>
         </div>
         <span className="text-[10px] font-mono text-[var(--text-muted)]">
           {skills.length} loaded
@@ -112,7 +135,7 @@ function CategorySection({
       >
         {skills.map((skill) => (
           <m.div key={skill} variants={scaleIn}>
-            <SkillTag skill={skill} category={category} onAskAI={onAskAI} />
+            <SkillTag skill={skill} category={tone} onAskAI={onAskAI} />
           </m.div>
         ))}
       </m.div>
@@ -124,6 +147,7 @@ export function SkillsSection({
   onAskAI,
   isExpanded: isExpandedProp,
   onExpandedChange,
+  selectedProject,
 }: SkillsSectionProps) {
   const [internalExpanded, setInternalExpanded] = useState(true);
   const isControlled = isExpandedProp !== undefined;
@@ -138,14 +162,24 @@ export function SkillsSection({
     onExpandedChange?.(next);
   }, [isControlled, isExpanded, onExpandedChange]);
 
+  const projectGroups = selectedProject
+    ? categorizeTechnologies(selectedProject.technologies)
+    : null;
+  const isProjectMode = projectGroups !== null && projectGroups.length > 0;
+
+  const headerTitle = isProjectMode ? 'project tools' : 'system info';
+  const headerSubtitle = isProjectMode
+    ? `> ${selectedProject!.id}`
+    : '> query system';
+
   return (
     <div>
       {/* Header */}
       <SectionHeader
-        title="system info"
+        title={headerTitle}
         icon={SystemIcon}
         iconColor="orange"
-        subtitle="> query system"
+        subtitle={headerSubtitle}
         mono
         collapsible
         isExpanded={isExpanded}
@@ -163,12 +197,52 @@ export function SkillsSection({
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="overflow-hidden"
             role="region"
-            aria-label="Skills categories"
+            aria-label={isProjectMode ? 'Project tech stack' : 'Skills categories'}
           >
             <div className="p-4 space-y-4">
-              <CategorySection category="hardware" skills={skills.hardware} onAskAI={onAskAI} isExpanded={isExpanded} />
-              <CategorySection category="software" skills={skills.software} onAskAI={onAskAI} isExpanded={isExpanded} />
-              <CategorySection category="tools" skills={skills.tools} onAskAI={onAskAI} isExpanded={isExpanded} />
+              {isProjectMode ? (
+                projectGroups!.map((group) => {
+                  const cfg = projectCategoryConfig[group.key];
+                  return (
+                    <CategorySection
+                      key={group.key}
+                      label={group.label}
+                      dotColor={cfg.dotColor}
+                      tone={cfg.tone}
+                      skills={group.items}
+                      onAskAI={onAskAI}
+                      isExpanded={isExpanded}
+                    />
+                  );
+                })
+              ) : (
+                <>
+                  <CategorySection
+                    label={categoryConfig.hardware.label}
+                    dotColor={categoryConfig.hardware.dotColor}
+                    tone="hardware"
+                    skills={skills.hardware}
+                    onAskAI={onAskAI}
+                    isExpanded={isExpanded}
+                  />
+                  <CategorySection
+                    label={categoryConfig.software.label}
+                    dotColor={categoryConfig.software.dotColor}
+                    tone="software"
+                    skills={skills.software}
+                    onAskAI={onAskAI}
+                    isExpanded={isExpanded}
+                  />
+                  <CategorySection
+                    label={categoryConfig.tools.label}
+                    dotColor={categoryConfig.tools.dotColor}
+                    tone="tools"
+                    skills={skills.tools}
+                    onAskAI={onAskAI}
+                    isExpanded={isExpanded}
+                  />
+                </>
+              )}
             </div>
           </m.div>
         )}
