@@ -20,7 +20,16 @@ const MAX_TOTAL_CONTENT_LENGTH = 50000;
 const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
 const GEMINI_GENERATE_URL_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 const DEFAULT_OPENAI_MODEL = 'gpt-5.4-mini';
-const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash';
+// Quality-first fallback chain. When the primary model returns a retryable
+// error (429 rate limit, 5xx server error, 404 model-not-found), we walk
+// down the chain. Each model has its own daily quota, so chaining four
+// free-tier models stacks the effective per-day ceiling to ~4250 requests.
+const DEFAULT_GEMINI_MODEL_CHAIN = [
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-1.5-flash',
+] as const;
 
 // Rate limit: 10 chat sends per 60s per IP, sliding window.
 // When UPSTASH_REDIS_REST_URL / _TOKEN are unset (e.g. local dev), the
@@ -43,7 +52,22 @@ type ChatProvider = 'demo' | 'google' | 'openai';
 const openaiApiKey = process.env.OPENAI_API_KEY;
 const googleApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
 const openaiModel = process.env.OPENAI_CHAT_MODEL || DEFAULT_OPENAI_MODEL;
-const geminiModel = process.env.GEMINI_CHAT_MODEL || DEFAULT_GEMINI_MODEL;
+
+function getGeminiModelChain(): string[] {
+  // Single-model override (legacy / explicit pin) takes precedence.
+  if (process.env.GEMINI_CHAT_MODEL) {
+    return [process.env.GEMINI_CHAT_MODEL];
+  }
+  // Custom chain via comma-separated env var.
+  if (process.env.GEMINI_CHAT_MODEL_CHAIN) {
+    const parsed = process.env.GEMINI_CHAT_MODEL_CHAIN
+      .split(',')
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+    if (parsed.length > 0) return parsed;
+  }
+  return [...DEFAULT_GEMINI_MODEL_CHAIN];
+}
 
 function getClientIp(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for');
@@ -201,8 +225,19 @@ function parseGeminiText(payload: unknown): string | null {
   return textParts.length > 0 ? textParts.join('\n').trim() : null;
 }
 
-async function generateGeminiResponse(messages: ChatMessage[], instructions: string): Promise<string> {
-  const response = await fetch(`${GEMINI_GENERATE_URL_BASE}/${geminiModel}:generateContent`, {
+class GeminiError extends Error {
+  constructor(public readonly status: number, message: string) {
+    super(message);
+    this.name = 'GeminiError';
+  }
+}
+
+async function generateGeminiResponse(
+  model: string,
+  messages: ChatMessage[],
+  instructions: string,
+): Promise<string> {
+  const response = await fetch(`${GEMINI_GENERATE_URL_BASE}/${model}:generateContent`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -232,15 +267,60 @@ async function generateGeminiResponse(messages: ChatMessage[], instructions: str
       typeof payload.error.message === 'string'
         ? payload.error.message
         : `Gemini request failed with status ${response.status}`;
-    throw new Error(message);
+    throw new GeminiError(response.status, message);
   }
 
   const text = parseGeminiText(payload);
   if (!text) {
-    throw new Error('Gemini response did not include text output');
+    // No HTTP status code applies here (200 OK with malformed body) — use 0 so
+    // the fallback wrapper treats it as retryable on a different model.
+    throw new GeminiError(0, 'Gemini response did not include text output');
   }
 
   return text;
+}
+
+// Terminal = same key/payload will fail on every model, so don't waste time.
+// 400 = malformed payload, 401 = invalid API key.
+// Everything else (404 model-not-found, 429 rate limit, 5xx, network) is
+// retried against the next model in the chain.
+function isTerminalGeminiError(err: unknown): boolean {
+  return err instanceof GeminiError && (err.status === 400 || err.status === 401);
+}
+
+async function generateGeminiResponseWithFallback(
+  messages: ChatMessage[],
+  instructions: string,
+): Promise<string> {
+  const chain = getGeminiModelChain();
+  const failures: string[] = [];
+
+  for (let index = 0; index < chain.length; index += 1) {
+    const model = chain[index];
+    try {
+      const text = await generateGeminiResponse(model, messages, instructions);
+      if (index > 0) {
+        console.info(`[chat] Gemini fallback succeeded on "${model}" after ${index} failure(s)`);
+      }
+      return text;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      failures.push(`${model}: ${message}`);
+
+      if (isTerminalGeminiError(err)) {
+        // Auth / validation — every other model would fail identically.
+        throw err;
+      }
+
+      const next = chain[index + 1];
+      console.warn(
+        `[chat] Gemini "${model}" failed (${message});`,
+        next ? `falling back to "${next}"` : 'no more models in chain',
+      );
+    }
+  }
+
+  throw new Error(`All Gemini models exhausted:\n${failures.join('\n')}`);
 }
 
 async function generateProviderResponse(
@@ -249,7 +329,7 @@ async function generateProviderResponse(
   instructions: string
 ): Promise<string> {
   if (provider === 'google') {
-    return generateGeminiResponse(messages, instructions);
+    return generateGeminiResponseWithFallback(messages, instructions);
   }
 
   return generateOpenAIResponse(messages, instructions);
