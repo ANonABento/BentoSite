@@ -1,20 +1,22 @@
 {
   "id": "taser-derby",
   "name": "TaserDerby",
-  "shortDescription": "Digital stakes, physical consequence. A derby-based betting mini-game that tases you when you lose.",
-  "description": "TaserDerby pairs a single-player race-betting web app with a custom physical device that delivers a real (low-voltage) shock when you lose. It exists to make a point about the gap between digital risk and embodied consequence.\n\nBuilt as two projects:\n- The hardware controller (`TaserDerby` repo, C++) that drives the shock circuit.\n- The web frontend (`TaserDerbyWebsite`, JavaScript) that runs the race and bet flow.",
+  "shortDescription": "Physics-based race-betting sim — lose your bet and an ESP32-C3 fires a real physical penalty pulse via a relay. Built at GoOnHacks 2025.",
+  "description": "TaserDerby is a physics-based simulation where users bet on microscopic racers competing toward a goal. When a bet loses, the web app fires an HTTP request to an ESP32-C3 microcontroller, which activates a relay for a 'physical penalty pulse' — merging digital outcomes with real-world consequences.\n\nBuilt at GoOnHacks (November 2025).",
   "category": "Hackathon",
   "status": "Completed",
   "technologies": [
     "C++",
+    "ESP32-C3",
+    "ESPAsyncWebServer",
     "JavaScript",
-    "HTML",
-    "CSS",
-    "Hardware",
-    "Electronics"
+    "React",
+    "Vite",
+    "Tailwind CSS",
+    "Fetch API"
   ],
   "links": {
-    "github": "https://github.com/ANonABento/TaserDerby",
+    "github": "https://github.com/ANonABento/GoonHacksDerby",
     "docs": "https://devpost.com/software/taserderby"
   },
   "featured": false,

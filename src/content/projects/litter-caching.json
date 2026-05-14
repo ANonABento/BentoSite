@@ -1,19 +1,20 @@
 {
   "id": "litter-caching",
   "name": "LitterCaching",
-  "shortDescription": "Geocaching, but you save the world. Environmental geocaching focused on litter collection — one cache at a time.",
-  "description": "LitterCaching reframes geocaching around an environmental goal: participants don't hunt hidden treasure, they hunt and collect litter. The app surfaces nearby litter hotspots, lets users log clean-ups, and gamifies environmental impact.",
+  "shortDescription": "Intelligent waste-sorting system — ESP32-CAM + Edge Impulse ML identifies can types and routes them via 3D-printed servo mechanism. Built at MakeUofT 2025.",
+  "description": "LitterCaching is an intelligent waste-sorting system. An ESP32-CAM combined with an Edge Impulse ML model identifies different types of cans by sight; once detected, servos and a 3D-printed mechanism sort cans into the appropriate bins to enhance recycling efficiency and accessibility.\n\nBuilt at MakeUofT 2025 (February 2025).",
   "category": "Hackathon",
   "status": "Completed",
   "technologies": [
-    "Geolocation",
-    "Web",
-    "Mobile",
-    "Mapping"
+    "Arduino",
+    "ESP32-CAM",
+    "Edge Impulse",
+    "Computer Vision",
+    "3D-Printing"
   ],
   "links": {
     "docs": "https://devpost.com/software/littercaching"
   },
   "featured": false,
-  "dateCompleted": "2025"
+  "dateCompleted": "2025-02"
 }

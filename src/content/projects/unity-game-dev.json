@@ -16,6 +16,9 @@
   "links": {
     "github": "https://github.com/ANonABento/Face-Recognition-For-Turret"
   },
+  "media": {
+    "featuredImage": "/projects/unity-game-dev/hero.jpg"
+  },
   "featured": false,
   "dateCompleted": "2024-11"
 }

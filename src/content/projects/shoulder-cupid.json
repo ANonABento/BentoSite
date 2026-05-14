@@ -1,20 +1,31 @@
 {
   "id": "shoulder-cupid",
   "name": "ShoulderCupid",
-  "shortDescription": "Hackathon Winner — Cupid lost his bow, so he whispers the secrets of love directly in your ear. A wearable AI matchmaker.",
-  "description": "ShoulderCupid is a hackathon-winning wearable that puts a tiny 'shoulder cupid' on your shoulder, listening to the conversation and whispering AI-driven love advice in your ear in real time.",
+  "shortDescription": "Wearable AI dating coach — ESP32-CAM smart glasses extract emotional cues, AI whispers contextual advice through earbuds. Won MLH Best Use of Solana at MakeUofT 2026.",
+  "description": "ShoulderCupid is a wearable AI coach for real-time dating interactions. An ESP32-CAM mounted in smart glasses streams video to extract emotional data (heart rate, breathing rate) from the target. An ultrasonic sensor tracks distance, triggering different coaching modes. The system combines live speech transcription, AI-generated contextual advice via Google Gemini, and text-to-speech (ElevenLabs) whispered through earbuds. Users pick from AI coaches with different personalities before each session.\n\nWon **MLH Best Use of Solana** at MakeUofT 2026.",
   "category": "Hackathon",
   "status": "Completed",
   "technologies": [
-    "AI",
-    "Speech-to-Text",
-    "TTS",
-    "Wearable",
-    "Hardware"
+    "Arduino",
+    "C++",
+    "ESP32-CAM",
+    "Python",
+    "React",
+    "TypeScript",
+    "Node.js",
+    "Express.js",
+    "Socket.io",
+    "MongoDB Atlas",
+    "Google Gemini",
+    "ElevenLabs",
+    "Solana Pay",
+    "Fusion 360",
+    "Onshape",
+    "Blender"
   ],
   "links": {
     "docs": "https://devpost.com/software/shouldercupid-0y6b5d"
   },
   "featured": true,
-  "dateCompleted": "2025"
+  "dateCompleted": "2026-02"
 }

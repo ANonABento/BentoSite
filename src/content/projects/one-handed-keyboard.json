@@ -19,6 +19,9 @@
   "links": {
     "github": "https://github.com/ANonABento/SeqKeyTransmitter"
   },
+  "media": {
+    "featuredImage": "/projects/one-handed-keyboard/hero.jpg"
+  },
   "featured": false,
   "dateCompleted": "2024-12"
 }

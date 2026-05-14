@@ -16,6 +16,9 @@
   "links": {
     "github": "https://github.com/ANonABento"
   },
+  "media": {
+    "featuredImage": "/projects/vr-haptic-gloves/hero.jpg"
+  },
   "featured": false,
   "dateCompleted": "2024-10"
 }

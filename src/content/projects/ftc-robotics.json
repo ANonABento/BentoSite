@@ -17,6 +17,9 @@
   "links": {
     "github": "https://github.com/ANonABento/19498-Devolotics-Centerstage-2023-2024"
   },
+  "media": {
+    "featuredImage": "/projects/ftc-robotics/hero.jpg"
+  },
   "featured": false,
   "dateCompleted": "2024-04"
 }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-14T05:20:16.362Z",
+  "generatedAt": "2026-05-14T05:33:25.007Z",
   "projects": [
     {
       "id": "bentosite",
@@ -74,6 +74,37 @@
       },
       "featured": false,
       "dateCompleted": "2026-03"
+    },
+    {
+      "id": "shoulder-cupid",
+      "name": "ShoulderCupid",
+      "shortDescription": "Wearable AI dating coach — ESP32-CAM smart glasses extract emotional cues, AI whispers contextual advice through earbuds. Won MLH Best Use of Solana at MakeUofT 2026.",
+      "description": "ShoulderCupid is a wearable AI coach for real-time dating interactions. An ESP32-CAM mounted in smart glasses streams video to extract emotional data (heart rate, breathing rate) from the target. An ultrasonic sensor tracks distance, triggering different coaching modes. The system combines live speech transcription, AI-generated contextual advice via Google Gemini, and text-to-speech (ElevenLabs) whispered through earbuds. Users pick from AI coaches with different personalities before each session.\n\nWon **MLH Best Use of Solana** at MakeUofT 2026.",
+      "category": "Hackathon",
+      "status": "Completed",
+      "technologies": [
+        "Arduino",
+        "C++",
+        "ESP32-CAM",
+        "Python",
+        "React",
+        "TypeScript",
+        "Node.js",
+        "Express.js",
+        "Socket.io",
+        "MongoDB Atlas",
+        "Google Gemini",
+        "ElevenLabs",
+        "Solana Pay",
+        "Fusion 360",
+        "Onshape",
+        "Blender"
+      ],
+      "links": {
+        "docs": "https://devpost.com/software/shouldercupid-0y6b5d"
+      },
+      "featured": true,
+      "dateCompleted": "2026-02"
     },
     {
       "id": "bento-ya",
@@ -163,24 +194,83 @@
     {
       "id": "taser-derby",
       "name": "TaserDerby",
-      "shortDescription": "Digital stakes, physical consequence. A derby-based betting mini-game that tases you when you lose.",
-      "description": "TaserDerby pairs a single-player race-betting web app with a custom physical device that delivers a real (low-voltage) shock when you lose. It exists to make a point about the gap between digital risk and embodied consequence.\n\nBuilt as two projects:\n- The hardware controller (`TaserDerby` repo, C++) that drives the shock circuit.\n- The web frontend (`TaserDerbyWebsite`, JavaScript) that runs the race and bet flow.",
+      "shortDescription": "Physics-based race-betting sim — lose your bet and an ESP32-C3 fires a real physical penalty pulse via a relay. Built at GoOnHacks 2025.",
+      "description": "TaserDerby is a physics-based simulation where users bet on microscopic racers competing toward a goal. When a bet loses, the web app fires an HTTP request to an ESP32-C3 microcontroller, which activates a relay for a 'physical penalty pulse' — merging digital outcomes with real-world consequences.\n\nBuilt at GoOnHacks (November 2025).",
       "category": "Hackathon",
       "status": "Completed",
       "technologies": [
         "C++",
+        "ESP32-C3",
+        "ESPAsyncWebServer",
         "JavaScript",
-        "HTML",
-        "CSS",
-        "Hardware",
-        "Electronics"
+        "React",
+        "Vite",
+        "Tailwind CSS",
+        "Fetch API"
       ],
       "links": {
-        "github": "https://github.com/ANonABento/TaserDerby",
+        "github": "https://github.com/ANonABento/GoonHacksDerby",
         "docs": "https://devpost.com/software/taserderby"
       },
       "featured": false,
       "dateCompleted": "2025-11"
+    },
+    {
+      "id": "ar-gesture-robot",
+      "name": "Kenesis — AR Gesture Controlled Robot",
+      "shortDescription": "Modular robot controlled through Snap Spectacles AR — finger gestures move and grab objects in the physical world with sub-100ms latency. Built at Hack the North 2025.",
+      "description": "Built a modular robot platform controlled through Snap Spectacles, enabling natural gesture-based navigation and robotic-arm manipulation. Teleoperation feels as natural as moving your own hands.\n\nHighlights:\n- Developed an end-to-end gesture-to-motion pipeline: Snap API → Flask server → HiveMQ MQTT → ROS2 nodes.\n- Implemented on NVIDIA Jetson Nano, handling motor drivers, camera streaming, and AI inference fully on-device.\n- Created a Lens Studio AR application for gesture recognition and live camera streaming back to the AR glasses.\n- Designed a mobile 2-wheel drive base with modular chassis attachments, including a 3DoF robotic arm.\n- Optimized the system for sub-100ms latency and introduced an MQTT communication layer that scales to multi-robot scenarios.\n\nSubmitted as 'Kenesis' at Hack the North 2025.",
+      "category": "VR/AR",
+      "status": "Completed",
+      "technologies": [
+        "JavaScript",
+        "Python",
+        "Jetson Nano",
+        "Docker",
+        "MQTT",
+        "ROS2",
+        "Flask",
+        "Lens Studio"
+      ],
+      "links": {
+        "docs": "https://devpost.com/software/steven-lvnh4w"
+      },
+      "media": {
+        "featuredImage": "/projects/ar-gesture-robot/hero.jpg"
+      },
+      "featured": true,
+      "dateCompleted": "2025-09"
+    },
+    {
+      "id": "expressive-ai-robot-head",
+      "name": "Expressive AI Robot Head",
+      "shortDescription": "ROS2 robotic head that fuses LLM reasoning, speech, vision, and 12-servo control to push AI from text into physical interaction. Submitted as 'MaidReal Head' to the OpenAI Open Model Hackathon.",
+      "description": "A ROS2-based robotic head that integrates large language models (LLMs), speech, vision, and servo control to push AI beyond text into physical interaction — engaging more humanlike communication with AI through robots.\n\nHighlights:\n- Built a GPU-accelerated pipeline with CUDA and PyTorch, optimizing VRAM usage to run fully locally on Ubuntu/WSL2.\n- Implemented a real-time speech workflow: Silero VAD → Whisper (STT) → llama.cpp (running GPT-OSS-20B) → Zonos (TTS).\n- Designed a 12-servo robotic head combining organic mesh modeling in Blender with parametric solids in Fusion 360.\n- Controlled servos through ROS2 with a mapping layer that unites LLM reasoning, audio analysis, and OpenCV tracking.\n\nSubmitted to the OpenAI Open Model Hackathon (September 2025) as 'MaidReal Head'.",
+      "category": "AI & Robotics",
+      "status": "Completed",
+      "technologies": [
+        "Python",
+        "PyTorch",
+        "CUDA",
+        "llama.cpp",
+        "Whisper",
+        "Silero VAD",
+        "Zonos",
+        "ROS2",
+        "ESP32",
+        "FreeRTOS",
+        "Blender",
+        "Fusion 360",
+        "OpenCV"
+      ],
+      "links": {
+        "docs": "https://devpost.com/software/maidreal-head-v1"
+      },
+      "media": {
+        "featuredImage": "/projects/expressive-ai-robot-head/hero.jpg"
+      },
+      "featured": true,
+      "dateCompleted": "2025-09"
     },
     {
       "id": "robotic-arm-puppeteer",
@@ -205,61 +295,11 @@
       "links": {
         "github": "https://github.com/ANonABento/htn_ros2_control_on_jetson_nano"
       },
+      "media": {
+        "featuredImage": "/projects/robotic-arm-puppeteer/hero.jpg"
+      },
       "featured": true,
       "dateCompleted": "2025-08"
-    },
-    {
-      "id": "expressive-ai-robot-head",
-      "name": "Expressive AI Robot Head",
-      "shortDescription": "ROS2 robotic head that fuses LLM reasoning, speech, vision, and 12-servo control to push AI from text into physical interaction.",
-      "description": "A ROS2-based robotic head that integrates large language models (LLMs), speech, vision, and servo control to push AI beyond text into physical interaction — engaging more humanlike communication with AI through robots.\n\nHighlights:\n- Built a GPU-accelerated pipeline with CUDA and PyTorch, optimizing VRAM usage to run fully locally on Ubuntu/WSL2.\n- Implemented a real-time speech workflow: Silero VAD → Whisper (STT) → llama.cpp (running GPT-OSS-20B) → Zonos (TTS).\n- Designed a 12-servo robotic head combining organic mesh modeling in Blender with parametric solids in Fusion 360.\n- Controlled servos through ROS2 with a mapping layer that unites LLM reasoning, audio analysis, and OpenCV tracking.\n- Submitted as 'MaidReal Head' on Devpost.",
-      "category": "AI & Robotics",
-      "status": "Completed",
-      "technologies": [
-        "Python",
-        "PyTorch",
-        "CUDA",
-        "llama.cpp",
-        "Whisper",
-        "Silero VAD",
-        "Zonos",
-        "ROS2",
-        "ESP32",
-        "FreeRTOS",
-        "Blender",
-        "Fusion 360",
-        "OpenCV"
-      ],
-      "links": {
-        "github": "https://github.com/ANonABento",
-        "docs": "https://devpost.com/software/maidreal-head-v1"
-      },
-      "featured": true,
-      "dateCompleted": "2025-06"
-    },
-    {
-      "id": "ar-gesture-robot",
-      "name": "AR Gesture Controlled Robot",
-      "shortDescription": "Modular robot controlled through Snap Spectacles AR — finger gestures move and grab objects in the physical world with sub-100ms latency.",
-      "description": "Built a modular robot platform controlled through Snap Spectacles, enabling natural gesture-based navigation and robotic-arm manipulation. Teleoperation feels as natural as moving your own hands.\n\nHighlights:\n- Developed an end-to-end gesture-to-motion pipeline: Snap API → Flask server → HiveMQ MQTT → ROS2 nodes.\n- Implemented on NVIDIA Jetson Nano, handling motor drivers, camera streaming, and AI inference fully on-device.\n- Created a Lens Studio AR application for gesture recognition and live camera streaming back to the AR glasses.\n- Designed a mobile 2-wheel drive base with modular chassis attachments, including a 3DoF robotic arm.\n- Optimized the system for sub-100ms latency and introduced an MQTT communication layer that scales to multi-robot scenarios.\n- Submitted on Devpost as 'Kenesis'.",
-      "category": "VR/AR",
-      "status": "Completed",
-      "technologies": [
-        "JavaScript",
-        "Python",
-        "Jetson Nano",
-        "Docker",
-        "MQTT",
-        "ROS2",
-        "Flask",
-        "Lens Studio"
-      ],
-      "links": {
-        "github": "https://github.com/ANonABento",
-        "docs": "https://devpost.com/software/steven-lvnh4w"
-      },
-      "featured": true,
-      "dateCompleted": "2025-04"
     },
     {
       "id": "pcb-design",
@@ -279,65 +319,31 @@
       "links": {
         "github": "https://github.com/ANonABento"
       },
+      "media": {
+        "featuredImage": "/projects/pcb-design/hero.jpg"
+      },
       "featured": false,
       "dateCompleted": "2025-04"
     },
     {
       "id": "litter-caching",
       "name": "LitterCaching",
-      "shortDescription": "Geocaching, but you save the world. Environmental geocaching focused on litter collection — one cache at a time.",
-      "description": "LitterCaching reframes geocaching around an environmental goal: participants don't hunt hidden treasure, they hunt and collect litter. The app surfaces nearby litter hotspots, lets users log clean-ups, and gamifies environmental impact.",
+      "shortDescription": "Intelligent waste-sorting system — ESP32-CAM + Edge Impulse ML identifies can types and routes them via 3D-printed servo mechanism. Built at MakeUofT 2025.",
+      "description": "LitterCaching is an intelligent waste-sorting system. An ESP32-CAM combined with an Edge Impulse ML model identifies different types of cans by sight; once detected, servos and a 3D-printed mechanism sort cans into the appropriate bins to enhance recycling efficiency and accessibility.\n\nBuilt at MakeUofT 2025 (February 2025).",
       "category": "Hackathon",
       "status": "Completed",
       "technologies": [
-        "Geolocation",
-        "Web",
-        "Mobile",
-        "Mapping"
+        "Arduino",
+        "ESP32-CAM",
+        "Edge Impulse",
+        "Computer Vision",
+        "3D-Printing"
       ],
       "links": {
         "docs": "https://devpost.com/software/littercaching"
       },
       "featured": false,
-      "dateCompleted": "2025"
-    },
-    {
-      "id": "shoulder-cupid",
-      "name": "ShoulderCupid",
-      "shortDescription": "Hackathon Winner — Cupid lost his bow, so he whispers the secrets of love directly in your ear. A wearable AI matchmaker.",
-      "description": "ShoulderCupid is a hackathon-winning wearable that puts a tiny 'shoulder cupid' on your shoulder, listening to the conversation and whispering AI-driven love advice in your ear in real time.",
-      "category": "Hackathon",
-      "status": "Completed",
-      "technologies": [
-        "AI",
-        "Speech-to-Text",
-        "TTS",
-        "Wearable",
-        "Hardware"
-      ],
-      "links": {
-        "docs": "https://devpost.com/software/shouldercupid-0y6b5d"
-      },
-      "featured": true,
-      "dateCompleted": "2025"
-    },
-    {
-      "id": "snapfire",
-      "name": "SnapFire",
-      "shortDescription": "Hackathon Winner — never nap without having the Snap. A nap-timer application built for Snap devices.",
-      "description": "SnapFire is a nap-timer application built natively for Snap devices. It won its hackathon track for tight integration with the Snap platform and a focused, polished UX.",
-      "category": "Hackathon",
-      "status": "Completed",
-      "technologies": [
-        "Snap Platform",
-        "Lens Studio",
-        "JavaScript"
-      ],
-      "links": {
-        "docs": "https://devpost.com/software/snapfire"
-      },
-      "featured": true,
-      "dateCompleted": "2025"
+      "dateCompleted": "2025-02"
     },
     {
       "id": "one-handed-keyboard",
@@ -360,6 +366,9 @@
       "links": {
         "github": "https://github.com/ANonABento/SeqKeyTransmitter"
       },
+      "media": {
+        "featuredImage": "/projects/one-handed-keyboard/hero.jpg"
+      },
       "featured": false,
       "dateCompleted": "2024-12"
     },
@@ -381,6 +390,9 @@
       "links": {
         "github": "https://github.com/ANonABento/Face-Recognition-For-Turret"
       },
+      "media": {
+        "featuredImage": "/projects/unity-game-dev/hero.jpg"
+      },
       "featured": false,
       "dateCompleted": "2024-11"
     },
@@ -401,6 +413,9 @@
       ],
       "links": {
         "github": "https://github.com/ANonABento"
+      },
+      "media": {
+        "featuredImage": "/projects/vr-haptic-gloves/hero.jpg"
       },
       "featured": false,
       "dateCompleted": "2024-10"
@@ -426,6 +441,9 @@
       "links": {
         "github": "https://github.com/ANonABento/Decompos_It"
       },
+      "media": {
+        "featuredImage": "/projects/java-android-apps/hero.jpg"
+      },
       "featured": false,
       "dateCompleted": "2024-06"
     },
@@ -448,8 +466,34 @@
       "links": {
         "github": "https://github.com/ANonABento/19498-Devolotics-Centerstage-2023-2024"
       },
+      "media": {
+        "featuredImage": "/projects/ftc-robotics/hero.jpg"
+      },
       "featured": false,
       "dateCompleted": "2024-04"
+    },
+    {
+      "id": "snapfire",
+      "name": "SnapFire",
+      "shortDescription": "A dart launcher that wakes you up. OpenCV face detection + Raspberry Pi + salvaged Roomba motors aim and fire at a sleeping target. Won Wolfram Alpha Award + Staff Picks at AliceHacks.",
+      "description": "SnapFire is an automatic dart launcher that wakes a sleeping person by detecting their face with OpenCV and aiming the launcher to fire. Uses an automatic loading tension system, a Raspberry Pi, and salvaged Roomba motors for pan/tilt control.\n\nWon **Wolfram Alpha Award** and **Staff Picks** at AliceHacks (Nov 2023).",
+      "category": "Hackathon",
+      "status": "Completed",
+      "technologies": [
+        "Python",
+        "OpenCV",
+        "Raspberry Pi",
+        "OnShape",
+        "3D-Printing",
+        "Roomba Motors",
+        "Replit",
+        "Visual Studio"
+      ],
+      "links": {
+        "docs": "https://devpost.com/software/snapfire"
+      },
+      "featured": true,
+      "dateCompleted": "2023-11"
     }
   ]
 }

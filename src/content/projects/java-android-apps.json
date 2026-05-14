@@ -19,6 +19,9 @@
   "links": {
     "github": "https://github.com/ANonABento/Decompos_It"
   },
+  "media": {
+    "featuredImage": "/projects/java-android-apps/hero.jpg"
+  },
   "featured": false,
   "dateCompleted": "2024-06"
 }

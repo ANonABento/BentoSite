@@ -21,6 +21,9 @@
   "links": {
     "github": "https://github.com/ANonABento/htn_ros2_control_on_jetson_nano"
   },
+  "media": {
+    "featuredImage": "/projects/robotic-arm-puppeteer/hero.jpg"
+  },
   "featured": true,
   "dateCompleted": "2025-08"
 }

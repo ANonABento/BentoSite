@@ -16,6 +16,9 @@
   "links": {
     "github": "https://github.com/ANonABento"
   },
+  "media": {
+    "featuredImage": "/projects/pcb-design/hero.jpg"
+  },
   "featured": false,
   "dateCompleted": "2025-04"
 }

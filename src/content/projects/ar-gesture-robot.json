@@ -1,8 +1,8 @@
 {
   "id": "ar-gesture-robot",
-  "name": "AR Gesture Controlled Robot",
-  "shortDescription": "Modular robot controlled through Snap Spectacles AR — finger gestures move and grab objects in the physical world with sub-100ms latency.",
-  "description": "Built a modular robot platform controlled through Snap Spectacles, enabling natural gesture-based navigation and robotic-arm manipulation. Teleoperation feels as natural as moving your own hands.\n\nHighlights:\n- Developed an end-to-end gesture-to-motion pipeline: Snap API → Flask server → HiveMQ MQTT → ROS2 nodes.\n- Implemented on NVIDIA Jetson Nano, handling motor drivers, camera streaming, and AI inference fully on-device.\n- Created a Lens Studio AR application for gesture recognition and live camera streaming back to the AR glasses.\n- Designed a mobile 2-wheel drive base with modular chassis attachments, including a 3DoF robotic arm.\n- Optimized the system for sub-100ms latency and introduced an MQTT communication layer that scales to multi-robot scenarios.\n- Submitted on Devpost as 'Kenesis'.",
+  "name": "Kenesis — AR Gesture Controlled Robot",
+  "shortDescription": "Modular robot controlled through Snap Spectacles AR — finger gestures move and grab objects in the physical world with sub-100ms latency. Built at Hack the North 2025.",
+  "description": "Built a modular robot platform controlled through Snap Spectacles, enabling natural gesture-based navigation and robotic-arm manipulation. Teleoperation feels as natural as moving your own hands.\n\nHighlights:\n- Developed an end-to-end gesture-to-motion pipeline: Snap API → Flask server → HiveMQ MQTT → ROS2 nodes.\n- Implemented on NVIDIA Jetson Nano, handling motor drivers, camera streaming, and AI inference fully on-device.\n- Created a Lens Studio AR application for gesture recognition and live camera streaming back to the AR glasses.\n- Designed a mobile 2-wheel drive base with modular chassis attachments, including a 3DoF robotic arm.\n- Optimized the system for sub-100ms latency and introduced an MQTT communication layer that scales to multi-robot scenarios.\n\nSubmitted as 'Kenesis' at Hack the North 2025.",
   "category": "VR/AR",
   "status": "Completed",
   "technologies": [
@@ -16,9 +16,11 @@
     "Lens Studio"
   ],
   "links": {
-    "github": "https://github.com/ANonABento",
     "docs": "https://devpost.com/software/steven-lvnh4w"
   },
+  "media": {
+    "featuredImage": "/projects/ar-gesture-robot/hero.jpg"
+  },
   "featured": true,
-  "dateCompleted": "2025-04"
+  "dateCompleted": "2025-09"
 }

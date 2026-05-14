@@ -1,18 +1,23 @@
 {
   "id": "snapfire",
   "name": "SnapFire",
-  "shortDescription": "Hackathon Winner — never nap without having the Snap. A nap-timer application built for Snap devices.",
-  "description": "SnapFire is a nap-timer application built natively for Snap devices. It won its hackathon track for tight integration with the Snap platform and a focused, polished UX.",
+  "shortDescription": "A dart launcher that wakes you up. OpenCV face detection + Raspberry Pi + salvaged Roomba motors aim and fire at a sleeping target. Won Wolfram Alpha Award + Staff Picks at AliceHacks.",
+  "description": "SnapFire is an automatic dart launcher that wakes a sleeping person by detecting their face with OpenCV and aiming the launcher to fire. Uses an automatic loading tension system, a Raspberry Pi, and salvaged Roomba motors for pan/tilt control.\n\nWon **Wolfram Alpha Award** and **Staff Picks** at AliceHacks (Nov 2023).",
   "category": "Hackathon",
   "status": "Completed",
   "technologies": [
-    "Snap Platform",
-    "Lens Studio",
-    "JavaScript"
+    "Python",
+    "OpenCV",
+    "Raspberry Pi",
+    "OnShape",
+    "3D-Printing",
+    "Roomba Motors",
+    "Replit",
+    "Visual Studio"
   ],
   "links": {
     "docs": "https://devpost.com/software/snapfire"
   },
   "featured": true,
-  "dateCompleted": "2025"
+  "dateCompleted": "2023-11"
 }
