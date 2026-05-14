@@ -43,6 +43,23 @@ options:
      `https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>`, OR
    - Download to `public/projects/<id>/hero.png` for longevity (preferred).
 9. `links.github` = the repo URL. If `homepageUrl` is set, that's `links.liveDemo`.
+10. **Auto-scrape multi-asset candidates** — surface these in Step 6 as
+    pre-filled defaults instead of asking from scratch:
+    - **3D model** — list 3D files in the repo tree:
+      ```bash
+      gh api repos/<owner>/<repo>/git/trees/<branch>?recursive=1 \
+        --jq '.tree | .[] | select(.path | test("\\.(glb|gltf|stl)$"; "i")) | .path'
+      ```
+      If exactly one unified mesh (`.glb`/`.gltf`) exists, propose it.
+      Many split STL meshes (e.g. URDF/MJCF assets) usually aren't viewer-
+      ready — skip rather than guess.
+    - **Video** — look for `youtube.com`/`youtu.be`/`vimeo.com` links
+      in the README; propose the first as `media.video`.
+    - **Live demo** — `homepageUrl` from `gh repo view` is the
+      `links.liveDemo` default. If absent, look for a Vercel/Netlify
+      badge in the README.
+    - **PDF** — list `*.pdf` files in `docs/`, `report/`, root; propose
+      the largest as `media.pdf` (typically the report).
 
 ### Branch B — Devpost
 
@@ -132,7 +149,132 @@ Drafted src/content/projects/<id>.json:
 
 ---
 
-## Step 6 — Fix-anything loop
+## Step 6 — Multi-asset wiring (Viewfinder tabs)
+
+The bentOS dashboard re-skins to a project on `/?project=<id>` and the
+Viewfinder shows a tab per asset the project has. Ship this step well —
+it's what makes project pages feel rich vs. text-only.
+
+If Branch A's auto-scrape (Step 1.10) found any candidates, **propose them
+inline** instead of asking. Otherwise ask:
+
+```
+Q: "Which Viewfinder tabs does this project have?"
+header: "Viewfinder"
+options: (multi-select)
+  - 3D model (.glb / .stl)
+  - Video (YouTube / file)
+  - PDF document
+  - Embedded website / live demo
+  - Game embed (itch / Unity WebGL)
+  - Map locations
+```
+
+For each chosen tab, run the matching sub-flow below. **Save files to disk
+before referencing them in JSON** — the validator runs after sync, and a
+dangling path will fail it.
+
+### 3D model sub-flow
+
+1. Ask source:
+   ```
+   Q: "Where's the 3D model coming from?"
+   header: "3D source"
+   options:
+     - Local file path
+     - URL (GitHub raw, CDN, etc.)
+     - Cancel — skip 3D
+   ```
+2. Validate format: only `.glb`, `.gltf`, `.stl` work in `Model3DViewer`.
+3. Local file: `cp <path> public/models/<id>/main.<ext>`. URL: `curl -L`
+   into the same path.
+4. Set `links.modelPath = "/models/<id>/main.<ext>"` (public-rooted, no
+   `/public/` prefix).
+5. **Don't ship URDF/MJCF mesh bundles as-is.** Many robotics repos split
+   meshes per link (e.g. `link0.stl`, `link1.stl`, …). The viewer loads one
+   file, so either compose a unified GLB locally (out of scope for this
+   skill — defer to Kevin) or skip 3D for this project and flag it in the
+   final report as `"3D deferred — multi-mesh bundle in repo"`.
+
+### Video sub-flow
+
+1. Ask source:
+   ```
+   Q: "Where's the video?"
+   header: "Video source"
+   options:
+     - YouTube URL
+     - Vimeo URL
+     - Local file (mp4)
+     - Cancel
+   ```
+2. YouTube/Vimeo: keep the URL as-is. `VideoViewer` accepts the share URL
+   and embeds the player.
+3. Local file: copy to `public/projects/<id>/<name>.mp4`, reference as
+   `/projects/<id>/<name>.mp4`.
+4. Set `media.video = <url-or-path>`.
+
+### PDF sub-flow
+
+1. Ask for the local file path (PDFs over ~10 MB are usually scans — warn
+   but proceed).
+2. `cp <path> public/projects/<id>/<filename>.pdf`.
+3. Set `media.pdf = "/projects/<id>/<filename>.pdf"`.
+
+### Website sub-flow
+
+1. Ask for the URL (must be HTTPS — Chrome blocks mixed content).
+2. `WebFetch` it once to confirm it's reachable and doesn't return
+   `X-Frame-Options: DENY` (which would prevent embedding).
+3. Set `media.website = <url>`.
+
+### Game sub-flow
+
+1. Ask type:
+   ```
+   Q: "What kind of game embed?"
+   header: "Game type"
+   options:
+     - itch.io
+     - Unity WebGL
+     - Cancel
+   ```
+2. Ask for URL.
+3. **itch.io caveat**: only `https://*.itch.io/embed/<id>` URLs iframe
+   reliably. Profile URLs (`https://<user>.itch.io/`) and game-page URLs
+   (`https://<user>.itch.io/<slug>`) fall through to GameViewer's "Open
+   game in new tab" CTA. Set the URL anyway — the CTA is still useful UX.
+4. Set `media.game = { type: <type>, url: <url> }`.
+
+### Map sub-flow
+
+1. List available location IDs from `src/lib/map-data.ts`:
+   ```bash
+   node -e "const m = require('./src/lib/map-data.ts'); console.log(Object.keys(m.MAP_LOCATIONS).join('\n'));"
+   ```
+   (If TS-require fails, grep: `grep -oE '"id": "[a-z-]+"' src/lib/map-data.ts`.)
+2. Show the user the available IDs and ask for a comma-separated subset
+   (free text — too many for `AskUserQuestion`'s 4-cap).
+3. Validate every supplied ID exists in `MAP_LOCATIONS`. If any don't,
+   show the user the list of unknowns and re-prompt.
+4. Set `media.map.locations = [<id1>, <id2>, …]`. Optionally also
+   `media.map.highlightedIds` if the user wants one or two emphasized.
+5. **Kevin's preference (May 2026)**: the map is for life-experience
+   locations, not per-project pins. Only wire `media.map` if the user
+   explicitly asks — otherwise leave the project to fall back to the
+   default `getAllMapLocations()`.
+
+### After all sub-flows
+
+`Edit` the JSON to add the new fields. Don't write empty objects — if
+`media.images` was the only field and now it's also `media.video`, the
+final `media` should have both, not three half-filled blocks.
+
+Loop back to Step 7 (fix-anything) so the user can review the new state.
+
+---
+
+## Step 7 — Fix-anything loop
 
 ```
 Q: "Anything to fix before I sync?"
@@ -140,7 +282,7 @@ header: "Review"
 options:
   - Ship it as-is
   - Edit specific fields
-  - Add optional media (hero / 3D model / video / demo URL)
+  - Re-do the Viewfinder tabs (Step 6)
   - Re-do from scratch
 ```
 
@@ -158,14 +300,10 @@ options:
   For each group the user picks, walk its fields one at a time with the
   appropriate input style (enum buttons for `status`/`category`/`featured`,
   free text for descriptions, etc.). After all edits, `Edit` the JSON file
-  and loop back to Step 6.
-- **"Add optional media"** → multi-select `AskUserQuestion` listing OPTIONAL
-  fields (hero image, 3D model, video URL, live demo URL, docs URL, PDF,
-  additional screenshots). For each chosen, prompt for source. Save files to
-  the right `public/projects/<id>/` or `public/models/` location. `Edit`
-  the JSON file. Loop back to Step 6.
+  and loop back to Step 7.
+- **"Re-do the Viewfinder tabs"** → return to Step 6.
 - **"Re-do from scratch"** → delete the file, return to Step 1.
-- **"Ship it as-is"** → fall through to Step 7.
+- **"Ship it as-is"** → fall through to Step 8.
 
 ### Category special case
 
@@ -187,7 +325,7 @@ Then the second question narrows within the picked bucket (each bucket has
 
 ---
 
-## Step 7 — Sync and test
+## Step 8 — Sync and test
 
 Run:
 
@@ -209,11 +347,11 @@ options:
 ```
 
 If the user picks "Fix", parse the error to identify the field, then loop
-back to Step 6 with that field pre-selected for editing.
+back to Step 7 with that field pre-selected for editing.
 
 ---
 
-## Step 8 — Commit message
+## Step 9 — Commit message
 
 Draft a one-line imperative commit message. Examples:
 
@@ -235,13 +373,14 @@ options:
 
 ---
 
-## Step 9 — Commit and push
+## Step 10 — Commit and push
 
 ```bash
 git add src/content/projects/<id>.json \
         src/content/projects.generated.json \
         src/content/talking-points.generated.json \
         public/projects/<id>/    # if hero/media were saved locally
+        public/models/<id>/      # if a 3D model was saved
 git commit -m "<message>"
 git push origin main
 ```
@@ -251,7 +390,7 @@ you don't ship someone else's dirty working tree.
 
 ---
 
-## Step 10 — Report back
+## Step 11 — Report back
 
 Print to the user:
 

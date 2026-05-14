@@ -58,16 +58,21 @@ they reject it**. If they reject, offer a two-tier follow-up:
 
 ## OPTIONAL tier — only ask if the user signals they want it
 
-| Field | Type | When to ask |
-|---|---|---|
-| `links.liveDemo` | url | Hosted demo / deployment URL |
-| `links.docs` | url | Devpost / external write-up / longer docs |
-| `links.modelPath` | path | If they're attaching a `.glb`/`.stl`. Save under `/models/<id>.glb` |
-| `media.images` | path[] | Additional screenshots beyond the hero |
-| `media.video` | url | YouTube / Vimeo embed |
-| `media.website` | url | Used by the Viewfinder website tab |
-| `media.pdf` | path | Report PDF; save under `/projects/<id>/<file>.pdf` |
-| `media.game` | object | `{ type: "itch", url: "..." }` — only for playable embeds |
+These fields drive the **Viewfinder tabs** on `/?project=<id>`. Each
+populated field surfaces one tab. See `flows/project.md` Step 6 for the
+per-asset sub-flows (where files get saved, validations, fallbacks).
+
+| Field | Type | When to ask | What it does in the Viewfinder |
+|---|---|---|---|
+| `links.liveDemo` | url | Hosted demo / deployment URL | Surfaces a "Visit demo" link on the card; not a Viewfinder tab on its own |
+| `links.docs` | url | Devpost / external write-up / longer docs | Card-level link |
+| `links.modelPath` | path | They have a `.glb`/`.gltf`/`.stl` of the project. Save under `public/models/<id>/main.<ext>`. Reference as `/models/<id>/main.<ext>`. **Don't** ship multi-mesh URDF/MJCF bundles — the viewer loads one file. | `3D` tab — loaded by `Model3DViewer` with LOD + FPS-aware perf |
+| `media.images` | path[] | Additional screenshots beyond the hero. Save under `public/projects/<id>/`. | `IMG` tab — gallery viewer |
+| `media.video` | url | YouTube / Vimeo URL (use the share link, not the iframe-embed URL — `VideoViewer` handles both), or a local `.mp4` under `public/projects/<id>/`. | `VID` tab — embedded player |
+| `media.website` | url | A live URL the Viewfinder can iframe. HTTPS only; sites with `X-Frame-Options: DENY` won't load — surface a "Open in tab" CTA in those cases. | `WEB` tab — iframe |
+| `media.pdf` | path | Report PDF, saved under `public/projects/<id>/<file>.pdf`. | `PDF` tab — PDF.js viewer |
+| `media.game` | object | `{ type: "itch" \| "unity-webgl", url }`. **itch.io**: only `*.itch.io/embed/<id>` URLs iframe; profile and game-page URLs fall through to a "Open game" CTA. Set the URL anyway — the CTA is still useful. | `PLAY` tab — game iframe or CTA |
+| `media.map` | object | `{ locations: string[], highlightedIds?: string[] }` where each entry is a key from `src/lib/map-data.ts`. **Kevin's standing preference (May 2026)**: the map is for life-experience locations, not per-project pins — leave this unset unless explicitly asked. | `MAP` tab — globe with dots |
 
 ---
 
@@ -76,13 +81,16 @@ they reject it**. If they reject, offer a two-tier follow-up:
 - Public-rooted, **never** prefixed with `/public/`:
   - ✅ `/projects/<id>/hero.png`
   - ❌ `/public/projects/<id>/hero.png`
-- Hero images: copy the file to `public/projects/<id>/hero.png` before
-  referencing.
-- 3D models: copy to `public/models/<id>.glb` (or `.stl`); reference as
-  `/models/<id>.glb`.
+- Hero images: copy to `public/projects/<id>/hero.png`.
+- 3D models: copy to `public/models/<id>/main.<ext>` (note the
+  per-project sub-directory — a single project can have helper meshes
+  alongside `main`). Reference as `/models/<id>/main.<ext>`.
+- Videos / PDFs / additional screenshots: all under
+  `public/projects/<id>/`. Use lowercase, hyphenated filenames.
 - If the user only has a remote URL (e.g. GitHub raw, devpost CDN), it's
   acceptable to reference it directly — but prefer local copies for
-  longevity.
+  longevity. Remote-only references should be flagged in the final
+  report so they can be backfilled later.
 
 ---
 
