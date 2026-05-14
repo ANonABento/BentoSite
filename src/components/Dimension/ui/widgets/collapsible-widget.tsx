@@ -33,22 +33,15 @@ export function CollapsibleWidget({
       }
     };
 
-    // Update on mount and resize
+    // Update on mount and when the parent container changes size
     updateContainerBounds();
-    window.addEventListener('resize', updateContainerBounds);
 
-    // Use ResizeObserver for more precise tracking
     const container = widgetRef.current?.parentElement;
     if (container && 'ResizeObserver' in window) {
       const resizeObserver = new ResizeObserver(updateContainerBounds);
       resizeObserver.observe(container);
-      return () => {
-        resizeObserver.disconnect();
-        window.removeEventListener('resize', updateContainerBounds);
-      };
+      return () => resizeObserver.disconnect();
     }
-
-    return () => window.removeEventListener('resize', updateContainerBounds);
   }, []);
 
   // Compute position: use drag position if dragged, otherwise auto-position or default
