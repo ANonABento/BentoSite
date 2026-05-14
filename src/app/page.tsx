@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useState, useSyncExternalStore } from 'react';
+import { Suspense, useCallback, useState, useSyncExternalStore } from 'react';
+import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { LazyMotion, domAnimation } from 'framer-motion';
 import { BootScreen } from '@/components/BentoOS/BootScreen';
@@ -42,53 +43,44 @@ const SkillsSection = dynamic(
 
 const hardReloadBootTracker = createHardReloadBootTracker();
 
-function subscribeToLocationChanges(onStoreChange: () => void): () => void {
-  window.addEventListener('popstate', onStoreChange);
-  return () => window.removeEventListener('popstate', onStoreChange);
-}
+// Boot state changes only via local state setters (handleBootExiting /
+// handleBootComplete) and via re-render when the URL changes — no external
+// subscription needed.
+const subscribeNoop = () => () => {};
 
-function getDashboardQuerySnapshot(): boolean {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-
-  const params = new URLSearchParams(window.location.search);
-  // Both `?view=dashboard` and `?project=<id>` are dashboard deep-links —
-  // visitors arriving on either skip the boot splash and land on the dashboard.
+// `?view=dashboard` AND `?project=<id>` are both dashboard deep-links —
+// visitors arriving on either skip the boot splash and land on the dashboard.
+function isDashboardDeepLink(params: URLSearchParams): boolean {
   return params.get('view') === 'dashboard' || params.has('project');
 }
 
-function getProjectQuerySnapshot(): string | undefined {
-  if (typeof window === 'undefined') {
-    return undefined;
-  }
-
-  return new URLSearchParams(window.location.search).get('project') ?? undefined;
-}
-
-function getBootStateSnapshot(): BootState {
+function readBootStateClient(isDashboardView: boolean): BootState {
   return resolveBootState({
     hasCompletedBoot: readBootComplete(window.sessionStorage),
-    isDashboardView: getDashboardQuerySnapshot(),
+    isDashboardView,
     isHardReload: hardReloadBootTracker.getPending(window.performance),
   });
 }
 
-export default function Home() {
-  const startsInDashboard = useSyncExternalStore(
-    subscribeToLocationChanges,
-    getDashboardQuerySnapshot,
-    () => false
-  );
-  const initialProjectId = useSyncExternalStore(
-    subscribeToLocationChanges,
-    getProjectQuerySnapshot,
-    () => undefined
-  );
-  const sessionBootState = useSyncExternalStore(
-    subscribeToLocationChanges,
-    getBootStateSnapshot,
-    () => 'checking'
+// Inner component reads useSearchParams; Next requires it under a Suspense
+// boundary so the prerender step can bail out to client rendering cleanly.
+function HomeInner() {
+  // useSearchParams from next/navigation is reactive to both popstate and
+  // router.push (internally pushState), so navigating /?project=A →
+  // /?project=B inside the SPA updates `initialProjectId` and re-skins the
+  // dashboard.
+  const searchParams = useSearchParams();
+  // ReadonlyURLSearchParams shares the URLSearchParams shape (`get`, `has`).
+  const isDeepLink = isDashboardDeepLink(searchParams as unknown as URLSearchParams);
+  const initialProjectId = searchParams.get('project') ?? undefined;
+
+  // Reads sessionStorage + performance lazily via useSyncExternalStore so
+  // SSR returns 'checking' (hydration-safe) and the client returns the real
+  // boot state on first commit.
+  const sessionBootState = useSyncExternalStore<BootState>(
+    subscribeNoop,
+    () => readBootStateClient(isDeepLink),
+    () => 'checking',
   );
   const [bootStateOverride, setBootStateOverride] = useState<BootState | null>(null);
   const bootState = bootStateOverride ?? sessionBootState;
@@ -104,9 +96,9 @@ export default function Home() {
     setBootStateOverride('complete');
   }, []);
 
-  const showBoot = !startsInDashboard && bootState !== 'checking' && bootState !== 'complete';
+  const showBoot = !isDeepLink && bootState !== 'checking' && bootState !== 'complete';
   const dashboardReady =
-    startsInDashboard || (bootState !== 'checking' && bootState !== 'booting');
+    isDeepLink || (bootState !== 'checking' && bootState !== 'booting');
 
   return (
     <LazyMotion features={domAnimation}>
@@ -129,5 +121,13 @@ export default function Home() {
         <BootScreen onExiting={handleBootExiting} onComplete={handleBootComplete} />
       ) : null}
     </LazyMotion>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeInner />
+    </Suspense>
   );
 }
