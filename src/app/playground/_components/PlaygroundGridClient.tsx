@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BENTO_CARDS, getGameCards } from '@/components/Playground/BentoHub/BentoHub.config';
 import { createSeedGameCards, shouldUseBentoGridSeed } from '@/components/BentoGrid/debugSeed';
+import { duplicateCardsForFill } from '@/components/BentoGrid/duplicate-fill';
 import {
   BentoGrid,
   type CardData,
@@ -70,12 +71,15 @@ export function PlaygroundGridClient() {
   const searchParams = useSearchParams();
   const gameCards = useMemo(() => {
     const cards = getGameCards().map(mapBentoCardToGameData);
-    return shouldUseBentoGridSeed(searchParams) ? createSeedGameCards(cards) : cards;
+    if (shouldUseBentoGridSeed(searchParams)) return createSeedGameCards(cards);
+    // Fill the canvas — cycle the source pool so the grid feels populated.
+    return duplicateCardsForFill(cards);
   }, [searchParams]);
 
   const handleCardSelect = useCallback(
     (card: CardData) => {
       if (card.type === 'game') {
+        // Clones reuse the original href, so no need to strip a suffix here.
         router.push(card.href);
       }
     },

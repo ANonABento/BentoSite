@@ -7,6 +7,10 @@ import { PROJECTS } from '@/lib/projects-data';
 import { ProjectCard } from '@/components/BentoGrid/cards';
 import { createSeedProjectCards, shouldUseBentoGridSeed } from '@/components/BentoGrid/debugSeed';
 import {
+  duplicateCardsForFill,
+  stripCloneSuffix,
+} from '@/components/BentoGrid/duplicate-fill';
+import {
   BentoGrid,
   type CardData,
   type CardPosition,
@@ -62,14 +66,19 @@ export function ProjectsGridClient() {
   const searchParams = useSearchParams();
   const projectCards = useMemo(() => {
     const cards = PROJECTS.map(mapProjectToCardData);
-    return shouldUseBentoGridSeed(searchParams) ? createSeedProjectCards(cards) : cards;
+    if (shouldUseBentoGridSeed(searchParams)) return createSeedProjectCards(cards);
+    // Fill the canvas — cycle the source pool with clone IDs so the
+    // grid feels populated even when the project count is small.
+    return duplicateCardsForFill(cards);
   }, [searchParams]);
 
   const handleCardSelect = useCallback(
     (card: CardData) => {
       if (card.type === 'project') {
         if (card.id.startsWith('seed-project-')) return;
-        router.push(`/?project=${card.id}`);
+        // Clones share the source project's id under a `-clone-N` suffix;
+        // strip it before navigating to the project page.
+        router.push(`/?project=${stripCloneSuffix(card.id)}`);
       }
     },
     [router]
