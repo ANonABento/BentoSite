@@ -449,6 +449,16 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
   panAtRef: React.MutableRefObject<number>;
 }) {
   const allCount = filteredCards !== totalCards ? `${filteredCards}/${totalCards}` : `${totalCards}`;
+  const categoryButtonStyles = useMemo(() => ({
+    active: {
+      background: `${theme.accent.primary}30`,
+      border: `1px solid ${theme.accent.primary}50`,
+    },
+    inactive: {
+      background: 'rgba(255,255,255,0.05)',
+      border: '1px solid transparent',
+    },
+  }), [theme.accent.primary]);
 
   // Stop pointer/wheel events from bubbling up to the canvas gesture handler
   // for elements that need their own native interaction (text selection,
@@ -533,10 +543,7 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
           <button
             onClick={() => onCategoryChange(null)}
             className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${category === null ? 'text-white' : 'text-white/60 hover:text-white/80'}`}
-            style={{
-              background: category === null ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)',
-              border: category === null ? `1px solid ${theme.accent.primary}50` : '1px solid transparent',
-            }}
+            style={category === null ? categoryButtonStyles.active : categoryButtonStyles.inactive}
           >
             All ({allCount})
           </button>
@@ -545,10 +552,7 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
               key={cat}
               onClick={() => onCategoryChange(cat === category ? null : cat)}
               className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${category === cat ? 'text-white' : 'text-white/60 hover:text-white/80'}`}
-              style={{
-                background: category === cat ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)',
-                border: category === cat ? `1px solid ${theme.accent.primary}50` : '1px solid transparent',
-              }}
+              style={category === cat ? categoryButtonStyles.active : categoryButtonStyles.inactive}
             >
               {cat}
             </button>
