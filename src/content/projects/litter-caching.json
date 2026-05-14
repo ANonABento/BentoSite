@@ -13,8 +13,11 @@
     "3D-Printing"
   ],
   "links": {
-    "github": "https://github.com/LoveAtMakeUofT26/hardware",
+    "github": "https://github.com/flight/litter-caching",
     "docs": "https://devpost.com/software/littercaching"
+  },
+  "media": {
+    "featuredImage": "/projects/litter-caching/hero.jpg"
   },
   "featured": false,
   "dateCompleted": "2025-02"

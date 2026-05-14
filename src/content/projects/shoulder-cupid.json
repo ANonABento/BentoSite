@@ -27,6 +27,9 @@
     "github": "https://github.com/LoveAtMakeUofT26/ShoulderCupid",
     "docs": "https://devpost.com/software/shouldercupid-0y6b5d"
   },
+  "media": {
+    "featuredImage": "/projects/shoulder-cupid/hero.jpg"
+  },
   "featured": true,
   "dateCompleted": "2026-02"
 }

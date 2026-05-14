@@ -19,6 +19,9 @@
     "github": "https://github.com/ANonABento/GoonHacksDerby",
     "docs": "https://devpost.com/software/taserderby"
   },
+  "media": {
+    "featuredImage": "/projects/taser-derby/hero.jpg"
+  },
   "featured": false,
   "dateCompleted": "2025-11"
 }

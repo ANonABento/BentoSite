@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-14T07:09:13.016Z",
+  "generatedAt": "2026-05-14T07:23:01.143Z",
   "projects": [
     {
       "id": "bentosite",
@@ -103,6 +103,9 @@
       "links": {
         "github": "https://github.com/LoveAtMakeUofT26/ShoulderCupid",
         "docs": "https://devpost.com/software/shouldercupid-0y6b5d"
+      },
+      "media": {
+        "featuredImage": "/projects/shoulder-cupid/hero.jpg"
       },
       "featured": true,
       "dateCompleted": "2026-02"
@@ -218,6 +221,9 @@
       "links": {
         "github": "https://github.com/ANonABento/GoonHacksDerby",
         "docs": "https://devpost.com/software/taserderby"
+      },
+      "media": {
+        "featuredImage": "/projects/taser-derby/hero.jpg"
       },
       "featured": false,
       "dateCompleted": "2025-11"
@@ -348,8 +354,11 @@
         "3D-Printing"
       ],
       "links": {
-        "github": "https://github.com/LoveAtMakeUofT26/hardware",
+        "github": "https://github.com/flight/litter-caching",
         "docs": "https://devpost.com/software/littercaching"
+      },
+      "media": {
+        "featuredImage": "/projects/litter-caching/hero.jpg"
       },
       "featured": false,
       "dateCompleted": "2025-02"
@@ -358,7 +367,7 @@
       "id": "one-handed-keyboard",
       "name": "One Handed Keyboard",
       "shortDescription": "Wrist-mounted AAC keyboard with only 5 GPIO buttons, trie-based predictive text, and STM32 firmware over UART. Project submission received a 99% grade.",
-      "description": "An AAC (augmentative and alternative communication) device in the form of a wrist-mounted keyboard, offering a more intuitive typing experience through simplified sequential input and predictive text for mobility-limited users.\n\nHighlights:\n- Designed a wrist-mounted keyboard with full functionality and autocorrect in software using only 5 GPIO buttons.\n- Fabricated the housing using CAD software, ensuring structural stability when typing and adjustability for user comfort.\n- Built and assembled a high-functioning transmitter, capable of transmitting data through UART over a meter long.\n- Programmed and integrated system components using STM32Cube, with wiring plans made in Altium Designer.\n- Combined a trie and fuzzy-search algorithm for an advanced word prediction system, allowing shortcuts for words.\n- Project submission received an overall 99% grade with thorough written documentation.",
+      "description": "An AAC (augmentative and alternative communication) device in the form of a wrist-mounted keyboard, offering a more intuitive typing experience through simplified sequential input and predictive text for mobility-limited users.\n\nHighlights:\n- Designed a wrist-mounted keyboard with full functionality and autocorrect in software using only 5 GPIO buttons.\n- Fabricated the housing using CAD software, ensuring structural stability when typing and adjustability for user comfort.\n- Built and assembled a high-functioning transmitter, capable of transmitting data through UART over a meter long.\n- Programmed and integrated system components using STM32Cube, with wiring plans made in Altium Designer.\n- Combined a trie and fuzzy-search algorithm for an advanced word prediction system, allowing shortcuts for words.\n- Project submission received an overall 99% grade with thorough written documentation.\n\nRepos: [`SeqKeyTransmitter`](https://github.com/ANonABento/SeqKeyTransmitter) (wrist-side firmware) · [`SeqKeyReceiver`](https://github.com/ANonABento/SeqKeyReceiver) (host-side firmware).",
       "category": "Accessibility",
       "status": "Completed",
       "technologies": [
@@ -513,6 +522,9 @@
       ],
       "links": {
         "docs": "https://devpost.com/software/snapfire"
+      },
+      "media": {
+        "featuredImage": "/projects/snapfire/hero.jpg"
       },
       "featured": true,
       "dateCompleted": "2023-11"
