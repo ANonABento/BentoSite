@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Play, Pause, RotateCcw, Shuffle, BarChart3 } from 'lucide-react';
 import { GameLayout } from '../shared';
 import { useSortingVisualizer } from './SortingVisualizer.hooks';
@@ -77,20 +77,20 @@ export function SortingVisualizer() {
     >
       <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6">
         {/* Header */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={springs.gentle}
           className="text-center mb-6"
         >
-          <motion.div
+          <m.div
             className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[var(--purple)]/10 text-[var(--purple)] mb-3"
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={springs.bouncy}
           >
             <BarChart3 className="w-7 h-7" />
-          </motion.div>
+          </m.div>
 
           <h2 className="text-2xl font-bold text-[var(--pg-text-primary)] mb-1">
             Sorting Visualizer
@@ -98,12 +98,12 @@ export function SortingVisualizer() {
           <p className="text-sm text-[var(--pg-text-secondary)]">
             Watch sorting algorithms in action
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Algorithm selector */}
         <div className="flex flex-wrap gap-2 justify-center mb-4">
           {ALGORITHMS.map((algo) => (
-            <motion.button
+            <m.button
               key={algo.id}
               onClick={() => !isRunning && setAlgorithm(algo.id as SortingAlgorithm)}
               disabled={isRunning}
@@ -121,7 +121,7 @@ export function SortingVisualizer() {
               whileTap={!isRunning ? { scale: 0.98 } : {}}
             >
               {algo.name}
-            </motion.button>
+            </m.button>
           ))}
         </div>
 
@@ -171,7 +171,7 @@ export function SortingVisualizer() {
 
         {/* Action buttons */}
         <div className="flex items-center gap-3 mb-6">
-          <motion.button
+          <m.button
             onClick={generateArray}
             disabled={isRunning}
             aria-label="Shuffle array"
@@ -181,10 +181,10 @@ export function SortingVisualizer() {
           >
             <Shuffle className="w-4 h-4" />
             <span className="text-sm">Shuffle</span>
-          </motion.button>
+          </m.button>
 
           {isIdle || isFinished ? (
-            <motion.button
+            <m.button
               onClick={start}
               aria-label={`Start ${currentAlgorithm?.name ?? 'selected'} sort`}
               className="flex items-center gap-2 px-6 py-2 rounded-lg bg-[var(--purple)] text-[var(--text-on-accent)] font-medium"
@@ -193,9 +193,9 @@ export function SortingVisualizer() {
             >
               <Play className="w-4 h-4" />
               <span className="text-sm">Sort</span>
-            </motion.button>
+            </m.button>
           ) : isRunning ? (
-            <motion.button
+            <m.button
               onClick={pause}
               aria-label="Pause sorting visualization"
               className="flex items-center gap-2 px-6 py-2 rounded-lg bg-[var(--pg-accent-gold)] text-black font-medium"
@@ -204,9 +204,9 @@ export function SortingVisualizer() {
             >
               <Pause className="w-4 h-4" />
               <span className="text-sm">Pause</span>
-            </motion.button>
+            </m.button>
           ) : (
-            <motion.button
+            <m.button
               onClick={resume}
               aria-label="Resume sorting visualization"
               className="flex items-center gap-2 px-6 py-2 rounded-lg bg-[var(--purple)] text-[var(--text-on-accent)] font-medium"
@@ -215,10 +215,10 @@ export function SortingVisualizer() {
             >
               <Play className="w-4 h-4" />
               <span className="text-sm">Resume</span>
-            </motion.button>
+            </m.button>
           )}
 
-          <motion.button
+          <m.button
             onClick={reset}
             aria-label="Reset sorting visualization"
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--pg-bg-elevated)] text-[var(--pg-text-secondary)] hover:bg-[var(--pg-bg-hover)]"
@@ -227,7 +227,7 @@ export function SortingVisualizer() {
           >
             <RotateCcw className="w-4 h-4" />
             <span className="text-sm">Reset</span>
-          </motion.button>
+          </m.button>
         </div>
 
         {/* Visualization */}
@@ -238,7 +238,7 @@ export function SortingVisualizer() {
           aria-label={`${currentAlgorithm?.name ?? 'Sorting'} visualization with ${arraySize} bars, ${comparisons} comparisons, and ${swaps} swaps.`}
         >
           {array.map((value, index) => (
-            <motion.div
+            <m.div
               key={index}
               className="rounded-t-sm"
               style={{
@@ -276,7 +276,7 @@ export function SortingVisualizer() {
 
         {/* Stats when finished */}
         {isFinished && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-6 text-center"
@@ -292,7 +292,7 @@ export function SortingVisualizer() {
                 <div className="font-mono text-lg text-[var(--pg-game-error)]">{swaps}</div>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </div>
     </GameLayout>

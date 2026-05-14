@@ -23,6 +23,14 @@ const MARKER_OFFSET = 0.018;
 const LONGITUDE_OFFSET = 0.25;
 const MARKER_LONGITUDE_OFFSET_DEG = -LONGITUDE_OFFSET * 360;
 
+function getInitialAutoRotate() {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return true;
+  }
+
+  return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 function createSinglePointGeometry(): THREE.BufferGeometry {
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0], 3));
@@ -280,9 +288,24 @@ function GlobeScene({
   );
 }
 
+function GlobeControls({ autoRotate }: { autoRotate: boolean }) {
+  return (
+    <OrbitControls
+      enablePan={false}
+      enableZoom={false}
+      autoRotate={autoRotate}
+      autoRotateSpeed={0.46}
+      enableDamping
+      dampingFactor={0.08}
+      rotateSpeed={0.52}
+    />
+  );
+}
+
 export function MapViewer({ locations, highlightedIds = [], onLocationClick }: MapViewerProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [autoRotate] = useState(getInitialAutoRotate);
   const palette = useGlobePalette();
   const landMaskTexture = useLandMaskTexture();
   const { supportsHover, dotStep, dotSize } = useMapRenderConfig();
@@ -327,6 +350,7 @@ export function MapViewer({ locations, highlightedIds = [], onLocationClick }: M
       }}
     >
       <Canvas
+        frameloop={autoRotate ? 'always' : 'demand'}
         camera={{ position: [0, 0, 4.6], fov: 45 }}
         dpr={[1, 1.5]}
         gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
@@ -348,15 +372,7 @@ export function MapViewer({ locations, highlightedIds = [], onLocationClick }: M
           landDotGeometry={landDotGeometry}
           dotSize={dotSize}
         />
-        <OrbitControls
-          enablePan={false}
-          enableZoom={false}
-          autoRotate
-          autoRotateSpeed={0.46}
-          enableDamping
-          dampingFactor={0.08}
-          rotateSpeed={0.52}
-        />
+        <GlobeControls autoRotate={autoRotate} />
       </Canvas>
 
       {activeTooltipLocation && (

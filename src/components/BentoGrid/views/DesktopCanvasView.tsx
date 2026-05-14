@@ -24,6 +24,9 @@ function withoutSearchCard(layouts: Map<string, CardPosition>): Map<string, Card
   return nextLayouts;
 }
 
+const BOARD_LOOP_IDLE_VELOCITY = 0.05;
+const BOARD_LOOP_WAKE_MS = 300;
+
 interface DesktopCanvasViewProps {
   className?: string;
   cards: CardData[];
@@ -104,7 +107,7 @@ export function DesktopCanvasView({
   }, [board.visible, searchState.stickyCanvasPosition]);
 
   // Physics is only used for search card collision body
-  const { updateSearchCard } = usePhysicsWorld({
+  const { updateSearchCard, hasAwakeBodies } = usePhysicsWorld({
     layouts: displayLayouts,
     enabled: true,
     isMobile: false,
@@ -140,30 +143,81 @@ export function DesktopCanvasView({
   // jitter on near-stationary frames.
   const lastCameraRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const velocityRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const rafIdRef = useRef<number | null>(null);
+  const activeUntilRef = useRef(0);
+  const startBoardLoopRef = useRef<() => void>(() => {});
+  const hasAwakeBodiesRef = useRef(hasAwakeBodies);
 
   useEffect(() => {
-    let rafId: number;
+    hasAwakeBodiesRef.current = hasAwakeBodies;
+  }, [hasAwakeBodies]);
 
-    function loop() {
+  const wakeBoardLoop = useCallback(() => {
+    activeUntilRef.current = performance.now() + BOARD_LOOP_WAKE_MS;
+    startBoardLoopRef.current();
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    function loop(now: number) {
+      rafIdRef.current = null;
+      if (!mounted) return;
+
       const cam = navigation.cameraRef.current;
+      let speed = 0;
+      let tickChanged = false;
+
       if (cam) {
         const last = lastCameraRef.current;
         const dx = cam.x - last.x;
         const dy = cam.y - last.y;
+        speed = Math.sqrt(dx * dx + dy * dy);
         // Exponential smoothing — keeps responsive while damping single-frame spikes.
         velocityRef.current = {
           x: velocityRef.current.x * 0.6 + dx * 0.4,
           y: velocityRef.current.y * 0.6 + dy * 0.4,
         };
         lastCameraRef.current = { x: cam.x, y: cam.y };
-        boardTickRef.current(cam, windowSizeRef.current, getCurrentLayouts, velocityRef.current);
+        tickChanged = boardTickRef.current(
+          cam,
+          windowSizeRef.current,
+          getCurrentLayouts,
+          velocityRef.current,
+        );
       }
-      rafId = requestAnimationFrame(loop);
+
+      if (
+        tickChanged ||
+        speed > BOARD_LOOP_IDLE_VELOCITY ||
+        hasAwakeBodiesRef.current() ||
+        now < activeUntilRef.current
+      ) {
+        rafIdRef.current = requestAnimationFrame(loop);
+      }
     }
 
-    rafId = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(rafId);
+    const start = () => {
+      if (!mounted || rafIdRef.current !== null) return;
+      rafIdRef.current = requestAnimationFrame(loop);
+    };
+
+    startBoardLoopRef.current = start;
+    start();
+
+    return () => {
+      mounted = false;
+      startBoardLoopRef.current = () => {};
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+    };
   }, [navigation.cameraRef, getCurrentLayouts]);
+
+  useEffect(() => {
+    wakeBoardLoop();
+  }, [board.queue.length, displayLayouts, navigation.camera, wakeBoardLoop, windowSize]);
 
   const navigableLayouts = useMemo(
     () => withoutSearchCard(displayLayouts),
@@ -188,6 +242,8 @@ export function DesktopCanvasView({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      wakeBoardLoop();
+
       if (event.key === '/' || event.key === 'f') {
         if (!isEditableTarget(event.target)) {
           event.preventDefault();
@@ -205,7 +261,7 @@ export function DesktopCanvasView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onBack, searchState]);
+  }, [onBack, searchState, wakeBoardLoop]);
 
   const transform = useMemo(
     () => getCameraTransform(navigation.camera, windowSize),
@@ -223,10 +279,32 @@ export function DesktopCanvasView({
   const panAtRef = useRef(0);
   const handleWrapperWheel = useCallback(
     (event: React.WheelEvent<HTMLDivElement>) => {
+      wakeBoardLoop();
       panAtRef.current = Date.now();
       navBindings.onWheel?.(event);
     },
-    [navBindings],
+    [navBindings, wakeBoardLoop],
+  );
+  const handleWrapperPointerDown = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      wakeBoardLoop();
+      navBindings.onPointerDown?.(event);
+    },
+    [navBindings, wakeBoardLoop],
+  );
+  const handleWrapperPointerUp = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      wakeBoardLoop();
+      navBindings.onPointerUp?.(event);
+    },
+    [navBindings, wakeBoardLoop],
+  );
+  const handleWrapperMouseDown = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      wakeBoardLoop();
+      navBindings.onMouseDown?.(event);
+    },
+    [navBindings, wakeBoardLoop],
   );
 
   return (
@@ -244,6 +322,9 @@ export function DesktopCanvasView({
       aria-label={`${breadcrumb ?? 'Card grid'} interactive grid. Use arrow keys to focus cards, Enter to open, WASD to pan, and R to reset view.`}
       tabIndex={-1}
       style={{ ...navBindings.style, background: theme.background }}
+      onPointerDown={handleWrapperPointerDown}
+      onPointerUp={handleWrapperPointerUp}
+      onMouseDown={handleWrapperMouseDown}
     >
       {/* Canvas layer — clips the transformed card grid */}
       <div className="absolute inset-0 overflow-hidden">
@@ -368,6 +449,16 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
   panAtRef: React.MutableRefObject<number>;
 }) {
   const allCount = filteredCards !== totalCards ? `${filteredCards}/${totalCards}` : `${totalCards}`;
+  const categoryButtonStyles = useMemo(() => ({
+    active: {
+      background: `${theme.accent.primary}30`,
+      border: `1px solid ${theme.accent.primary}50`,
+    },
+    inactive: {
+      background: 'rgba(255,255,255,0.05)',
+      border: '1px solid transparent',
+    },
+  }), [theme.accent.primary]);
 
   // Stop pointer/wheel events from bubbling up to the canvas gesture handler
   // for elements that need their own native interaction (text selection,
@@ -452,10 +543,7 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
           <button
             onClick={() => onCategoryChange(null)}
             className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${category === null ? 'text-white' : 'text-white/60 hover:text-white/80'}`}
-            style={{
-              background: category === null ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)',
-              border: category === null ? `1px solid ${theme.accent.primary}50` : '1px solid transparent',
-            }}
+            style={category === null ? categoryButtonStyles.active : categoryButtonStyles.inactive}
           >
             All ({allCount})
           </button>
@@ -464,10 +552,7 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
               key={cat}
               onClick={() => onCategoryChange(cat === category ? null : cat)}
               className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${category === cat ? 'text-white' : 'text-white/60 hover:text-white/80'}`}
-              style={{
-                background: category === cat ? `${theme.accent.primary}30` : 'rgba(255,255,255,0.05)',
-                border: category === cat ? `1px solid ${theme.accent.primary}50` : '1px solid transparent',
-              }}
+              style={category === cat ? categoryButtonStyles.active : categoryButtonStyles.inactive}
             >
               {cat}
             </button>

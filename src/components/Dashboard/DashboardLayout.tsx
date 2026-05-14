@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo, ComponentType } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import {
   dashboardStagger,
   dashboardRightIn,
@@ -146,7 +146,7 @@ export function DashboardLayout({
 
   return (
     <>
-      <motion.div
+      <m.div
         className="flex flex-col h-screen overflow-hidden"
         variants={dashboardStagger}
         // No `initial` prop: framer-motion defaults to the animate value, so
@@ -192,7 +192,7 @@ export function DashboardLayout({
           {/* Mobile Chat Tab */}
           <AnimatePresence mode="wait">
             {activeSection === 'chat' && (
-              <motion.div
+              <m.div
                 ref={mobileChatRef}
                 key="chat-mobile"
                 className="md:hidden flex flex-col gap-4 min-h-0 flex-1"
@@ -224,16 +224,16 @@ export function DashboardLayout({
                   onSeeProjects={handleSeeProjects}
                   onUserMessage={handleUserMessage}
                 />
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 
-          {/* Desktop Right Column — no motion.div wrapper here; an ancestor
+          {/* Desktop Right Column — no m.div wrapper here; an ancestor
               with a residual CSS transform breaks backdrop-filter on glass-panel
               children.  Each child animates independently instead. */}
           <div className="hidden md:flex md:w-1/2 flex-col gap-5 min-h-0">
             {/* Skills Section */}
-            <motion.div
+            <m.div
               className="glass-panel dashboard-panel overflow-hidden flex-shrink-0 bento-corner-tr"
               variants={dashboardRightIn}
             >
@@ -243,7 +243,7 @@ export function DashboardLayout({
                 onExpandedChange={handleSkillsExpandedChange}
                 selectedProject={selectedProject}
               />
-            </motion.div>
+            </m.div>
 
             {/* Terminal */}
             <TerminalPanel
@@ -256,7 +256,7 @@ export function DashboardLayout({
             />
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={closeShortcuts} />
     </>

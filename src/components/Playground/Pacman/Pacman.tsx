@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useEffect, useRef, useCallback } from 'react';
 import { Play, Pause, Heart, Ghost } from 'lucide-react';
 import { GameLayout, ResultsScreen } from '../shared';
@@ -245,20 +245,20 @@ export function Pacman() {
       <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6">
         {/* Idle state */}
         {status === 'idle' && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={springs.gentle}
             className="text-center mb-6"
           >
-            <motion.div
+            <m.div
               className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--pg-accent-gold)]/10 text-[var(--pg-accent-gold)] mb-4"
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               transition={springs.bouncy}
             >
               <Ghost className="w-8 h-8" />
-            </motion.div>
+            </m.div>
 
             <h2 className="text-2xl font-bold text-[var(--pg-text-primary)] mb-2">
               Pacman
@@ -273,7 +273,7 @@ export function Pacman() {
               </p>
             ) : null}
 
-            <motion.button
+            <m.button
               onClick={startGame}
               className="px-6 py-3 rounded-lg bg-[var(--purple)] text-[var(--text-on-accent)] font-medium"
               aria-label="Start Pacman game"
@@ -282,13 +282,13 @@ export function Pacman() {
             >
               <Play className="w-4 h-4 inline-block mr-2" />
               Start Game
-            </motion.button>
-          </motion.div>
+            </m.button>
+          </m.div>
         )}
 
         {/* Game canvas */}
         {(status === 'playing' || status === 'paused') && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="relative"
@@ -303,7 +303,7 @@ export function Pacman() {
               <div className="text-xs font-mono uppercase tracking-[0.18em] text-[var(--pg-text-muted)]">
                 {dotsRemaining} dots left
               </div>
-              <motion.button
+              <m.button
                 onClick={togglePause}
                 className="p-2 rounded-lg bg-[var(--pg-bg-elevated)] hover:bg-[var(--pg-bg-hover)]"
                 aria-label={status === 'paused' ? 'Resume Pacman' : 'Pause Pacman'}
@@ -316,7 +316,7 @@ export function Pacman() {
                 ) : (
                   <Pause className="w-5 h-5 text-[var(--pg-text-secondary)]" />
                 )}
-              </motion.button>
+              </m.button>
               <div className="font-mono text-lg text-[var(--pg-accent-gold)]">
                 {score.toLocaleString()}
               </div>
@@ -342,7 +342,7 @@ export function Pacman() {
 
             {/* Paused overlay */}
             {status === 'paused' && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="absolute inset-0 flex items-center justify-center pg-overlay-panel-strong rounded-xl"
@@ -356,7 +356,7 @@ export function Pacman() {
                       ? 'Take a beat, then jump back in from the spawn point.'
                       : 'Resume when you are ready.'}
                   </p>
-                  <motion.button
+                  <m.button
                     onClick={togglePause}
                     className="px-6 py-2 rounded-lg bg-[var(--purple)] text-[var(--text-on-accent)] font-medium"
                     aria-label="Resume Pacman"
@@ -364,9 +364,9 @@ export function Pacman() {
                     whileTap={{ scale: 0.98 }}
                   >
                     Resume
-                  </motion.button>
+                  </m.button>
                 </div>
-              </motion.div>
+              </m.div>
             )}
 
             {/* Frightened indicator */}
@@ -381,20 +381,20 @@ export function Pacman() {
             )}
 
             {/* Controls hint */}
-            <motion.p
+            <m.p
               className="text-center text-[var(--pg-text-muted)] text-xs mt-3"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
               {isMobile ? 'Swipe to move' : 'Arrow keys or WASD to move · Space to pause'}
-            </motion.p>
-          </motion.div>
+            </m.p>
+          </m.div>
         )}
 
         {/* Results */}
         {isGameOver && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -409,7 +409,7 @@ export function Pacman() {
                 { label: 'High Score', value: (scores?.highScore ?? 0).toLocaleString() },
               ]}
             />
-          </motion.div>
+          </m.div>
         )}
       </div>
     </GameLayout>

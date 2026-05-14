@@ -294,6 +294,7 @@ export interface PhysicsConfig {
 export interface UsePhysicsWorldReturn extends SpawnPhysicsBridge {
   positions: Map<string, PhysicsPosition>;
   isReady: boolean;
+  hasAwakeBodies: () => boolean;
   updateSearchCard: (layout: CardLayout, isStatic: boolean) => void;
   updateTargets: (layouts: Map<string, CardPosition>) => void;
 }

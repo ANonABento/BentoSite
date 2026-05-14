@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Play, Crosshair, Target } from 'lucide-react';
 import { GameLayout, ResultsScreen } from '../shared';
@@ -111,20 +111,20 @@ export function AimTrainer() {
         {/* Idle/Settings state */}
         {status === 'idle' && (
           <div className="flex-1 flex flex-col items-center justify-center p-6">
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={springs.gentle}
               className="text-center w-full max-w-lg"
             >
-              <motion.div
+              <m.div
                 className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--pg-game-error)]/10 text-[var(--pg-game-error)] mb-4"
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 transition={springs.bouncy}
               >
                 <Crosshair className="w-8 h-8" />
-              </motion.div>
+              </m.div>
 
               <h2 className="text-2xl font-bold text-[var(--pg-text-primary)] mb-2">
                 3D Aim Trainer
@@ -138,7 +138,7 @@ export function AimTrainer() {
                 <span className="text-xs text-[var(--pg-text-muted)] uppercase tracking-wide">Mode</span>
                 <div className="flex flex-wrap gap-2 justify-center mt-2">
                   {MODES.map((mode) => (
-                    <motion.button
+                    <m.button
                       key={mode.id}
                       onClick={() => updateSettings({ mode: mode.id as GameMode })}
                       aria-label={`Select ${mode.name} aim trainer mode`}
@@ -154,7 +154,7 @@ export function AimTrainer() {
                       whileTap={{ scale: 0.98 }}
                     >
                       {mode.name}
-                    </motion.button>
+                    </m.button>
                   ))}
                 </div>
                 {currentMode && (
@@ -169,7 +169,7 @@ export function AimTrainer() {
                 <span className="text-xs text-[var(--pg-text-muted)] uppercase tracking-wide">Duration</span>
                 <div className="flex gap-2 justify-center mt-2">
                   {DURATIONS.map((d) => (
-                    <motion.button
+                    <m.button
                       key={d}
                       onClick={() => updateSettings({ duration: d })}
                       aria-label={`Set aim trainer duration to ${d} seconds`}
@@ -185,7 +185,7 @@ export function AimTrainer() {
                       whileTap={{ scale: 0.98 }}
                     >
                       {d}s
-                    </motion.button>
+                    </m.button>
                   ))}
                 </div>
               </div>
@@ -220,7 +220,7 @@ export function AimTrainer() {
                 </div>
               ) : null}
 
-              <motion.button
+              <m.button
                 onClick={handleStart}
                 className="px-8 py-3 rounded-lg bg-[var(--pg-game-error)] text-[var(--pg-text-on-accent)] font-medium"
                 aria-label="Start aim training"
@@ -229,12 +229,12 @@ export function AimTrainer() {
               >
                 <Play className="w-4 h-4 inline-block mr-2" />
                 Start Training
-              </motion.button>
+              </m.button>
 
               <p className="text-xs text-[var(--pg-text-muted)] mt-4">
                 Click to lock mouse. Press ESC to exit.
               </p>
-            </motion.div>
+            </m.div>
           </div>
         )}
 
@@ -283,7 +283,7 @@ export function AimTrainer() {
 
             {/* Re-lock prompt */}
             {showInstructions && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -300,7 +300,7 @@ export function AimTrainer() {
                   </p>
                   <p className="mt-1 text-xs text-white/70">ESC releases the cursor</p>
                 </button>
-              </motion.div>
+              </m.div>
             )}
           </div>
         )}

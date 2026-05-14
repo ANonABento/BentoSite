@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { TileData } from './Game2048.types';
 import { TILE_COLORS, CELL_SIZE, CELL_SIZE_MOBILE, CELL_GAP, CELL_GAP_MOBILE } from './Game2048.config';
 
@@ -27,7 +27,7 @@ export function Tile({ tile, isMobile }: TileProps) {
   };
 
   return (
-    <motion.div
+    <m.div
       layout
       initial={tile.isNew ? { scale: 0, opacity: 0 } : false}
       animate={{
@@ -60,6 +60,6 @@ export function Tile({ tile, isMobile }: TileProps) {
       }}
     >
       {tile.value}
-    </motion.div>
+    </m.div>
   );
 }

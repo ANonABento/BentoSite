@@ -22,6 +22,7 @@
     "sync:projects": "node scripts/build-content.mjs",
     "sync:photos": "node scripts/sync-photos.mjs",
     "validate:content": "node scripts/validate-content.mjs",
+    "validate-portfolio-schema": "node scripts/validate-content.mjs",
     "lighthouse": "lhci autorun",
     "size": "node scripts/check-bundle-size.mjs",
     "size:check": "node scripts/check-bundle-size.mjs --json"
@@ -29,7 +30,6 @@
   "dependencies": {
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.0",
-    "@react-three/postprocessing": "^3.0.4",
     "@types/matter-js": "^0.20.2",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
@@ -41,14 +41,12 @@
     "lucide-react": "^0.563.0",
     "matter-js": "^0.20.0",
     "next": "^16.2.6",
-    "postprocessing": "^6.38.2",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-markdown": "^10.1.0",
     "react-pdf": "^10.3.0",
     "three": "^0.181.2",
-    "topojson-client": "^3.1.0",
-    "yet-another-react-lightbox": "^3.28.0"
+    "topojson-client": "^3.1.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
@@ -66,6 +64,7 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.1.2",
     "@vitest/coverage-v8": "^4.0.18",
+    "babel-plugin-react-compiler": "^1.0.0",
     "baseline-browser-mapping": "^2.10.16",
     "eslint": "^9",
     "eslint-config-next": "^16.2.6",

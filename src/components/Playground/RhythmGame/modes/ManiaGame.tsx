@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { useState, useMemo } from 'react';
 import { Piano, ArrowLeft } from 'lucide-react';
 import { GameLayout, ResultsScreen, CountdownOverlay } from '../../shared';
@@ -83,26 +83,26 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
             {combo > 0 && (
               <>
                 <div className="pg-divider" />
-                <motion.span
+                <m.span
                   key={combo}
                   initial={{ scale: 1.2 }}
                   animate={{ scale: 1 }}
                   className="font-mono text-[var(--purple)] font-semibold"
                 >
                   {combo}x
-                </motion.span>
+                </m.span>
               </>
             )}
           </div>
         ) : (
-          <motion.button
+          <m.button
             onClick={onBack}
             className="flex items-center gap-2 text-sm text-[var(--pg-text-muted)] hover:text-[var(--pg-text-primary)]"
             whileHover={{ x: -3 }}
           >
             <ArrowLeft className="w-4 h-4" />
             Back
-          </motion.button>
+          </m.button>
         )
       }
     >
@@ -112,7 +112,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
         <AnimatePresence mode="wait">
           {/* Song selection */}
           {showIdle && (
-            <motion.div
+            <m.div
               key="idle"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -120,7 +120,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
               transition={springs.gentle}
               className="text-center w-full max-w-lg"
             >
-              <motion.div
+              <m.div
                 className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-6"
                 style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}
                 initial={{ scale: 0.8 }}
@@ -128,7 +128,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
                 transition={springs.bouncy}
               >
                 <Piano className="w-10 h-10" />
-              </motion.div>
+              </m.div>
 
               <h2 className="text-4xl sm:text-5xl font-bold text-[var(--pg-text-primary)] mb-4 tracking-tight">
                 Mania
@@ -144,7 +144,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
               {/* Song list */}
               <div className="space-y-3 mb-10">
                 {MANIA_BEAT_MAPS.map((map) => (
-                  <motion.button
+                  <m.button
                     key={map.id}
                     onClick={() => setSelectedMap(map)}
                     className={`
@@ -189,24 +189,24 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
                         </span>
                       </div>
                     )}
-                  </motion.button>
+                  </m.button>
                 ))}
               </div>
 
-              <motion.button
+              <m.button
                 onClick={startGame}
                 className="pg-button pg-button-primary text-lg px-10 py-4"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
                 Play
-              </motion.button>
-            </motion.div>
+              </m.button>
+            </m.div>
           )}
 
           {/* Game playfield */}
           {showGame && (
-            <motion.div
+            <m.div
               key="game"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -216,7 +216,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
               {/* Progress bar */}
               <div className="mb-4">
                 <div className="pg-progress-track h-1.5 rounded-full overflow-hidden">
-                  <motion.div
+                  <m.div
                     className="h-full bg-gradient-to-r from-[var(--purple)] to-[var(--pg-accent-gold)]"
                     style={{ width: `${progress * 100}%` }}
                     transition={{ duration: 0.1 }}
@@ -259,7 +259,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
 
                   {/* Receptors (key indicators) */}
                   {Array.from({ length: selectedMap.keyCount }).map((_, lane) => (
-                    <motion.div
+                    <m.div
                       key={`receptor-${lane}`}
                       className="absolute"
                       style={{
@@ -289,7 +289,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
                     if (note.hit && note.rating !== 'miss') return null;
 
                     return (
-                      <motion.div
+                      <m.div
                         key={note.id}
                         className="absolute rounded"
                         style={{
@@ -312,7 +312,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
 
                   {/* Combo display */}
                   {combo >= 5 && (
-                    <motion.div
+                    <m.div
                       className="absolute left-1/2 -translate-x-1/2"
                       style={{ top: '40%' }}
                       initial={{ scale: 0 }}
@@ -325,7 +325,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
                       >
                         {combo}x
                       </span>
-                    </motion.div>
+                    </m.div>
                   )}
                 </div>
               </div>
@@ -369,12 +369,12 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
                   <span className="font-mono" style={{ color: COLORS.miss }}>{misses}</span>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           {/* Results */}
           {showResults && result && (
-            <motion.div
+            <m.div
               key="results"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -392,7 +392,7 @@ export function ManiaGame({ onBack }: ManiaGameProps) {
                   { label: 'Perfect', value: result.perfects },
                 ]}
               />
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>

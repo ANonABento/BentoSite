@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { useState } from 'react';
 import { Music, Drum, ArrowLeft, Piano } from 'lucide-react';
 import Link from 'next/link';
@@ -82,7 +82,7 @@ export default function RhythmPage() {
   return (
     <AnimatePresence mode="wait">
       {mode === 'select' && (
-        <motion.div
+        <m.div
           key="select"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -104,21 +104,21 @@ export default function RhythmPage() {
 
           {/* Content */}
           <main id="main-content" className="flex-1 flex flex-col items-center justify-center p-6" tabIndex={-1}>
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="text-center w-full max-w-lg"
             >
               {/* Icon */}
-              <motion.div
+              <m.div
                 className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[var(--pg-accent-gold)]/10 text-[var(--pg-accent-gold)] mb-6"
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
               >
                 <Music className="w-10 h-10" />
-              </motion.div>
+              </m.div>
 
               <h1 className="text-4xl sm:text-5xl font-bold text-[var(--pg-text-primary)] mb-4 tracking-tight">
                 Rhythm Games
@@ -130,15 +130,18 @@ export default function RhythmPage() {
 
               {/* Mode selection */}
               <div className="space-y-4">
-                {modes.map((m, index) => (
-                  <motion.button
-                    key={m.id}
-                    onClick={() => m.available && setMode(m.id)}
-                    disabled={!m.available}
-                    aria-label={`${m.available ? 'Open' : 'Unavailable'} ${m.name} rhythm mode`}
+                {modes.map((rhythmMode, index) => {
+                  const Icon = rhythmMode.icon;
+
+                  return (
+                  <m.button
+                    key={rhythmMode.id}
+                    onClick={() => rhythmMode.available && setMode(rhythmMode.id)}
+                    disabled={!rhythmMode.available}
+                    aria-label={`${rhythmMode.available ? 'Open' : 'Unavailable'} ${rhythmMode.name} rhythm mode`}
                     className={`
                       w-full p-5 rounded-xl text-left transition-all duration-200 border
-                      ${m.available
+                      ${rhythmMode.available
                         ? 'pg-surface-panel hover:bg-[var(--pg-bg-hover)] cursor-pointer'
                         : 'pg-surface-frame cursor-not-allowed opacity-50'
                       }
@@ -146,45 +149,46 @@ export default function RhythmPage() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    whileHover={m.available ? { scale: 1.02, x: 5 } : {}}
-                    whileTap={m.available ? { scale: 0.98 } : {}}
+                    whileHover={rhythmMode.available ? { scale: 1.02, x: 5 } : {}}
+                    whileTap={rhythmMode.available ? { scale: 0.98 } : {}}
                   >
                     <div className="flex items-center gap-4">
                       <div
                         className="w-12 h-12 rounded-xl flex items-center justify-center"
-                        style={{ backgroundColor: `${m.color}20`, color: m.color }}
+                        style={{ backgroundColor: `${rhythmMode.color}20`, color: rhythmMode.color }}
                       >
-                        <m.icon className="w-6 h-6" />
+                        <Icon className="w-6 h-6" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-[var(--pg-text-primary)]">
-                            {m.name}
+                            {rhythmMode.name}
                           </span>
-                          {!m.available && (
+                          {!rhythmMode.available && (
                             <span className="px-2 py-0.5 rounded text-xs bg-white/5 text-[var(--pg-text-muted)]">
                               Coming Soon
                             </span>
                           )}
                         </div>
                         <p className="text-sm text-[var(--pg-text-muted)] mt-0.5">
-                          {m.description}
+                          {rhythmMode.description}
                         </p>
                       </div>
-                      {m.available && (
+                      {rhythmMode.available && (
                         <ArrowLeft className="w-5 h-5 text-[var(--pg-text-muted)] rotate-180" />
                       )}
                     </div>
-                  </motion.button>
-                ))}
+                  </m.button>
+                  );
+                })}
               </div>
-            </motion.div>
+            </m.div>
           </main>
-        </motion.div>
+        </m.div>
       )}
 
       {mode === 'osu' && (
-        <motion.div
+        <m.div
           key="osu"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -193,11 +197,11 @@ export default function RhythmPage() {
           <ErrorBoundary title="Game Error" message="osu! Style game failed to load. Please try again.">
             <RhythmGame />
           </ErrorBoundary>
-        </motion.div>
+        </m.div>
       )}
 
       {mode === 'taiko' && (
-        <motion.div
+        <m.div
           key="taiko"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -206,11 +210,11 @@ export default function RhythmPage() {
           <ErrorBoundary title="Game Error" message="Taiko game failed to load. Please try again.">
             <TaikoGame onBack={handleBack} />
           </ErrorBoundary>
-        </motion.div>
+        </m.div>
       )}
 
       {mode === 'mania' && (
-        <motion.div
+        <m.div
           key="mania"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -219,7 +223,7 @@ export default function RhythmPage() {
           <ErrorBoundary title="Game Error" message="Mania game failed to load. Please try again.">
             <ManiaGame onBack={handleBack} />
           </ErrorBoundary>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

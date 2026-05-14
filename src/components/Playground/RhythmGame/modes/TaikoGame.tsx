@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { useState, useCallback, useRef } from 'react';
 import { Drum, ArrowLeft } from 'lucide-react';
 import { GameLayout, ResultsScreen, CountdownOverlay } from '../../shared';
@@ -34,7 +34,7 @@ function TaikoNoteComponent({ noteType, large, position, hit, rating }: TaikoNot
   if (hit) {
     if (rating === 'miss') {
       return (
-        <motion.div
+        <m.div
           className="absolute"
           style={{
             left: `${position * 100}%`,
@@ -51,13 +51,13 @@ function TaikoNoteComponent({ noteType, large, position, hit, rating }: TaikoNot
             className="w-full h-full rounded-full border-2"
             style={{ borderColor: COLORS.miss, opacity: 0.5 }}
           />
-        </motion.div>
+        </m.div>
       );
     }
 
     // Hit effect
     return (
-      <motion.div
+      <m.div
         className="absolute"
         style={{
           left: `${TAIKO_DIMENSIONS.hitZoneX * 100}%`,
@@ -76,7 +76,7 @@ function TaikoNoteComponent({ noteType, large, position, hit, rating }: TaikoNot
             backgroundColor: rating === 'perfect' ? COLORS.perfect : COLORS.good,
           }}
         />
-      </motion.div>
+      </m.div>
     );
   }
 
@@ -129,7 +129,7 @@ function DrumDisplay({ lastHitType, lastHitRating, hitEffectVersion }: DrumProps
       {/* Drum body */}
       <div className="relative">
         {/* Outer rim */}
-        <motion.div
+        <m.div
           className="w-32 h-32 rounded-full border-8 flex items-center justify-center"
           style={{
             borderColor: lastHitType === 'kat' && lastHitRating !== 'miss' ? COLORS.kat : '#333',
@@ -141,7 +141,7 @@ function DrumDisplay({ lastHitType, lastHitRating, hitEffectVersion }: DrumProps
           transition={{ duration: 0.1 }}
         >
           {/* Inner drum */}
-          <motion.div
+          <m.div
             className="w-20 h-20 rounded-full flex items-center justify-center"
             style={{
               backgroundColor: lastHitType === 'don' && lastHitRating !== 'miss' ? COLORS.don : '#ee553380',
@@ -152,12 +152,12 @@ function DrumDisplay({ lastHitType, lastHitRating, hitEffectVersion }: DrumProps
             transition={{ duration: 0.1 }}
           >
             <Drum className="w-8 h-8 text-white/60" />
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
 
         {/* Hit feedback */}
         {lastHitRating && lastHitRating !== 'miss' && (
-          <motion.div
+          <m.div
             key={hitEffectVersion}
             className="absolute inset-0 flex items-center justify-center"
             initial={{ scale: 1, opacity: 1 }}
@@ -171,7 +171,7 @@ function DrumDisplay({ lastHitType, lastHitRating, hitEffectVersion }: DrumProps
                 opacity: 0.3,
               }}
             />
-          </motion.div>
+          </m.div>
         )}
       </div>
     </div>
@@ -238,26 +238,26 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
             {combo > 0 && (
               <>
                 <div className="pg-divider" />
-                <motion.span
+                <m.span
                   key={combo}
                   initial={{ scale: 1.2 }}
                   animate={{ scale: 1 }}
                   className="font-mono text-[var(--purple)] font-semibold"
                 >
                   {combo}x
-                </motion.span>
+                </m.span>
               </>
             )}
           </div>
         ) : (
-          <motion.button
+          <m.button
             onClick={onBack}
             className="flex items-center gap-2 text-sm text-[var(--pg-text-muted)] hover:text-[var(--pg-text-primary)]"
             whileHover={{ x: -3 }}
           >
             <ArrowLeft className="w-4 h-4" />
             Back
-          </motion.button>
+          </m.button>
         )
       }
     >
@@ -267,7 +267,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
         <AnimatePresence mode="wait">
           {/* Song selection */}
           {showIdle && (
-            <motion.div
+            <m.div
               key="idle"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -275,7 +275,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
               transition={springs.gentle}
               className="text-center w-full max-w-lg"
             >
-              <motion.div
+              <m.div
                 className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-6"
                 style={{ backgroundColor: `${COLORS.don}20`, color: COLORS.don }}
                 initial={{ scale: 0.8 }}
@@ -283,7 +283,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
                 transition={springs.bouncy}
               >
                 <Drum className="w-10 h-10" />
-              </motion.div>
+              </m.div>
 
               <h2 className="text-4xl sm:text-5xl font-bold text-[var(--pg-text-primary)] mb-4 tracking-tight">
                 Taiko
@@ -300,7 +300,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
               {/* Song list */}
               <div className="space-y-3 mb-10">
                 {TAIKO_BEAT_MAPS.map((map) => (
-                  <motion.button
+                  <m.button
                     key={map.id}
                     onClick={() => setSelectedMap(map)}
                     className={`
@@ -340,24 +340,24 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
                         </span>
                       </div>
                     )}
-                  </motion.button>
+                  </m.button>
                 ))}
               </div>
 
-              <motion.button
+              <m.button
                 onClick={startGame}
                 className="pg-button pg-button-primary text-lg px-10 py-4"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
                 Play
-              </motion.button>
-            </motion.div>
+              </m.button>
+            </m.div>
           )}
 
           {/* Game playfield */}
           {showGame && (
-            <motion.div
+            <m.div
               key="game"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -367,7 +367,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
               {/* Progress bar */}
               <div className="mb-4">
                 <div className="pg-progress-track h-1.5 rounded-full overflow-hidden">
-                  <motion.div
+                  <m.div
                     className="h-full"
                     style={{
                       background: `linear-gradient(to right, ${COLORS.don}, ${COLORS.kat})`,
@@ -421,7 +421,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
 
                 {/* Combo display */}
                 {combo >= 5 && (
-                  <motion.div
+                  <m.div
                     className="absolute top-2 left-1/2 -translate-x-1/2"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
@@ -433,7 +433,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
                     >
                       {combo}x
                     </span>
-                  </motion.div>
+                  </m.div>
                 )}
               </div>
 
@@ -448,30 +448,30 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
 
               {/* Touch controls for mobile */}
               <div className="mt-6 flex gap-4 sm:hidden">
-                <motion.button
+                <m.button
                   onTouchStart={handleTouchKat}
                   className="flex-1 py-8 rounded-xl text-white font-bold text-lg"
                   style={{ backgroundColor: COLORS.kat }}
                   whileTap={{ scale: 0.95 }}
                 >
                   KAT
-                </motion.button>
-                <motion.button
+                </m.button>
+                <m.button
                   onTouchStart={handleTouchDon}
                   className="flex-1 py-8 rounded-xl text-white font-bold text-lg"
                   style={{ backgroundColor: COLORS.don }}
                   whileTap={{ scale: 0.95 }}
                 >
                   DON
-                </motion.button>
-                <motion.button
+                </m.button>
+                <m.button
                   onTouchStart={handleTouchKat}
                   className="flex-1 py-8 rounded-xl text-white font-bold text-lg"
                   style={{ backgroundColor: COLORS.kat }}
                   whileTap={{ scale: 0.95 }}
                 >
                   KAT
-                </motion.button>
+                </m.button>
               </div>
 
               {/* Stats */}
@@ -498,12 +498,12 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
                 <span style={{ color: COLORS.don }}>D/F</span> for Don (center) ·{' '}
                 <span style={{ color: COLORS.kat }}>J/K</span> for Kat (rim)
               </p>
-            </motion.div>
+            </m.div>
           )}
 
           {/* Results */}
           {showResults && result && (
-            <motion.div
+            <m.div
               key="results"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -521,7 +521,7 @@ export function TaikoGame({ onBack }: TaikoGameProps) {
                   { label: 'Perfect', value: result.perfects },
                 ]}
               />
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>
