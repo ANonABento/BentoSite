@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { PROJECTS } from '@/lib/projects-data';
+import { PROJECTS, getProjectThumbnail } from '@/lib/projects-data';
 import { ProjectCard } from '@/components/BentoGrid/cards';
 import { createSeedProjectCards, shouldUseBentoGridSeed } from '@/components/BentoGrid/debugSeed';
 import {
@@ -24,7 +24,7 @@ function mapProjectToCardData(project: typeof PROJECTS[number]): ProjectCardData
     type: 'project',
     title: project.name,
     description: project.shortDescription,
-    thumbnail: project.thumbnail,
+    thumbnail: getProjectThumbnail(project),
     category: project.category,
     technologies: project.technologies,
     status: project.status,
