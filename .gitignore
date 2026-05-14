@@ -48,6 +48,7 @@ next-env.d.ts
 CLAUDE.local.md
 null
 .worktrees/
+.claude/worktrees/
 
 # Local debug screenshots and playwright-mcp logs (not part of the project)
 /*.png
