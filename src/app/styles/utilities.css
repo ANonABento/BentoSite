@@ -91,7 +91,7 @@
 
 /* ── Dark CRT theme overrides ─────────────────────────────────────────── */
 .dark .dashboard-crt {
-  --background: #050507;
+  --background: #101015;
   --foreground: #f1ece4;
   --border: rgba(224, 123, 60, 0.24);
   --glass-bg: rgba(3, 3, 6, 0.78);
@@ -106,10 +106,10 @@
   --scrollbar-track: rgba(255, 255, 255, 0.025);
   --scrollbar-thumb: rgba(224, 123, 60, 0.22);
   --scrollbar-thumb-hover: rgba(224, 123, 60, 0.34);
-  background-color: #050507;
+  background-color: #101015;
   background-image:
     radial-gradient(ellipse at 48% 24%, rgba(224, 123, 60, 0.035), transparent 48%),
-    radial-gradient(ellipse at center, transparent 54%, rgba(0, 0, 0, 0.58) 100%),
+    radial-gradient(ellipse at center, transparent 54%, rgba(0, 0, 0, 0.20) 100%),
     repeating-linear-gradient(
       0deg,
       rgba(255, 255, 255, 0.018),
@@ -121,10 +121,10 @@
 }
 
 .dark .dashboard-crt.bg-grid {
-  background-color: #050507;
+  background-color: #101015;
   background-image:
     radial-gradient(ellipse at 48% 24%, rgba(224, 123, 60, 0.035), transparent 48%),
-    radial-gradient(ellipse at center, transparent 54%, rgba(0, 0, 0, 0.58) 100%),
+    radial-gradient(ellipse at center, transparent 54%, rgba(0, 0, 0, 0.20) 100%),
     repeating-linear-gradient(
       0deg,
       rgba(255, 255, 255, 0.018),
@@ -194,7 +194,7 @@
   left: 12px;
   right: 12px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--orange), transparent);
+  background: linear-gradient(90deg, transparent, var(--panel-accent, var(--orange)), transparent);
   opacity: 0.4;
   z-index: 1;
   border-radius: inherit;
