@@ -135,15 +135,17 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
               */}
               <m.div
                 className="absolute inset-x-0 top-0 bg-black pointer-events-none z-[10]"
-                initial={{ height: '49.8%' }}
-                animate={{ height: '0%' }}
+                style={{ height: '50%', transformOrigin: 'top' }}
+                initial={{ scaleY: 1 }}
+                animate={{ scaleY: 0 }}
                 transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1], delay: 0.05 }}
                 aria-hidden="true"
               />
               <m.div
                 className="absolute inset-x-0 bottom-0 bg-black pointer-events-none z-[10]"
-                initial={{ height: '49.8%' }}
-                animate={{ height: '0%' }}
+                style={{ height: '50%', transformOrigin: 'bottom' }}
+                initial={{ scaleY: 1 }}
+                animate={{ scaleY: 0 }}
                 transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1], delay: 0.05 }}
                 aria-hidden="true"
               />
@@ -263,7 +265,7 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
                                 );
                               })}
                             </div>
-                            <span className="font-crt min-w-[5ch] pl-1 text-right uppercase text-2xl tracking-[0.04em] text-white sm:text-3xl">
+                            <span className="font-crt inline-block min-w-[5ch] pl-1 text-right uppercase tabular-nums text-2xl tracking-[0.04em] text-white sm:text-3xl">
                               {bootStatus.progressValue ?? `${progressPercent}%`}
                             </span>
                           </div>

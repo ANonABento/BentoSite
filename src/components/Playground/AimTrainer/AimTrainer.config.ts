@@ -1,5 +1,5 @@
 /**
- * 3D Aim Trainer - Configuration
+ * Aim Trainer - Configuration
  */
 
 import { GameMode, ModeInfo } from './AimTrainer.types';

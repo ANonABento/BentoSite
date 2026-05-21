@@ -20,7 +20,11 @@
     "docs": "https://devpost.com/software/steven-lvnh4w"
   },
   "media": {
-    "featuredImage": "/projects/ar-gesture-robot/hero.jpg"
+    "featuredImage": "/projects/ar-gesture-robot/hero.jpg",
+    "images": [
+      "/projects/ar-gesture-robot/hero.jpg",
+      "/projects/ar-gesture-robot/overview.png"
+    ]
   },
   "featured": true,
   "dateCompleted": "2025-09"

@@ -14,7 +14,7 @@ import type {
   WheelEventHandler,
 } from 'react';
 
-export type GridTheme = 'playful' | 'premium';
+export type GridTheme = 'playful' | 'premium' | 'gallery' | 'arcade';
 
 export interface ThemeConfig {
   name: GridTheme;

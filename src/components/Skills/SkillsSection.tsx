@@ -167,10 +167,10 @@ export function SkillsSection({
     : null;
   const isProjectMode = projectGroups !== null && projectGroups.length > 0;
 
-  const headerTitle = isProjectMode ? 'project tools' : 'system info';
+  const headerTitle = isProjectMode ? 'project tools' : 'skills';
   const headerSubtitle = isProjectMode
     ? `> ${selectedProject!.id}`
-    : '> query system';
+    : '> click to learn more';
 
   return (
     <div>

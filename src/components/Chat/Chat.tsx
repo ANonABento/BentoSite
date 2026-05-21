@@ -11,8 +11,6 @@ import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 
 export default function Chatbot({
   onReady,
-  onViewResume,
-  onSeeProjects,
   onUserMessage,
 }: ChatbotProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -160,8 +158,6 @@ export default function Chatbot({
       <CommandHints
         disabled={isLoading}
         onSelectQuestion={handleSuggestedQuestion}
-        onViewResume={onViewResume}
-        onSeeProjects={onSeeProjects}
         showSuggestions={messages.length <= 2}
       />
 

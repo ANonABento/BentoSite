@@ -6,6 +6,7 @@ import { ViewfinderHeader } from './ViewfinderHeader';
 import { ViewerSkeleton } from './ViewerSkeleton';
 import type { ViewfinderProps, MediaTab } from './Viewfinder.types';
 import { getMapLocations, getAllMapLocations } from '@/lib/map-data';
+import type { Project } from '@/lib/projects-data';
 
 // Dynamic imports for code splitting - only load viewers when needed
 // Each viewer shows a skeleton while its chunk is being loaded
@@ -44,6 +45,52 @@ const MapViewer = dynamic(
   { ssr: false, loading: () => <ViewerSkeleton /> }
 );
 
+export function getViewfinderImages(project: Project | null): string[] {
+  if (!project?.media) return [];
+
+  return Array.from(
+    new Set([
+      project.media.featuredImage,
+      ...(project.media.images ?? []),
+    ].filter((image): image is string => Boolean(image)))
+  );
+}
+
+export function getAvailableViewfinderTabs(project: Project | null): MediaTab[] {
+  const tabs: MediaTab[] = [];
+
+  // Always have 3D as an option for the default viewer. Project-specific 3D
+  // appears only when a model path exists.
+  if (!project || project.links.modelPath) {
+    tabs.push('3d');
+  }
+
+  if (getViewfinderImages(project).length > 0) {
+    tabs.push('images');
+  }
+
+  if (project?.media?.pdf) {
+    tabs.push('pdf');
+  }
+
+  if (project?.media?.website) {
+    tabs.push('website');
+  }
+
+  if (project?.media?.video) {
+    tabs.push('video');
+  }
+
+  if (project?.media?.game) {
+    tabs.push('game');
+  }
+
+  // Map is always available and falls back to all portfolio locations.
+  tabs.push('map');
+
+  return tabs.length ? tabs : ['3d'];
+}
+
 export function Viewfinder({
   project,
   minimal = false,
@@ -56,39 +103,9 @@ export function Viewfinder({
 }: ViewfinderProps) {
   // Determine available tabs based on project media
   const availableTabs = useMemo<MediaTab[]>(() => {
-    const tabs: MediaTab[] = [];
-
-    // Always have 3D as an option (default model if no project)
-    if (!project || project.links.modelPath) {
-      tabs.push('3d');
-    }
-
-    if (project?.media?.images?.length) {
-      tabs.push('images');
-    }
-
-    if (project?.media?.pdf) {
-      tabs.push('pdf');
-    }
-
-    if (project?.media?.website) {
-      tabs.push('website');
-    }
-
-    if (project?.media?.video) {
-      tabs.push('video');
-    }
-
-    if (project?.media?.game) {
-      tabs.push('game');
-    }
-
-    // Map is always available (shows all experience locations by default)
-    tabs.push('map');
-
-    // Default to 3D if no tabs available
-    return tabs.length ? tabs : ['3d'];
+    return getAvailableViewfinderTabs(project);
   }, [project]);
+  const imageSources = useMemo(() => getViewfinderImages(project), [project]);
 
   const [internalActiveTab, setInternalActiveTab] = useState<MediaTab>(availableTabs[0]);
   const isControlled = activeTab !== undefined && onTabChange !== undefined;
@@ -124,7 +141,7 @@ export function Viewfinder({
       case '3d':
         return <Model3DViewer modelPath={project?.links.modelPath} minimal={minimal} suspended={suspended} />;
       case 'images':
-        return <ImageViewer images={project?.media?.images || []} />;
+        return <ImageViewer images={imageSources} />;
       case 'pdf':
         return <PDFViewer src={project?.media?.pdf || ''} />;
       case 'website':

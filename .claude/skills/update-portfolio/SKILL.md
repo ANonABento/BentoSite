@@ -12,11 +12,30 @@ This skill is a **router**. The real instructions live in `flows/<type>.md`,
 and the field references live in `schemas/<type>.fields.md`. The flow files
 are deterministic numbered checklists; follow them in order.
 
-## Step 0 — Always read AGENTS.md
+## Fast path for Choomfie / Discord
 
-Before anything else, `Read` `src/content/AGENTS.md`. It's the
-project-internal playbook for content files: file shapes, validation rules,
-commit style. The skill is the workflow; AGENTS.md is the canonical reference.
+When running from Choomfie, prefer the repo scripts over hand-writing files.
+They are deterministic, strip risky metadata, validate input, and return
+machine-readable output with `--json`.
+
+| Operation | Preferred command |
+|---|---|
+| Add photo | `npm run add:photo -- --src <path> --title <title> --location <place> --year <yyyy> --alt <alt> --sync --json` |
+| Add talking point | `npm run add:talking-point -- --title <title> --content <content> --keywords <csv> --sync --json` |
+| Add project from known facts/assets | `npm run add:project -- --name <name> --short-description <text> --category <category> --status <status> --technologies <csv> --date <yyyy-mm> --sync --json` |
+| Attach 3D model to existing project | `npm run add:model -- --project <id> --src <local.glb|local.stl> --sync --json` |
+
+Use the interactive flow files when facts are missing, a GitHub/Devpost page
+needs interpretation, or the user wants to review wording before writing.
+After any script write, still run the validation gate and commit only the
+named files created/changed by the operation.
+
+## Step 0 — Read the content reference when needed
+
+For ordinary scripted adds, the scripts encode the content shape. Read
+`src/content/AGENTS.md` only when you need the broader content playbook,
+are editing manually, or are unsure about file conventions. The skill is
+the workflow; AGENTS.md is the reference.
 
 ## Step 1 — Identify the type
 
@@ -100,10 +119,10 @@ When in doubt, ask before writing.
 
 ### Dirty working tree
 
-Before starting any flow, `git status`. If there are uncommitted changes
-unrelated to the current task, stop and ask the user how to proceed —
-don't try to stash or force, and don't commit someone else's work along
-with the change.
+Before starting any flow, `git status`. If there are unrelated uncommitted
+changes, do not stash, revert, or commit them. Continue only when your target
+files are disjoint from the existing changes; otherwise ask the user how to
+proceed. Always stage explicit file paths from this operation only.
 
 ### Reporting back
 
@@ -111,6 +130,7 @@ Every flow ends with a one-message report to the user (or upstream caller,
 e.g. choomfie / Discord):
 
 - ✅ One line: what was added or changed
+- The files changed
 - Commit SHA (short)
 - The relevant live URL — usually `https://kevinjiang.dev`; verify against
   `src/lib/site-config.ts`'s `siteConfig.url` if unsure

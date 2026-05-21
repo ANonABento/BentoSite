@@ -119,6 +119,8 @@ const orbitron = Orbitron({
   display: 'swap',
 });
 
+const enableVercelTelemetry = process.env.VERCEL === '1';
+
 export const metadata: Metadata = {
   // Basic metadata
   title: {
@@ -212,8 +214,12 @@ export default function RootLayout({
             <PageTransition>{children}</PageTransition>
           </ToastProvider>
         </ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
+        {enableVercelTelemetry ? (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        ) : null}
       </body>
     </html>
   );

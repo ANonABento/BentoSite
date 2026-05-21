@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildRetrievalQuery,
   buildAssistantInstructions,
   checkChatGuardrails,
   createDemoResponse,
@@ -8,6 +9,7 @@ import {
   getStarterResponse,
   retrievePortfolioContext,
 } from '@/lib/chat-knowledge';
+import { SUGGESTED_QUESTION_POOL } from '@/lib/portfolio-context';
 import { PROJECTS } from '@/lib/projects-data';
 
 describe('chat knowledge grounding', () => {
@@ -31,6 +33,29 @@ describe('chat knowledge grounding', () => {
 
     expect(result.allowed).toBe(false);
     expect(result.response).toContain("Kevin's public portfolio");
+  });
+
+  it('allows portfolio follow-ups by retrieving against recent conversation context', () => {
+    const messages = [
+      { role: 'user' as const, content: 'Tell me about Robotic Arm Puppeteer' },
+      {
+        role: 'assistant' as const,
+        content: 'Robotic Arm Puppeteer uses Python, MediaPipe, Arduino, and servo control.',
+      },
+      { role: 'user' as const, content: 'What tradeoffs did you make there?' },
+    ];
+    const query = buildRetrievalQuery(messages);
+    const result = checkChatGuardrails('What tradeoffs did you make there?', query);
+    const sections = retrievePortfolioContext(query);
+
+    expect(result.allowed).toBe(true);
+    expect(sections.some((section) => section.title.includes('Robotic Arm Puppeteer'))).toBe(true);
+  });
+
+  it('still blocks off-topic tasks even when they mention portfolio words', () => {
+    const result = checkChatGuardrails('Write me a recipe for a robot-themed cake');
+
+    expect(result.allowed).toBe(false);
   });
 
   it('formats retrieved context for model instructions', () => {
@@ -99,6 +124,12 @@ describe('chat knowledge grounding', () => {
       for (const project of PROJECTS) {
         const trigger = `Tell me about ${project.name}`;
         expect(getStarterResponse(trigger), `no starter for "${trigger}"`).not.toBeNull();
+      }
+    });
+
+    it('has a deterministic response for every suggested-question chip', () => {
+      for (const question of SUGGESTED_QUESTION_POOL) {
+        expect(getStarterResponse(question), `no starter for "${question}"`).not.toBeNull();
       }
     });
   });

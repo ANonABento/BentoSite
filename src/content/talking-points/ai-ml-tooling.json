@@ -1,0 +1,17 @@
+{
+  "id": "ai-ml-tooling",
+  "title": "AI and ML Tooling",
+  "content": "Kevin's AI and ML work is tied to practical interfaces and developer tools rather than isolated demos. The portfolio includes a Gemini-backed portfolio assistant, an expressive robot head using Whisper, llama.cpp, Zonos, Silero VAD, PyTorch, CUDA, ROS2, and OpenCV, plus AI coding-agent tools such as bento-ya, choomfie, clanker-spanker, and component-cop. His current role at Hamming AI is Software Engineer at a YC S24 startup building AI-powered developer tools.",
+  "keywords": [
+    "AI",
+    "ML",
+    "LLM",
+    "Gemini",
+    "Whisper",
+    "PyTorch",
+    "CUDA",
+    "developer tools",
+    "agents",
+    "Hamming AI"
+  ]
+}

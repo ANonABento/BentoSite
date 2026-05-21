@@ -67,7 +67,18 @@ function formatBytes(bytes) {
 }
 
 async function walk(directory) {
-  const entries = await fs.readdir(directory, { withFileTypes: true });
+  let entries;
+
+  try {
+    entries = await fs.readdir(directory, { withFileTypes: true });
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
+      return [];
+    }
+
+    throw error;
+  }
+
   const files = [];
 
   for (const entry of entries) {
@@ -86,15 +97,27 @@ async function walk(directory) {
   return files;
 }
 
+function getStaticPrefix(pattern) {
+  const normalized = pattern.replace(/\\/g, '/');
+  const wildcardIndex = normalized.search(/[*?[\]{}()]/);
+  const prefix = wildcardIndex === -1 ? normalized : normalized.slice(0, wildcardIndex);
+  const directoryPrefix = prefix.endsWith('/') ? prefix.slice(0, -1) : path.posix.dirname(prefix);
+
+  if (!directoryPrefix || directoryPrefix === '.') return '.';
+
+  return directoryPrefix;
+}
+
 async function main() {
   const config = JSON.parse(await fs.readFile(CONFIG_PATH, 'utf8'));
-  const files = await walk(rootDir);
-  const relativeFiles = files.map((file) => path.relative(rootDir, file).replace(/\\/g, '/'));
 
   const results = [];
 
   for (const entry of config) {
     const matcher = globToRegExp(entry.path);
+    const searchRoot = path.resolve(rootDir, getStaticPrefix(entry.path));
+    const files = await walk(searchRoot);
+    const relativeFiles = files.map((file) => path.relative(rootDir, file).replace(/\\/g, '/'));
     const matchedFiles = relativeFiles.filter((file) => matcher.test(file));
 
     if (matchedFiles.length === 0) {
@@ -109,14 +132,19 @@ async function main() {
     }
 
     const limitBytes = parseLimit(entry.limit);
+    const warnBytes = entry.warn ? parseLimit(entry.warn) : null;
+    const withinLimit = totalBytes <= limitBytes;
+    const withinWarning = warnBytes === null || totalBytes <= warnBytes;
 
     results.push({
       name: entry.name,
       path: entry.path,
       limit: entry.limit,
+      warn: entry.warn ?? null,
       matchedFiles: matchedFiles.length,
       sizeBytes: totalBytes,
-      withinLimit: totalBytes <= limitBytes,
+      withinLimit,
+      withinWarning,
       size: formatBytes(totalBytes),
     });
   }
@@ -125,9 +153,10 @@ async function main() {
     process.stdout.write(`${JSON.stringify(results, null, 2)}\n`);
   } else {
     for (const result of results) {
-      const status = result.withinLimit ? 'PASS' : 'FAIL';
+      const status = result.withinLimit ? (result.withinWarning ? 'PASS' : 'WARN') : 'FAIL';
+      const warnText = result.warn ? `, warn ${result.warn}` : '';
       process.stdout.write(
-        `${status} ${result.name}: ${result.size} across ${result.matchedFiles} file(s) (limit ${result.limit})\n`
+        `${status} ${result.name}: ${result.size} across ${result.matchedFiles} file(s) (limit ${result.limit}${warnText})\n`
       );
     }
   }

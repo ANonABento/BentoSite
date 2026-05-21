@@ -17,8 +17,6 @@ interface TerminalPanelProps {
   Chatbot: React.ComponentType<ChatbotProps>;
   onChatReady: (fns: ChatFunctions) => void;
   onClearChat: () => void;
-  onViewResume: () => void;
-  onSeeProjects: () => void;
   onUserMessage?: () => void;
 }
 
@@ -26,19 +24,18 @@ export function TerminalPanel({
   Chatbot,
   onChatReady,
   onClearChat,
-  onViewResume,
-  onSeeProjects,
   onUserMessage,
 }: TerminalPanelProps) {
   return (
     <motion.div
       className="glass-panel dashboard-panel overflow-hidden flex-1 flex flex-col min-h-0 bento-corner-all md:rounded-none md:bento-corner-br"
+      style={{ borderColor: 'var(--purple-muted)', ['--panel-accent' as string]: 'var(--purple)' }}
       variants={dashboardBottomIn}
     >
       <SectionHeader
         title="terminal"
         icon={TerminalIcon}
-        iconColor="orange"
+        iconColor="violet"
         subtitle="anon@bentOS"
         mono
         action={
@@ -55,8 +52,6 @@ export function TerminalPanel({
         <ErrorBoundary>
           <Chatbot
             onReady={onChatReady}
-            onViewResume={onViewResume}
-            onSeeProjects={onSeeProjects}
             onUserMessage={onUserMessage}
           />
         </ErrorBoundary>

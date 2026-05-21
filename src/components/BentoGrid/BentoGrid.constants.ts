@@ -221,9 +221,54 @@ export const THEME_PREMIUM: ThemeConfig = {
   },
 };
 
+export const THEME_GALLERY: ThemeConfig = {
+  name: 'gallery',
+  background: 'linear-gradient(180deg, #050505 0%, #11100e 58%, #050505 100%)',
+  card: {
+    background: 'rgba(255, 255, 255, 0.035)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: 6,
+    shadow: '0 6px 28px rgba(0, 0, 0, 0.45)',
+    hoverShadow: '0 12px 42px rgba(0, 0, 0, 0.62), 0 0 0 1px rgba(224, 123, 60, 0.35)',
+    rotationRange: 0,
+  },
+  accent: {
+    primary: 'var(--orange)',
+    secondary: 'var(--purple)',
+  },
+  searchCard: {
+    background: 'rgba(8, 8, 8, 0.88)',
+    border: '1px solid rgba(255, 255, 255, 0.12)',
+  },
+};
+
+export const THEME_ARCADE: ThemeConfig = {
+  name: 'arcade',
+  background:
+    'radial-gradient(circle at 50% 42%, rgba(167, 139, 250, 0.14), transparent 34%), linear-gradient(180deg, var(--pg-bg-deep) 0%, #08080f 56%, #040407 100%)',
+  card: {
+    background: 'var(--pg-bg-surface)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: 8,
+    shadow: '0 10px 34px rgba(0, 0, 0, 0.46)',
+    hoverShadow: '0 18px 48px rgba(0, 0, 0, 0.58), 0 0 0 1px rgba(167, 139, 250, 0.28)',
+    rotationRange: 0,
+  },
+  accent: {
+    primary: 'var(--orange)',
+    secondary: 'var(--purple)',
+  },
+  searchCard: {
+    background: 'rgba(12, 12, 20, 0.92)',
+    border: '1px solid rgba(255, 255, 255, 0.12)',
+  },
+};
+
 export const THEMES = {
   playful: THEME_PLAYFUL,
   premium: THEME_PREMIUM,
+  gallery: THEME_GALLERY,
+  arcade: THEME_ARCADE,
 } satisfies Record<GridTheme, ThemeConfig>;
 
 export const SEARCH_CARD_ID = '__search__' as const;

@@ -25,7 +25,11 @@
     "docs": "https://devpost.com/software/maidreal-head-v1"
   },
   "media": {
-    "featuredImage": "/projects/expressive-ai-robot-head/hero.jpg"
+    "featuredImage": "/projects/expressive-ai-robot-head/hero.jpg",
+    "images": [
+      "/projects/expressive-ai-robot-head/hero.jpg",
+      "/projects/expressive-ai-robot-head/overview.png"
+    ]
   },
   "featured": true,
   "dateCompleted": "2025-09"

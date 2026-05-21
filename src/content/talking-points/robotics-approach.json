@@ -1,0 +1,15 @@
+{
+  "id": "robotics-approach",
+  "title": "Robotics Approach",
+  "content": "Kevin's robotics work spans mechanical design, electronics, embedded control, ROS2, computer vision, and AI systems. His portfolio includes gesture-controlled robots, expressive robot heads, robotic arm puppeteering tools, haptic interfaces, and sensor-driven prototypes. A recurring pattern is building the full path from physical hardware to software control: CAD and 3D printing, PCB or microcontroller bring-up, perception with OpenCV or AprilTags, and higher-level control or AI behavior.",
+  "keywords": [
+    "robotics",
+    "robot",
+    "hardware",
+    "ROS2",
+    "computer vision",
+    "CAD",
+    "embedded",
+    "physical AI"
+  ]
+}

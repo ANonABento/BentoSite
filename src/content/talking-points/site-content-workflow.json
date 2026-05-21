@@ -1,0 +1,15 @@
+{
+  "id": "site-content-workflow",
+  "title": "Portfolio Content Workflow",
+  "content": "bentOS stores portfolio content as file-based JSON. Projects live in src/content/projects, talking points live in src/content/talking-points, and photography uses image files plus sidecar JSON under public/photos. The generated bundles are rebuilt by npm run sync. Choomfie-friendly scripts now provide deterministic commands for adding photos, projects, and chat talking points without hand-editing generated files.",
+  "keywords": [
+    "portfolio workflow",
+    "content",
+    "JSON",
+    "Choomfie",
+    "photos",
+    "projects",
+    "talking points",
+    "sync"
+  ]
+}

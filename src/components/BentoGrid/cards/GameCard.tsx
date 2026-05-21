@@ -1,15 +1,13 @@
 'use client';
 
 /**
- * GameCard — media-first synthwave card for /playground.
+ * GameCard — arcade cabinet card for /playground.
  *
- * The card's "media" is a big neon icon centered against the dark backdrop.
- * Pixel corners, scanlines, and the bottom accent strip stay always-on (theme
- * identity). On hover/focus the bottom gradient overlay reveals title,
- * description, and best score. Accent color rotates per index.
+ * Uses the shared media-card shell, but keeps game metadata readable and avoids
+ * the old oversaturated synthwave treatment.
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Zap,
@@ -46,43 +44,39 @@ const GAME_ICONS: Record<string, React.ReactNode> = {
 };
 
 // =============================================================================
-// SYNTHWAVE COLORS
+// ARCADE ACCENTS
 // =============================================================================
 
-type AccentColor = 'pink' | 'purple' | 'cyan';
+type AccentColor = 'orange' | 'purple' | 'neutral';
 
 const ACCENT_COLORS: Record<AccentColor, {
-  iconText: string;
-  scoreText: string;
-  borderColor: string;
-  glowColor: string;
-  neonGlow: string;
+  className: string;
+  color: string;
+  muted: string;
+  shadow: string;
 }> = {
-  pink: {
-    iconText: 'text-[#ff007f]',
-    scoreText: 'text-[#ff007f]',
-    borderColor: '#ff007f',
-    glowColor: 'rgba(255, 0, 127, 0.35)',
-    neonGlow: '0 0 15px rgba(255, 0, 127, 0.5), 0 0 30px rgba(255, 0, 127, 0.25)',
+  orange: {
+    className: 'text-[var(--orange)]',
+    color: 'var(--orange)',
+    muted: 'var(--orange-muted)',
+    shadow: '0 18px 44px rgba(224, 123, 60, 0.18)',
   },
   purple: {
-    iconText: 'text-[#bf00ff]',
-    scoreText: 'text-[#bf00ff]',
-    borderColor: '#bf00ff',
-    glowColor: 'rgba(191, 0, 255, 0.35)',
-    neonGlow: '0 0 15px rgba(191, 0, 255, 0.5), 0 0 30px rgba(191, 0, 255, 0.25)',
+    className: 'text-[var(--purple)]',
+    color: 'var(--purple)',
+    muted: 'var(--purple-muted)',
+    shadow: '0 18px 44px rgba(167, 139, 250, 0.16)',
   },
-  cyan: {
-    iconText: 'text-[#00ffff]',
-    scoreText: 'text-[#00ffff]',
-    borderColor: '#00ffff',
-    glowColor: 'rgba(0, 255, 255, 0.35)',
-    neonGlow: '0 0 15px rgba(0, 255, 255, 0.5), 0 0 30px rgba(0, 255, 255, 0.25)',
+  neutral: {
+    className: 'text-[var(--text-secondary)]',
+    color: 'var(--text-secondary)',
+    muted: 'rgba(255, 255, 255, 0.08)',
+    shadow: '0 18px 44px rgba(0, 0, 0, 0.38)',
   },
 };
 
 function getAccentColor(index: number): AccentColor {
-  const colors: AccentColor[] = ['pink', 'purple', 'cyan'];
+  const colors: AccentColor[] = ['orange', 'purple', 'neutral'];
   return colors[((index % colors.length) + colors.length) % colors.length];
 }
 
@@ -126,42 +120,44 @@ export function GameCard({
   });
   const isHighlighted = isHovered || isFocused;
 
-  const accentColor = getAccentColor(index);
-  const colors = ACCENT_COLORS[accentColor];
+  const colors = ACCENT_COLORS[getAccentColor(index)];
   const icon = GAME_ICONS[card.id] || GAME_ICONS[card.icon || 'default'] || GAME_ICONS.default;
 
   const score = bestScore ?? (card.bestScore != null ? String(card.bestScore) : null);
+  const playLabel = useMemo(() => {
+    if (score != null) return 'Resume';
+    if (card.id === 'rhythm' || card.id === 'soundboard') return 'Open';
+    return 'Play';
+  }, [card.id, score]);
 
   const meta = (
     <>
       {card.description && (
-        <p className="line-clamp-2 text-xs text-white/75">{card.description}</p>
+        <p className="line-clamp-2 text-xs leading-snug text-white/75">{card.description}</p>
       )}
       {score != null ? (
-        <p className="font-mono text-[10px] uppercase tracking-wider flex gap-1.5 items-baseline">
+        <p className="font-mono text-[10px] uppercase tracking-wider flex gap-1.5 items-baseline tabular-nums">
           <span className="text-white/50">Best</span>
-          <span className={`font-semibold ${colors.scoreText}`}>{score}</span>
+          <span className={`font-semibold ${colors.className}`}>{score}</span>
         </p>
       ) : (
         <p className="font-mono text-[10px] uppercase tracking-wider text-white/40">
-          Click to play
+          {playLabel}
         </p>
       )}
     </>
   );
 
-  // Synthwave-themed shell border + neon glow on hover/focus
   const shellStyle = {
-    background: '#1a1a1a',
-    border: `2px solid ${isHighlighted ? colors.borderColor : 'rgba(255, 255, 255, 0.08)'}`,
+    background:
+      'linear-gradient(145deg, rgba(255,255,255,0.07), rgba(20,20,32,0.92) 38%, rgba(5,6,18,0.98))',
+    border: `1px solid ${isHighlighted ? colors.color : 'rgba(255, 255, 255, 0.1)'}`,
     boxShadow: isFocused
-      ? `0 0 0 3px ${colors.borderColor}, ${colors.neonGlow}`
+      ? `0 0 0 3px ${colors.color}, ${colors.shadow}`
       : isHovered
-        ? colors.neonGlow
+        ? colors.shadow
         : theme.card.shadow,
   };
-
-  const pixelCornerOpacity = isHighlighted ? 0.85 : 0.4;
 
   return (
     <MediaCard
@@ -176,68 +172,67 @@ export function GameCard({
       metaLines={meta}
       shellStyle={shellStyle}
       onHoverChange={setIsHovered}
+      topLeft={
+        <span
+          className="rounded-[4px] border px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-white/75 backdrop-blur-md"
+          style={{ borderColor: colors.color, background: colors.muted }}
+        >
+          {card.category ?? 'Game'}
+        </span>
+      }
+      topRight={
+        <span
+          className="rounded-[4px] px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-black"
+          style={{ background: colors.color }}
+        >
+          {playLabel}
+        </span>
+      }
       shellExtras={
         <>
-          {/* Pixel corner accents */}
           <div
-            className="pointer-events-none absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 transition-opacity duration-200 z-[2]"
-            style={{ borderColor: colors.borderColor, opacity: pixelCornerOpacity }}
-          />
-          <div
-            className="pointer-events-none absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 transition-opacity duration-200 z-[2]"
-            style={{ borderColor: colors.borderColor, opacity: pixelCornerOpacity }}
-          />
-          <div
-            className="pointer-events-none absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 transition-opacity duration-200 z-[2]"
-            style={{ borderColor: colors.borderColor, opacity: pixelCornerOpacity }}
-          />
-          <div
-            className="pointer-events-none absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 transition-opacity duration-200 z-[2]"
-            style={{ borderColor: colors.borderColor, opacity: pixelCornerOpacity }}
-          />
-
-          {/* Scanline overlay */}
-          <div
-            className="pointer-events-none absolute inset-0 opacity-[0.04] z-[1]"
+            className="pointer-events-none absolute inset-0 opacity-[0.22] z-[1]"
             style={{
               backgroundImage:
-                'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.5) 2px, rgba(0,0,0,0.5) 4px)',
+                'linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)',
+              backgroundSize: '18px 18px',
             }}
           />
-
-          {/* Diagonal neon wash on hover */}
           <div
-            className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-[1]"
+            className="pointer-events-none absolute inset-0 opacity-70 transition-opacity duration-500 group-hover:opacity-100 z-[1]"
             style={{
-              background: `linear-gradient(135deg, ${colors.glowColor} 0%, transparent 55%)`,
+              background: `radial-gradient(circle at 50% 34%, ${colors.muted} 0%, transparent 42%)`,
             }}
           />
-
-          {/* Bottom accent line slides in on hover */}
           <div
-            className="pointer-events-none absolute bottom-0 left-0 right-0 h-[2px] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left z-[3]"
+            className="pointer-events-none absolute bottom-0 left-0 right-0 h-[3px] origin-left scale-x-75 transition-transform duration-300 group-hover:scale-x-100 z-[3]"
             style={{
-              background: `linear-gradient(to right, ${colors.borderColor}, transparent)`,
+              background: `linear-gradient(to right, ${colors.color}, transparent)`,
             }}
           />
         </>
       }
     >
-      {/* Centered neon icon */}
       <div className="absolute inset-0 flex items-center justify-center">
         <motion.div
-          className={`flex items-center justify-center ${colors.iconText}`}
+          className={`flex h-20 w-20 items-center justify-center rounded-[6px] border bg-black/20 backdrop-blur-sm ${colors.className}`}
           style={{
-            filter: `drop-shadow(0 0 10px ${colors.glowColor})`,
+            borderColor: colors.muted,
+            boxShadow: `inset 0 1px 0 rgba(255,255,255,0.08), ${isHovered ? colors.shadow : 'none'}`,
           }}
           animate={{
-            scale: isHovered ? 1.08 : 1,
-            rotate: isHovered ? 4 : 0,
+            scale: isHovered ? 1.04 : 1,
+            y: isHovered ? -2 : 0,
           }}
           transition={{ type: 'spring', stiffness: 300, damping: 22 }}
         >
           {icon}
         </motion.div>
+      </div>
+      <div className="pointer-events-none absolute inset-x-3 bottom-3 z-[4] hidden md:block">
+        <div className="max-w-full truncate font-mono text-[11px] uppercase tracking-wider text-white/70">
+          {card.title.toUpperCase()}
+        </div>
       </div>
     </MediaCard>
   );

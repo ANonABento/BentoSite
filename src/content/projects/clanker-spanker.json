@@ -15,6 +15,9 @@
   "links": {
     "github": "https://github.com/ANonABento/clanker-spanker"
   },
+  "media": {
+    "featuredImage": "/projects/clanker-spanker/hero.png"
+  },
   "featured": false,
   "dateCompleted": "2026-03"
 }

@@ -1,30 +1,41 @@
 'use client';
 
-import { memo } from 'react';
-import { SUGGESTED_QUESTIONS } from '@/lib/portfolio-context';
+import { memo, useMemo } from 'react';
+import { SUGGESTED_QUESTION_POOL } from '@/lib/portfolio-context';
 
 interface CommandHintsProps {
   disabled: boolean;
   onSelectQuestion: (question: string) => void;
-  onViewResume?: () => void;
-  onSeeProjects?: () => void;
   showSuggestions: boolean;
 }
+
+const VISIBLE_COUNT = 3;
 
 const chipClass =
   'group/chip inline-flex items-center gap-1 text-xs font-mono text-[var(--text-secondary)] ' +
   'hover:text-[var(--text-primary)] transition-colors duration-150 disabled:opacity-40 ' +
   'disabled:cursor-not-allowed';
 
+function pickRandom(pool: readonly string[], count: number): string[] {
+  const copy = [...pool];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.slice(0, count);
+}
+
 export const CommandHints = memo(function CommandHints({
   disabled,
   onSelectQuestion,
-  onViewResume,
-  onSeeProjects,
   showSuggestions,
 }: CommandHintsProps) {
-  const hasActions = Boolean(onViewResume || onSeeProjects);
-  if (!showSuggestions && !hasActions) {
+  const questions = useMemo(
+    () => pickRandom(SUGGESTED_QUESTION_POOL, VISIBLE_COUNT),
+    [],
+  );
+
+  if (!showSuggestions) {
     return null;
   }
 
@@ -35,67 +46,23 @@ export const CommandHints = memo(function CommandHints({
           &gt; try:
         </span>
 
-        {onViewResume && (
+        {questions.map((question) => (
           <button
+            key={question}
             type="button"
-            onClick={onViewResume}
+            onClick={() => onSelectQuestion(question)}
             disabled={disabled}
-            aria-label="Download resume from chat"
+            aria-label={`Ask suggested question: ${question}`}
             className={chipClass}
           >
-            <span className="text-[var(--text-muted)] group-hover/chip:text-[var(--orange)] transition-colors">
+            <span className="text-[var(--text-muted)] group-hover/chip:text-[var(--purple)] transition-colors">
               $
             </span>
-            <span className="group-hover/chip:underline underline-offset-2 decoration-[var(--orange)] text-[var(--orange)]">
-              resume
+            <span className="group-hover/chip:underline underline-offset-2 decoration-[var(--purple)]">
+              {question}
             </span>
           </button>
-        )}
-
-        {onSeeProjects && (
-          <button
-            type="button"
-            onClick={onSeeProjects}
-            disabled={disabled}
-            aria-label="View projects"
-            className={chipClass}
-          >
-            <span className="text-[var(--text-muted)] group-hover/chip:text-[var(--orange)] transition-colors">
-              $
-            </span>
-            <span className="group-hover/chip:underline underline-offset-2 decoration-[var(--orange)] text-[var(--orange)]">
-              projects
-            </span>
-          </button>
-        )}
-
-        {showSuggestions && hasActions && (
-          <span
-            aria-hidden="true"
-            className="text-[var(--text-muted)]/40 font-mono text-xs select-none"
-          >
-            |
-          </span>
-        )}
-
-        {showSuggestions &&
-          SUGGESTED_QUESTIONS.map((question) => (
-            <button
-              key={question}
-              type="button"
-              onClick={() => onSelectQuestion(question)}
-              disabled={disabled}
-              aria-label={`Ask suggested question: ${question}`}
-              className={chipClass}
-            >
-              <span className="text-[var(--text-muted)] group-hover/chip:text-[var(--purple)] transition-colors">
-                $
-              </span>
-              <span className="group-hover/chip:underline underline-offset-2 decoration-[var(--purple)]">
-                {question}
-              </span>
-            </button>
-          ))}
+        ))}
       </div>
     </div>
   );

@@ -12,6 +12,9 @@ import {
   type ThemeConfig,
 } from '@/components/BentoGrid';
 import { PhotoCard } from '@/components/BentoGrid/cards';
+import { useWindowSize } from '@/components/BentoGrid/core';
+import { duplicateCardsForFill, stripCloneSuffix } from '@/components/BentoGrid/duplicate-fill';
+import { MOBILE } from '@/components/BentoGrid/BentoGrid.constants';
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon } from '@/components/ui/Icons';
 import type { PhotoItem } from './PhotographyGallery.types';
 
@@ -53,6 +56,15 @@ function renderPhotoCard(
   );
 }
 
+function shuffleCards<T>(cards: T[]): T[] {
+  const result = [...cards];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+  }
+  return result;
+}
+
 interface PhotographyGridClientProps {
   photos: readonly PhotoItem[];
 }
@@ -61,15 +73,23 @@ export function PhotographyGridClient({ photos }: PhotographyGridClientProps) {
   const router = useRouter();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const activePhoto = activeIndex === null ? null : photos[activeIndex];
+  const windowSize = useWindowSize();
+  const isMobile = windowSize.width < MOBILE.BREAKPOINT;
+  const basePhotoCards = useMemo(() => photos.map(photoToCardData), [photos]);
+  const [shuffledPhotoCards, setShuffledPhotoCards] = useState<PhotoCardData[]>(basePhotoCards);
+
+  useEffect(() => {
+    setShuffledPhotoCards(shuffleCards(basePhotoCards));
+  }, [basePhotoCards]);
 
   const photoCards = useMemo(
-    () => photos.map(photoToCardData),
-    [photos],
+    () => isMobile ? shuffledPhotoCards : duplicateCardsForFill(shuffledPhotoCards, 36),
+    [isMobile, shuffledPhotoCards],
   );
 
   const handleCardSelect = useCallback(
     (card: CardData) => {
-      const index = photos.findIndex((p) => p.id === card.id);
+      const index = photos.findIndex((p) => p.id === stripCloneSuffix(card.id));
       if (index >= 0) setActiveIndex(index);
     },
     [photos],
@@ -113,7 +133,7 @@ export function PhotographyGridClient({ photos }: PhotographyGridClientProps) {
   return (
     <>
       <BentoGrid
-        theme="premium"
+        theme="gallery"
         cards={photoCards}
         onCardSelect={handleCardSelect}
         onBack={handleBack}

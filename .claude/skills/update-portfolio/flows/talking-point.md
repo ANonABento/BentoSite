@@ -25,6 +25,23 @@ The chat assistant only answers from grounded portfolio content. Talking
 points are the lever for teaching it things that aren't a project (FAQs,
 availability, philosophy, "how does this site work?", etc.).
 
+### Scripted fast path
+
+If you already have `title`, factual `content`, and `keywords`, use:
+
+```bash
+npm run add:talking-point -- \
+  --title "<title>" \
+  --content "<content>" \
+  --keywords "<comma,separated,phrases>" \
+  --sync \
+  --json
+```
+
+Use `--id <slug>` for a custom id, `--dry-run --json` for preview, and
+`--overwrite` only for intentional replacement. After it succeeds, run
+`npm test`, then commit the file paths reported by the script.
+
 ### A1. Required fields
 
 All four are required:

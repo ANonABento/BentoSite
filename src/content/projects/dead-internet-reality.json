@@ -17,6 +17,9 @@
   "links": {
     "github": "https://github.com/ANonABento/dead-internet-reality"
   },
+  "media": {
+    "featuredImage": "/projects/dead-internet-reality/hero.png"
+  },
   "featured": false,
   "dateCompleted": "2026"
 }

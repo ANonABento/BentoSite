@@ -13,9 +13,7 @@ interface ChatPanelProps {
   prefersReducedMotion: boolean;
   onChatReady: (fns: ChatFunctions) => void;
   onClearChat: () => void;
-  onSeeProjects: () => void;
   onToggle: () => void;
-  onViewResume: () => void;
 }
 
 export function ChatPanel({
@@ -25,9 +23,7 @@ export function ChatPanel({
   prefersReducedMotion,
   onChatReady,
   onClearChat,
-  onSeeProjects,
   onToggle,
-  onViewResume,
 }: ChatPanelProps) {
   return (
     <>
@@ -79,11 +75,7 @@ export function ChatPanel({
                 <ErrorBoundary
                   fallback={({ retry }) => <ScrollableErrorFallback onRetry={retry} />}
                 >
-                  <Chatbot
-                    onReady={onChatReady}
-                    onViewResume={onViewResume}
-                    onSeeProjects={onSeeProjects}
-                  />
+                  <Chatbot onReady={onChatReady} />
                 </ErrorBoundary>
               </div>
             </div>

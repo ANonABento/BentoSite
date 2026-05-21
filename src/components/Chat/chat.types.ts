@@ -14,7 +14,5 @@ export interface ChatFunctions {
 
 export interface ChatbotProps {
   onReady?: (fns: ChatFunctions) => void;
-  onViewResume?: () => void;
-  onSeeProjects?: () => void;
   onUserMessage?: () => void;
 }

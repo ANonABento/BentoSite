@@ -592,11 +592,11 @@
 
 @keyframes crt-scanline-sweep {
   0% {
-    top: 0%;
+    transform: translateY(0);
   }
 
   100% {
-    top: 100%;
+    transform: translateY(100vh);
   }
 }
 

@@ -17,7 +17,7 @@ describe('getCardSizeForIndex', () => {
   it('returns 2x2 for non-photo cards when sizeMode is 2x2', () => {
     expect(getCardSizeForIndex(0, plainCard, '2x2')).toBe('2x2');
     expect(getCardSizeForIndex(5, featuredCard, '2x2')).toBe('2x2');
-    expect(getCardSizeForIndex(3, photoCard, '2x2')).toBe('1x1');
+    expect(getCardSizeForIndex(3, photoCard, '2x2')).toBe('2x1');
   });
 
   it('detail mode returns 2x2 for featured, 2x1 for others', () => {
@@ -26,12 +26,16 @@ describe('getCardSizeForIndex', () => {
     expect(getCardSizeForIndex(5, plainCard, 'detail')).toBe('2x1');
   });
 
-  it('photo cards always return 1x1 in every mode', () => {
-    expect(getCardSizeForIndex(0, photoCard)).toBe('1x1');
-    expect(getCardSizeForIndex(2, photoCard)).toBe('1x1');
-    expect(getCardSizeForIndex(7, photoCard)).toBe('1x1');
-    expect(getCardSizeForIndex(0, photoCard, 'detail')).toBe('1x1');
-    expect(getCardSizeForIndex(0, photoCard, '2x2')).toBe('1x1');
+  it('photo cards use aspect-aware sizes in every mode', () => {
+    const portrait: PhotoCardData = { ...photoCard, id: 'portrait', aspectRatio: 0.7 };
+    const square: PhotoCardData = { ...photoCard, id: 'square', aspectRatio: 1 };
+
+    expect(getCardSizeForIndex(0, photoCard)).toBe('2x1');
+    expect(getCardSizeForIndex(0, portrait)).toBe('1x2');
+    expect(getCardSizeForIndex(0, square)).toBe('1x1');
+    expect(getCardSizeForIndex(11, square)).toBe('2x2');
+    expect(getCardSizeForIndex(0, photoCard, 'detail')).toBe('2x1');
+    expect(getCardSizeForIndex(0, photoCard, '2x2')).toBe('2x1');
   });
 
   it('featured project returns 2x2 in mixed mode', () => {

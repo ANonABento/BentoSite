@@ -92,7 +92,7 @@ export function PlaygroundGridClient() {
 
   return (
     <BentoGrid
-      theme="playful"
+      theme="arcade"
       cards={gameCards}
       onCardSelect={handleCardSelect}
       onBack={handleBack}

@@ -8,6 +8,45 @@ listed; do not improvise alternative branching.
 That card lists every field, required tier, and enum values. Keep it in mind
 through the whole flow.
 
+## Scripted fast path
+
+If the project facts and local assets are already known, use the deterministic
+writer instead of hand-editing JSON:
+
+```bash
+npm run add:project -- \
+  --name "<name>" \
+  --short-description "<one sentence>" \
+  --category "<category>" \
+  --status "<Completed|In Progress|Archived>" \
+  --technologies "<comma,separated,tech>" \
+  --date "<yyyy-mm-or-yyyy>" \
+  --description "<longer prose>" \
+  --github "<https-url>" \
+  --hero "<local-image-path>" \
+  --sync \
+  --json
+```
+
+Useful optional flags: `--id`, `--featured`, `--demo`, `--docs`,
+`--image <path[,path]>`, `--model <local glb/gltf/stl>`, `--video`,
+`--pdf`, `--website`, `--game-url`, `--game-type itch|unity-webgl`,
+`--dry-run`, `--overwrite`.
+
+For an existing project that only needs a 3D model attached, use:
+
+```bash
+npm run add:model -- --project "<id>" --src "<local-model.glb-or-stl>" --sync --json
+```
+
+Prefer `.glb` for Blender/Fusion exports; plain `.gltf` files often reference
+external `.bin` or texture files that the viewer will not copy automatically.
+
+The script copies local assets into the correct public folders, validates the
+project shape, and can regenerate `projects.generated.json`. After it
+succeeds, run `npm test`, then commit only the file paths reported by the
+script.
+
 ---
 
 ## Step 1 — Source router
@@ -186,10 +225,11 @@ dangling path will fail it.
      - Cancel — skip 3D
    ```
 2. Validate format: only `.glb`, `.gltf`, `.stl` work in `Model3DViewer`.
-3. Local file: `cp <path> public/models/<id>/main.<ext>`. URL: `curl -L`
-   into the same path.
-4. Set `links.modelPath = "/models/<id>/main.<ext>"` (public-rooted, no
-   `/public/` prefix).
+3. Local file: prefer
+   `npm run add:model -- --project "<id>" --src "<path>" --sync --json`.
+   URL: download to a temp local file first, then run the same command.
+4. The script sets `links.modelPath = "/models/<id>/main.<ext>"`
+   (public-rooted, no `/public/` prefix).
 5. **Don't ship URDF/MJCF mesh bundles as-is.** Many robotics repos split
    meshes per link (e.g. `link0.stl`, `link1.stl`, …). The viewer loads one
    file, so either compose a unified GLB locally (out of scope for this
