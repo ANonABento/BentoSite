@@ -3,6 +3,7 @@ import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import {
   buildAssistantInstructions,
+  buildRetrievalQuery,
   checkChatGuardrails,
   createDemoResponse,
   formatRetrievedContext,
@@ -90,6 +91,10 @@ function isValidMessage(msg: unknown): msg is ChatMessage {
     typeof msg.content === 'string' &&
     msg.content.length <= MAX_MESSAGE_LENGTH
   );
+}
+
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 function formatConversation(messages: ChatMessage[]): string {
@@ -371,15 +376,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { messages } = body as { messages: unknown[] };
-
     // Validate messages array exists
-    if (!messages || !Array.isArray(messages)) {
+    if (!isObjectRecord(body) || !Array.isArray(body.messages)) {
       return NextResponse.json(
         { error: 'Invalid request: messages array required' },
         { status: 400 }
       );
     }
+
+    const { messages } = body;
 
     // Validate message count
     if (messages.length > MAX_MESSAGES_COUNT) {
@@ -411,8 +416,9 @@ export async function POST(request: NextRequest) {
     }
 
     const latestUserMessage = getLatestUserMessage(validMessages);
+    const retrievalQuery = buildRetrievalQuery(validMessages);
     const provider = resolveChatProvider();
-    const guardrail = checkChatGuardrails(latestUserMessage);
+    const guardrail = checkChatGuardrails(latestUserMessage, retrievalQuery);
     if (!guardrail.allowed) {
       return NextResponse.json({
         message: guardrail.response,
@@ -433,7 +439,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const retrievedSections = retrievePortfolioContext(latestUserMessage);
+    const retrievedSections = retrievePortfolioContext(retrievalQuery);
     const groundedSections = retrievedSections.length > 0
       ? retrievedSections
       : getDefaultPortfolioContext();

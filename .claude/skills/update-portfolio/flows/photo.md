@@ -4,6 +4,31 @@ Adding a photo to `/photography`. Two artifacts per photo: the image file
 and a sidecar JSON. Both must land before sync. Re-read
 `schemas/photo.fields.md` before drafting the sidecar.
 
+## Scripted fast path
+
+If you already have all required facts (`src`, `title`, `location`, `year`,
+`alt`), use the non-interactive script instead of the manual steps:
+
+```bash
+npm run add:photo -- \
+  --src "<source_path>" \
+  --title "<title>" \
+  --location "<location>" \
+  --year "<yyyy>" \
+  --alt "<alt>" \
+  --sync \
+  --json
+```
+
+Useful flags:
+- `--slug <slug>` when Discord/user text implies a better filename.
+- `--dry-run --json` for preview.
+- `--overwrite` only when replacing the same photo intentionally.
+
+The script copies/re-encodes the image, strips EXIF/GPS metadata, writes the
+sidecar, and can rebuild `public/photos/manifest.json`. After it succeeds,
+run `npm test`, then commit only the file paths reported by the script.
+
 ---
 
 ## Step 1 — Locate the image
@@ -45,9 +70,9 @@ slug in the preview.
 
 ## Step 3 — Copy the image into place
 
-```bash
-cp <source_path> public/photos/<slug>.<ext>
-```
+Prefer `npm run add:photo` for this step. If doing the manual path, copy the
+image into `public/photos/<slug>.<ext>` and make sure EXIF/GPS metadata has
+been stripped before committing.
 
 Verify with `ls public/photos/<slug>.<ext>`. Use `Read` on the image file
 to confirm it's a valid image (your image-reading capability will surface

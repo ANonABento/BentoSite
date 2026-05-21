@@ -19,7 +19,11 @@
     "docs": "https://devpost.com/software/snapfire"
   },
   "media": {
-    "featuredImage": "/projects/snapfire/hero.jpg"
+    "featuredImage": "/projects/snapfire/hero.jpg",
+    "images": [
+      "/projects/snapfire/hero.jpg",
+      "/projects/snapfire/overview.png"
+    ]
   },
   "featured": true,
   "dateCompleted": "2023-11"

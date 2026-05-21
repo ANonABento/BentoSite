@@ -1,6 +1,23 @@
 {
-  "generatedAt": "2026-05-14T15:40:30.107Z",
+  "generatedAt": "2026-05-20T18:39:05.141Z",
   "points": [
+    {
+      "id": "ai-ml-tooling",
+      "title": "AI and ML Tooling",
+      "content": "Kevin's AI and ML work is tied to practical interfaces and developer tools rather than isolated demos. The portfolio includes a Gemini-backed portfolio assistant, an expressive robot head using Whisper, llama.cpp, Zonos, Silero VAD, PyTorch, CUDA, ROS2, and OpenCV, plus AI coding-agent tools such as bento-ya, choomfie, clanker-spanker, and component-cop. His current role at Hamming AI is Software Engineer at a YC S24 startup building AI-powered developer tools.",
+      "keywords": [
+        "AI",
+        "ML",
+        "LLM",
+        "Gemini",
+        "Whisper",
+        "PyTorch",
+        "CUDA",
+        "developer tools",
+        "agents",
+        "Hamming AI"
+      ]
+    },
     {
       "id": "availability",
       "title": "Availability & Roles",
@@ -50,6 +67,83 @@
         "vector",
         "guardrail",
         "knowledge base"
+      ]
+    },
+    {
+      "id": "education-and-location",
+      "title": "Education and Location",
+      "content": "Kevin is based in Waterloo, Ontario, Canada and studies Computer Engineering at the University of Waterloo. His portfolio also includes work and project locations across Waterloo, Toronto, Austin, and Tokyo through education, internships, hackathons, and robotics research. The scrollable portfolio view visualizes these life and work locations on a globe.",
+      "keywords": [
+        "education",
+        "Waterloo",
+        "University of Waterloo",
+        "Computer Engineering",
+        "location",
+        "Canada",
+        "Tokyo",
+        "Austin",
+        "Toronto"
+      ]
+    },
+    {
+      "id": "hackathon-projects",
+      "title": "Hackathon Projects",
+      "content": "Kevin has several hackathon projects in the portfolio. ShoulderCupid won MLH Best Use of Solana at MakeUofT 2026. SnapFire won the Wolfram Alpha Award and Staff Picks at AliceHacks in November 2023. Kenesis, the AR gesture-controlled robot, was built at Hack the North 2025. These projects usually combine fast hardware prototyping with software, computer vision, or AI features under short timelines.",
+      "keywords": [
+        "hackathon",
+        "MakeUofT",
+        "Hack the North",
+        "AliceHacks",
+        "awards",
+        "ShoulderCupid",
+        "SnapFire",
+        "Kenesis"
+      ]
+    },
+    {
+      "id": "hardware-prototyping",
+      "title": "Hardware Prototyping",
+      "content": "Kevin's hardware experience includes STM32 and ESP32 microcontrollers, PCB design in Altium, Arduino-based firmware, 3D printing, CAD in Fusion 360 and OnShape, soldering and assembly, servo and motor control, and sensor integration. His Midnight Sun experience focused on double-layer PCB routing, ERC/DRC-clean board work, and SMD soldering/testing. Several portfolio projects combine custom mechanical design with embedded electronics and real-time control.",
+      "keywords": [
+        "hardware",
+        "PCB",
+        "Altium",
+        "STM32",
+        "ESP32",
+        "soldering",
+        "CAD",
+        "Fusion 360",
+        "microcontrollers"
+      ]
+    },
+    {
+      "id": "robotics-approach",
+      "title": "Robotics Approach",
+      "content": "Kevin's robotics work spans mechanical design, electronics, embedded control, ROS2, computer vision, and AI systems. His portfolio includes gesture-controlled robots, expressive robot heads, robotic arm puppeteering tools, haptic interfaces, and sensor-driven prototypes. A recurring pattern is building the full path from physical hardware to software control: CAD and 3D printing, PCB or microcontroller bring-up, perception with OpenCV or AprilTags, and higher-level control or AI behavior.",
+      "keywords": [
+        "robotics",
+        "robot",
+        "hardware",
+        "ROS2",
+        "computer vision",
+        "CAD",
+        "embedded",
+        "physical AI"
+      ]
+    },
+    {
+      "id": "site-content-workflow",
+      "title": "Portfolio Content Workflow",
+      "content": "bentOS stores portfolio content as file-based JSON. Projects live in src/content/projects, talking points live in src/content/talking-points, and photography uses image files plus sidecar JSON under public/photos. The generated bundles are rebuilt by npm run sync. Choomfie-friendly scripts now provide deterministic commands for adding photos, projects, and chat talking points without hand-editing generated files.",
+      "keywords": [
+        "portfolio workflow",
+        "content",
+        "JSON",
+        "Choomfie",
+        "photos",
+        "projects",
+        "talking points",
+        "sync"
       ]
     }
   ]

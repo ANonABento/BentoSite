@@ -3,6 +3,7 @@
     "name": "Total JS (First Load)",
     "path": ".next/static/chunks/**/*.js",
     "limit": "1.5 MB",
+    "warn": "1.36 MB",
     "gzip": true
   }
 ]

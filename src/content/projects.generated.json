@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-14T15:40:30.087Z",
+  "generatedAt": "2026-05-20T18:39:05.135Z",
   "projects": [
     {
       "id": "bentosite",
@@ -52,6 +52,9 @@
       "links": {
         "github": "https://github.com/ANonABento/component-cop"
       },
+      "media": {
+        "featuredImage": "/projects/component-cop/hero.png"
+      },
       "featured": false,
       "dateCompleted": "2026-05"
     },
@@ -71,6 +74,9 @@
       ],
       "links": {
         "github": "https://github.com/ANonABento/clanker-spanker"
+      },
+      "media": {
+        "featuredImage": "/projects/clanker-spanker/hero.png"
       },
       "featured": false,
       "dateCompleted": "2026-03"
@@ -105,7 +111,11 @@
         "docs": "https://devpost.com/software/shouldercupid-0y6b5d"
       },
       "media": {
-        "featuredImage": "/projects/shoulder-cupid/hero.jpg"
+        "featuredImage": "/projects/shoulder-cupid/hero.jpg",
+        "images": [
+          "/projects/shoulder-cupid/hero.jpg",
+          "/projects/shoulder-cupid/overview.png"
+        ]
       },
       "featured": true,
       "dateCompleted": "2026-02"
@@ -130,7 +140,11 @@
         "github": "https://github.com/ANonABento/bento-ya"
       },
       "media": {
-        "featuredImage": "/projects/bento-ya/hero.png"
+        "featuredImage": "/projects/bento-ya/hero.png",
+        "images": [
+          "/projects/bento-ya/hero.png",
+          "/projects/bento-ya/overview.png"
+        ]
       },
       "featured": true,
       "dateCompleted": "2026"
@@ -151,6 +165,9 @@
       ],
       "links": {
         "github": "https://github.com/ANonABento/choomfie"
+      },
+      "media": {
+        "featuredImage": "/projects/choomfie/hero.png"
       },
       "featured": false,
       "dateCompleted": "2026"
@@ -173,6 +190,9 @@
       ],
       "links": {
         "github": "https://github.com/ANonABento/dead-internet-reality"
+      },
+      "media": {
+        "featuredImage": "/projects/dead-internet-reality/hero.png"
       },
       "featured": false,
       "dateCompleted": "2026"
@@ -250,7 +270,11 @@
         "docs": "https://devpost.com/software/steven-lvnh4w"
       },
       "media": {
-        "featuredImage": "/projects/ar-gesture-robot/hero.jpg"
+        "featuredImage": "/projects/ar-gesture-robot/hero.jpg",
+        "images": [
+          "/projects/ar-gesture-robot/hero.jpg",
+          "/projects/ar-gesture-robot/overview.png"
+        ]
       },
       "featured": true,
       "dateCompleted": "2025-09"
@@ -282,7 +306,11 @@
         "docs": "https://devpost.com/software/maidreal-head-v1"
       },
       "media": {
-        "featuredImage": "/projects/expressive-ai-robot-head/hero.jpg"
+        "featuredImage": "/projects/expressive-ai-robot-head/hero.jpg",
+        "images": [
+          "/projects/expressive-ai-robot-head/hero.jpg",
+          "/projects/expressive-ai-robot-head/overview.png"
+        ]
       },
       "featured": true,
       "dateCompleted": "2025-09"
@@ -309,10 +337,15 @@
       ],
       "links": {
         "github": "https://github.com/reazon-research/kirigirisu",
-        "docs": "https://github.com/reazon-research/atCAM"
+        "docs": "https://github.com/reazon-research/atCAM",
+        "modelPath": "/models/robotic-arm-puppeteer/main.stl"
       },
       "media": {
-        "featuredImage": "/projects/robotic-arm-puppeteer/hero.jpg"
+        "featuredImage": "/projects/robotic-arm-puppeteer/hero.jpg",
+        "images": [
+          "/projects/robotic-arm-puppeteer/hero.jpg",
+          "/projects/robotic-arm-puppeteer/overview.png"
+        ]
       },
       "featured": true,
       "dateCompleted": "2025-08"
@@ -528,7 +561,11 @@
         "docs": "https://devpost.com/software/snapfire"
       },
       "media": {
-        "featuredImage": "/projects/snapfire/hero.jpg"
+        "featuredImage": "/projects/snapfire/hero.jpg",
+        "images": [
+          "/projects/snapfire/hero.jpg",
+          "/projects/snapfire/overview.png"
+        ]
       },
       "featured": true,
       "dateCompleted": "2023-11"

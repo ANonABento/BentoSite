@@ -42,4 +42,21 @@ test.describe('Accessibility', () => {
 
     expect(accessibilityScanResults.violations).toEqual([]);
   });
+
+  for (const route of ['/projects', '/photography', '/playground']) {
+    test(`${route} should have no critical a11y violations`, async ({ page }) => {
+      await page.goto(route);
+      await expect(page.locator('#main-content')).toBeVisible({ timeout: 15000 });
+
+      const accessibilityScanResults = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa'])
+        .exclude('canvas')
+        .disableRules([
+          'color-contrast', // Theme contrast is tracked separately from structural a11y.
+        ])
+        .analyze();
+
+      expect(accessibilityScanResults.violations).toEqual([]);
+    });
+  }
 });

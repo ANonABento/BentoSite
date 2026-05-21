@@ -1,5 +1,5 @@
 /**
- * 3D Aim Trainer - Game logic hooks
+ * Aim Trainer - Game logic hooks
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';

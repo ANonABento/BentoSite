@@ -47,8 +47,8 @@ describe('SkillsSection', () => {
   it('renders the generic three-category view when no project is selected', () => {
     render(<SkillsSection />);
 
-    expect(screen.getByText(/system info/i)).toBeInTheDocument();
-    expect(screen.getByText(/> query system/)).toBeInTheDocument();
+    expect(screen.getByText(/^skills$/i)).toBeInTheDocument();
+    expect(screen.getByText(/> click to learn more/)).toBeInTheDocument();
     expect(screen.getByText('HW_MODULES')).toBeInTheDocument();
     expect(screen.getByText('SW_STACK')).toBeInTheDocument();
     expect(screen.getByText('DEV_TOOLS')).toBeInTheDocument();
@@ -99,7 +99,7 @@ describe('SkillsSection', () => {
 
     render(<SkillsSection selectedProject={project} />);
 
-    expect(screen.getByText(/system info/i)).toBeInTheDocument();
+    expect(screen.getByText(/^skills$/i)).toBeInTheDocument();
     expect(screen.getByText('HW_MODULES')).toBeInTheDocument();
   });
 });

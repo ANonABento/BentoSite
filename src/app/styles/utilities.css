@@ -590,20 +590,22 @@
 }
 
 .skip-to-content {
-  position: absolute;
-  left: -9999px;
+  position: fixed;
+  left: 0;
   top: 0;
   z-index: 9999;
   padding: 1rem;
-  background: var(--interactive);
-  color: var(--text-on-accent);
+  background: var(--surface-deep);
+  color: var(--text-primary);
   text-decoration: none;
   font-weight: 500;
   border-radius: 0 0 0.5rem 0;
+  transform: translateY(-120%);
+  transition: transform 0.15s ease;
 }
 
 .skip-to-content:focus {
-  left: 0;
-  outline: 2px solid var(--text-on-accent);
+  transform: translateY(0);
+  outline: 2px solid var(--interactive);
   outline-offset: 2px;
 }

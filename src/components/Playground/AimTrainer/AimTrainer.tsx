@@ -1,10 +1,9 @@
 'use client';
 
 import { m } from 'framer-motion';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Play, Crosshair, Target } from 'lucide-react';
+import { useEffect, useCallback, useRef } from 'react';
 import { GameLayout, ResultsScreen } from '../shared';
-import { Scene3D } from './Scene3D';
+import { AimArena } from './AimArena';
 import { useAimTrainer } from './AimTrainer.hooks';
 import { useHighScores } from '../Playground.hooks';
 import { isNewHighScore } from '../Playground.utils';
@@ -13,7 +12,6 @@ import { MODES, DURATIONS, MIN_SENSITIVITY, MAX_SENSITIVITY } from './AimTrainer
 import { springs } from '../design';
 
 export function AimTrainer() {
-  const [showInstructions, setShowInstructions] = useState(true);
   const lastSavedRunRef = useRef<string | null>(null);
 
   const {
@@ -60,16 +58,6 @@ export function AimTrainer() {
     }
   }, [status, score, accuracy, settings.mode, scores, saveScore, hits, misses]);
 
-  useEffect(() => {
-    if (status !== 'playing' && document.pointerLockElement) {
-      document.exitPointerLock?.();
-    }
-  }, [status]);
-
-  const handleLockChange = useCallback((locked: boolean) => {
-    setShowInstructions(!locked);
-  }, []);
-
   const handleHit = useCallback((targetId: string) => {
     handleShot(targetId);
   }, [handleShot]);
@@ -82,8 +70,6 @@ export function AimTrainer() {
 
   const handleStart = useCallback(() => {
     startGame();
-    // Request pointer lock after starting
-    document.body.requestPointerLock?.();
   }, [startGame]);
 
   const currentMode = MODES.find((m) => m.id === settings.mode);
@@ -98,7 +84,7 @@ export function AimTrainer() {
         status === 'playing' ? (
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Target className="w-4 h-4 text-[var(--pg-game-success)]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[var(--pg-game-success)]" aria-hidden="true" />
               <span className="font-mono text-sm text-[var(--pg-text-primary)]">{hits}</span>
             </div>
             <div className="pg-divider" />
@@ -123,11 +109,15 @@ export function AimTrainer() {
                 animate={{ scale: 1 }}
                 transition={springs.bouncy}
               >
-                <Crosshair className="w-8 h-8" />
+                <span className="relative h-8 w-8" aria-hidden="true">
+                  <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-current" />
+                  <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-current" />
+                  <span className="absolute inset-2 rounded-full border border-current" />
+                </span>
               </m.div>
 
               <h2 className="text-2xl font-bold text-[var(--pg-text-primary)] mb-2">
-                3D Aim Trainer
+                Aim Trainer
               </h2>
               <p className="text-sm text-[var(--pg-text-secondary)] mb-6">
                 First-person target practice. Tracking mode now moves targets and missed despawns count against your accuracy.
@@ -227,12 +217,15 @@ export function AimTrainer() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Play className="w-4 h-4 inline-block mr-2" />
+                <span
+                  aria-hidden="true"
+                  className="mr-2 inline-block h-0 w-0 border-y-[5px] border-y-transparent border-l-[8px] border-l-current"
+                />
                 Start Training
               </m.button>
 
               <p className="text-xs text-[var(--pg-text-muted)] mt-4">
-                Click to lock mouse. Press ESC to exit.
+                Click targets quickly. Empty arena clicks count as misses.
               </p>
             </m.div>
           </div>
@@ -241,15 +234,13 @@ export function AimTrainer() {
         {/* Game state */}
         {status === 'playing' && (
           <div className="flex-1 relative">
-            {/* 3D Scene */}
+            {/* Aim arena */}
             <div className="absolute inset-0">
-              <Scene3D
+              <AimArena
                 targets={targets}
                 sensitivity={settings.sensitivity}
-                isPlaying={status === 'playing'}
                 onHit={handleHit}
                 onMiss={handleMiss}
-                onLockChange={handleLockChange}
               />
             </div>
 
@@ -281,27 +272,11 @@ export function AimTrainer() {
               </div>
             </div>
 
-            {/* Re-lock prompt */}
-            {showInstructions && (
-              <m.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-x-0 bottom-8 flex justify-center px-6"
-              >
-                <button
-                  type="button"
-                  onClick={() => document.body.requestPointerLock?.()}
-                  className="pg-overlay-panel-strong rounded-xl px-6 py-3 text-center text-white pointer-events-auto"
-                  aria-label={hits + misses === 0 ? 'Lock mouse and start aiming' : 'Re-lock mouse and continue aiming'}
-                >
-                  <p className="font-medium">
-                    {hits + misses === 0 ? 'Click to lock mouse and start aiming' : 'Click to re-lock mouse and continue'}
-                  </p>
-                  <p className="mt-1 text-xs text-white/70">ESC releases the cursor</p>
-                </button>
-              </m.div>
-            )}
+            <div className="absolute inset-x-0 bottom-6 flex justify-center px-6 pointer-events-none">
+              <div className="pg-overlay-panel rounded-xl px-4 py-2 text-center text-xs text-[var(--pg-text-secondary)]">
+                Click a target to score. Empty clicks count as misses.
+              </div>
+            </div>
           </div>
         )}
 

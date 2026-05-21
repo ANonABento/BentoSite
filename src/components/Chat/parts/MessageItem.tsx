@@ -22,7 +22,7 @@ export const MessageItem = memo(function MessageItem({
   if (message.role === 'user') {
     return (
       <div className="group flex items-start gap-2">
-        <span className="text-[var(--orange)] font-mono text-xs shrink-0 pt-0.5 select-none">
+        <span className="text-[var(--purple)] font-mono text-xs shrink-0 pt-0.5 select-none">
           anon@bentOS ~$
         </span>
         <p className="text-sm font-mono text-[var(--text-primary)] whitespace-pre-wrap">

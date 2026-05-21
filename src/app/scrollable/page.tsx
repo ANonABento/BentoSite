@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/Skeleton';
 import { LazyPanelFallback, ScrollReveal } from '@/components/ui';
 import type { ChatFunctions } from '@/components/Chat';
-import { RESUME_URL } from '@/lib/constants';
 import { ChatPanel } from './layout-parts/ChatPanel';
 import { HeroSection } from './layout-parts/HeroSection';
 import { ScrollableFooter } from './layout-parts/ScrollableFooter';
@@ -117,10 +116,6 @@ export default function ScrollableLayout() {
     [isMountedRef]
   );
 
-  const handleViewResume = useCallback(() => {
-    window.open(RESUME_URL, '_blank', 'noopener,noreferrer');
-  }, []);
-
   return (
     <LazyMotion features={domAnimation} strict>
       <main
@@ -170,12 +165,7 @@ export default function ScrollableLayout() {
           prefersReducedMotion={prefersReducedMotion}
           onChatReady={handleChatReady}
           onClearChat={() => chatFns?.clear()}
-          onSeeProjects={() => {
-            setIsProjectsOpen(true);
-            setIsChatOpen(false);
-          }}
           onToggle={() => setIsChatOpen((open) => !open)}
-          onViewResume={handleViewResume}
         />
 
         <ProjectsModal isOpen={isProjectsOpen} onClose={() => setIsProjectsOpen(false)} />

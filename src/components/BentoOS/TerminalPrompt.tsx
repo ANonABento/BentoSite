@@ -40,21 +40,28 @@ export function TerminalPrompt() {
         <span className="text-[var(--text-muted)] mr-2" style={{ textShadow: 'none' }}>
           &gt;
         </span>
-        <span>{displayedText}</span>
-        {!showCursor && displayedText.length < PROMPT_TEXT.length ? (
-          <span className="animate-pulse">_</span>
-        ) : null}
-      </div>
-      {showCursor ? (
-        <m.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.15 }}
-          className="mt-1 pl-[1.5ch]"
+        <span>
+          {displayedText}
+          <span style={{ opacity: 0 }}>{PROMPT_TEXT.slice(displayedText.length)}</span>
+        </span>
+        <span
+          className="animate-pulse"
+          style={{
+            visibility: !showCursor && displayedText.length < PROMPT_TEXT.length ? 'visible' : 'hidden',
+          }}
         >
-          <span className="animate-blink">_</span>
-        </m.div>
-      ) : null}
+          _
+        </span>
+      </div>
+      <m.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: showCursor ? 1 : 0 }}
+        transition={{ duration: 0.15 }}
+        className="mt-1 pl-[1.5ch]"
+        aria-hidden={!showCursor}
+      >
+        <span className="animate-blink">_</span>
+      </m.div>
     </div>
   );
 }

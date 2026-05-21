@@ -20,10 +20,15 @@
   ],
   "links": {
     "github": "https://github.com/reazon-research/kirigirisu",
-    "docs": "https://github.com/reazon-research/atCAM"
+    "docs": "https://github.com/reazon-research/atCAM",
+    "modelPath": "/models/robotic-arm-puppeteer/main.stl"
   },
   "media": {
-    "featuredImage": "/projects/robotic-arm-puppeteer/hero.jpg"
+    "featuredImage": "/projects/robotic-arm-puppeteer/hero.jpg",
+    "images": [
+      "/projects/robotic-arm-puppeteer/hero.jpg",
+      "/projects/robotic-arm-puppeteer/overview.png"
+    ]
   },
   "featured": true,
   "dateCompleted": "2025-08"

@@ -139,6 +139,10 @@ const BLOCKED_PATTERNS = [
 ];
 
 const GREETING_PATTERN = /^(hi|hello|hey|yo|sup|thanks|thank you|who are you)[\s!.?]*$/i;
+const FOLLOW_UP_PATTERN =
+  /\b(that|those|these|it|they|them|this|compare|comparison|tradeoff|tradeoffs|why|how|built|work|works|different|difference|change|improve|favorite|unexpected)\b/i;
+const OFF_TOPIC_TASK_PATTERN =
+  /\b(recipe|homework|essay|poem|song|legal advice|medical advice|stock pick|weather|sports score|translate|summarize this article)\b/i;
 
 function normalizeText(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9+#.]+/g, ' ').trim();
@@ -264,7 +268,17 @@ export function getLatestUserMessage(messages: ChatMessage[]): string {
   return [...messages].reverse().find((message) => message.role === 'user')?.content ?? '';
 }
 
-export function checkChatGuardrails(message: string): GuardrailResult {
+export function buildRetrievalQuery(messages: ChatMessage[], maxMessages = 8): string {
+  const latestUserMessage = getLatestUserMessage(messages);
+  const recentContext = messages
+    .slice(-maxMessages)
+    .map((message) => message.content)
+    .join('\n');
+
+  return [latestUserMessage, recentContext].filter(Boolean).join('\n\n');
+}
+
+export function checkChatGuardrails(message: string, contextQuery = message): GuardrailResult {
   const normalized = normalizeText(message);
 
   if (!normalized) {
@@ -286,8 +300,20 @@ export function checkChatGuardrails(message: string): GuardrailResult {
     return { allowed: true };
   }
 
+  if (OFF_TOPIC_TASK_PATTERN.test(message)) {
+    return {
+      allowed: false,
+      response:
+        "I only handle Kevin's public portfolio information here. Try asking about his projects, robotics work, software skills, education, experience, or contact links.",
+    };
+  }
+
   const onTopic = PUBLIC_TOPICS.some((topic) => topic && normalized.includes(topic));
-  if (!onTopic && retrievePortfolioContext(message, 1).length === 0) {
+  const contextAwareFollowUp =
+    FOLLOW_UP_PATTERN.test(message) &&
+    retrievePortfolioContext(contextQuery, 1).length > 0;
+
+  if (!onTopic && !contextAwareFollowUp && retrievePortfolioContext(message, 1).length === 0) {
     return {
       allowed: false,
       response:
@@ -445,6 +471,92 @@ function formatTechProjects(tech: string): string {
   return lines.join('\n');
 }
 
+function formatEducationSummary(): string {
+  const lines = ['**Education**', ''];
+  for (const entry of PORTFOLIO_DATA.education) {
+    lines.push(`- ${entry.degree} at ${entry.institution} (${entry.period})`);
+  }
+  lines.push('', `${PORTFOLIO_DATA.personal.name} is based in ${PORTFOLIO_DATA.personal.location}.`);
+  return lines.join('\n');
+}
+
+function formatCurrentWorkSummary(): string {
+  const activeProjects = PORTFOLIO_DATA.projects.filter((project) =>
+    /progress|active|ongoing/i.test(project.status),
+  );
+  const lines = ['**Current work**', ''];
+
+  if (activeProjects.length > 0) {
+    for (const project of activeProjects.slice(0, 6)) {
+      lines.push(`- **${project.name}** — ${project.shortDescription}`);
+    }
+  } else {
+    lines.push(
+      `${PORTFOLIO_DATA.personal.name} is focused on robotics, hardware prototyping, AI tooling, and this portfolio system.`,
+    );
+  }
+
+  lines.push('', '_Ask about a specific project for implementation details._');
+  return lines.join('\n');
+}
+
+function formatRoboticsOriginSummary(): string {
+  return [
+    '**Robotics focus**',
+    '',
+    PORTFOLIO_DATA.about,
+    '',
+    "The public portfolio frames Kevin's robotics interest around full-stack physical systems: CAD and mechanisms, electronics, embedded control, perception, ROS2, and AI behavior.",
+  ].join('\n');
+}
+
+function formatFavoriteProjectSummary(): string {
+  const featuredProjects = PORTFOLIO_DATA.projects.filter((project) => project.featured).slice(0, 4);
+  const lines = [
+    '**Representative projects**',
+    '',
+    "The portfolio does not name a single favorite project. These are the strongest public starting points:",
+  ];
+
+  for (const project of featuredProjects) {
+    lines.push(`- **${project.name}** — ${project.shortDescription}`);
+  }
+
+  lines.push('', '_Ask about one of them for a deeper breakdown._');
+  return lines.join('\n');
+}
+
+function formatUnexpectedSummary(): string {
+  const candidates = PORTFOLIO_DATA.projects.filter((project) =>
+    /taser|dating|sloth|dead internet|haptic|puppeteer|gesture/i.test(
+      `${project.name} ${project.shortDescription} ${project.description}`,
+    ),
+  ).slice(0, 5);
+  const lines = ['**Unexpected corners of the portfolio**', ''];
+
+  for (const project of candidates) {
+    lines.push(`- **${project.name}** — ${project.shortDescription}`);
+  }
+
+  lines.push('', '_Pick one and I can unpack how it works._');
+  return lines.join('\n');
+}
+
+function formatOpportunitySummary(): string {
+  const contact = PORTFOLIO_DATA.personal;
+  return [
+    `Yes — for public contact, reach ${contact.name} at ${contact.email}.`,
+    '',
+    `GitHub: ${contact.github}`,
+    `LinkedIn: ${contact.linkedin}`,
+  ].join('\n');
+}
+
+function findProjectByNormalizedName(name: string) {
+  const normalizedName = normalizeText(name);
+  return PORTFOLIO_DATA.projects.find((project) => normalizeText(project.name) === normalizedName);
+}
+
 const STARTER_RESPONSES: Map<string, string> = (() => {
   const map = new Map<string, string>();
 
@@ -489,8 +601,69 @@ const STARTER_RESPONSES: Map<string, string> = (() => {
       `Tell me about your ${tech} project`,
       `What ${tech} projects do you have?`,
       `${tech} projects`,
+      `What's your experience with ${tech}?`,
+      `What is your experience with ${tech}?`,
+      `Where do you use ${tech}?`,
     ]) {
       map.set(normalizeText(trigger), summary);
+    }
+  }
+
+  for (const trigger of [
+    'Tell me about your education',
+    'What is your education?',
+    'Where do you go to school?',
+    'What school do you go to?',
+  ]) {
+    map.set(normalizeText(trigger), formatEducationSummary());
+  }
+
+  for (const trigger of [
+    'What are you working on right now?',
+    'What are you currently working on?',
+    'Current work',
+  ]) {
+    map.set(normalizeText(trigger), formatCurrentWorkSummary());
+  }
+
+  for (const trigger of [
+    'What got you into robotics?',
+    'Why robotics?',
+    'Tell me about your robotics focus',
+  ]) {
+    map.set(normalizeText(trigger), formatRoboticsOriginSummary());
+  }
+
+  for (const trigger of [
+    'What was your favorite project?',
+    'Favorite project',
+    'What project should I look at first?',
+  ]) {
+    map.set(normalizeText(trigger), formatFavoriteProjectSummary());
+  }
+
+  for (const trigger of [
+    'Show me something unexpected',
+    'Something unexpected',
+    'Show me a weird project',
+  ]) {
+    map.set(normalizeText(trigger), formatUnexpectedSummary());
+  }
+
+  for (const trigger of [
+    'Are you open to opportunities?',
+    'Are you available?',
+    'How can I contact you?',
+    'Contact Kevin',
+  ]) {
+    map.set(normalizeText(trigger), formatOpportunitySummary());
+  }
+
+  const bentos = findProjectByNormalizedName('bentOS — This Portfolio');
+  if (bentos) {
+    const rundown = formatProjectRundown(bentos);
+    for (const trigger of ['What is bentOS?', 'Tell me about bentOS', 'bentOS']) {
+      map.set(normalizeText(trigger), rundown);
     }
   }
 

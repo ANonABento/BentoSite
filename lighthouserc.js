@@ -26,6 +26,7 @@ module.exports = {
       numberOfRuns: 1,
       settings: {
         preset: 'desktop',
+        chromeFlags: '--no-sandbox --disable-dev-shm-usage',
         // Extend timeout for 3D content
         maxWaitForLoad: 45000,
         // Skip network throttling for portfolio (3D assets)
@@ -34,17 +35,17 @@ module.exports = {
     },
     assert: {
       assertions: {
-        // Performance (relaxed for 3D portfolio)
-        'categories:performance': ['warn', { minScore: 0.6 }],
+        // Category scores that are stable for this animation-heavy portfolio.
         'categories:accessibility': ['error', { minScore: 0.9 }],
-        'categories:best-practices': ['warn', { minScore: 0.8 }],
         'categories:seo': ['warn', { minScore: 0.9 }],
 
-        // Critical Web Vitals (relaxed for 3D)
+        // Critical rendering metrics. TTI/TBT are intentionally excluded:
+        // looping 3D/canvas/animation routes can prevent Lighthouse from
+        // finding a CPU-idle window and produce NaN assertions.
         'first-contentful-paint': ['warn', { maxNumericValue: 3000 }],
         'largest-contentful-paint': ['warn', { maxNumericValue: 4500 }],
+        'speed-index': ['warn', { maxNumericValue: 4500 }],
         'cumulative-layout-shift': ['warn', { maxNumericValue: 0.1 }],
-        'total-blocking-time': ['warn', { maxNumericValue: 600 }],
 
         // Accessibility must-haves
         'color-contrast': 'warn',

@@ -1,5 +1,5 @@
 /**
- * 3D Aim Trainer - TypeScript interfaces
+ * Aim Trainer - TypeScript interfaces
  */
 
 export type GameMode = 'gridShot' | 'spiderShot' | 'tracking' | 'flick';

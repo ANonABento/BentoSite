@@ -1,0 +1,16 @@
+{
+  "id": "hardware-prototyping",
+  "title": "Hardware Prototyping",
+  "content": "Kevin's hardware experience includes STM32 and ESP32 microcontrollers, PCB design in Altium, Arduino-based firmware, 3D printing, CAD in Fusion 360 and OnShape, soldering and assembly, servo and motor control, and sensor integration. His Midnight Sun experience focused on double-layer PCB routing, ERC/DRC-clean board work, and SMD soldering/testing. Several portfolio projects combine custom mechanical design with embedded electronics and real-time control.",
+  "keywords": [
+    "hardware",
+    "PCB",
+    "Altium",
+    "STM32",
+    "ESP32",
+    "soldering",
+    "CAD",
+    "Fusion 360",
+    "microcontrollers"
+  ]
+}

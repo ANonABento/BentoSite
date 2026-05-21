@@ -13,6 +13,7 @@ interface SoundPadProps {
 
 export function SoundPad({ pad, isActive, isMobile, onClick }: SoundPadProps) {
   const size = isMobile ? PAD_SIZE_MOBILE : PAD_SIZE;
+  const inactiveLabelColor = 'var(--pg-text-primary)';
 
   return (
     <motion.button
@@ -47,7 +48,7 @@ export function SoundPad({ pad, isActive, isMobile, onClick }: SoundPadProps) {
       {/* Name */}
       <span
         className="text-xs relative z-10 transition-colors"
-        style={{ color: isActive ? 'white' : pad.color }}
+        style={{ color: isActive ? 'white' : inactiveLabelColor }}
       >
         {pad.name}
       </span>
@@ -57,7 +58,7 @@ export function SoundPad({ pad, isActive, isMobile, onClick }: SoundPadProps) {
         className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center rounded text-[10px] font-mono uppercase transition-colors"
         style={{
           backgroundColor: isActive ? 'rgba(255,255,255,0.3)' : `${pad.color}30`,
-          color: isActive ? 'white' : pad.color,
+          color: isActive ? 'white' : inactiveLabelColor,
         }}
       >
         {pad.keyBinding}

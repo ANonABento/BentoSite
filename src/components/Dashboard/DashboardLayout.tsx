@@ -94,10 +94,6 @@ export function DashboardLayout({
     }
   }, []);
 
-  const handleViewResume = useCallback(() => {
-    window.open(RESUME_URL, '_blank', 'noopener,noreferrer');
-  }, []);
-
   const handleSeeProjects = useCallback(() => {
     router.push('/projects');
   }, [router]);
@@ -220,8 +216,6 @@ export function DashboardLayout({
                   Chatbot={Chatbot}
                   onChatReady={handleChatReady}
                   onClearChat={handleClearChat}
-                  onViewResume={handleViewResume}
-                  onSeeProjects={handleSeeProjects}
                   onUserMessage={handleUserMessage}
                 />
               </m.div>
@@ -250,8 +244,6 @@ export function DashboardLayout({
               Chatbot={Chatbot}
               onChatReady={handleChatReady}
               onClearChat={handleClearChat}
-              onViewResume={handleViewResume}
-              onSeeProjects={handleSeeProjects}
               onUserMessage={handleUserMessage}
             />
           </div>
