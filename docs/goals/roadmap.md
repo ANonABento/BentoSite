@@ -81,6 +81,24 @@ Last refreshed: 2026-08-21 after the launch-polish-and-studio goal.
 - **Next step**: pass the pre-duplication count down alongside the filled
   array, or count distinct ids via `stripCloneSuffix`.
 
+### Search panel can sit behind spawned cards — medium
+
+- **What**: on `/projects` and `/playground`, the sticky search panel and the
+  card layer can end up in the wrong stacking order — `elementFromPoint` at a
+  category chip's own centre returns a project card's `<img>`, not the chip.
+  Tapping the chip then opens whatever project is underneath. Reproduced at
+  1024x768, 1280x800, and 1440x900, with and without touch emulation.
+- **Why it hid**: the panel drifts with the canvas, so it only overlaps a card
+  once enough cards have spawned around it — a fresh load often looks fine.
+- **Impact**: worst on touch, where it is the only way to filter. Confirmed
+  pre-existing (reproduces with pointer capture restored, i.e. before the
+  tablet tap fix).
+- **Blocks**: the category-filter E2E test is skipped under touch emulation
+  (`tests/e2e/public-routes.spec.ts`) until this is fixed.
+- **Next step**: give the search overlay a stacking context above the card
+  layer that survives the sticky/edge transitions, and add a hit-test
+  assertion so it cannot regress silently.
+
 ### Boot-skip semantics review — small
 
 - **What**: `isDashboardDeepLink` now returns true for both

@@ -42,6 +42,44 @@ test.describe('Public Content Routes', () => {
     expect(pageErrors).toHaveLength(0);
   });
 
+  test('category chips filter the projects grid and the count is a content count', async ({ page, isMobile }) => {
+    // Under touch emulation the search panel can sit behind spawned cards, so
+    // the chip is not the hit target and this asserts nothing about the filter.
+    // Tracked in docs/goals/roadmap.md — the filter logic itself is covered here
+    // on desktop, which is where the dead-click bug lived.
+    test.skip(Boolean(isMobile), 'search panel overlaps cards under touch emulation');
+
+    await page.goto('/projects');
+
+    await expect(
+      page.getByRole('application', { name: /bentos \/ projects interactive grid/i }),
+    ).toBeVisible({ timeout: 15000 });
+
+    // The All chip reports how many projects exist, not how many card
+    // instances the canvas cloned to fill itself. It switches to "All (x/y)"
+    // once a filter is applied.
+    const allChip = page.getByRole('button', { name: /^All \(/ });
+    await expect(allChip).toBeVisible();
+    const total = Number((await allChip.innerText()).match(/\((\d+)\)/)![1]);
+    expect(total).toBeGreaterThan(0);
+
+    // Clicking a category chip must actually filter. This was silently dead:
+    // the chip row swallowed pointerdown for native scrolling, and the click
+    // that followed never reached React.
+    const category = page.getByRole('button', { name: 'Hackathon', exact: true });
+    await expect(category).toBeVisible();
+    await category.click();
+
+    await expect(allChip).toHaveText(/^All \(\d+\/\d+\)$/, { timeout: 5000 });
+    const [shown, outOf] = (await allChip.innerText())
+      .match(/\((\d+)\/(\d+)\)/)!
+      .slice(1)
+      .map(Number);
+    expect(outOf, 'filtering must not change the total').toBe(total);
+    expect(shown).toBeGreaterThan(0);
+    expect(shown).toBeLessThan(total);
+  });
+
   test('playground grid loads playable game cards', async ({ page }) => {
     const pageErrors: Error[] = [];
     page.on('pageerror', (error) => pageErrors.push(error));
