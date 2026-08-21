@@ -1,0 +1,21 @@
+{
+  "note": "Projects still using a generated placeholder cover. Replace with a real capture, then drop the entry.",
+  "covers": [
+    {
+      "projectId": "choomfie",
+      "file": "public/projects/choomfie/hero.png"
+    },
+    {
+      "projectId": "clanker-spanker",
+      "file": "public/projects/clanker-spanker/hero.png"
+    },
+    {
+      "projectId": "component-cop",
+      "file": "public/projects/component-cop/hero.png"
+    },
+    {
+      "projectId": "dead-internet-reality",
+      "file": "public/projects/dead-internet-reality/hero.png"
+    }
+  ]
+}

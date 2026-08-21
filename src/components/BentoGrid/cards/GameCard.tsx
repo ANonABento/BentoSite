@@ -170,6 +170,7 @@ export function GameCard({
       ariaLabel={card.title}
       title={card.title}
       metaLines={meta}
+      titleAtRest
       shellStyle={shellStyle}
       onHoverChange={setIsHovered}
       topLeft={
@@ -228,11 +229,6 @@ export function GameCard({
         >
           {icon}
         </motion.div>
-      </div>
-      <div className="pointer-events-none absolute inset-x-3 bottom-3 z-[4] hidden md:block">
-        <div className="max-w-full truncate font-mono text-[11px] uppercase tracking-wider text-white/70">
-          {card.title.toUpperCase()}
-        </div>
       </div>
     </MediaCard>
   );

@@ -7,9 +7,12 @@
  *   - children fill the card as the visual ("media").
  *   - shellExtras renders absolute decorative layers (e.g. scanlines, pixel corners).
  *   - topLeft / topRight / bottomLeft / bottomRight slots host badges/indicators.
- *   - title + metaLines render in a bottom gradient overlay that is:
- *       - always visible on mobile,
- *       - hidden until hover/focus on desktop.
+ *   - title + metaLines render in a bottom gradient overlay.
+ *     With `titleAtRest` (project/game cards) the title is always legible and
+ *     only metaLines expand on hover/focus, so a desktop visitor can scan the
+ *     grid without hovering every card. Without it (photo cards) the whole
+ *     overlay stays hidden until hover, which is the gallery idiom.
+ *     On mobile — where there is no hover — everything is always visible.
  *
  * Subclasses (PhotoCard / ProjectCard / GameCard) keep their own theme-specific
  * shell style via `shellStyle` and any always-on decorations via `shellExtras`.
@@ -39,6 +42,12 @@ export interface MediaCardProps {
   /** Optional content under the title (description, badges, score). */
   metaLines?: ReactNode;
 
+  /**
+   * Keep the title readable at rest instead of hiding the whole overlay until
+   * hover. Only `metaLines` expands on hover/focus.
+   */
+  titleAtRest?: boolean;
+
   /** Always-visible decorative absolute layers (scanlines, pixel corners, accent strip). */
   shellExtras?: ReactNode;
 
@@ -60,8 +69,14 @@ export interface MediaCardProps {
   onHoverChange?: (isHovered: boolean) => void;
 }
 
+// The scrim has to stay dark all the way to the top of its own box: the box is
+// content-sized, so a `to-transparent` stop left the title floating over bare
+// artwork whenever metaLines made the box tall (unreadable on light images).
 const OVERLAY_BASE_CLASS =
-  'pointer-events-none absolute inset-x-0 bottom-0 z-[5] bg-gradient-to-t from-black/85 via-black/45 to-transparent p-3 transition-opacity duration-300';
+  'pointer-events-none absolute inset-x-0 bottom-0 z-[5] bg-gradient-to-t from-black/95 via-black/90 to-black/75 p-3 transition-opacity duration-300';
+
+const TITLE_CLASS =
+  'text-sm font-semibold text-white line-clamp-2 [text-shadow:0_1px_3px_rgba(0,0,0,0.85)]';
 
 export function MediaCard({
   id,
@@ -75,6 +90,7 @@ export function MediaCard({
   children,
   title,
   metaLines,
+  titleAtRest = false,
   shellExtras,
   topLeft,
   topRight,
@@ -108,9 +124,19 @@ export function MediaCard({
   };
 
   // Focus must reveal the overlay (a11y) — keyboard users can't hover.
-  const overlayClass = isFocused
-    ? `${OVERLAY_BASE_CLASS} opacity-100`
-    : `${OVERLAY_BASE_CLASS} opacity-100 md:opacity-0 md:group-hover:opacity-100`;
+  const overlayClass =
+    titleAtRest || isFocused
+      ? `${OVERLAY_BASE_CLASS} opacity-100`
+      : `${OVERLAY_BASE_CLASS} opacity-100 md:opacity-0 md:group-hover:opacity-100`;
+
+  // With `titleAtRest` the meta block collapses to zero height at rest so the
+  // scrim stays a thin bar under the title, then expands on hover/focus.
+  // `max-md:` keeps it open on touch, where there is no hover.
+  const metaWrapperClass = titleAtRest
+    ? `grid transition-all duration-300 max-md:grid-rows-[1fr] max-md:opacity-100 ${
+        isHighlighted ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+      }`
+    : 'grid grid-rows-[1fr] opacity-100';
 
   return (
     <BaseCard
@@ -133,10 +159,16 @@ export function MediaCard({
       {/* Decorative absolute layers (scanlines, pixel corners, accent strip) */}
       {shellExtras}
 
-      {/* Hover-revealed overlay (always visible on mobile + when focused) */}
+      {/* Title + meta overlay (always visible on mobile + when focused) */}
       <div className={overlayClass}>
-        <div className="text-sm font-semibold text-white line-clamp-2">{title}</div>
-        {metaLines ? <div className="mt-1 space-y-1 text-xs text-white/70">{metaLines}</div> : null}
+        <div className={TITLE_CLASS}>{title}</div>
+        {metaLines ? (
+          <div className={metaWrapperClass}>
+            <div className="min-h-0 overflow-hidden">
+              <div className="mt-1 space-y-1 text-xs text-white/75">{metaLines}</div>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       {/* Corner slots — above media + overlay */}

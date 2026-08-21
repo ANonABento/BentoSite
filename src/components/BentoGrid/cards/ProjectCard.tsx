@@ -4,10 +4,11 @@
  * ProjectCard — media-first card for projects.
  *
  * Thumbnail (or fallback icon) fills the card. Status badge and media
- * indicators (3D etc.) sit in the corners. On hover/focus a bottom gradient
- * overlay reveals the title, description, category, and a truncated row of
- * tech badges. Card click navigates — github/demo links live on the project
- * detail surface, not the card.
+ * indicators (3D etc.) sit in the corners. The title stays readable at rest
+ * (`titleAtRest`) so the grid is scannable without hovering; description,
+ * category, and a truncated row of tech badges expand on hover/focus. Card
+ * click navigates — github/demo links live on the project detail surface,
+ * not the card.
  */
 
 import { useState } from 'react';
@@ -187,6 +188,7 @@ export function ProjectCard({
       ariaLabel={`Open ${card.title}`}
       title={card.title}
       metaLines={meta}
+      titleAtRest
       topRight={<MediaIndicators card={card} />}
     >
       {card.thumbnail ? (
