@@ -44,6 +44,12 @@ export interface Project {
   media?: ProjectMedia;
   featured?: boolean;
   dateCompleted?: string;
+  /**
+   * Explicit position in the archive. Projects with an `order` sort ahead of
+   * those without (lowest first); the rest fall back to newest-first. Written
+   * by the Studio's reorder list, not by hand.
+   */
+  order?: number;
 }
 
 const content = projectsContent as { projects: Project[] };

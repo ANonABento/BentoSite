@@ -5,6 +5,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 import { validateTalkingPoint } from './content-schema.mjs';
+import { writeTalkingPoint } from './content-repo.mjs';
 import {
   optionalString,
   parseArgs,
@@ -89,8 +90,12 @@ async function main() {
     throw new Error(`Refusing to overwrite existing ${relativeTarget}. Pass --overwrite if intentional.`);
   }
 
-  await fs.mkdir(TALKING_POINTS_DIR, { recursive: true });
-  await writeJson(target, point, { dryRun });
+  if (dryRun) {
+    await writeJson(target, point, { dryRun });
+  } else {
+    // Shared with the Studio API so both write paths validate identically.
+    await writeTalkingPoint(point);
+  }
 
   let syncOutput;
   if (shouldSync && !dryRun) {

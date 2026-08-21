@@ -153,6 +153,31 @@ describe('BentoGrid cards', () => {
     expect(screen.queryByRole('link', { name: /demo/i })).toBeNull();
   });
 
+  it('keeps the project title legible at rest and only expands meta on hover', () => {
+    const project: ProjectCardData = {
+      id: 'robot-arm',
+      type: 'project',
+      title: 'Robot Arm',
+      description: 'A compact arm controller',
+      category: 'Robotics',
+      technologies: ['ROS2'],
+      status: 'Completed',
+      links: {},
+    };
+
+    render(<ProjectCard card={project} position={{ ...position, size: '2x2' }} theme={theme} />);
+
+    const overlay = screen.getByText('Robot Arm').parentElement;
+    // The scrim must not be hover-gated on desktop, or the archive is a wall of
+    // unlabelled screenshots until you hover each card.
+    expect(overlay?.className).toContain('opacity-100');
+    expect(overlay?.className).not.toContain('md:opacity-0');
+
+    // The meta block is what collapses at rest.
+    const meta = screen.getByText('A compact arm controller').closest('.grid');
+    expect(meta?.className).toContain('grid-rows-[0fr]');
+  });
+
   it('renders game cards when storage is unavailable and the source best score is zero', () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('storage unavailable');

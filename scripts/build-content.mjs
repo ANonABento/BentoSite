@@ -77,7 +77,16 @@ async function buildProjects() {
     return { errors, count: 0 };
   }
 
-  projects.sort((a, b) => projectTimestamp(b) - projectTimestamp(a));
+  // Ordering model: projects carrying an explicit `order` (set by the Studio's
+  // drag-to-reorder list) come first, lowest first — those are the ones that
+  // land in the prime grid positions. Everything else follows newest-first, so
+  // adding a project without touching the list still puts it somewhere sane.
+  projects.sort((a, b) => {
+    const aOrder = typeof a.order === 'number' ? a.order : Number.POSITIVE_INFINITY;
+    const bOrder = typeof b.order === 'number' ? b.order : Number.POSITIVE_INFINITY;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return projectTimestamp(b) - projectTimestamp(a);
+  });
 
   const output = {
     generatedAt: new Date().toISOString(),

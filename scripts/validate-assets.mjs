@@ -97,8 +97,14 @@ export async function validateAssets({ projects, photos, root = ROOT }) {
     validateHttps(project.media?.video, `${prefix}.media.video`, warnings);
     validateHttps(project.media?.game?.url, `${prefix}.media.game.url`, warnings);
 
-    if (project.media?.game?.type === 'itch' && project.media.game.url && !/\/embed\//.test(project.media.game.url)) {
-      warnings.push(`${prefix}.media.game.url: itch URL is not an embed URL; viewer will use the external-link fallback`);
+    // A bare profile URL (https://user.itch.io/) can never be an embed, so the
+    // external-link fallback is the intended rendering and warning about it on
+    // every build is noise. A specific game page that isn't in embed form is
+    // the actionable case.
+    const itchUrl = project.media?.game?.type === 'itch' ? project.media.game.url : undefined;
+    const isItchProfileUrl = itchUrl ? /^https?:\/\/[^/]+\.itch\.io\/?$/.test(itchUrl) : false;
+    if (itchUrl && !isItchProfileUrl && !/\/embed\//.test(itchUrl)) {
+      warnings.push(`${prefix}.media.game.url: itch game URL is not an embed URL; viewer will use the external-link fallback`);
     }
   }
 

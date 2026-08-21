@@ -11,8 +11,10 @@ const highlights = [
 ];
 
 export function AboutSection() {
+  // Lighter top padding than bottom: the hero already ends in a tall empty
+  // band, and a full py-24 on top of it read as a dead screen.
   return (
-    <section id="about" className="py-16 md:py-24">
+    <section id="about" className="pt-10 pb-16 md:pt-12 md:pb-24">
       <m.div
         className="max-w-6xl mx-auto px-4 md:px-6"
         initial="hidden"

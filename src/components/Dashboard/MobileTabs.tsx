@@ -30,15 +30,17 @@ export function MobileTabs({ activeSection, onTabChange }: MobileTabsProps) {
                 : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
             }`}
           >
+            {/* `zIndex: -1` painted the pill behind the panel background, which
+                left the active tab's `--text-on-accent` label as white text on
+                a white panel. Keep the pill in flow and lift the content. */}
             {activeSection === tab && (
               <motion.div
                 layoutId="activeTab"
-                className="absolute inset-0 bg-[var(--highlight)] rounded-xl shadow-lg shadow-[0_0_20px_var(--orange-muted)]"
+                className="absolute inset-0 z-0 bg-[var(--highlight)] rounded-xl shadow-lg shadow-[0_0_20px_var(--orange-muted)]"
                 transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                style={{ zIndex: -1 }}
               />
             )}
-            <span className="relative flex items-center justify-center gap-2">
+            <span className="relative z-10 flex items-center justify-center gap-2">
               <BentoIcon size={14} className="text-current" />
               {tab === '3d' ? 'viewfinder' : 'terminal'}
             </span>

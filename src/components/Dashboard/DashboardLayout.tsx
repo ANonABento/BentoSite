@@ -18,6 +18,8 @@ import type { ChatFunctions, ChatbotProps } from '@/components/Chat';
 import type { Project } from '@/lib/projects-data';
 import { getProjectById } from '@/lib/projects-data';
 
+const autoPromptedProjectIds = new Set<string>();
+
 interface DashboardLayoutProps {
   Viewfinder: ComponentType<{ project: Project | null; minimal?: boolean; suspended?: boolean }>;
   Chatbot: ComponentType<ChatbotProps>;
@@ -62,9 +64,10 @@ export function DashboardLayout({
   const isMountedRef = useRef(true);
   const mobileChatRef = useRef<HTMLDivElement>(null);
   const pendingChatMessageRef = useRef<string | null>(null);
-  // Tracks the project id we've already auto-prompted the chat about so we
+  // Tracks the project ids we've already auto-prompted the chat about so we
   // don't re-send the rundown on re-render or after the user clears the chat.
-  const projectPromptSentForRef = useRef<string | null>(null);
+  // Module-scoped, not a ref: React Strict Mode unmounts and remounts this
+  // component in development, and a fresh ref per mount sent the rundown twice.
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -134,8 +137,8 @@ export function DashboardLayout({
   // In project mode the tools panel is the whole point; keep it visible.
   useEffect(() => {
     if (!chatFns || !selectedProject) return;
-    if (projectPromptSentForRef.current === selectedProject.id) return;
-    projectPromptSentForRef.current = selectedProject.id;
+    if (autoPromptedProjectIds.has(selectedProject.id)) return;
+    autoPromptedProjectIds.add(selectedProject.id);
     hasAutoCollapsedRef.current = true;
     chatFns.send(`Tell me about ${selectedProject.name}`);
   }, [chatFns, selectedProject]);
@@ -217,6 +220,7 @@ export function DashboardLayout({
                   onChatReady={handleChatReady}
                   onClearChat={handleClearChat}
                   onUserMessage={handleUserMessage}
+                  projectName={selectedProject?.name}
                 />
               </m.div>
             )}
@@ -245,6 +249,7 @@ export function DashboardLayout({
               onChatReady={handleChatReady}
               onClearChat={handleClearChat}
               onUserMessage={handleUserMessage}
+              projectName={selectedProject?.name}
             />
           </div>
         </div>

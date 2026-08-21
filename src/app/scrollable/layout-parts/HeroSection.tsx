@@ -52,7 +52,7 @@ export function HeroSection({
         </div>
       </m.header>
 
-      <section className="pt-24 pb-16 md:pt-32 md:pb-24 min-h-[80vh] flex items-center">
+      <section className="pt-24 pb-10 md:pt-28 md:pb-14 min-h-[70vh] flex items-center">
       <m.div
         className="max-w-7xl mx-auto px-4 md:px-6 w-full"
         initial="hidden"
@@ -63,19 +63,21 @@ export function HeroSection({
           <m.div variants={sectionItem} className="space-y-6">
             <div className="space-y-2">
               <m.p
-                className="text-[var(--interactive)] font-medium flex items-center gap-2"
+                className="flex flex-wrap items-center gap-2 font-medium text-[var(--orange)]"
                 initial={prefersReducedMotion ? false : { opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={prefersReducedMotion ? instantTransition : { delay: 0.2 }}
               >
                 <span className="inline-block w-2 h-2 bg-[var(--status-success)] rounded-full animate-pulse" />
-                UWaterloo Computer Engineering
+                {PORTFOLIO_DATA.personal.name}
+                <span className="text-[var(--text-muted)]">/</span>
+                <span className="text-[var(--text-secondary)]">UWaterloo Computer Engineering</span>
               </m.p>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--text-primary)] leading-tight">
                 I build
                 <span
                   className="text-transparent bg-clip-text"
-                  style={{ backgroundImage: 'linear-gradient(to right, var(--purple), var(--orange))' }}
+                  style={{ backgroundImage: 'linear-gradient(to right, var(--orange), var(--orange-active))' }}
                 >
                   {' '}robots{' '}
                 </span>
@@ -89,7 +91,7 @@ export function HeroSection({
             <div className="flex flex-wrap gap-4">
               <m.button
                 onClick={onViewRobots}
-                className="px-6 py-3 bg-[var(--interactive)] hover:bg-[var(--interactive-hover)] text-[var(--text-on-accent)] rounded-xl font-medium transition-colors"
+                className="px-6 py-3 bg-[var(--orange)] hover:bg-[var(--orange-hover)] text-[var(--text-on-accent)] rounded-xl font-medium transition-colors"
                 whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
                 whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
               >
@@ -97,7 +99,7 @@ export function HeroSection({
               </m.button>
               <m.button
                 onClick={onOpenChat}
-                className="px-6 py-3 bg-[var(--glass-bg)] hover:bg-[var(--glass-bg-strong)] text-[var(--text-primary)] rounded-xl font-medium transition-colors border border-[var(--border)]"
+                className="px-6 py-3 bg-[var(--purple-muted)] hover:bg-[var(--purple)] hover:text-[var(--text-on-accent)] text-[var(--purple)] rounded-xl font-medium transition-colors border border-[var(--purple)]/40"
                 whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
                 whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
               >
@@ -127,7 +129,7 @@ export function HeroSection({
         </div>
 
         <m.div
-          className="hidden md:flex justify-center mt-12"
+          className="hidden md:flex justify-center mt-8"
           initial={prefersReducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={prefersReducedMotion ? instantTransition : { delay: 1 }}

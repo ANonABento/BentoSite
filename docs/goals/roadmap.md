@@ -4,7 +4,7 @@ Loose backlog of follow-ups, not a committed plan. Each item lists the
 leverage (small / medium / large) and the rough next step. When an item
 turns into committed work, spin it out into its own `docs/goals/<date>-<slug>.md`.
 
-Last refreshed: 2026-05-14 after the viewfinder-project-context goal.
+Last refreshed: 2026-08-21 after the launch-polish-and-studio goal.
 
 ---
 
@@ -25,7 +25,14 @@ Last refreshed: 2026-05-14 after the viewfinder-project-context goal.
   and set `links.modelPath`. The `/update-portfolio` 3D sub-flow now
   handles this cleanly.
 
-### Live-test the VID and PDF Viewfinder tabs — small
+### Live-test the VID and PDF Viewfinder tabs — small, blocked on assets
+
+- **2026-08-21**: all six linked Devpost pages (`taser-derby`, `shoulder-cupid`,
+  `snapfire`, `litter-caching`, `expressive-ai-robot-head`, `ar-gesture-robot`)
+  were checked for embedded demo videos. None have one, so the easy path to
+  exercising the video viewer does not exist — this needs a YouTube link or a
+  PDF report from Kevin.
+
 
 - **What**: no project in the corpus currently sets `media.video` or
   `media.pdf`. Both viewer paths are committed but unexercised.
@@ -51,38 +58,28 @@ Last refreshed: 2026-05-14 after the viewfinder-project-context goal.
 
 ## Quality / polish
 
-### Eliminate Strict-Mode dev double-send in chat — small
+### Eliminate Strict-Mode dev double-send in chat — done 2026-08-21
 
-- **What**: in development, the project-rundown auto-send can fire twice
-  because React 19 Strict Mode unmounts and remounts the effect, and
-  `projectPromptSentForRef` is per-instance.
-- **Production impact**: none — Strict Mode double-invocation doesn't
-  ship.
-- **Dev impact**: cosmetic; can confuse contributors poking at the chat.
-- **Next step**: hoist the "sent for project id" tracker to module scope
-  (`Set<string>` keyed on project id). Or use the chat's existing
-  storage to dedupe consecutive identical user messages.
+- The tracker is a module-scoped `Set<string>` now, so a Strict Mode remount cannot re-send the rundown.
 
-### Post-clear greeting should acknowledge the project — small
+### Post-clear greeting should acknowledge the project — done 2026-08-21
 
-- **What**: clicking Clear in project mode resets the chat to the
-  generic post-clear greeting. The visitor is still on a project URL —
-  the greeting could nudge them ("Chat cleared! Ask me anything about
-  <project name>.").
-- **Where**: `src/components/Chat/Chat.hooks.ts:96` (clearChat builds the
-  reset message).
-- **Next step**: thread `selectedProject` into the chat (currently the
-  chat is unaware of which project the dashboard is showing). Mutate
-  `clearChat` to use a project-aware greeting when set.
+- `projectName` is threaded through TerminalPanel to the chat; clearing in project mode keeps the context.
 
-### Cross-project navigation animation polish — medium
+### Cross-project navigation animation polish — done 2026-08-21
 
-- **What**: when `?project=A` → `?project=B`, the panels swap content in
-  place with no transition cue. A visitor running through multiple
-  projects can lose track of which one they're on.
-- **Next step**: gate the existing `dashboardStagger` variant on
-  `selectedProject?.id` so each project change re-runs the entrance
-  animation, even for in-SPA navigations.
+- The viewfinder panel replays a short opacity fade on project change (no transform — that would break the glass blur below it).
+
+### Card counters show the duplicate-filled total — small
+
+- **What**: `/projects` reads "All (48)" for 21 projects and `/photography`
+  reads "(36)" for 12 photos. The count is taken after
+  `duplicateCardsForFill`, which clones cards to fill the infinite canvas, so
+  a visitor is told there are more than twice as many projects as exist.
+- **Where**: `DesktopCanvasView` / `MobileScrollView` pass `cards.length` to
+  `SearchMenuCard`; the arrays they receive are already duplicated.
+- **Next step**: pass the pre-duplication count down alongside the filled
+  array, or count distinct ids via `stripCloneSuffix`.
 
 ### Boot-skip semantics review — small
 
@@ -98,16 +95,9 @@ Last refreshed: 2026-05-14 after the viewfinder-project-context goal.
 
 ## Coverage / observability
 
-### Run lighthouse + bundle-size + Playwright e2e locally — small
+### Run lighthouse + bundle-size + Playwright e2e locally — done 2026-08-21
 
-- **What**: CI runs `npm run lighthouse`, `npm run size`, and
-  `npm run e2e` on PRs (`.github/workflows/ci.yml`). Local runs only do
-  type-check + lint + unit + build.
-- **Risk**: catch perf regressions in PR review instead of locally.
-- **Next step**: add a `npm run ci` script that runs all five gates
-  and document in `CLAUDE.md`. Especially worth running after
-  `babel-plugin-react-compiler` toggling — the recent dep churn
-  showed how easily local + CI can diverge.
+- `npm run ci` chains lint + type-check + test + build + lighthouse + size, documented in CLAUDE.md.
 
 ### SkillsSection mobile-variant test — small
 
@@ -154,6 +144,11 @@ Last refreshed: 2026-05-14 after the viewfinder-project-context goal.
 
 ### Pick a specific itch.io game URL for `unity-game-dev` — small
 
+- **Candidates** (from the itch.io profile, 2026-08-21): Bandwidth, Entitled
+  Goose Game, Happy Santa Go Time, PROJECT: Apartment. The first two live under
+  `matthewz80.itch.io`. An embed needs the game's `/embed/` URL, not the page URL.
+
+
 - **What**: currently wired to the profile URL (`anonabento.itch.io/`),
   which falls through to GameViewer's "Open game" CTA. A specific game's
   embed URL would iframe properly.
@@ -188,3 +183,24 @@ Last refreshed: 2026-05-14 after the viewfinder-project-context goal.
   doesn't get a starter).
 - **Trigger**: low — the contract test catches the obvious case. Worth
   considering when adding new starter categories.
+
+---
+
+## Carried over from the old root docs (2026-08-21)
+
+`ROADMAP.md`, `IMPROVEMENTS.md`, `MAINTAINABILITY_FINDINGS.md`, and the two
+`split-*.task.md` refactor specs were deleted from the repo root: the refactors
+they described have shipped (`Chat/`, `BentoGrid/`, and `Dimension/` are all
+split), and most of their open checkboxes were already done (E2E tests, CI,
+light/dark theming, Framer Motion). These are the items that were still real:
+
+- **"View More" expansion for long project descriptions** — cards truncate to
+  two lines and the modal shows everything; there is no middle state.
+- **Print-friendly styles** — no `@media print` rules anywhere.
+- **External-link indicators** — outbound links (GitHub, Devpost, itch) look
+  identical to internal navigation.
+- **Chat interaction analytics** — `lib/analytics.ts` tracks email copies but
+  not chat questions, which are the most interesting signal on the site.
+- **Continue image optimization for project media** — several heroes are small
+  or wrong-shaped for a wide card (see the launch-polish goal).
+- **Contact form** — optional; the email-copy button covers the need today.

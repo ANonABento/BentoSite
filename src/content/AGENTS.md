@@ -3,6 +3,16 @@
 Audience: any agent (Claude Code, choomfie, hermes, future-Kevin) updating
 portfolio content in this repo. **Code changes** belong in `CLAUDE.md`, not here.
 
+## Two ways in
+
+**Visually**: `npm run dev`, then open <http://localhost:3000/studio>. The
+Studio edits every file listed below through forms — including image upload,
+drag-to-reorder, and a Sync/Commit flow. It only exists in development.
+
+**By hand or from an agent**: the table below, or the `npm run add:*` CLIs.
+Both paths write through the same validator, so neither can produce content the
+other would reject.
+
 ## TL;DR
 
 | Want to... | Touch this |
@@ -63,9 +73,13 @@ If you find yourself editing them, you're doing it wrong.
 3. `status` must be one of: `Completed`, `In Progress`, `Archived`.
 4. `dateCompleted` is `YYYY-MM` or `YYYY`. Drives sort order (newest first).
 5. `featured: true` puts it on the dashboard featured grid.
-6. Image paths under `media.images` etc. are public-rooted (`/projects/...`),
+6. `order` (optional integer) pins the project's place in the archive. Projects
+   with an `order` sort first, lowest first; everything else follows
+   newest-first. Set it by dragging the Studio's project list rather than by
+   hand — the Studio renumbers the whole list in one pass.
+7. Image paths under `media.images` etc. are public-rooted (`/projects/...`),
    not `/public/projects/...`.
-7. Run `npm run sync:projects` to regenerate the bundle.
+8. Run `npm run sync:projects` to regenerate the bundle.
 
 ### From a GitHub repo URL
 

@@ -12,6 +12,7 @@ import { PORTFOLIO_DATA } from '@/lib/portfolio-context';
 export default function Chatbot({
   onReady,
   onUserMessage,
+  projectName,
 }: ChatbotProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { success: toastSuccess } = useToast();
@@ -22,7 +23,7 @@ export default function Chatbot({
     messagesEndRef,
     addAssistantMessage,
     clearChat,
-  } = useChatMessages();
+  } = useChatMessages(projectName);
   const {
     input,
     setInput,

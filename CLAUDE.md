@@ -43,6 +43,7 @@ npm run e2e           # Playwright E2E
 npm run analyze       # Bundle analyzer (ANALYZE=true)
 npm run lighthouse    # Lighthouse CI locally
 npm run size          # Bundle size budget check
+npm run ci            # Every gate CI runs: lint + type-check + test + build + lighthouse + size
 ```
 
 CI (`.github/workflows/ci.yml`) runs lint + type-check + unit tests + build + Lighthouse + bundle-size on every PR (Gate 4.2 / 4.4 — perf and quality gates).
@@ -64,7 +65,9 @@ src/
 │   ├── playground/         # BentoGrid-backed games hub + per-game routes
 │   ├── scrollable/         # Long-form portfolio (hero, chat, skills, footer)
 │   ├── photography/        # Image gallery
-│   ├── api/                # /api/chat (Gemini) + /api/feedback
+│   ├── api/                # /api/chat (Gemini)
+│   │   └── studio/         # route.dev.ts — local content API (dev only)
+│   ├── studio/             # page.dev.tsx + _components/ — local content editor
 │   ├── opengraph-image.tsx # Auto-generated OG image
 │   ├── twitter-image.tsx   # Auto-generated Twitter card
 │   ├── robots.ts           # robots.txt
@@ -260,6 +263,28 @@ A shared infinite grid backing `/projects` and `/playground`:
 - `lib/seo.ts` builds JSON-LD (Person, WebSite, Portfolio, project ItemLists, photography ImageObject sets, BreadcrumbList).
 - `lib/__tests__/seo-validator.test.ts` is the CI gate that asserts every registered route has consistent metadata + JSON-LD.
 
+### Studio — local content editor (`/studio`)
+
+A dev-only authoring UI for everything in `src/content` and `public/photos`.
+Run `npm run dev` and open <http://localhost:3000/studio>.
+
+- **Tabs**: Projects (list + drag-to-reorder + full form + image upload),
+  Photos (upload + the four sidecar fields), Talking points, Bio.
+- **Ordering**: dragging the project list writes an `order` integer onto each
+  project JSON. `build-content.mjs` sorts by `order` first (lowest first), then
+  newest-first for everything without one — so the top of the list takes the
+  prime grid positions and the rest is first-come-first-served.
+- **Publishing is explicit**: *Sync & validate* runs `npm run sync`; *Commit*
+  stages only `src/content`, `public/photos`, and `public/projects`, and pushes
+  only when the push box is ticked.
+- **Never ships**: studio route files are named `page.dev.tsx` / `route.dev.ts`,
+  and `pageExtensions` in `next.config.ts` only registers those extensions
+  outside production. A production build contains no studio route at all —
+  `src/lib/__tests__/studio-isolation.test.ts` guards that.
+- **One write path**: both the Studio API and the `npm run add:*` CLIs go
+  through `scripts/content-repo.mjs`, which validates via
+  `scripts/content-schema.mjs` before writing.
+
 ### Performance (Perf 2.1b / 2.2b)
 
 - All heavy panels (`Viewfinder`, `Chat`, `SkillsSection`, individual viewers, individual playground games) are loaded with `next/dynamic` + `ssr: false` and a `LazyPanelFallback` / `ViewerSkeleton`.
@@ -352,7 +377,12 @@ These are recurring traps from recent T1–T7 work — read before changing the 
 12. **Cursor opt-in via `magnetic` prop.**
     Magnetic hover targets only register when an element has `[data-magnetic]`. Cards expose this via `BaseCard`'s `magnetic` prop — don't sprinkle the attribute by hand.
 
-13. **No AI attribution in commits.**
+13. **Studio files must keep the `.dev` extension.**
+    Renaming `page.dev.tsx` → `page.tsx` (or `route.dev.ts` → `route.ts`) would
+    ship a filesystem-writing API to production. The isolation test fails if
+    that happens — don't silence it, rename the file back.
+
+14. **No AI attribution in commits.**
     Commit messages do not include "Generated with Claude Code", co-authored-by trailers, or robot emojis.
 
 ---
@@ -419,6 +449,9 @@ BentoGrid (`/projects`, `/playground`):
 | Viewfinder (media tabs) | `src/components/Viewfinder/Viewfinder.tsx` |
 | Chat | `src/components/Chat/Chat.tsx` |
 | Dashboard | `src/components/Dashboard/DashboardLayout.tsx` |
+| Studio entry | `src/app/studio/page.dev.tsx` |
+| Studio API | `src/app/api/studio/[...segments]/route.dev.ts` |
+| Content write layer | `scripts/content-repo.mjs` |
 | Bundle size script | `scripts/check-bundle-size.mjs` |
 | Lighthouse config | `lighthouserc.js` |
 | CI workflows | `.github/workflows/ci.yml` |

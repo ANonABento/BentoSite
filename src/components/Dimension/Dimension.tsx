@@ -11,7 +11,7 @@ import {
 
 import { AVAILABLE_MODELS } from './Dimension.config';
 import { DimensionViewport } from './Dimension.viewport';
-import { useDimensionController } from './useDimensionController';
+import { MINIMAL_ZOOM, useDimensionController } from './useDimensionController';
 
 const HAS_MULTIPLE_MODELS = AVAILABLE_MODELS.length > 1;
 
@@ -52,7 +52,7 @@ export default function DimensionViewer({
     showModelInfo,
     showModelSelector,
     zoomLevel,
-  } = useDimensionController({ modelPath });
+  } = useDimensionController({ modelPath, initialZoom: minimal ? MINIMAL_ZOOM : undefined });
 
   return (
     <div
