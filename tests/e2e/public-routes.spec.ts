@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Locator } from '@playwright/test';
 
 test.use({ viewport: { width: 1280, height: 800 } });
 
@@ -60,18 +60,33 @@ test.describe('Public Content Routes', () => {
     // Clicking a category chip must actually filter. This was silently dead:
     // the chip row swallowed pointerdown for native scrolling, and the click
     // that followed never reached React.
+    // Touch contexts must tap: a synthetic mouse click takes a different path
+    // through the canvas gesture handling.
+    const hasTouch = await page.evaluate(() => 'ontouchstart' in window);
+    const activate = async (target: Locator) => {
+      if (hasTouch) {
+        await target.tap();
+      } else {
+        await target.click();
+      }
+    };
+
+    // The panel is a fixed-size card, so most categories start off-view. The
+    // arrow is the affordance that says so — activating it must move the row.
+    const more = page.getByRole('button', { name: /show more categories/i });
+    await expect(more).toBeVisible();
+    const scrollLeft = () =>
+      page.locator('.overflow-x-auto').first().evaluate((el) => el.scrollLeft);
+    expect(await scrollLeft()).toBe(0);
+    await activate(more);
+    await expect.poll(scrollLeft).toBeGreaterThan(0);
+
     // The chip row scrolls horizontally and most categories start off-view, so
     // bring it into its row first — the same thing a visitor does by swiping.
     const category = page.getByRole('button', { name: 'Hackathon', exact: true });
     await category.evaluate((el) => el.scrollIntoView({ block: 'nearest', inline: 'center' }));
     await expect(category).toBeVisible();
-    // Touch contexts must tap: a synthetic mouse click takes a different path.
-    const hasTouch = await page.evaluate(() => 'ontouchstart' in window);
-    if (hasTouch) {
-      await category.tap();
-    } else {
-      await category.click();
-    }
+    await activate(category);
 
     await expect(allChip).toHaveText(/^All \(\d+\/\d+\)$/, { timeout: 5000 });
     const [shown, outOf] = (await allChip.innerText())
