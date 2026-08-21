@@ -206,21 +206,40 @@ Last refreshed: 2026-08-21 after the launch-polish-and-studio goal.
 
 ## Unshipped work
 
-### Animated cursor — built, never merged
+### Animated cursor — dropped 2026-08-21
 
-- **What**: `CLAUDE.md` and `docs/architecture.md` documented an animated
+- **Decision**: Kevin does not want it. The site keeps the native cursor.
+- **No next step** — recorded here, like the map-highlights entry, so future
+  agents don't re-propose it or "restore" it as missing work.
+- **Background**: `CLAUDE.md` and `docs/architecture.md` described an animated
   cursor subsystem (`components/cursor/`, lerp trail, magnetic pull toward
-  `[data-magnetic]`, a `magnetic` prop on `BaseCard`) as if it were live. None
-  of it exists on `main` — no directory, and zero references in `src/`.
-- **Where it went**: it was built in PR #84 (`1aa30d1`,
-  "feat(cursor): trail + magnetic hover effect on interactive elements") on a
-  branch that was never merged. `git merge-base --is-ancestor` confirms it is
-  not an ancestor of `main`.
-- **2026-08-21**: the documentation was removed so the docs describe what the
-  code actually does. The feature itself is recoverable from that commit.
-- **Next step**: Kevin decides whether he wants it. If yes, cherry-pick
-  `1aa30d1`, re-verify against the current `BaseCard`, and restore the doc
-  sections. If no, nothing to do.
+  `[data-magnetic]`, a `magnetic` prop on `BaseCard`) as if it were live. It
+  never existed on `main` — it was built in PR #84 (`1aa30d1`) on a branch that
+  was never merged, which `git merge-base --is-ancestor` confirms. The
+  documentation was removed in #107 so the docs describe the actual code.
+- **If it ever comes back**, `1aa30d1` still holds the implementation, and
+  `BaseCard` would need a `magnetic` prop again — it has none today.
+
+### Why the cursor vanished: main's history was rewritten in May 2026
+
+- Fourteen PRs merged into `main` around 2026-05-04 have merge commits that are
+  no longer ancestors of `main` (#57, #66, #68, #70, #72, #74, #76, #78, #80,
+  #83, #84, #85, #86, #89). Something rewrote the branch after they landed.
+- **Content mostly survived the rewrite** — checked individually, not by SHA:
+  `RESUME_URL` (#86), the boot splash (#68), the E2E CI workflow (#57) and the
+  T5 token *usages* (#85) are all present today. A changed SHA is not lost work.
+- **Two things did not.** The cursor (#84) is gone entirely — that is why the
+  docs described a subsystem with no code behind it. And the T5 token
+  *definitions* never came back: #85's own description says they were "dropped
+  during a `--ours` conflict resolution", which is exactly why `--primary*`,
+  `--success*` and `--ai` were referenced everywhere and defined nowhere until
+  #106. #85 also confirms the intended mapping — "non-AI surfaces consistently
+  land on `--primary` (orange)" — which is what #106 implemented.
+- **Nothing else is outstanding.** #57's title mentions pre-commit hooks, but
+  husky and lint-staged appear in no revision of `package.json` in the entire
+  history, so they were never committed and nothing was lost there.
+- **No next step** — recorded so that the next unexplained "documented but
+  missing" feature is recognised as this, rather than re-investigated.
 
 ---
 
