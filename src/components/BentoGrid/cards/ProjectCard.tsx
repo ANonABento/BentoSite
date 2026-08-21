@@ -57,9 +57,9 @@ function StatusBadge({ status }: { status?: ProjectStatus }) {
   }> = {
     Completed: {
       label: 'READY',
-      bg: 'bg-[var(--success-muted)]',
-      text: 'text-[var(--success)]',
-      border: 'border-[var(--success)]/30',
+      bg: 'bg-[var(--status-success-muted)]',
+      text: 'text-[var(--status-success)]',
+      border: 'border-[var(--status-success)]/30',
     },
     'In Progress': {
       label: 'WIP',

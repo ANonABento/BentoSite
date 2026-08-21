@@ -90,7 +90,7 @@ export function Game2048() {
               className="text-center mb-6"
             >
               <motion.div
-                className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--pg-accent-primary)]/10 text-[var(--pg-accent-primary)] mb-4"
+                className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--pg-accent-gold)]/10 text-[var(--pg-accent-gold)] mb-4"
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 transition={springs.bouncy}
@@ -138,7 +138,7 @@ export function Game2048() {
             <div className="text-xs text-[var(--pg-text-muted)] uppercase tracking-wide mb-1">
               Best
             </div>
-            <div className="font-mono text-2xl font-bold text-[var(--pg-accent-primary)]">
+            <div className="font-mono text-2xl font-bold text-[var(--pg-accent-gold)]">
               {Math.max(bestScore, savedBest).toLocaleString()}
             </div>
           </div>
@@ -192,7 +192,7 @@ export function Game2048() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--pg-accent-primary)]/90 backdrop-blur-sm rounded-xl"
+              className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--pg-accent-gold)]/90 backdrop-blur-sm rounded-xl"
             >
               <motion.div
                 initial={{ scale: 0.5 }}
@@ -214,7 +214,7 @@ export function Game2048() {
                   </motion.button>
                   <motion.button
                     onClick={resetGame}
-                    className="px-4 py-2 rounded-lg bg-white text-[var(--pg-accent-primary)] font-medium transition-colors"
+                    className="px-4 py-2 rounded-lg bg-white text-[var(--pg-accent-gold)] font-medium transition-colors"
                     aria-label="Start a new 2048 game"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
