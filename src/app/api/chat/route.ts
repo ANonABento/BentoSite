@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Ratelimit } from '@upstash/ratelimit';
+import { createMemoryRateLimiter } from './memory-ratelimit';
 import { Redis } from '@upstash/redis';
 import {
   buildAssistantInstructions,
@@ -34,20 +35,47 @@ const DEFAULT_GEMINI_MODEL_CHAIN = [
 ] as const;
 
 // Rate limit: 10 chat sends per 60s per IP, sliding window.
-// When UPSTASH_REDIS_REST_URL / _TOKEN are unset (e.g. local dev), the
-// limiter is null and the route serves traffic unthrottled — degrade safely.
 const CHAT_RATELIMIT_REQUESTS = 10;
 const CHAT_RATELIMIT_WINDOW = '60 s' as const;
+const CHAT_RATELIMIT_WINDOW_MS = 60_000;
 
-const ratelimit =
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? new Ratelimit({
-        redis: Redis.fromEnv(),
-        limiter: Ratelimit.slidingWindow(CHAT_RATELIMIT_REQUESTS, CHAT_RATELIMIT_WINDOW),
-        analytics: true,
-        prefix: 'bentosite-chat',
-      })
-    : null;
+const hasUpstash = Boolean(
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN,
+);
+
+const upstashRatelimit = hasUpstash
+  ? new Ratelimit({
+      redis: Redis.fromEnv(),
+      limiter: Ratelimit.slidingWindow(CHAT_RATELIMIT_REQUESTS, CHAT_RATELIMIT_WINDOW),
+      analytics: true,
+      prefix: 'bentosite-chat',
+    })
+  : null;
+
+// Without Upstash this endpoint used to serve completely unthrottled — a public
+// route that calls a paid model with no ceiling. The in-memory limiter is a
+// weaker stand-in (per instance, ephemeral; see memory-ratelimit.ts) but it
+// turns "no limit at all" into "a naive flood gets stopped", and it costs
+// nothing to run.
+const memoryRatelimit = hasUpstash
+  ? null
+  : createMemoryRateLimiter({
+      requests: CHAT_RATELIMIT_REQUESTS,
+      windowMs: CHAT_RATELIMIT_WINDOW_MS,
+    });
+
+if (!hasUpstash && process.env.NODE_ENV === 'production') {
+  console.warn(
+    '[chat] UPSTASH_REDIS_REST_URL / _TOKEN are unset. Falling back to a ' +
+      'per-instance in-memory rate limiter, which does not hold across ' +
+      'serverless instances. Configure Upstash for real throttling.',
+  );
+}
+
+async function checkRateLimit(ip: string) {
+  if (upstashRatelimit) return upstashRatelimit.limit(ip);
+  return memoryRatelimit!.limit(ip);
+}
 
 type ChatProvider = 'demo' | 'google' | 'openai';
 
@@ -343,9 +371,9 @@ async function generateProviderResponse(
 
 export async function POST(request: NextRequest) {
   try {
-    if (ratelimit) {
+    {
       const ip = getClientIp(request);
-      const result = await ratelimit.limit(ip);
+      const result = await checkRateLimit(ip);
       if (!result.success) {
         const retryAfterSec = Math.max(1, Math.ceil((result.reset - Date.now()) / 1000));
         return NextResponse.json(
