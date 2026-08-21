@@ -5,6 +5,7 @@ import { useSearchCardState } from '../cards';
 import {
   filterCards,
   getCameraTransform,
+  startsOnInteractiveControl,
   isEditableTarget,
   useCamera,
   useCardNavigation,
@@ -479,11 +480,7 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
   // through so the pan continues smoothly when the cursor crosses this zone.
   const stopGesture = {
     onPointerDown: (event: React.PointerEvent) => {
-      // Never swallow pointerdown that starts on a control. useGesture blocks
-      // the click that follows a pointerdown it never saw, which is why the
-      // category chips inside this scroll container did nothing when clicked:
-      // the click event was suppressed before React's delegated handler ran.
-      if ((event.target as HTMLElement).closest('button, a, [role="button"]')) return;
+      if (startsOnInteractiveControl(event.target)) return;
       event.stopPropagation();
     },
     onWheel: (event: React.WheelEvent) => {

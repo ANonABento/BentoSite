@@ -12,6 +12,7 @@ import { ArrowLeftIcon, ChevronDownIcon, CloseIcon, SearchIcon } from '@/compone
 import type { CardPosition, Position, ThemeConfig, SearchCardEdge } from '../BentoGrid.types';
 import { SEARCH_CARD_ID } from '../BentoGrid.constants';
 import { BaseCard } from './BaseCard';
+import { startsOnInteractiveControl } from '../core/gestureTargets';
 
 // =============================================================================
 // PROPS
@@ -344,11 +345,9 @@ export function SearchMenuCard({
       }}
       hoverEnabled={compression === 0}
       onPointerDown={(event) => {
-        // Stop pointer events on the search card from reaching the drag
-        // gesture handler on the parent canvas — except when the press starts
-        // on a control. Swallowing those suppressed the click that follows and
-        // left the category chips inert.
-        if ((event.target as HTMLElement).closest('button, a, input, [role="button"]')) return;
+        // Keep drags on the panel from panning the canvas, but never swallow a
+        // press that starts on a control — see startsOnInteractiveControl.
+        if (startsOnInteractiveControl(event.target)) return;
         event.stopPropagation();
       }}
       ariaLabel="Search and filter cards"
