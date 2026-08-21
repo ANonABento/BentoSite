@@ -188,3 +188,24 @@ Last refreshed: 2026-05-14 after the viewfinder-project-context goal.
   doesn't get a starter).
 - **Trigger**: low — the contract test catches the obvious case. Worth
   considering when adding new starter categories.
+
+---
+
+## Carried over from the old root docs (2026-08-21)
+
+`ROADMAP.md`, `IMPROVEMENTS.md`, `MAINTAINABILITY_FINDINGS.md`, and the two
+`split-*.task.md` refactor specs were deleted from the repo root: the refactors
+they described have shipped (`Chat/`, `BentoGrid/`, and `Dimension/` are all
+split), and most of their open checkboxes were already done (E2E tests, CI,
+light/dark theming, Framer Motion). These are the items that were still real:
+
+- **"View More" expansion for long project descriptions** — cards truncate to
+  two lines and the modal shows everything; there is no middle state.
+- **Print-friendly styles** — no `@media print` rules anywhere.
+- **External-link indicators** — outbound links (GitHub, Devpost, itch) look
+  identical to internal navigation.
+- **Chat interaction analytics** — `lib/analytics.ts` tracks email copies but
+  not chat questions, which are the most interesting signal on the site.
+- **Continue image optimization for project media** — several heroes are small
+  or wrong-shaped for a wide card (see the launch-polish goal).
+- **Contact form** — optional; the email-copy button covers the need today.
