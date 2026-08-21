@@ -116,6 +116,12 @@ export function validateProject(project, source = 'project') {
 
   if (project.dateCompleted !== undefined) {
     assertValidDateMonth(project.dateCompleted, 'dateCompleted', errors);
+
+  if (project.order !== undefined) {
+    if (typeof project.order !== 'number' || !Number.isInteger(project.order) || project.order < 0) {
+      errors.push(`${source}.order: expected a non-negative integer`);
+    }
+  }
   }
 
   if (project.description !== undefined && typeof project.description !== 'string') {
