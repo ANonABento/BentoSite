@@ -15,7 +15,7 @@ For diagrams (route tree, subsystems, BentoGrid card hierarchy) see [`docs/archi
 
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| Next.js | 16.0.3 | Framework (App Router) |
+| Next.js | 16.2.6 | Framework (App Router) |
 | React | 19.2.0 | UI library |
 | TypeScript | 5.x | Type safety (strict mode) |
 | Tailwind CSS | 4.x | Utility-first styling |
@@ -56,7 +56,7 @@ CI (`.github/workflows/ci.yml`) runs lint + type-check + unit tests + build + Li
 src/
 ├── app/
 │   ├── layout.tsx          # Root: ThemeProvider, ToastProvider, PageTransition,
-│   │                       #       AnimatedCursor, theme flash-prevent script
+│   │                       #       theme flash-prevent script
 │   ├── page.tsx            # Boot splash gate + DashboardLayout
 │   ├── HomeClient.tsx
 │   ├── globals.css         # Imports styles/{theme,utilities,animations,content}.css
@@ -112,12 +112,6 @@ src/
 │   │   ├── RouteLoadingFallback.tsx
 │   │   ├── SectionHeader.tsx
 │   │   └── index.ts            # Barrel
-│   │
-│   ├── cursor/             # AnimatedCursor (trail + magnetic)
-│   │   ├── AnimatedCursor.tsx  # rAF lerp tracker, prefers-reduced-motion + coarse-pointer aware
-│   │   ├── cursor-routes.ts    # Routes where the custom cursor renders
-│   │   ├── cursor-styles.ts    # Style injection helper
-│   │   └── index.ts
 │   │
 │   ├── BentoOS/            # Boot splash (T3)
 │   │   ├── BootScreen.tsx
@@ -242,12 +236,6 @@ A shared infinite grid backing `/projects` and `/playground`:
 - Default model is a **procedural cat** (`scene/ProceduralCat.tsx`) — no external asset, no network fetch. `Dimension.config.ts` exports `PROCEDURAL_CAT_PATH` as the sentinel for `DEFAULT_MODEL_PATH`.
 - LOD switching (`scene/LODModel.tsx`) reacts to FPS via `PERFORMANCE.LOW_FPS_THRESHOLD`.
 - Mobile tweaks: pixel ratio capped at `1.5`, lower LOD thresholds, broader zoom range (see table below).
-
-### Animated cursor (`components/cursor`)
-
-- `AnimatedCursor` mounts in `app/layout.tsx`. Active routes: `/`, `/projects`, `/playground` (see `cursor-routes.ts`).
-- Effects: smooth lerp follow + 4-dot trail + magnetic pull toward `[data-magnetic]` elements (cards opt in via `BaseCard` `magnetic` prop).
-- Disabled on coarse pointers (`pointer: coarse`) and `prefers-reduced-motion: reduce`. Native cursor is never hidden, so JS failure degrades to default.
 
 ### Chat (`components/Chat`, `app/api/chat`)
 
@@ -374,18 +362,15 @@ These are recurring traps from recent T1–T7 work — read before changing the 
 11. **Mobile detection changes rendering, not just layout.**
     Pixel ratio, LOD thresholds, light intensity, and zoom range all branch on `isMobile`. Manually verify both viewports when changing the viewer.
 
-12. **Cursor opt-in via `magnetic` prop.**
-    Magnetic hover targets only register when an element has `[data-magnetic]`. Cards expose this via `BaseCard`'s `magnetic` prop — don't sprinkle the attribute by hand.
-
-13. **Studio files must keep the `.dev` extension.**
+12. **Studio files must keep the `.dev` extension.**
     Renaming `page.dev.tsx` → `page.tsx` (or `route.dev.ts` → `route.ts`) would
     ship a filesystem-writing API to production. The isolation test fails if
     that happens — don't silence it, rename the file back.
 
-14. **No AI attribution in commits.**
+13. **No AI attribution in commits.**
     Commit messages do not include "Generated with Claude Code", co-authored-by trailers, or robot emojis.
 
-15. **Never hard-code the site's own domain.**
+14. **Never hard-code the site's own domain.**
     `siteConfig.url` resolves `NEXT_PUBLIC_SITE_URL` →
     `NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL` → `http://localhost:3000`, and
     feeds `metadataBase`, every canonical, `og:url`/`og:image`, `sitemap.xml`,
@@ -398,13 +383,12 @@ These are recurring traps from recent T1–T7 work — read before changing the 
 
 | Optimization | Desktop | Mobile |
 |--------------|---------|--------|
-| Pixel ratio | Native | ≤ 1.5× |
+| Pixel ratio | ≤ 2× | ≤ 1.5× |
 | LOD | Higher detail | Lower detail |
 | Lighting | Full intensity | Reduced |
 | Controls | Mouse orbit | Touch gestures |
 | Zoom range | 3–30 | 4–40 |
 | BentoGrid | Pannable canvas | Vertical scroll |
-| Animated cursor | Active | Disabled (coarse pointer) |
 
 ---
 
@@ -437,11 +421,10 @@ BentoGrid (`/projects`, `/playground`):
 
 | What | File |
 |------|------|
-| Root layout (cursor, theme, toast) | `src/app/layout.tsx` |
+| Root layout (theme, toast) | `src/app/layout.tsx` |
 | Boot + dashboard entry | `src/app/page.tsx` |
 | Boot session gate | `src/lib/boot-session.ts` |
 | Boot UI | `src/components/BentoOS/BootScreen.tsx` |
-| Animated cursor | `src/components/cursor/AnimatedCursor.tsx` |
 | Theme tokens (CSS) | `src/app/styles/theme.css` |
 | Theme provider | `src/lib/theme-context.tsx` |
 | Color helpers | `src/lib/colors.ts` |

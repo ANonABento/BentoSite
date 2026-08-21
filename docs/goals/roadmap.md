@@ -204,6 +204,26 @@ Last refreshed: 2026-08-21 after the launch-polish-and-studio goal.
 
 ---
 
+## Unshipped work
+
+### Animated cursor — built, never merged
+
+- **What**: `CLAUDE.md` and `docs/architecture.md` documented an animated
+  cursor subsystem (`components/cursor/`, lerp trail, magnetic pull toward
+  `[data-magnetic]`, a `magnetic` prop on `BaseCard`) as if it were live. None
+  of it exists on `main` — no directory, and zero references in `src/`.
+- **Where it went**: it was built in PR #84 (`1aa30d1`,
+  "feat(cursor): trail + magnetic hover effect on interactive elements") on a
+  branch that was never merged. `git merge-base --is-ancestor` confirms it is
+  not an ancestor of `main`.
+- **2026-08-21**: the documentation was removed so the docs describe what the
+  code actually does. The feature itself is recoverable from that commit.
+- **Next step**: Kevin decides whether he wants it. If yes, cherry-pick
+  `1aa30d1`, re-verify against the current `BaseCard`, and restore the doc
+  sections. If no, nothing to do.
+
+---
+
 ## Architecture / refactor candidates (no commitment)
 
 ### Centralize URL state in a hook — medium

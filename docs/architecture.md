@@ -12,14 +12,14 @@ For conventions and pitfalls, see [`../CLAUDE.md`](../CLAUDE.md).
 
 ## 1. Route tree
 
-Two distinct interaction surfaces share the same shell (`app/layout.tsx`: theme + toast + page transition + animated cursor).
+Two distinct interaction surfaces share the same shell (`app/layout.tsx`: theme + toast + page transition).
 
 - **Marketing surfaces** — boot splash, dashboard, infinite BentoGrid for projects/playground, gallery.
 - **Long-form surface** — `/scrollable`, a top-to-bottom narrative variant of the same content.
 
 ```mermaid
 graph TD
-  Layout["app/layout.tsx<br/>ThemeProvider · ToastProvider · PageTransition · AnimatedCursor"]
+  Layout["app/layout.tsx<br/>ThemeProvider · ToastProvider · PageTransition"]
 
   Layout --> Marketing["Marketing surfaces"]
   Layout --> Scrollable["/scrollable<br/>(long-form)"]
@@ -111,15 +111,12 @@ graph LR
   end
 
   Layoutcomp[app/layout.tsx]
-  Cursor[components/cursor/AnimatedCursor]
   Boot[components/BentoOS/BootScreen]
   Dashboard[components/Dashboard/DashboardLayout]
   Viewfinder[components/Viewfinder]
   ApiChat[app/api/chat/route.ts<br/>Gemini]
 
   Layoutcomp --> ThemeCtx
-  Layoutcomp --> Cursor
-  Cursor -.magnetic targets.-> Cards
 
   Boot -.session gate.-> Dashboard
   Dashboard --> Viewfinder
@@ -140,7 +137,7 @@ graph LR
 
 ## 3. BentoGrid card hierarchy
 
-`BaseCard` is the shared shell — motion + theming + optional anchor wrapper + magnetic hover opt-in. Every card surface composes it.
+`BaseCard` is the shared shell — motion + theming + optional anchor wrapper. Every card surface composes it.
 
 ```mermaid
 graph TD
@@ -157,7 +154,6 @@ graph TD
   Photo   -. data .-> PhotoData["PhotoCardData<br/>(BentoGrid.types.ts)"]
 
   Base -. consumes .-> Theme["ThemeConfig<br/>(BentoGrid.constants → THEMES)"]
-  Base -. opts in .-> Magnetic["[data-magnetic]<br/>→ AnimatedCursor pull"]
   Base -. wraps .-> Anchor["<a href> when href set<br/>(middle-click / copy-link work)"]
 
   classDef base fill:#2a1f0a,stroke:#d97706,color:#fde68a
@@ -165,13 +161,12 @@ graph TD
   classDef note fill:#0d0d0d,stroke:#333,color:#aaa,stroke-dasharray: 4 4
   class Base base
   class Project,Game,Photo,Search,Default child
-  class ProjectData,GameData,PhotoData,Theme,Magnetic,Anchor note
+  class ProjectData,GameData,PhotoData,Theme,Anchor note
 ```
 
 **Key contracts**
 
 - `BaseCard` renders an `<a href>` when `href` is provided; otherwise a `<div>`. Don't replace the anchor with a `button + router.push` — middle-click, copy-link, and right-click all rely on it.
-- Magnetic hover is opt-in via `BaseCard`'s `magnetic` prop, which sets `[data-magnetic]` on the actual hover target (anchor when present, wrapper otherwise). The cursor is the only consumer.
 - Card data is a discriminated union: `CardData = ProjectCardData | GameCardData | PhotoCardData`. The `BentoGrid` chooses the renderer from `card.type`.
 - `SearchMenuCard` has three layout modes driven by `compression`/`edge`: free (full card), compact bar (top/bottom edge), icon strip (left/right edge).
 - **Card sizing** is controlled by `cardSizeMode` (`'mixed'` | `'detail'` | `'2x2'`). Photo cards are always 1x1. In `'detail'` mode, featured projects get 2x2, others 2x1.
