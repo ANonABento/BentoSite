@@ -81,23 +81,20 @@ Last refreshed: 2026-08-21 after the launch-polish-and-studio goal.
 - **Next step**: pass the pre-duplication count down alongside the filled
   array, or count distinct ids via `stripCloneSuffix`.
 
-### Search panel can sit behind spawned cards — medium
+### Category chips scroll out of the search panel — small
 
-- **What**: on `/projects` and `/playground`, the sticky search panel and the
-  card layer can end up in the wrong stacking order — `elementFromPoint` at a
-  category chip's own centre returns a project card's `<img>`, not the chip.
-  Tapping the chip then opens whatever project is underneath. Reproduced at
-  1024x768, 1280x800, and 1440x900, with and without touch emulation.
-- **Why it hid**: the panel drifts with the canvas, so it only overlaps a card
-  once enough cards have spawned around it — a fresh load often looks fine.
-- **Impact**: worst on touch, where it is the only way to filter. Confirmed
-  pre-existing (reproduces with pointer capture restored, i.e. before the
-  tablet tap fix).
-- **Blocks**: the category-filter E2E test is skipped under touch emulation
-  (`tests/e2e/public-routes.spec.ts`) until this is fixed.
-- **Next step**: give the search overlay a stacking context above the card
-  layer that survives the sticky/edge transitions, and add a hit-test
-  assertion so it cannot regress silently.
+- **What**: the category row is a horizontal scroll container (at 1280x800 it
+  is 338px wide holding 915px of chips), so most categories start off-view.
+  A chip's `getBoundingClientRect()` still reports where it *would* sit —
+  outside the panel, over the canvas — which makes naive hit-testing look like
+  the panel is stacking below the cards. It is not: scroll the chip into its
+  row and it is the hit target, and the filter applies, on mouse and touch
+  alike.
+- **Real issue**: discoverability. Only the first three or four categories are
+  visible; the rest need a horizontal scroll that has just a gradient mask to
+  advertise it.
+- **Next step**: wrap the chips instead of scrolling them, or add explicit
+  scroll affordances. Not a correctness bug.
 
 ### Boot-skip semantics review — small
 

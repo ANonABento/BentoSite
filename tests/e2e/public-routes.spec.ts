@@ -42,13 +42,7 @@ test.describe('Public Content Routes', () => {
     expect(pageErrors).toHaveLength(0);
   });
 
-  test('category chips filter the projects grid and the count is a content count', async ({ page, isMobile }) => {
-    // Under touch emulation the search panel can sit behind spawned cards, so
-    // the chip is not the hit target and this asserts nothing about the filter.
-    // Tracked in docs/goals/roadmap.md — the filter logic itself is covered here
-    // on desktop, which is where the dead-click bug lived.
-    test.skip(Boolean(isMobile), 'search panel overlaps cards under touch emulation');
-
+  test('category chips filter the projects grid and the count is a content count', async ({ page }) => {
     await page.goto('/projects');
 
     await expect(
@@ -66,9 +60,18 @@ test.describe('Public Content Routes', () => {
     // Clicking a category chip must actually filter. This was silently dead:
     // the chip row swallowed pointerdown for native scrolling, and the click
     // that followed never reached React.
+    // The chip row scrolls horizontally and most categories start off-view, so
+    // bring it into its row first — the same thing a visitor does by swiping.
     const category = page.getByRole('button', { name: 'Hackathon', exact: true });
+    await category.evaluate((el) => el.scrollIntoView({ block: 'nearest', inline: 'center' }));
     await expect(category).toBeVisible();
-    await category.click();
+    // Touch contexts must tap: a synthetic mouse click takes a different path.
+    const hasTouch = await page.evaluate(() => 'ontouchstart' in window);
+    if (hasTouch) {
+      await category.tap();
+    } else {
+      await category.click();
+    }
 
     await expect(allChip).toHaveText(/^All \(\d+\/\d+\)$/, { timeout: 5000 });
     const [shown, outOf] = (await allChip.innerText())
