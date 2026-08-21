@@ -5,6 +5,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import { validateProject, validateTalkingPoint } from './content-schema.mjs';
 
@@ -21,6 +22,35 @@ function projectTimestamp(project) {
   const month = Number(monthString);
   if (!Number.isFinite(year) || !Number.isFinite(month)) return 0;
   return Date.UTC(year, month - 1, 1);
+}
+
+/**
+ * Write a generated bundle, preserving the previous `generatedAt` when nothing
+ * else changed.
+ *
+ * These files are committed, and `npm run dev` / `npm run build` regenerate
+ * them on every run. Stamping a fresh timestamp each time left the working
+ * tree permanently dirty — it blocks branch switches and means any content
+ * commit picks up two timestamp-only diffs it did not intend.
+ */
+export async function writeGeneratedBundle(file, payload) {
+  let previous = null;
+  try {
+    previous = JSON.parse(await fs.readFile(file, 'utf8'));
+  } catch {
+    previous = null;
+  }
+
+  const next = { generatedAt: new Date().toISOString(), ...payload };
+  if (previous) {
+    const { generatedAt: _previousStamp, ...previousRest } = previous;
+    const { generatedAt: _nextStamp, ...nextRest } = next;
+    if (JSON.stringify(previousRest) === JSON.stringify(nextRest)) {
+      next.generatedAt = previous.generatedAt;
+    }
+  }
+
+  await fs.writeFile(file, JSON.stringify(next, null, 2) + '\n', 'utf8');
 }
 
 async function readJsonFiles(dir) {
@@ -88,12 +118,7 @@ async function buildProjects() {
     return projectTimestamp(b) - projectTimestamp(a);
   });
 
-  const output = {
-    generatedAt: new Date().toISOString(),
-    projects,
-  };
-
-  await fs.writeFile(PROJECTS_OUT, JSON.stringify(output, null, 2) + '\n', 'utf8');
+  await writeGeneratedBundle(PROJECTS_OUT, { projects });
   return { errors: [], count: projects.length };
 }
 
@@ -128,12 +153,7 @@ async function buildTalkingPoints() {
 
   points.sort((a, b) => a.id.localeCompare(b.id));
 
-  const output = {
-    generatedAt: new Date().toISOString(),
-    points,
-  };
-
-  await fs.writeFile(TALKING_POINTS_OUT, JSON.stringify(output, null, 2) + '\n', 'utf8');
+  await writeGeneratedBundle(TALKING_POINTS_OUT, { points });
   return { errors: [], count: points.length };
 }
 
@@ -154,7 +174,15 @@ async function main() {
   );
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exitCode = 1;
-});
+// Only build when run as a script. `writeGeneratedBundle` is imported by tests,
+// and importing this module used to rebuild the repo's real content as a side
+// effect of that import.
+const isEntrypoint =
+  process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isEntrypoint) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  });
+}
