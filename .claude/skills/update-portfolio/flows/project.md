@@ -131,8 +131,8 @@ options:
 
 1. Use `git remote -v` to get the repo URL.
 2. Treat as Branch A from there.
-3. Live demo: `https://kevinjiang.dev` (or check `src/lib/site-config.ts` for
-   `siteConfig.url`).
+3. Live demo: read `siteConfig.url` from `src/lib/site-config.ts` — do not
+   hard-code a domain.
 
 ---
 
@@ -436,7 +436,7 @@ Print to the user:
 
 - ✅ What was added (one line)
 - Commit SHA (short)
-- Live URL: `https://kevinjiang.dev` (or read from `src/lib/site-config.ts`)
+- Live URL: `<siteConfig.url>` (read from `src/lib/site-config.ts`)
 - "Vercel will deploy in ~1-2 min"
 
 Done.

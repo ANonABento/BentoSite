@@ -17,7 +17,6 @@
   ],
   "links": {
     "github": "https://github.com/ANonABento/BentoSite",
-    "liveDemo": "https://kevinjiang.dev",
     "docs": "https://github.com/ANonABento/BentoSite/blob/main/CLAUDE.md"
   },
   "media": {
@@ -27,8 +26,7 @@
       "/projects/bentosite/projects.png",
       "/projects/bentosite/playground.png",
       "/projects/bentosite/mobile.png"
-    ],
-    "website": "https://kevinjiang.dev"
+    ]
   },
   "featured": true,
   "dateCompleted": "2026-05"

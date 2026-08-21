@@ -134,7 +134,8 @@ git push origin main
 
 - ✅ Talking point added
 - Commit SHA
-- "Vercel will deploy in ~1-2 min — try asking the chat on https://kevinjiang.dev"
+- "Vercel will deploy in ~1-2 min — try asking the chat on the deployed site"
+  (resolve the URL via `siteConfig.url` in `src/lib/site-config.ts`)
 
 ---
 

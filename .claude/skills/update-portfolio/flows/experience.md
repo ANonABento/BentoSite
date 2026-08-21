@@ -247,8 +247,8 @@ git push origin main
 
 - ✅ What was changed
 - Commit SHA
-- Live URL: `https://kevinjiang.dev/scrollable` (since the timeline and
-  globe show experience/education)
+- Live URL: `<siteConfig.url>/scrollable` (since the timeline and
+  globe show experience/education); resolve via `src/lib/site-config.ts`
 - "Vercel will deploy in ~1-2 min"
 
 ---

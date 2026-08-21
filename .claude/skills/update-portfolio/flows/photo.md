@@ -199,7 +199,7 @@ Name the files explicitly — never `git add -A`.
 
 - ✅ What was added
 - Commit SHA
-- Live URL: `https://kevinjiang.dev/photography`
+- Live URL: `<siteConfig.url>/photography` (resolve via `src/lib/site-config.ts`)
 - "Vercel will deploy in ~1-2 min"
 
 ---
