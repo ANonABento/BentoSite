@@ -54,10 +54,10 @@ function isDashboardDeepLink(params: URLSearchParams): boolean {
   return params.get('view') === 'dashboard' || params.has('project');
 }
 
-function readBootStateClient(isDashboardView: boolean): BootState {
+function readBootStateClient(skipBootSplash: boolean): BootState {
   return resolveBootState({
     hasCompletedBoot: readBootComplete(window.sessionStorage),
-    isDashboardView,
+    skipBootSplash,
     isHardReload: hardReloadBootTracker.getPending(window.performance),
   });
 }

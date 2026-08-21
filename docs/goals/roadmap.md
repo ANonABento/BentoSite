@@ -82,15 +82,11 @@ Last refreshed: 2026-08-21 after the launch-polish-and-studio goal.
   clickable — the problem was that five of eight started off-view with only a
   gradient to advertise them.
 
-### Boot-skip semantics review — small
+### Boot-skip semantics review — done 2026-08-21
 
-- **What**: `isDashboardDeepLink` now returns true for both
-  `?view=dashboard` and `?project=`, but the variable `isDashboardView`
-  fed into `resolveBootState` is the same boolean. The shape works but
-  the naming asymmetry is a small smell.
-- **Next step**: rename `isDashboardView` →
-  `bootSplashShouldBeSkipped` (or similar) in `lib/boot-session.ts`.
-  Update all call sites + the test in `boot-session.test.ts`.
+- `isDashboardView` is now `skipBootSplash` across `boot-session.ts`,
+  `page.tsx`, and the test, and the field carries a comment saying the caller
+  owns what counts as a reason to skip.
 
 ---
 
@@ -100,23 +96,23 @@ Last refreshed: 2026-08-21 after the launch-polish-and-studio goal.
 
 - `npm run ci` chains lint + type-check + test + build + lighthouse + size, documented in CLAUDE.md.
 
-### SkillsSection mobile-variant test — small
+### SkillsSection mobile-variant test — closed 2026-08-21, nothing to test
 
-- **What**: `SkillsSection` is rendered twice in `DashboardLayout` (once
-  for desktop, once inside the mobile chat tab). Only the desktop variant
-  is rendered in the unit test. Mobile-only render bugs (e.g. animation
-  variant inheritance) wouldn't be caught.
-- **Next step**: extend `SkillsSection.test.tsx` with a render under a
-  width-mocked viewport.
+- Checked before writing the test: `SkillsSection` contains no viewport
+  branching at all — no `isMobile`, no `matchMedia`, not even a `md:` class —
+  and `DashboardLayout` passes it identical props at both call sites. There is
+  no mobile *variant*; the difference is entirely the parent's wrapper.
+- `DashboardLayout.test.tsx` already asserts both instances render when the
+  mobile tab is opened, which is the real behaviour. A width-mocked render of
+  the component would assert nothing, so it was not added.
 
-### Component-level test for the DashboardLayout auto-send — medium
+### Component-level test for the DashboardLayout auto-send — done 2026-08-21
 
-- **What**: the chat auto-send-on-project-mount is currently only
-  covered by a contract test (every project has a registered starter).
-  The actual `useEffect → chatFns.send` mechanism isn't directly tested.
-- **Next step**: render `DashboardLayout` with a mocked `Chatbot` whose
-  `onReady` exposes a spy `send`. Assert `send` is called once with
-  `Tell me about <project.name>` when `initialProjectId` is set.
+- `DashboardLayout.test.tsx` renders with a stub `Chatbot` exposing a spy
+  `send`. The once-only guard moved into `autoPromptTracker.ts` and is tested
+  directly, because a Strict Mode double-invoke cannot be forced reliably from
+  a jsdom render — the first version of that test passed with the guard
+  deleted.
 
 ---
 
