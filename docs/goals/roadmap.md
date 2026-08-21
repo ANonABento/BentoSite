@@ -70,31 +70,17 @@ Last refreshed: 2026-08-21 after the launch-polish-and-studio goal.
 
 - The viewfinder panel replays a short opacity fade on project change (no transform — that would break the glass blur below it).
 
-### Card counters show the duplicate-filled total — small
+### Card counters show the duplicate-filled total — done 2026-08-21
 
-- **What**: `/projects` reads "All (48)" for 21 projects and `/photography`
-  reads "(36)" for 12 photos. The count is taken after
-  `duplicateCardsForFill`, which clones cards to fill the infinite canvas, so
-  a visitor is told there are more than twice as many projects as exist.
-- **Where**: `DesktopCanvasView` / `MobileScrollView` pass `cards.length` to
-  `SearchMenuCard`; the arrays they receive are already duplicated.
-- **Next step**: pass the pre-duplication count down alongside the filled
-  array, or count distinct ids via `stripCloneSuffix`.
+- `countDistinctCards` (in `duplicate-fill.ts`) counts ids with the clone
+  suffix stripped; both views pass the distinct total to `SearchMenuCard`.
 
-### Category chips scroll out of the search panel — small
+### Category chips scroll out of the search panel — done 2026-08-21
 
-- **What**: the category row is a horizontal scroll container (at 1280x800 it
-  is 338px wide holding 915px of chips), so most categories start off-view.
-  A chip's `getBoundingClientRect()` still reports where it *would* sit —
-  outside the panel, over the canvas — which makes naive hit-testing look like
-  the panel is stacking below the cards. It is not: scroll the chip into its
-  row and it is the hit target, and the filter applies, on mouse and touch
-  alike.
-- **Real issue**: discoverability. Only the first three or four categories are
-  visible; the rest need a horizontal scroll that has just a gradient mask to
-  advertise it.
-- **Next step**: wrap the chips instead of scrolling them, or add explicit
-  scroll affordances. Not a correctness bug.
+- The row now has an explicit scroll arrow (shown only when the categories
+  cannot fit), which wraps back to the start at the end. The chips were always
+  clickable — the problem was that five of eight started off-view with only a
+  gradient to advertise them.
 
 ### Boot-skip semantics review — small
 
@@ -131,6 +117,27 @@ Last refreshed: 2026-08-21 after the launch-polish-and-studio goal.
 - **Next step**: render `DashboardLayout` with a mocked `Chatbot` whose
   `onReady` exposes a spy `send`. Assert `send` is called once with
   `Tell me about <project.name>` when `initialProjectId` is set.
+
+---
+
+---
+
+## Launch configuration
+
+### Set `NEXT_PUBLIC_SITE_URL` in Vercel — small, blocked on Kevin
+
+- **What**: `siteConfig.url` now resolves `NEXT_PUBLIC_SITE_URL` →
+  `NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL` → `http://localhost:3000`. Until
+  the first is set in the Vercel project, canonical tags and the sitemap name
+  whatever Vercel calls the deployment rather than the real domain.
+- **Why it matters**: this replaced a hard-coded `https://kevinjiang.dev`,
+  which belongs to a different Kevin Jiang (github.com/jiang-kevin). Every
+  canonical, sitemap URL, robots `Host`, OG image, and JSON-LD `@id` pointed at
+  that stranger's blog, and the bentOS project card's live-demo link and
+  embedded website tab did too.
+- **Next step**: Kevin confirms the launch domain; set it in the Vercel project
+  for all environments, and put it back on `bentosite.json` as `links.liveDemo`
+  if he wants the project card to link to the live site.
 
 ---
 

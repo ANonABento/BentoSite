@@ -132,6 +132,8 @@ e.g. choomfie / Discord):
 - ✅ One line: what was added or changed
 - The files changed
 - Commit SHA (short)
-- The relevant live URL — usually `https://kevinjiang.dev`; verify against
-  `src/lib/site-config.ts`'s `siteConfig.url` if unsure
+- The relevant live URL — read it from `siteConfig.url` in
+  `src/lib/site-config.ts`, which resolves `NEXT_PUBLIC_SITE_URL`. Never write a
+  literal domain into these docs: the one that used to sit here belonged to a
+  different Kevin Jiang
 - "Vercel will deploy in ~1-2 min"

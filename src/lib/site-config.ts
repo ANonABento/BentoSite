@@ -1,6 +1,35 @@
 // Site configuration - centralized metadata for SEO and social sharing
 // Kevin Jiang's portfolio configuration
 
+/**
+ * The site's canonical origin.
+ *
+ * Resolution order:
+ *   1. `NEXT_PUBLIC_SITE_URL` — the real domain, set in the Vercel project.
+ *   2. `NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL` — injected by Vercel, so a
+ *      deploy that forgets step 1 still points at itself.
+ *   3. localhost, for `npm run dev`.
+ *
+ * There is deliberately no hard-coded public domain here. The literal fallback
+ * used to read `https://kevinjiang.dev`, which belongs to a *different* Kevin
+ * Jiang (github.com/jiang-kevin). With the env var unset, every canonical tag,
+ * sitemap entry, robots `Host`, OG image URL, and JSON-LD `@id` on this site
+ * pointed at that stranger's blog — and a wrong canonical is worse than a dead
+ * one, because it tells search engines the other site is the original and this
+ * one is the duplicate.
+ */
+function resolveSiteUrl(): string {
+  const configured =
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+    process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL?.trim();
+
+  if (!configured) return 'http://localhost:3000';
+
+  // Vercel supplies a bare host (`bento-site.vercel.app`), not a URL.
+  const withScheme = /^https?:\/\//.test(configured) ? configured : `https://${configured}`;
+  return withScheme.replace(/\/+$/, '');
+}
+
 export const siteConfig = {
   // Personal info
   name: 'Kevin Jiang',
@@ -9,7 +38,7 @@ export const siteConfig = {
     'Interactive portfolio showcasing robotics, embedded systems, and AI projects. UWaterloo Computer Engineering student building robots that think.',
 
   // URLs
-  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://kevinjiang.dev',
+  url: resolveSiteUrl(),
   ogImage: '/og-image.png',
 
   // Social links

@@ -385,6 +385,13 @@ These are recurring traps from recent T1–T7 work — read before changing the 
 14. **No AI attribution in commits.**
     Commit messages do not include "Generated with Claude Code", co-authored-by trailers, or robot emojis.
 
+15. **Never hard-code the site's own domain.**
+    `siteConfig.url` resolves `NEXT_PUBLIC_SITE_URL` →
+    `NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL` → `http://localhost:3000`, and
+    feeds `metadataBase`, every canonical, `og:url`/`og:image`, `sitemap.xml`,
+    `robots.txt`, and the JSON-LD `@id`s. A literal domain here once pointed the
+    whole site at a stranger's blog. `site-url.test.ts` fails if one comes back.
+
 ---
 
 ## Mobile Optimization
