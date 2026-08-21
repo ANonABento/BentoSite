@@ -1,11 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { GET, POST } from './route';
 
-function makeRequest(body: unknown): Request {
+// The route throttles per client IP even when Upstash is unconfigured, so each
+// request gets its own identity by default. Sharing one would make these tests
+// order-dependent — the eleventh would 429 instead of exercising its own case.
+let clientSeq = 0;
+function nextClientIp() {
+  clientSeq += 1;
+  return `198.51.100.${clientSeq}`;
+}
+
+function makeRequest(body: unknown, ip: string = nextClientIp()): Request {
   return new Request('http://localhost/api/chat', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'x-forwarded-for': ip,
     },
     body: JSON.stringify(body),
   });
@@ -43,7 +53,7 @@ describe('/api/chat route', () => {
   it('rejects a malformed JSON body', async () => {
     const request = new Request('http://localhost/api/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-forwarded-for': nextClientIp() },
       body: '{"messages": [',
     });
 
@@ -177,5 +187,23 @@ describe('/api/chat route', () => {
     expect(payload.isDemoMode).toBe(true);
     expect(payload.provider).toBe('demo');
     expect(payload.message).toContain('k69jiang@uwaterloo.ca');
+  });
+
+  it('throttles a single client once it exceeds the window, even without Upstash', async () => {
+    // The endpoint calls a paid model. Before the in-memory fallback existed,
+    // an unconfigured deploy served this route with no ceiling at all.
+    const ip = nextClientIp();
+    const send = () => POST(makeRequest({ messages: [{ role: 'user', content: 'hi' }] }, ip) as never);
+
+    const allowed = [];
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      allowed.push((await send()).status);
+    }
+    expect(allowed.every((status) => status !== 429)).toBe(true);
+
+    const blocked = await send();
+    expect(blocked.status).toBe(429);
+    expect(blocked.headers.get('Retry-After')).toBeTruthy();
+    expect(await readJson(blocked)).toMatchObject({ error: 'Rate limit exceeded' });
   });
 });
