@@ -8,6 +8,7 @@ import { BentoIcon } from '@/components/BentoOS/BentoIcon';
 import {
   CheckIcon,
   CameraIcon,
+  FolderIcon,
   GitHubIcon,
   GridIcon,
   LinkedInIcon,
@@ -132,14 +133,14 @@ export default function Header({
       href: '/playground',
       label: 'Open playground',
       text: 'Playground',
-      visibleLabelClassName: 'hidden sm:inline',
+      visibleLabelClassName: 'hidden lg:inline',
       icon: <PlayCircleIcon size={16} />,
     },
     {
       href: '/projects',
       label: 'View Projects',
       text: 'View Projects',
-      visibleLabelClassName: 'hidden sm:inline',
+      visibleLabelClassName: 'hidden lg:inline',
       icon: <GridIcon size={16} />,
       onClick: onProjectsClick
         ? (event) => {
@@ -152,67 +153,93 @@ export default function Header({
       href: '/photography',
       label: 'View Photography',
       text: 'Photography',
-      visibleLabelClassName: 'hidden lg:inline',
+      visibleLabelClassName: 'hidden xl:inline',
       icon: <CameraIcon size={16} />,
+    },
+    {
+      href: '/scrollable',
+      label: 'Read the long-form portfolio',
+      text: 'About',
+      visibleLabelClassName: 'hidden xl:inline',
+      icon: <FolderIcon size={16} />,
     },
   ];
 
   if (compact) {
     return (
-      <header className="dashboard-nav flex items-center justify-between px-3 py-2">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <BentoIcon size={34} />
-            <h1 className="text-base font-bold font-mono tracking-tight">
+      <header className="dashboard-nav flex flex-wrap items-center gap-x-2 gap-y-1 px-2 py-2 sm:flex-nowrap sm:px-3">
+        {/* The wordmark alone never named the person behind the site. The
+            dashboard is the landing surface, so the name has to be legible
+            here at every width, not only in the chat greeting. */}
+        <div className="order-1 flex min-w-0 flex-1 items-center gap-2 sm:flex-none">
+          <BentoIcon size={34} />
+          <div className="min-w-0 leading-tight">
+            <h1 className="truncate text-base font-bold font-mono tracking-tight">
               <span className="text-[var(--text-primary)]">bentOS</span>
             </h1>
+            <p className="truncate font-mono text-[10px] text-[var(--text-muted)]">
+              {name}
+              <span className="hidden lg:inline"> / {tagline}</span>
+            </p>
           </div>
-          <div className="hidden sm:block w-px h-5 bg-gradient-to-b from-transparent via-[var(--border)] to-transparent" />
-          {compactNavLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={link.onClick}
-              className="interactive-hover flex items-center gap-2 px-3 py-1.5 text-sm font-medium font-mono text-[var(--text-secondary)] hover:text-[var(--orange)] hover:bg-[var(--glass-bg)]"
-              aria-label={link.label}
-            >
-              {link.icon}
-              <span className={link.visibleLabelClassName}>{link.text}</span>
-            </Link>
-          ))}
         </div>
 
-        <nav aria-label="Main navigation" className="flex items-center gap-1">
-          {socialLinks.map((link) =>
-            link.id === 'email' ? (
-              <button
-                key={link.id}
-                onClick={handleEmailClick}
-                className={`interactive-hover p-2 focus-ring ${
-                  copiedEmail
-                    ? 'text-[var(--status-success)] bg-[var(--status-success-muted)]'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]'
-                }`}
-                aria-label={copiedEmail ? 'Email copied!' : 'Copy email'}
-              >
-                {link.icon}
-              </button>
-            ) : (
-              <a
-                key={link.id}
+        {/* Below `sm` this wrapper is a full-width second row, so navigation and
+            contact links keep their place on a phone instead of being dropped.
+            From `sm` it becomes `display: contents` and its two children join
+            the header's own flex row directly — same markup, no duplicates. */}
+        <div className="order-3 flex w-full items-center gap-1 sm:order-2 sm:contents">
+          <nav aria-label="Sections" className="flex items-center gap-1 sm:ml-3 sm:gap-3">
+            <div className="hidden sm:block w-px h-5 bg-gradient-to-b from-transparent via-[var(--border)] to-transparent" />
+            {compactNavLinks.map((link) => (
+              <Link
+                key={link.href}
                 href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="interactive-hover p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] focus-ring"
+                onClick={link.onClick}
+                className="interactive-hover flex flex-shrink-0 items-center gap-2 px-1.5 py-1.5 text-sm font-medium font-mono text-[var(--text-secondary)] hover:text-[var(--orange)] hover:bg-[var(--glass-bg)] sm:px-3"
                 aria-label={link.label}
               >
                 {link.icon}
-              </a>
-            )
-          )}
+                <span className={link.visibleLabelClassName}>{link.text}</span>
+              </Link>
+            ))}
+          </nav>
+
+          <nav aria-label="Contact" className="ml-auto flex flex-shrink-0 items-center gap-1">
+            {socialLinks.map((link) =>
+              link.id === 'email' ? (
+                <button
+                  key={link.id}
+                  onClick={handleEmailClick}
+                  className={`interactive-hover p-2 focus-ring ${
+                    copiedEmail
+                      ? 'text-[var(--status-success)] bg-[var(--status-success-muted)]'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]'
+                  }`}
+                  aria-label={copiedEmail ? 'Email copied!' : 'Copy email'}
+                >
+                  {link.icon}
+                </button>
+              ) : (
+                <a
+                  key={link.id}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="interactive-hover p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] focus-ring"
+                  aria-label={link.label}
+                >
+                  {link.icon}
+                </a>
+              )
+            )}
+          </nav>
+        </div>
+
+        <div className="order-2 flex flex-shrink-0 items-center gap-1 sm:order-3">
           <ThemeToggle />
           <ResumeButton resumeUrl={resumeUrl} className="ml-1" />
-        </nav>
+        </div>
       </header>
     );
   }
