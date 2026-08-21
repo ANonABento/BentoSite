@@ -483,15 +483,15 @@
 }
 
 .pg-border-subtle {
-  border-color: rgba(255, 255, 255, 0.06);
+  border-color: var(--pg-border-subtle);
 }
 
 .pg-border-soft {
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--pg-border-soft);
 }
 
 .pg-border-strong {
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--pg-border-strong);
 }
 
 .pg-hover-border-strong:hover {

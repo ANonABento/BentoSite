@@ -32,7 +32,7 @@ export function DefaultCard({
       <div className="p-4 h-full flex flex-col">
         <h3 className="font-bold text-[var(--foreground)] text-lg truncate">{card.title}</h3>
         {card.description && (
-          <p className="text-sm text-[var(--muted-foreground)] mt-2 line-clamp-2">
+          <p className="text-sm text-[var(--text-muted)] mt-2 line-clamp-2">
             {card.description}
           </p>
         )}
