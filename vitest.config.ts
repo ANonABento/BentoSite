@@ -20,6 +20,8 @@ export default defineConfig({
         'src/app/layout.tsx', // Root layout
         'src/app/**/page.tsx', // Page components (covered by E2E)
         'src/components/**/*.3d.tsx', // Three.js components (hard to unit test)
+        // JSON content, not code.
+        'src/content/**',
       ],
       // Thresholds - reasonable for a portfolio
       thresholds: {
