@@ -1,3 +1,9 @@
+/**
+ * @vitest-environment node
+ *
+ * The resolution runs during the build and on the server, where there is no
+ * `window` — jsdom would mask the production-warning branch entirely.
+ */
 import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -34,6 +40,30 @@ describe('siteConfig.url resolution', () => {
     // The point is not that localhost is useful in production — it is that an
     // unconfigured build must not claim an origin somebody else owns.
     expect(await loadSiteUrl()).toBe('http://localhost:3000');
+  });
+
+  it('warns during a production build when no origin is configured', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', '');
+    vi.stubEnv('NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL', '');
+    vi.stubEnv('NODE_ENV', 'production');
+
+    await loadSiteUrl();
+
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('NEXT_PUBLIC_SITE_URL'));
+    warn.mockRestore();
+  });
+
+  it('stays quiet in development, where localhost is the right answer', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', '');
+    vi.stubEnv('NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL', '');
+    vi.stubEnv('NODE_ENV', 'development');
+
+    await loadSiteUrl();
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   it('uses the configured site URL and drops a trailing slash', async () => {

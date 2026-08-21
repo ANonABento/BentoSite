@@ -23,7 +23,21 @@ function resolveSiteUrl(): string {
     process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
     process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL?.trim();
 
-  if (!configured) return 'http://localhost:3000';
+  if (!configured) {
+    // A production build with no origin canonicalises every page to localhost,
+    // which search engines discard. Say so in the build log rather than ship it
+    // silently — an invisible failure here is exactly what the hard-coded
+    // domain used to paper over. Server-side only: this must not run per-render
+    // in a visitor's browser.
+    if (typeof window === 'undefined' && process.env.NODE_ENV === 'production') {
+      console.warn(
+        '[site-config] Neither NEXT_PUBLIC_SITE_URL nor ' +
+          'NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL is set. Canonical URLs, ' +
+          'sitemap.xml, and robots.txt will point at http://localhost:3000.',
+      );
+    }
+    return 'http://localhost:3000';
+  }
 
   // Vercel supplies a bare host (`bento-site.vercel.app`), not a URL.
   const withScheme = /^https?:\/\//.test(configured) ? configured : `https://${configured}`;
