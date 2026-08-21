@@ -10,7 +10,7 @@ import { spawnSync } from 'node:child_process';
 
 import sharp from 'sharp';
 
-import { validateProject } from './content-schema.mjs';
+import { writeProject } from './content-repo.mjs';
 import {
   optionalString,
   parseArgs,
@@ -247,12 +247,18 @@ async function main() {
     dateCompleted,
   };
 
-  const errors = validateProject(project, `${id}.json`);
-  if (errors.length > 0) {
-    throw new Error(`Project is invalid:\n${errors.map((error) => `- ${error}`).join('\n')}`);
+  if (dryRun) {
+    // Validate without touching the filesystem: writeProject does both, so a
+    // dry run has to re-run the same validator on its own.
+    const { validateProject } = await import('./content-schema.mjs');
+    const errors = validateProject(project, `${id}.json`);
+    if (errors.length > 0) {
+      throw new Error(`Project is invalid:\n${errors.map((error) => `- ${error}`).join('\n')}`);
+    }
+  } else {
+    // Shared with the Studio API so both write paths validate identically.
+    await writeProject(project);
   }
-
-  await writeJson(target, project, { dryRun });
   files.unshift(relativeTarget);
 
   let syncOutput;

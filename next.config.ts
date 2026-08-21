@@ -56,8 +56,20 @@ const securityHeaders = [
   }
 ];
 
+// The Studio (`/studio` + `/api/studio/*`) is a local authoring tool, not part
+// of the site. Its files are named `*.dev.tsx` / `*.dev.ts` and only registered
+// as routes in development, so a production build contains no studio route, no
+// studio bundle, and no filesystem-writing API surface at all.
+const STUDIO_PAGE_EXTENSIONS = ['dev.tsx', 'dev.ts'];
+const BASE_PAGE_EXTENSIONS = ['tsx', 'ts', 'jsx', 'js'];
+const isProduction = process.env.NODE_ENV === 'production';
+
 const nextConfig: NextConfig = {
   reactCompiler: true,
+
+  pageExtensions: isProduction
+    ? BASE_PAGE_EXTENSIONS
+    : [...STUDIO_PAGE_EXTENSIONS, ...BASE_PAGE_EXTENSIONS],
 
   // Security headers
   async headers() {
