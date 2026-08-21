@@ -4,16 +4,21 @@ export type BootState = 'checking' | 'booting' | 'exiting' | 'complete';
 
 interface BootStateOptions {
   hasCompletedBoot: boolean;
-  isDashboardView: boolean;
+  /**
+   * True when the visitor arrived on a dashboard deep link (`?view=dashboard`
+   * or `?project=`). Named for the decision rather than the URL shape: the
+   * caller decides what counts as a reason to skip, this file only honours it.
+   */
+  skipBootSplash: boolean;
   isHardReload: boolean;
 }
 
 export function resolveBootState({
   hasCompletedBoot,
-  isDashboardView,
+  skipBootSplash,
   isHardReload,
 }: BootStateOptions): BootState {
-  if (isDashboardView) {
+  if (skipBootSplash) {
     return 'complete';
   }
 

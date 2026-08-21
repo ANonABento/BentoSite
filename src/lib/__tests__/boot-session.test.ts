@@ -13,7 +13,7 @@ describe('boot-session utilities', () => {
     expect(
       resolveBootState({
         hasCompletedBoot: false,
-        isDashboardView: false,
+        skipBootSplash: false,
         isHardReload: false,
       })
     ).toBe('booting');
@@ -23,7 +23,7 @@ describe('boot-session utilities', () => {
     expect(
       resolveBootState({
         hasCompletedBoot: true,
-        isDashboardView: false,
+        skipBootSplash: false,
         isHardReload: false,
       })
     ).toBe('complete');
@@ -33,7 +33,7 @@ describe('boot-session utilities', () => {
     expect(
       resolveBootState({
         hasCompletedBoot: true,
-        isDashboardView: false,
+        skipBootSplash: false,
         isHardReload: true,
       })
     ).toBe('booting');
@@ -43,7 +43,7 @@ describe('boot-session utilities', () => {
     expect(
       resolveBootState({
         hasCompletedBoot: false,
-        isDashboardView: true,
+        skipBootSplash: true,
         isHardReload: true,
       })
     ).toBe('complete');
@@ -104,7 +104,7 @@ describe('boot-session utilities', () => {
     expect(
       resolveBootState({
         hasCompletedBoot: true,
-        isDashboardView: false,
+        skipBootSplash: false,
         isHardReload: tracker.getPending(performanceApi),
       })
     ).toBe('complete');

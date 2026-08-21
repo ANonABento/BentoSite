@@ -53,7 +53,10 @@ export const siteConfig = {
 
   // URLs
   url: resolveSiteUrl(),
-  ogImage: '/og-image.png',
+  // No `ogImage` here on purpose: the social card is generated at request time
+  // by `app/opengraph-image.tsx` / `app/twitter-image.tsx`. The field this
+  // replaced named `/og-image.png`, which has never existed in `public/` —
+  // nothing read it, but wiring it up would have shipped a 404 as the card.
 
   // Social links
   links: {
