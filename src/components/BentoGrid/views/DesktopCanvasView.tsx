@@ -15,7 +15,7 @@ import { countDistinctCards } from '../duplicate-fill';
 import { useBoardController } from '../core/useBoardController';
 import { usePhysicsWorld } from '../physics';
 import { SEARCH_CARD_ID } from '../BentoGrid.constants';
-import { ArrowLeftIcon, ChevronDownIcon, CloseIcon, RefreshIcon, SearchIcon } from '@/components/ui/Icons';
+import { ArrowLeftIcon, ChevronDownIcon, ChevronRightIcon, CloseIcon, RefreshIcon, SearchIcon } from '@/components/ui/Icons';
 import type { CardData, CardPosition, CardSizeMode, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
@@ -445,6 +445,10 @@ function IconStripContent({ theme, onBack, onToggleExpanded, searchTerm }: {
 /** Window after a pan during which we let wheel events bubble through
  *  swallow-zones (chip row, search input) so cursor-cross mid-pan doesn't
  *  stutter. ~100ms covers a typical trackpad wheel inter-event gap. */
+/** Categories beyond this many cannot fit the fixed-width panel in one row. */
+const CATEGORY_SCROLL_THRESHOLD = 3;
+const CATEGORY_SCROLL_STEP = 140;
+
 const MID_PAN_BUBBLE_WINDOW_MS = 120;
 
 function FullSearchContent({ theme, searchTerm, category, categories, onSearchChange, onCategoryChange, onBack, onReset, totalCards, filteredCards, panAtRef }: {
@@ -461,6 +465,21 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
   panAtRef: React.MutableRefObject<number>;
 }) {
   const allCount = filteredCards !== totalCards ? `${filteredCards}/${totalCards}` : `${totalCards}`;
+  // The row holds far more chips than the panel is wide. Derive the affordance
+  // from the category count rather than measuring the DOM: the panel is a fixed
+  // size, so the threshold is stable, and no layout effect is needed.
+  const categoryRowRef = useRef<HTMLDivElement>(null);
+  const hasScrollableCategories = categories.length > CATEGORY_SCROLL_THRESHOLD;
+  const scrollCategories = useCallback(() => {
+    const row = categoryRowRef.current;
+    if (!row) return;
+    const atEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 4;
+    row.scrollTo({
+      left: atEnd ? 0 : row.scrollLeft + CATEGORY_SCROLL_STEP,
+      behavior: 'smooth',
+    });
+  }, []);
+
   const categoryButtonStyles = useMemo(() => ({
     active: {
       background: `${theme.accent.primary}30`,
@@ -536,24 +555,22 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
         )}
       </label>
 
-      {/* Category filters — single row, horizontal scroll. Right-edge fade
-          mask hints at overflow without showing a scrollbar. */}
-      <div
-        className="relative -mx-1 px-1"
-        style={{
-          maskImage:
-            categories.length > 0
-              ? 'linear-gradient(to right, black 0, black calc(100% - 24px), transparent 100%)'
-              : undefined,
-          WebkitMaskImage:
-            categories.length > 0
-              ? 'linear-gradient(to right, black 0, black calc(100% - 24px), transparent 100%)'
-              : undefined,
-        }}
-      >
+      {/* Category filters — single row, horizontal scroll. The panel is a fixed
+          2x1 card, so eight categories cannot fit: most of them start off-view.
+          A fade alone did not say so clearly enough, hence the arrow. */}
+      <div className="relative -mx-1 px-1">
         <div
+          ref={categoryRowRef}
           {...stopGesture}
           className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5"
+          style={{
+            maskImage: hasScrollableCategories
+              ? 'linear-gradient(to right, black 0, black calc(100% - 28px), transparent 100%)'
+              : undefined,
+            WebkitMaskImage: hasScrollableCategories
+              ? 'linear-gradient(to right, black 0, black calc(100% - 28px), transparent 100%)'
+              : undefined,
+          }}
         >
           <button
             onClick={() => onCategoryChange(null)}
@@ -573,6 +590,19 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
             </button>
           ))}
         </div>
+
+        {hasScrollableCategories ? (
+          <button
+            type="button"
+            onClick={scrollCategories}
+            aria-label="Show more categories"
+            title="More categories"
+            className="absolute right-0 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-white/70 transition-colors hover:text-white"
+            style={{ background: 'rgba(0,0,0,0.55)' }}
+          >
+            <ChevronRightIcon className="h-3.5 w-3.5" />
+          </button>
+        ) : null}
       </div>
 
       {/* Keyboard hints — pinned to bottom of the card, lo-fi terminal feel */}
