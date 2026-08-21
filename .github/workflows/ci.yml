@@ -178,8 +178,11 @@ jobs:
           path: .next
           merge-multiple: true
 
+      # "Mobile Chrome" is the touch-input project. It runs on the same
+      # chromium binary, so it costs no extra install — and its absence is why
+      # a bug that made every card unopenable on tablets shipped unnoticed.
       - name: Run E2E tests
-        run: npm run e2e -- --project=chromium
+        run: npm run e2e -- --project=chromium --project="Mobile Chrome"
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

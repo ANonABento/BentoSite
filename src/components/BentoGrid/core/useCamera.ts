@@ -207,7 +207,12 @@ export function useCamera({
       drag: {
         from: () => [0, 0],
         filterTaps: true,
-        pointer: { touch: true, buttons: [1, 4] },
+        // `capture: false` matters on touch devices: with the default pointer
+        // capture, every pointerup lands on this container instead of the card
+        // under the finger, and the browser then never dispatches a click to
+        // that card. On any tablet — touch input, viewport wide enough for the
+        // canvas view — tapping a project, game, or photo did nothing at all.
+        pointer: { touch: true, buttons: [1, 4], capture: false },
       },
       pinch: {
         scaleBounds: { min: CAMERA.minZoom, max: CAMERA.maxZoom },

@@ -28,7 +28,16 @@ test.describe('Public Content Routes', () => {
     ).toBeVisible({ timeout: 15000 });
     const firstPhoto = page.locator('[aria-label*=" — "]').first();
     await expect(firstPhoto).toBeVisible();
-    await firstPhoto.click({ force: true });
+    // Touch-capable projects must open the card by tapping, not by a synthetic
+    // mouse click: the grid's pan gesture owns pointer input, and tapping is
+    // the interaction a tablet visitor actually performs. A mouse click under
+    // touch emulation passes through a different code path and told us nothing.
+    const hasTouch = await page.evaluate(() => 'ontouchstart' in window);
+    if (hasTouch) {
+      await firstPhoto.tap();
+    } else {
+      await firstPhoto.click();
+    }
     await expect(page.getByRole('dialog', { name: /lightbox/i })).toBeVisible();
     expect(pageErrors).toHaveLength(0);
   });
