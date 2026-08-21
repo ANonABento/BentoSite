@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CLONE_SUFFIX,
   DEFAULT_FILL_TARGET,
+  countDistinctCards,
   duplicateCardsForFill,
   isClone,
   stripCloneSuffix,
@@ -84,5 +85,26 @@ describe('isClone', () => {
   it('returns false for plain ids', () => {
     expect(isClone('foo')).toBe(false);
     expect(isClone('foo-bar')).toBe(false);
+  });
+});
+
+describe('countDistinctCards', () => {
+  it('counts source cards, not the clones that fill the canvas', () => {
+    // The grid tells a visitor how many projects exist. Counting the filled
+    // pool claimed 48 projects when there are 21.
+    const source = Array.from({ length: 21 }, (_, i) => makeCard(`p${i}`));
+    const filled = duplicateCardsForFill(source, DEFAULT_FILL_TARGET);
+
+    expect(filled.length).toBe(DEFAULT_FILL_TARGET);
+    expect(countDistinctCards(filled)).toBe(21);
+  });
+
+  it('matches length when nothing was cloned', () => {
+    const cards = [makeCard('a'), makeCard('b')];
+    expect(countDistinctCards(cards)).toBe(2);
+  });
+
+  it('handles an empty pool', () => {
+    expect(countDistinctCards([])).toBe(0);
   });
 });

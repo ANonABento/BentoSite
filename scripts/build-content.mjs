@@ -5,8 +5,10 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import { validateProject, validateTalkingPoint } from './content-schema.mjs';
+import { writeGeneratedBundle } from './generated-bundle.mjs';
 
 const ROOT = process.cwd();
 const PROJECTS_DIR = path.join(ROOT, 'src', 'content', 'projects');
@@ -88,12 +90,7 @@ async function buildProjects() {
     return projectTimestamp(b) - projectTimestamp(a);
   });
 
-  const output = {
-    generatedAt: new Date().toISOString(),
-    projects,
-  };
-
-  await fs.writeFile(PROJECTS_OUT, JSON.stringify(output, null, 2) + '\n', 'utf8');
+  await writeGeneratedBundle(PROJECTS_OUT, { projects });
   return { errors: [], count: projects.length };
 }
 
@@ -128,12 +125,7 @@ async function buildTalkingPoints() {
 
   points.sort((a, b) => a.id.localeCompare(b.id));
 
-  const output = {
-    generatedAt: new Date().toISOString(),
-    points,
-  };
-
-  await fs.writeFile(TALKING_POINTS_OUT, JSON.stringify(output, null, 2) + '\n', 'utf8');
+  await writeGeneratedBundle(TALKING_POINTS_OUT, { points });
   return { errors: [], count: points.length };
 }
 
@@ -154,7 +146,14 @@ async function main() {
   );
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exitCode = 1;
-});
+// Only build when run as a script, so importing anything from this module can
+// never rebuild the repo's real content as a side effect.
+const isEntrypoint =
+  process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isEntrypoint) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  });
+}

@@ -42,6 +42,47 @@ test.describe('Public Content Routes', () => {
     expect(pageErrors).toHaveLength(0);
   });
 
+  test('category chips filter the projects grid and the count is a content count', async ({ page }) => {
+    await page.goto('/projects');
+
+    await expect(
+      page.getByRole('application', { name: /bentos \/ projects interactive grid/i }),
+    ).toBeVisible({ timeout: 15000 });
+
+    // The All chip reports how many projects exist, not how many card
+    // instances the canvas cloned to fill itself. It switches to "All (x/y)"
+    // once a filter is applied.
+    const allChip = page.getByRole('button', { name: /^All \(/ });
+    await expect(allChip).toBeVisible();
+    const total = Number((await allChip.innerText()).match(/\((\d+)\)/)![1]);
+    expect(total).toBeGreaterThan(0);
+
+    // Clicking a category chip must actually filter. This was silently dead:
+    // the chip row swallowed pointerdown for native scrolling, and the click
+    // that followed never reached React.
+    // The chip row scrolls horizontally and most categories start off-view, so
+    // bring it into its row first — the same thing a visitor does by swiping.
+    const category = page.getByRole('button', { name: 'Hackathon', exact: true });
+    await category.evaluate((el) => el.scrollIntoView({ block: 'nearest', inline: 'center' }));
+    await expect(category).toBeVisible();
+    // Touch contexts must tap: a synthetic mouse click takes a different path.
+    const hasTouch = await page.evaluate(() => 'ontouchstart' in window);
+    if (hasTouch) {
+      await category.tap();
+    } else {
+      await category.click();
+    }
+
+    await expect(allChip).toHaveText(/^All \(\d+\/\d+\)$/, { timeout: 5000 });
+    const [shown, outOf] = (await allChip.innerText())
+      .match(/\((\d+)\/(\d+)\)/)!
+      .slice(1)
+      .map(Number);
+    expect(outOf, 'filtering must not change the total').toBe(total);
+    expect(shown).toBeGreaterThan(0);
+    expect(shown).toBeLessThan(total);
+  });
+
   test('playground grid loads playable game cards', async ({ page }) => {
     const pageErrors: Error[] = [];
     page.on('pageerror', (error) => pageErrors.push(error));

@@ -1,4 +1,5 @@
 export { filterCards } from './cardPoolFilter';
+export { startsOnInteractiveControl } from './gestureTargets';
 export { isEditableTarget } from './keyboard';
 export {
   useCardNavigation,

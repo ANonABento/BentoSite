@@ -81,6 +81,21 @@ Last refreshed: 2026-08-21 after the launch-polish-and-studio goal.
 - **Next step**: pass the pre-duplication count down alongside the filled
   array, or count distinct ids via `stripCloneSuffix`.
 
+### Category chips scroll out of the search panel — small
+
+- **What**: the category row is a horizontal scroll container (at 1280x800 it
+  is 338px wide holding 915px of chips), so most categories start off-view.
+  A chip's `getBoundingClientRect()` still reports where it *would* sit —
+  outside the panel, over the canvas — which makes naive hit-testing look like
+  the panel is stacking below the cards. It is not: scroll the chip into its
+  row and it is the hit target, and the filter applies, on mouse and touch
+  alike.
+- **Real issue**: discoverability. Only the first three or four categories are
+  visible; the rest need a horizontal scroll that has just a gradient mask to
+  advertise it.
+- **Next step**: wrap the chips instead of scrolling them, or add explicit
+  scroll affordances. Not a correctness bug.
+
 ### Boot-skip semantics review — small
 
 - **What**: `isDashboardDeepLink` now returns true for both

@@ -48,3 +48,16 @@ export function stripCloneSuffix(id: string): string {
 export function isClone(id: string): boolean {
   return id.includes(CLONE_SUFFIX);
 }
+
+/**
+ * How many distinct source cards a pool represents.
+ *
+ * The grid clones cards to fill a wide canvas, so `cards.length` is a board
+ * capacity number, not a content count — reporting it told visitors there were
+ * 48 projects when there are 21, and 36 photos when there are 12.
+ */
+export function countDistinctCards(cards: readonly CardData[]): number {
+  const seen = new Set<string>();
+  for (const card of cards) seen.add(stripCloneSuffix(card.id));
+  return seen.size;
+}
