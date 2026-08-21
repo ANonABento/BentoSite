@@ -82,6 +82,15 @@ Last refreshed: 2026-08-21 after the launch-polish-and-studio goal.
   clickable — the problem was that five of eight started off-view with only a
   gradient to advertise them.
 
+### Route-level error recovery — done 2026-08-21
+
+- `/projects`, `/photography`, `/playground`, and `/scrollable` — the Matter.js
+  and WebGL routes — had no error boundary, so a throw replaced the page with
+  Next's bare "Application error" on white. `app/error.tsx` now covers every
+  segment that does not define its own (retry, link home, `error.digest`), and
+  `app/global-error.tsx` covers a root-layout failure with self-contained
+  styling, since none of the app CSS loads in that case.
+
 ### Boot-skip semantics review — done 2026-08-21
 
 - `isDashboardView` is now `skipBootSplash` across `boot-session.ts`,
@@ -119,6 +128,26 @@ Last refreshed: 2026-08-21 after the launch-polish-and-studio goal.
 ---
 
 ## Launch configuration
+
+### Configure Upstash for real chat throttling — small, blocked on Kevin
+
+- **What**: `/api/chat` calls a paid model. Until 2026-08-21 it served every
+  request unthrottled whenever Upstash was unconfigured, which is the default.
+  There is now a per-instance in-memory fallback, but it is weak by nature: on
+  serverless each instance keeps its own counters and instances are ephemeral,
+  so a flood spread across IPs or cold starts is not fully caught.
+- **Next step**: set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` in
+  the Vercel project (free tier). The fallback then stops being used. A
+  production boot without them warns in the build log.
+
+### Confirm the chat provider key is set in Vercel — small, blocked on Kevin
+
+- **What**: with no `GOOGLE_GENERATIVE_AI_API_KEY` (or `OPENAI_API_KEY`),
+  `/api/chat` returns `isDemoMode: true` and serves deterministic canned
+  answers. The chat is the centrepiece of the dashboard, so this degrades
+  silently and invisibly.
+- **Next step**: ask the deployed site a question that is not one of the
+  scripted starters and see whether the answer is real.
 
 ### Set `NEXT_PUBLIC_SITE_URL` in Vercel — small, blocked on Kevin
 
