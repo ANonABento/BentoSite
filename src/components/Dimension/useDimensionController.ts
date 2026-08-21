@@ -25,7 +25,17 @@ function getInitialAutoRotate() {
   return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-export function useDimensionController({ modelPath }: { modelPath?: string } = {}) {
+/**
+ * Camera distance the viewer opens at. `minimal` embeds (the scrollable hero)
+ * get a closer default: in a short panel the shared 14 left the model reading
+ * as a speck in an empty room.
+ */
+export const DEFAULT_ZOOM = 14;
+export const MINIMAL_ZOOM = 9;
+
+export function useDimensionController(
+  { modelPath, initialZoom = DEFAULT_ZOOM }: { modelPath?: string; initialZoom?: number } = {},
+) {
   const [error, setError] = useState<ModelError | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [autoRotate, setAutoRotate] = useState(getInitialAutoRotate);
@@ -33,7 +43,7 @@ export function useDimensionController({ modelPath }: { modelPath?: string } = {
   const [selectedModel, setSelectedModel] = useState<ModelInfo>(() => getInitialModel(modelPath));
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [showCameraPresets, setShowCameraPresets] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(14);
+  const [zoomLevel, setZoomLevel] = useState(initialZoom);
   const [rotationSpeed, setRotationSpeed] = useState(1);
   const isMobile = useIsMobile();
   const controlsRef = useRef<OrbitControlsImpl | null>(null);

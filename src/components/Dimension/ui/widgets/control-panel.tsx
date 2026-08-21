@@ -35,11 +35,12 @@ export function ControlPanel({
   showCameraPresets?: boolean;
   onCameraPresetSelect: (preset: string) => void;
 }) {
-  const [isCollapsed, setIsCollapsed] = useState(isMobile);
-
-  React.useEffect(() => {
-    setIsCollapsed(isMobile);
-  }, [isMobile]);
+  // Collapsed by default on every viewport: expanded, this panel and the model
+  // info widget together covered most of the dashboard-sized viewport and
+  // overlapped each other. The collapsed header stays visible and labelled.
+  // No effect re-syncs this on resize: that would re-expand the panel on every
+  // desktop render and stomp a deliberate collapse by the visitor.
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   // Control button definitions - memoized to prevent recreation on every render
   const allControls = useMemo(() => [

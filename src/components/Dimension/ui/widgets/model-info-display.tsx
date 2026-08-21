@@ -5,7 +5,9 @@ import { CollapsibleWidget } from './collapsible-widget';
 import { DESIGN_SYSTEM, formatFileSize, formatVertexCount } from '../shared';
 
 export function ModelInfoDisplay({ model, isMobile }: ModelInfoDisplayProps) {
-  const [isCollapsed, setIsCollapsed] = useState(isMobile);
+  // See control-panel.tsx: both viewer widgets start collapsed so the model
+  // is what a visitor sees first.
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [showFileDetails, setShowFileDetails] = useState(false);
 
   const infoIcon = (
