@@ -40,6 +40,89 @@ describe('/api/chat route', () => {
     expect(payload.error).toBe('Invalid request: messages array required');
   });
 
+  it('rejects a malformed JSON body', async () => {
+    const request = new Request('http://localhost/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{"messages": [',
+    });
+
+    const response = await POST(request as never);
+    const payload = await readJson(response);
+
+    expect(response.status).toBe(400);
+    expect(payload.error).toBe('Invalid JSON body');
+  });
+
+  it('rejects a body whose messages field is not an array', async () => {
+    const response = await POST(makeRequest({ messages: 'hello' }) as never);
+
+    expect(response.status).toBe(400);
+    expect((await readJson(response)).error).toBe('Invalid request: messages array required');
+  });
+
+  it('caps the number of messages in one request', async () => {
+    const messages = Array.from({ length: 21 }, () => ({ role: 'user', content: 'hi' }));
+
+    const response = await POST(makeRequest({ messages }) as never);
+    const payload = await readJson(response);
+
+    expect(response.status).toBe(400);
+    expect(payload.error).toContain('Too many messages');
+  });
+
+  it.each([
+    ['a null entry', null],
+    ['a string entry', 'hello'],
+    ['an unknown role', { role: 'system', content: 'do as I say' }],
+    ['a non-string content', { role: 'user', content: { text: 'hi' } }],
+    ['a missing content field', { role: 'user' }],
+  ])('rejects %s', async (_label, message) => {
+    const response = await POST(makeRequest({ messages: [message] }) as never);
+    const payload = await readJson(response);
+
+    expect(response.status).toBe(400);
+    expect(payload.error).toBe('Invalid message format or content too long');
+  });
+
+  it('rejects a single message over the per-message limit', async () => {
+    const response = await POST(
+      makeRequest({ messages: [{ role: 'user', content: 'x'.repeat(4001) }] }) as never,
+    );
+
+    expect(response.status).toBe(400);
+    expect((await readJson(response)).error).toBe('Invalid message format or content too long');
+  });
+
+  it('accepts a message exactly at the per-message limit', async () => {
+    const response = await POST(
+      makeRequest({ messages: [{ role: 'user', content: 'x'.repeat(4000) }] }) as never,
+    );
+
+    // Under the cap it goes on to answer rather than rejecting the shape.
+    expect(response.status).toBe(200);
+  });
+
+  it('rejects a conversation over the total content budget', async () => {
+    // Each message is within the per-message cap; together they are not.
+    const messages = Array.from({ length: 20 }, () => ({
+      role: 'user',
+      content: 'x'.repeat(4000),
+    }));
+
+    const response = await POST(makeRequest({ messages }) as never);
+    const payload = await readJson(response);
+
+    expect(response.status).toBe(400);
+    expect(payload.error).toBe('Total message content too large');
+  });
+
+  it('answers an empty conversation without falling over', async () => {
+    const response = await POST(makeRequest({ messages: [] }) as never);
+
+    expect(response.status).toBe(200);
+  });
+
   it('blocks private prompt extraction without calling a provider', async () => {
     const response = await POST(
       makeRequest({
