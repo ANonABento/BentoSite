@@ -15,4 +15,6 @@ export interface ChatFunctions {
 export interface ChatbotProps {
   onReady?: (fns: ChatFunctions) => void;
   onUserMessage?: () => void;
+  /** Name of the project the surrounding dashboard is showing, if any. */
+  projectName?: string;
 }

@@ -47,7 +47,7 @@ async function readChatApiResponse(response: Response): Promise<ChatApiResponse>
   return parseChatApiResponse(data);
 }
 
-export function useChatMessages() {
+export function useChatMessages(projectName?: string) {
   const [messages, setMessages] = useState<Message[]>(
     () => loadStoredMessages() ?? [createDefaultMessage()]
   );
@@ -94,16 +94,21 @@ export function useChatMessages() {
 
   const clearChat = useCallback(() => {
     clearStoredMessages();
+    // In project mode the visitor is still on a `?project=` URL, so the
+    // generic greeting threw away the context they were reading about.
+    const greeting = projectName
+      ? `Chat cleared! Ask me anything about ${projectName} — or about anything else ${PORTFOLIO_DATA.personal.name} has built.`
+      : `Chat cleared! I'm ${PORTFOLIO_DATA.personal.name}'s AI assistant. What would you like to know?`;
     const resetMessages = [
       {
         ...createDefaultMessage(),
         id: generateId(),
-        content: `Chat cleared! I'm ${PORTFOLIO_DATA.personal.name}'s AI assistant. What would you like to know?`,
+        content: greeting,
       },
     ];
     messagesRef.current = resetMessages;
     setMessages(resetMessages);
-  }, []);
+  }, [projectName]);
 
   return {
     messages,

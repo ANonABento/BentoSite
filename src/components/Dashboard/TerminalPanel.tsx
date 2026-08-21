@@ -18,6 +18,8 @@ interface TerminalPanelProps {
   onChatReady: (fns: ChatFunctions) => void;
   onClearChat: () => void;
   onUserMessage?: () => void;
+  /** Project the dashboard is showing, so a cleared chat keeps its context. */
+  projectName?: string;
 }
 
 export function TerminalPanel({
@@ -25,6 +27,7 @@ export function TerminalPanel({
   onChatReady,
   onClearChat,
   onUserMessage,
+  projectName,
 }: TerminalPanelProps) {
   return (
     <motion.div
@@ -53,6 +56,7 @@ export function TerminalPanel({
           <Chatbot
             onReady={onChatReady}
             onUserMessage={onUserMessage}
+            projectName={projectName}
           />
         </ErrorBoundary>
       </div>
