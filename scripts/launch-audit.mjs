@@ -6,6 +6,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { auditLaunchContent } from './launch-audit-core.mjs';
+import { readGeneratedCovers, scanPlaceholderPhotos } from './detect-placeholder-images.mjs';
 
 const ROOT = process.cwd();
 const PROJECTS_PATH = path.join(ROOT, 'src', 'content', 'projects.generated.json');
@@ -36,9 +37,14 @@ async function main() {
   const talkingPointsContent = JSON.parse(await fs.readFile(TALKING_POINTS_PATH, 'utf8'));
   const audit = auditLaunchContent({ projectsContent, photoManifest, talkingPointsContent });
 
+  // Imagery checks live here rather than in launch-audit-core so the core stays
+  // a pure function over JSON. These need pixels and the filesystem.
+  const { photos: placeholderPhotos } = await scanPlaceholderPhotos();
+  const generatedCovers = await readGeneratedCovers();
+
   if (json) {
-    console.log(JSON.stringify(audit, null, 2));
-    if (strict && audit.blockingCount > 0) {
+    console.log(JSON.stringify({ ...audit, placeholderPhotos, generatedCovers }, null, 2));
+    if (strict && audit.blockingCount + placeholderPhotos.length + generatedCovers.length > 0) {
       process.exitCode = 1;
     }
     return;
@@ -51,11 +57,25 @@ async function main() {
 
   for (const finding of audit.findings) printSection(finding.title, finding.items);
 
+  printSection(
+    'Photos that are generated placeholder art, not photographs',
+    placeholderPhotos.map(
+      (photo) => `${photo.file} (only ${photo.colors} distinct colours — replace or remove)`,
+    ),
+  );
+  printSection(
+    'Projects still showing a generated cover instead of a real capture',
+    generatedCovers.map((cover) => `${cover.projectId} (${cover.file})`),
+  );
+
   printSection('Global launch gaps needing Kevin/assets', audit.globalGaps);
   printAssetCommands(audit.commands);
 
-  if (strict && audit.blockingCount > 0) {
-    console.error(`\nStrict launch audit failed with ${audit.blockingCount} launch gap(s).`);
+  const imageryGaps = placeholderPhotos.length + generatedCovers.length;
+  if (strict && audit.blockingCount + imageryGaps > 0) {
+    console.error(
+      `\nStrict launch audit failed with ${audit.blockingCount + imageryGaps} launch gap(s).`,
+    );
     process.exitCode = 1;
     return;
   }
