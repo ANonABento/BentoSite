@@ -17,8 +17,7 @@ import { MobileTabs } from './MobileTabs';
 import type { ChatFunctions, ChatbotProps } from '@/components/Chat';
 import type { Project } from '@/lib/projects-data';
 import { getProjectById } from '@/lib/projects-data';
-
-const autoPromptedProjectIds = new Set<string>();
+import { claimAutoPrompt } from './autoPromptTracker';
 
 interface DashboardLayoutProps {
   Viewfinder: ComponentType<{ project: Project | null; minimal?: boolean; suspended?: boolean }>;
@@ -64,10 +63,8 @@ export function DashboardLayout({
   const isMountedRef = useRef(true);
   const mobileChatRef = useRef<HTMLDivElement>(null);
   const pendingChatMessageRef = useRef<string | null>(null);
-  // Tracks the project ids we've already auto-prompted the chat about so we
-  // don't re-send the rundown on re-render or after the user clears the chat.
-  // Module-scoped, not a ref: React Strict Mode unmounts and remounts this
-  // component in development, and a fresh ref per mount sent the rundown twice.
+  // Which projects have already been auto-prompted lives in
+  // `autoPromptTracker` — see the note there on why it is not a ref.
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -137,8 +134,7 @@ export function DashboardLayout({
   // In project mode the tools panel is the whole point; keep it visible.
   useEffect(() => {
     if (!chatFns || !selectedProject) return;
-    if (autoPromptedProjectIds.has(selectedProject.id)) return;
-    autoPromptedProjectIds.add(selectedProject.id);
+    if (!claimAutoPrompt(selectedProject.id)) return;
     hasAutoCollapsedRef.current = true;
     chatFns.send(`Tell me about ${selectedProject.name}`);
   }, [chatFns, selectedProject]);
