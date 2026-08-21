@@ -3,12 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useSearchCardState } from '../cards';
 import {
+  filterCards,
   getCameraTransform,
   isEditableTarget,
   useCamera,
   useCardNavigation,
   useWindowSize,
 } from '../core';
+import { countDistinctCards } from '../duplicate-fill';
 import { useBoardController } from '../core/useBoardController';
 import { usePhysicsWorld } from '../physics';
 import { SEARCH_CARD_ID } from '../BentoGrid.constants';
@@ -276,6 +278,15 @@ export function DesktopCanvasView({
   // checks this ref and lets the event bubble through so panning doesn't
   // stutter mid-gesture. After ~100ms of inactivity, the element resumes
   // its native behavior (chip scroll, text caret).
+  // Counts shown to the visitor are content counts, not board occupancy:
+  // `cards` is already clone-filled to cover a wide canvas, and
+  // `board.filteredCount` counts card instances on and near the board.
+  const distinctTotal = useMemo(() => countDistinctCards(cards), [cards]);
+  const distinctFiltered = useMemo(
+    () => countDistinctCards(filterCards(cards, searchState.searchTerm, searchState.category)),
+    [cards, searchState.searchTerm, searchState.category],
+  );
+
   const panAtRef = useRef(0);
   const handleWrapperWheel = useCallback(
     (event: React.WheelEvent<HTMLDivElement>) => {
@@ -394,8 +405,8 @@ export function DesktopCanvasView({
                 onCategoryChange={searchState.setCategory}
                 onBack={onBack}
                 onReset={navigation.reset}
-                totalCards={cards.length}
-                filteredCards={board.filteredCount}
+                totalCards={distinctTotal}
+                filteredCards={distinctFiltered}
                 panAtRef={panAtRef}
               />
             )}
@@ -467,7 +478,14 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
   // Wheel exception: if a pan is currently in motion, let the event bubble
   // through so the pan continues smoothly when the cursor crosses this zone.
   const stopGesture = {
-    onPointerDown: (event: React.PointerEvent) => event.stopPropagation(),
+    onPointerDown: (event: React.PointerEvent) => {
+      // Never swallow pointerdown that starts on a control. useGesture blocks
+      // the click that follows a pointerdown it never saw, which is why the
+      // category chips inside this scroll container did nothing when clicked:
+      // the click event was suppressed before React's delegated handler ran.
+      if ((event.target as HTMLElement).closest('button, a, [role="button"]')) return;
+      event.stopPropagation();
+    },
     onWheel: (event: React.WheelEvent) => {
       if (Date.now() - panAtRef.current < MID_PAN_BUBBLE_WINDOW_MS) return;
       event.stopPropagation();

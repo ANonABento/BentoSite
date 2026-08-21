@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { SearchMenuCard, useSearchCardState } from '../cards';
 import { filterCards, useWindowSize } from '../core';
+import { countDistinctCards } from '../duplicate-fill';
 import { MOBILE } from '../BentoGrid.constants';
 import type { CardData, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import { DefaultCard } from './DefaultCard';
@@ -72,8 +73,8 @@ export function MobileScrollView({
         onSearchChange={searchState.setSearchTerm}
         onCategoryChange={searchState.setCategory}
         onBack={onBack}
-        totalCards={cards.length}
-        filteredCards={localFilteredCards.length}
+        totalCards={countDistinctCards(cards)}
+        filteredCards={countDistinctCards(localFilteredCards)}
       />
 
       <div
