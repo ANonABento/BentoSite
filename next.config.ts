@@ -17,8 +17,11 @@ const contentSecurityPolicy = [
   // Next.js needs inline scripts for hydration/runtime chunks and the theme
   // bootstrap. `unsafe-eval` is required in dev/Turbopack and tolerated here
   // because this site does not accept user-authored script.
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://unpkg.com",
-  "worker-src 'self' blob: https://unpkg.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:",
+  // No CDN in script-src: nothing in the app or in its 3D dependencies
+  // (@react-three/drei, three-stdlib) loads from one, and an unused allowance
+  // is just a place a compromised or injected script could fetch code from.
+  "worker-src 'self' blob:",
   "connect-src 'self' https://vitals.vercel-insights.com https://*.vercel-insights.com https://generativelanguage.googleapis.com https://api.openai.com",
   "frame-src 'self' https:",
   "form-action 'self'",
