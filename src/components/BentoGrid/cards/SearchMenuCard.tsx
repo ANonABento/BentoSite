@@ -344,8 +344,11 @@ export function SearchMenuCard({
       }}
       hoverEnabled={compression === 0}
       onPointerDown={(event) => {
-        // Stop all pointer events on the search card from reaching the
-        // drag gesture handler on the parent canvas
+        // Stop pointer events on the search card from reaching the drag
+        // gesture handler on the parent canvas — except when the press starts
+        // on a control. Swallowing those suppressed the click that follows and
+        // left the category chips inert.
+        if ((event.target as HTMLElement).closest('button, a, input, [role="button"]')) return;
         event.stopPropagation();
       }}
       ariaLabel="Search and filter cards"
