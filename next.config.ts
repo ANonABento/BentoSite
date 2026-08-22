@@ -67,8 +67,24 @@ const STUDIO_PAGE_EXTENSIONS = ['dev.tsx', 'dev.ts'];
 const BASE_PAGE_EXTENSIONS = ['tsx', 'ts', 'jsx', 'js'];
 const isProduction = process.env.NODE_ENV === 'production';
 
+/**
+ * Stamped into the boot screen's `SYS <date>` line. It used to be the literal
+ * `05.07.26`, which was simply the day someone typed it — a fixed date that
+ * only gets more wrong. Resolved at build time (not render time) so the server
+ * and client markup always agree and there is no hydration mismatch.
+ */
+function buildDateStamp(): string {
+  const now = new Date();
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${pad(now.getMonth() + 1)}.${pad(now.getDate())}.${String(now.getFullYear()).slice(-2)}`;
+}
+
 const nextConfig: NextConfig = {
   reactCompiler: true,
+
+  env: {
+    NEXT_PUBLIC_BUILD_DATE: buildDateStamp(),
+  },
 
   pageExtensions: isProduction
     ? BASE_PAGE_EXTENSIONS

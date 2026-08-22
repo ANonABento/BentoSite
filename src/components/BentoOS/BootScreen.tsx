@@ -11,6 +11,13 @@ interface BootScreenProps {
   onComplete: () => void;
 }
 
+/**
+ * Stamped at build time by `next.config.ts`. The fallback only shows in an
+ * environment that skipped the config (a bare unit-test import), never in a
+ * real build.
+ */
+const BUILD_DATE_STAMP = process.env.NEXT_PUBLIC_BUILD_DATE ?? '--.--.--';
+
 const SEGMENT_COUNT = 13;
 
 function TypedText({
@@ -287,7 +294,7 @@ export function BootScreen({ onExiting, onComplete }: BootScreenProps) {
                 </div>
 
                 <div className="boot-corner flex items-end justify-between text-white">
-                  <TypedText text="SYS 05.07.26" startDelay={1250} speed={30} />
+                  <TypedText text={`SYS ${BUILD_DATE_STAMP}`} startDelay={1250} speed={30} />
                   <TypedText text="INTERFACE READY" startDelay={1250} speed={30} />
                 </div>
               </div>
