@@ -127,6 +127,26 @@ Last refreshed: 2026-08-21 after the launch-polish-and-studio goal.
 
 ---
 
+## Surface visibility
+
+### Everything stays exposed until a dedicated flag session — decided 2026-08-21
+
+- **Decision**: Kevin wants every route reachable for now, including
+  `/photography`, so he can see and test the whole site before deciding what
+  ships. The site is not publicly launched yet, so nothing is being hidden.
+- **Superseded recommendation**: an earlier suggestion to hide `/photography`
+  from the nav was declined for exactly this reason. Do **not** re-propose
+  hiding routes ad hoc — that call happens in the flag session below.
+- **Known state of `/photography`**: it currently contains no photographs. Six
+  entries are generated colour blocks (flagged by `npm run launch:audit`) and
+  the other six are project documentation posters that also appear on
+  `/projects`. This is a content gap, not a code one.
+- **Next step**: a "flag session" — go through every surface together and
+  decide what is public at launch and what is held back, then implement
+  whatever gating that needs. Nothing to build before that conversation.
+
+---
+
 ## Launch configuration
 
 ### Configure Upstash for real chat throttling — small, blocked on Kevin
