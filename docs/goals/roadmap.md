@@ -224,6 +224,67 @@ Last refreshed: 2026-08-21 after the launch-polish-and-studio goal.
 
 ---
 
+## Branch cleanup — 2026-08-22
+
+Thirty stale remote branches and two open PRs were removed. All of them predate
+the May 2026 history rewrite, so they sit on a lineage `main` no longer shares —
+each showed a phantom diff of up to 238 files against `main` while containing
+nothing `main` needs. (Squash merges cause the same illusion: the branch behind
+PR #95, merged the same day, also read as "ahead=14".)
+
+**Nothing is lost.** Every tip commit is listed below and remains reachable in
+GitHub's reflog; a branch can be restored with
+`git push origin <sha>:refs/heads/<name>`.
+
+### Closed pull requests
+
+- **#91** "Security audit: API hardening + 429 helper + framework fingerprint".
+  Its rate limiting is superseded by the in-memory limiter added in #103, and
+  `main` already carries the security headers. Its only unique content was an
+  `/api/feedback` route — the roadmap treats a contact form as optional, since
+  the email-copy button covers the need — and a security audit document.
+- **#90** "boot splash polish", a draft marked "needs UI design". The boot
+  splash has been reworked twice since (Orbitron wordmark, CRT power-on, and
+  the build-date stamp in #109), so the draft no longer applies. It also
+  carried about 1 MB of PNG screenshots.
+
+### Deleted branches
+
+| Branch | Tip | Last commit | Subject |
+|---|---|---|---|
+| `bentoya/blog-writing-section-at-writing-with-mdx-support` | `f5e15a5` | 2026-04-30 | Add sample MDX writing post and keep turbopack root in workt |
+| `bentoya/ci-b-8-ci-speedup-caching-pass-bentosite` | `1a37fcd` | 2026-05-04 | refactor(BentoGrid): dedupe search card content components |
+| `bentoya/docs-b-2-claude-md-refresh-mermaid-architecture-be` | `eba6943` | 2026-05-04 | docs(bentosite): CLAUDE.md refresh + architecture diagrams |
+| `bentoya/feat-b-6-animated-cursor-effects-on-hover-from-ice` | `795bb6f` | 2026-05-04 | fix(cursor): clean up animation and token usage |
+| `bentoya/gate-4-2-performance-gates-ci-strict-lighthouse-bu` | `e6ea548` | 2026-05-04 | fix(ci): derive bundle routes from Lighthouse config |
+| `bentoya/perf-2-1b-bundle-size-audit-code-split-bentosite` | `b890b8e` | 2026-05-04 | Fix 3D canvas aria semantics |
+| `bentoya/perf-2-2b-lighthouse-audit-fixes-bentosite` | `3bdc425` | 2026-05-04 | fix: clean up BentoGrid search card code |
+| `bentoya/security-audit-smaller-surface-api-routes-deps` | `59f22d1` | 2026-05-04 | refactor(api): consolidate 429 response into rate-limit help |
+| `bentoya/seo-3-2-metadata-sweep-ci-validator-gate-bentosite` | `904586e` | 2026-05-04 | Fix 3D canvas accessibility role |
+| `bentoya/ux-t4-card-semantics-chip-overflow-info-card-refac` | `c77b1c2` | 2026-05-04 | fix(bentogrid): stabilize desktop view effects |
+| `bentoya/ux-t5-color-system-unification-orange-primary-purp` | `ae34eb2` | 2026-05-04 | Fix Playwright dynamic port selection |
+| `bentoya/ux-t7-light-polish-bundle` | `db6edaa` | 2026-05-04 | Fix projects link accessible label |
+| `chore/t5-cleanup` | `a065028` | 2026-05-04 | chore(theme): re-apply dropped T5 color tokens on BentoGrid  |
+| `draft/boot-splash-polish` | `db73496` | 2026-05-04 | feat(splash): session-scoped boot with multi-input dismiss + |
+| `fix-cursor` | `91ac180` | 2026-05-04 | feat(cursor): trail + magnetic hover effect on interactive e |
+| `fix-shipblockers` | `5e80253` | 2026-05-04 | fix(ui): redo ship-blockers bundle (resume URL, Assistant re |
+| `fix/post-rebase-type-contracts` | `d22e0d7` | 2026-05-04 | fix(types): resolve post-rebase type contract breaks in Bent |
+| `launch-polish-and-studio` | `26279be` | 2026-08-21 | Bring the roadmap up to date |
+| `staging/batch-20260504064051154` | `6e38b5b` | 2026-05-04 | UX T7 — Light polish bundle (#69) |
+| `staging/batch-20260504064210510` | `656cacc` | 2026-05-04 | UX T4 — Card semantics + chip overflow + info card refacto |
+| `staging/batch-20260504064836909` | `31925b3` | 2026-05-04 | UX T5 — Color system unification (orange primary, purple A |
+| `staging/batch-20260504075947836` | `7f27b11` | 2026-05-04 | Perf 2.2b — Lighthouse audit + fixes (bentosite) (#75) |
+| `staging/batch-20260504080937167` | `64231d8` | 2026-05-04 | Perf 2.1b — Bundle size audit + code split (bentosite) (#7 |
+| `staging/batch-20260504082800830` | `d6fc249` | 2026-05-04 | SEO 3.2 — Metadata sweep + CI validator gate (bentosite) ( |
+| `staging/batch-20260504083859176` | `9c0763f` | 2026-05-04 | Merge pull request #81 from ANonABento/bentoya/gate-4-2-perf |
+| `staging/batch-20260504083859459` | `3f5badb` | 2026-05-04 | feat(splash): session-scoped boot with multi-input dismiss + |
+| `staging/batch-20260504104823023` | `be52834` | 2026-05-04 | fix(ui): redo ship-blockers bundle (resume URL, Assistant re |
+| `staging/batch-20260504194218771` | `0dfacb6` | 2026-05-04 | docs(bentosite): CLAUDE.md refresh + architecture diagrams ( |
+| `staging/batch-apr29` | `48c2b91` | 2026-04-29 | fix: align BentoGrid search and layout behavior |
+| `ui/boot-splash-rework` | `196a14a` | 2026-05-04 | feat(splash): session-scoped boot with multi-input dismiss + |
+
+---
+
 ## Unshipped work
 
 ### Animated cursor — dropped 2026-08-21
