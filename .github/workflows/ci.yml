@@ -199,7 +199,12 @@ jobs:
   lighthouse:
     name: Lighthouse CI
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # The job audits 14 URLs and legitimately takes 9-10 minutes on a shared
+    # runner: measured 9m17s on a run that passed and 10m06s on one that did
+    # not. A 10-minute cap gave it no headroom, so it was a coin flip, and a
+    # job killed by the cap reports as `cancelled` rather than `failure` —
+    # which reads like flaky infrastructure instead of the timeout it is.
+    timeout-minutes: 20
     needs: [build]
     steps:
       - uses: actions/checkout@v4
