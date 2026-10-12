@@ -6,6 +6,7 @@ import {
   countContentCards,
   filterCards,
   getCameraTransform,
+  screenToCanvas,
   startsOnInteractiveControl,
   isEditableTarget,
   useCamera,
@@ -14,7 +15,7 @@ import {
 } from '../core';
 import { SEARCH_DOCK_PREFIX, useTiledBoard } from '../core/useTiledBoard';
 import { SEARCH_CARD_ID } from '../BentoGrid.constants';
-import { ArrowLeftIcon, ChevronDownIcon, ChevronRightIcon, CloseIcon, RefreshIcon, SearchIcon } from '@/components/ui/Icons';
+import { ArrowLeftIcon, CloseIcon, RefreshIcon, SearchIcon } from '@/components/ui/Icons';
 import type { CardData, CardPosition, CardSizeMode, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
@@ -25,6 +26,8 @@ function navigable(layouts: Map<string, CardPosition>): Map<string, CardPosition
 
 /** How long the search card glides when it docks in another copy of the board. */
 const DOCK_GLIDE_MS = 320;
+/** How long the camera takes to bring the search card into view. */
+const SUMMON_MS = 450;
 
 interface DesktopCanvasViewProps {
   className?: string;
@@ -120,13 +123,64 @@ export function DesktopCanvasView({
     [selectCard, setFocusedCardId],
   );
 
+  // Bring the search card into view and focus its input. If it's stuck to an
+  // edge, the camera glides until the nearest copy of its slot is on screen,
+  // and the card docks there.
+  const { cameraRef, setCamera, stopMomentum } = navigation;
+  const glideRef = useRef<number | null>(null);
+  const focusPendingRef = useRef(false);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const stopGlide = useCallback(() => {
+    if (glideRef.current !== null) cancelAnimationFrame(glideRef.current);
+    glideRef.current = null;
+  }, []);
+  const { nearestSearchSlot } = board;
+  const summonSearch = useCallback(() => {
+    if (!isSearchSticky) {
+      searchInputRef.current?.focus();
+      return;
+    }
+    const from = cameraRef.current;
+    const center = screenToCanvas(windowSize.width / 2, windowSize.height / 2, from, windowSize);
+    const slot = nearestSearchSlot(center);
+    if (!slot) return;
+
+    // Shift the camera just enough to bring the slot inside the view, with a margin.
+    const margin = 64 / from.zoom;
+    const topLeft = screenToCanvas(0, 0, from, windowSize);
+    const bottomRight = screenToCanvas(windowSize.width, windowSize.height, from, windowSize);
+    const shift = (start: number, size: number, min: number, max: number) =>
+      start < min + margin ? min + margin - start : start + size > max - margin ? max - margin - (start + size) : 0;
+    const dx = shift(slot.x, slot.width, topLeft.x, bottomRight.x);
+    const dy = shift(slot.y, slot.height, topLeft.y, bottomRight.y);
+
+    stopMomentum();
+    stopGlide();
+    focusPendingRef.current = true;
+    const startedAt = performance.now();
+    const step = (now: number) => {
+      const t = Math.min(1, (now - startedAt) / SUMMON_MS);
+      const eased = 1 - (1 - t) ** 3;
+      setCamera({ x: from.x + dx * eased, y: from.y + dy * eased });
+      glideRef.current = t < 1 ? requestAnimationFrame(step) : null;
+    };
+    glideRef.current = requestAnimationFrame(step);
+  }, [isSearchSticky, cameraRef, windowSize, nearestSearchSlot, setCamera, stopMomentum, stopGlide]);
+
+  // The input mounts again when the card docks; take focus then if a summon asked for it.
+  const takeSearchFocus = useCallback((input: HTMLInputElement | null) => {
+    searchInputRef.current = input;
+    if (input && focusPendingRef.current) {
+      focusPendingRef.current = false;
+      input.focus({ preventScroll: true });
+    }
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === '/' || event.key === 'f') {
-        if (!isEditableTarget(event.target)) {
-          event.preventDefault();
-          searchState.setExpanded(true);
-        }
+      if (event.key === '/' && !isEditableTarget(event.target)) {
+        event.preventDefault();
+        summonSearch();
       }
 
       if (event.key === 'Backspace' && onBack) {
@@ -139,7 +193,7 @@ export function DesktopCanvasView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onBack, searchState]);
+  }, [onBack, summonSearch]);
 
   const transform = useMemo(
     () => getCameraTransform(navigation.camera, windowSize),
@@ -210,8 +264,9 @@ export function DesktopCanvasView({
       className={['board-canvas fixed inset-0 isolate overscroll-none', className].filter(Boolean).join(' ')}
       {...navBindings}
       onWheel={handleWrapperWheel}
+      onPointerDownCapture={stopGlide}
       role="application"
-      aria-label={`${breadcrumb ?? 'Card grid'} interactive grid. Use arrow keys to focus cards, Enter to open, WASD to pan, and R to reset view.`}
+      aria-label={`${breadcrumb ?? 'Card grid'} interactive grid. Drag or use WASD to pan, arrow keys to focus cards, Enter to open one, slash to search, and R to recenter.`}
       tabIndex={-1}
       style={{
         ...navBindings.style,
@@ -265,29 +320,26 @@ export function DesktopCanvasView({
             }}
           >
             {isSearchSticky && (searchState.edge === 'left' || searchState.edge === 'right') ? (
-              <IconStripContent
-                onBack={onBack}
-                onToggleExpanded={searchState.toggleExpanded}
-              />
+              <IconStripContent onBack={onBack} onSearch={summonSearch} />
             ) : isSearchSticky ? (
               <CompactBarContent
                 searchTerm={searchState.searchTerm}
                 onSearchChange={searchState.setSearchTerm}
                 onBack={onBack}
+                inputRef={takeSearchFocus}
               />
             ) : (
               <FullSearchContent
-                theme={theme}
                 searchTerm={searchState.searchTerm}
                 category={searchState.category}
                 categories={categories}
                 onSearchChange={searchState.setSearchTerm}
                 onCategoryChange={searchState.setCategory}
-                onBack={onBack}
-                onReset={resetView}
+                onRecenter={resetView}
                 totalCards={projectTotal}
                 filteredCards={projectMatches}
                 panAtRef={panAtRef}
+                inputRef={takeSearchFocus}
               />
             )}
           </div>
@@ -298,10 +350,7 @@ export function DesktopCanvasView({
 }
 
 // Inline sticky content components (imported from SearchMenuCard would create circular dep)
-function IconStripContent({ onBack, onToggleExpanded }: {
-  onBack?: () => void;
-  onToggleExpanded: () => void;
-}) {
+function IconStripContent({ onBack, onSearch }: { onBack?: () => void; onSearch: () => void }) {
   return (
     <div className="h-full flex flex-col items-center justify-center gap-3 py-3">
       {onBack && (
@@ -309,11 +358,13 @@ function IconStripContent({ onBack, onToggleExpanded }: {
           <ArrowLeftIcon className="w-5 h-5" />
         </button>
       )}
-      <button onClick={onToggleExpanded} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-black/10 transition-colors" aria-label="Search">
+      <button
+        onClick={onSearch}
+        className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-black/10 transition-colors"
+        aria-label="Search projects"
+        title="Search (/)"
+      >
         <SearchIcon className="w-5 h-5" />
-      </button>
-      <button onClick={onToggleExpanded} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-black/10 transition-colors" aria-label="Toggle filters">
-        <ChevronDownIcon className="w-5 h-5" />
       </button>
     </div>
   );
@@ -322,53 +373,33 @@ function IconStripContent({ onBack, onToggleExpanded }: {
 /** Window after a pan during which we let wheel events bubble through
  *  swallow-zones (chip row, search input) so cursor-cross mid-pan doesn't
  *  stutter. ~100ms covers a typical trackpad wheel inter-event gap. */
-/** Categories beyond this many cannot fit the fixed-width panel in one row. */
-const CATEGORY_SCROLL_THRESHOLD = 3;
-const CATEGORY_SCROLL_STEP = 140;
-
 const MID_PAN_BUBBLE_WINDOW_MS = 120;
 
-function FullSearchContent({ theme, searchTerm, category, categories, onSearchChange, onCategoryChange, onBack, onReset, totalCards, filteredCards, panAtRef }: {
-  theme: ThemeConfig;
+function FullSearchContent({ searchTerm, category, categories, onSearchChange, onCategoryChange, onRecenter, totalCards, filteredCards, panAtRef, inputRef }: {
   searchTerm: string;
   category: string | null;
   categories: string[];
   onSearchChange: (term: string) => void;
   onCategoryChange: (category: string | null) => void;
-  onBack?: () => void;
-  onReset: () => void;
+  onRecenter: () => void;
   totalCards: number;
   filteredCards: number;
   panAtRef: React.MutableRefObject<number>;
+  inputRef: (input: HTMLInputElement | null) => void;
 }) {
   const allCount = filteredCards !== totalCards ? `${filteredCards}/${totalCards}` : `${totalCards}`;
-  // The row holds far more chips than the panel is wide. Derive the affordance
-  // from the category count rather than measuring the DOM: the panel is a fixed
-  // size, so the threshold is stable, and no layout effect is needed.
-  const categoryRowRef = useRef<HTMLDivElement>(null);
-  const hasScrollableCategories = categories.length > CATEGORY_SCROLL_THRESHOLD;
-  const scrollCategories = useCallback(() => {
-    const row = categoryRowRef.current;
-    if (!row) return;
-    const atEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 4;
-    row.scrollTo({
-      left: atEnd ? 0 : row.scrollLeft + CATEGORY_SCROLL_STEP,
-      behavior: 'smooth',
-    });
-  }, []);
 
   // Same chips as the dock, so the card and the bar read as one object.
-  const categoryButtonStyles = {
-    active: { background: 'var(--board-dock-chip-on)', color: 'var(--board-dock-chip-on-fg)' },
-    inactive: { background: 'var(--board-dock-chip)' },
-  };
+  const chipStyle = (active: boolean) =>
+    active
+      ? { background: 'var(--board-dock-chip-on)', color: 'var(--board-dock-chip-on-fg)' }
+      : { background: 'var(--board-dock-chip)' };
 
   // Stop pointer/wheel events from bubbling up to the canvas gesture handler
-  // for elements that need their own native interaction (text selection,
-  // native horizontal scroll). Buttons don't need this — useGesture's drag
-  // threshold (5px) keeps clicks from registering as pans.
-  // Wheel exception: if a pan is currently in motion, let the event bubble
-  // through so the pan continues smoothly when the cursor crosses this zone.
+  // for elements that need their own native interaction (text selection).
+  // Buttons don't need this — useGesture's drag threshold (5px) keeps clicks
+  // from registering as pans. Wheel exception: if a pan is currently in
+  // motion, let the event bubble so the pan continues across this zone.
   const stopGesture = {
     onPointerDown: (event: React.PointerEvent) => {
       if (startsOnInteractiveControl(event.target)) return;
@@ -381,28 +412,7 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
   };
 
   return (
-    <div className="h-full min-w-0 p-4 flex flex-col gap-2.5">
-      {/* Header: back left, reset right */}
-      <div className="flex items-center justify-between gap-2 min-w-0">
-        {onBack ? (
-          <button
-            onClick={onBack}
-            className="flex items-center gap-1.5 text-xs opacity-70 hover:opacity-100 transition-opacity"
-          >
-            <ArrowLeftIcon className="w-3.5 h-3.5" /><span>Back</span>
-          </button>
-        ) : <span />}
-        <button
-          onClick={onReset}
-          className="flex items-center gap-1.5 text-[11px] opacity-70 hover:opacity-100 transition-opacity"
-          aria-label="Reset view"
-        >
-          <RefreshIcon className="w-3 h-3" />
-          <span>Reset</span>
-        </button>
-      </div>
-
-      {/* Search input — stop propagation so text selection drags don't pan. */}
+    <div className="h-full min-w-0 p-4 flex flex-col gap-3">
       <label
         {...stopGesture}
         className="flex items-center gap-2 rounded-lg px-3 py-2"
@@ -410,12 +420,13 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
       >
         <span className="font-crt text-xl leading-none">&gt;</span>
         <input
+          ref={inputRef}
           type="text"
           placeholder="search projects"
           value={searchTerm}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)}
           className="flex-1 min-w-0 bg-transparent font-crt text-xl leading-none placeholder:text-current placeholder:opacity-55 outline-none"
-          aria-label="Search cards"
+          aria-label="Search projects"
         />
         {searchTerm && (
           <button
@@ -428,77 +439,48 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
         )}
       </label>
 
-      {/* Category filters — single row, horizontal scroll. The panel is a fixed
-          2x1 card, so eight categories cannot fit: most of them start off-view.
-          A fade alone did not say so clearly enough, hence the arrow. */}
-      <div className="relative -mx-1 px-1">
-        <div
-          ref={categoryRowRef}
-          {...stopGesture}
-          data-wheel-scroll
-          className="flex gap-1.5 overflow-x-auto overscroll-x-contain scrollbar-hide pb-0.5"
-          style={{
-            maskImage: hasScrollableCategories
-              ? 'linear-gradient(to right, black 0, black calc(100% - 28px), transparent 100%)'
-              : undefined,
-            WebkitMaskImage: hasScrollableCategories
-              ? 'linear-gradient(to right, black 0, black calc(100% - 28px), transparent 100%)'
-              : undefined,
-          }}
+      {/* Categories wrap rather than scroll, so every one is visible. */}
+      <div className="flex flex-wrap gap-1.5">
+        <button
+          onClick={() => onCategoryChange(null)}
+          className="px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors font-medium"
+          style={chipStyle(category === null)}
         >
+          All ({allCount})
+        </button>
+        {categories.map((cat) => (
           <button
-            onClick={() => onCategoryChange(null)}
-            className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors font-medium`}
-            style={category === null ? categoryButtonStyles.active : categoryButtonStyles.inactive}
+            key={cat}
+            onClick={() => onCategoryChange(cat === category ? null : cat)}
+            className="px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors font-medium"
+            style={chipStyle(category === cat)}
           >
-            All ({allCount})
+            {cat}
           </button>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => onCategoryChange(cat === category ? null : cat)}
-              className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors font-medium`}
-              style={category === cat ? categoryButtonStyles.active : categoryButtonStyles.inactive}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {hasScrollableCategories ? (
-          <button
-            type="button"
-            onClick={scrollCategories}
-            aria-label="Show more categories"
-            title="More categories"
-            className="absolute right-0 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full transition-colors"
-            style={{ background: 'var(--board-dock-bg)', boxShadow: '0 0 0 1px var(--board-dock-chip)' }}
-          >
-            <ChevronRightIcon className="h-3.5 w-3.5" />
-          </button>
-        ) : null}
+        ))}
       </div>
 
-      {/* Keyboard hints — pinned to bottom of the card, lo-fi terminal feel */}
-      <div className="mt-auto flex items-center justify-between gap-2 pt-1 text-[10px] font-mono uppercase tracking-wider opacity-60">
-        <span>
-          <span className="font-semibold">wasd</span> pan
-        </span>
-        <span>
-          <span className="font-semibold">R</span> reset
-        </span>
-        <span>
-          <span className="font-semibold">&#x21B5;</span> open
-        </span>
+      <div className="mt-auto flex items-center justify-between gap-2 text-[11px] opacity-70">
+        <span>Drag or WASD to explore</span>
+        <button
+          onClick={onRecenter}
+          className="flex items-center gap-1.5 rounded-md px-1.5 py-0.5 hover:bg-black/10 hover:opacity-100 transition-colors"
+          aria-label="Recenter the board"
+        >
+          <RefreshIcon className="w-3 h-3" />
+          <span>Recenter</span>
+          <kbd className="font-mono text-[10px] opacity-70">R</kbd>
+        </button>
       </div>
     </div>
   );
 }
 
-function CompactBarContent({ searchTerm, onSearchChange, onBack }: {
+function CompactBarContent({ searchTerm, onSearchChange, onBack, inputRef }: {
   searchTerm: string;
   onSearchChange: (term: string) => void;
   onBack?: () => void;
+  inputRef: (input: HTMLInputElement | null) => void;
 }) {
   return (
     <div className="h-full flex items-center gap-2 px-3">
@@ -514,7 +496,7 @@ function CompactBarContent({ searchTerm, onSearchChange, onBack }: {
         style={{ background: 'var(--board-dock-field)' }}
       >
         <span className="font-crt text-xl leading-none">&gt;</span>
-        <input type="text" placeholder="search projects" value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent font-crt text-xl leading-none placeholder:text-current placeholder:opacity-55 outline-none" aria-label="Search cards" />
+        <input ref={inputRef} type="text" placeholder="search projects" value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent font-crt text-xl leading-none placeholder:text-current placeholder:opacity-55 outline-none" aria-label="Search cards" />
         {searchTerm && (
           <button onClick={() => onSearchChange('')} className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-black/10" aria-label="Clear search">
             <CloseIcon className="w-3 h-3" />
