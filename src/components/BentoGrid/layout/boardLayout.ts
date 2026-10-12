@@ -94,9 +94,12 @@ export function placeCard(layout: BoardLayout, id: string, rect: Omit<LayoutCard
     cards: [...layout.cards.filter((card) => card.id !== id && !displaced.includes(card)), moved],
   };
   const removed: string[] = [];
-  // Largest first, so big cards get the best of the remaining space.
+  // Largest first, so big cards get the best of the remaining space. Each
+  // tries the moved card's old spot first, so dropping onto a card swaps them.
   for (const card of [...displaced].sort((a, b) => b.w * b.h - a.w * a.h)) {
-    const spot = nearestFreeSpot(next, card.w, card.h, card);
+    const swap = existing && { col: existing.col, row: existing.row, w: card.w, h: card.h };
+    const swapFree = swap && fits(layout, swap) && !next.cards.some((other) => overlaps(other, swap));
+    const spot = swapFree ? { col: swap.col, row: swap.row } : nearestFreeSpot(next, card.w, card.h, card);
     if (spot) next = { ...next, cards: [...next.cards, { ...card, ...spot }] };
     else removed.push(card.id);
   }
