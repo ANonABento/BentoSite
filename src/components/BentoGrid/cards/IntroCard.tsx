@@ -2,7 +2,7 @@
 
 /**
  * IntroCard — the pinned identity compartment that opens beside the search
- * card: name, pitch, about and links, with work history alongside.
+ * card: name, pitch, a line about Kevin and his skills, with work history alongside.
  */
 
 import type { CardPosition, IntroCardData, ThemeConfig } from '../BentoGrid.types';
@@ -14,7 +14,7 @@ export interface IntroProfile {
   pitch: string;
   about: string;
   jobs: { role: string; company: string; period: string }[];
-  links: { resume: string; github: string; linkedin: string; email: string };
+  skills: string[];
 }
 
 export interface IntroCardProps {
@@ -24,8 +24,6 @@ export interface IntroCardProps {
   profile: IntroProfile;
   isFocused?: boolean;
 }
-
-const ext = { target: '_blank', rel: 'noopener noreferrer' } as const;
 
 export function IntroCard({ card, position, theme, profile, isFocused }: IntroCardProps) {
   // Stack the halves when the card is narrower than it is tall (mobile).
@@ -47,24 +45,7 @@ export function IntroCard({ card, position, theme, profile, isFocused }: IntroCa
             <p className="mt-3 max-w-[28ch] text-[0.95rem] leading-snug text-rice/80">{profile.pitch}</p>
             <p className="mt-4 text-[0.8rem] leading-relaxed text-ash">{profile.about}</p>
           </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm" data-no-drag>
-            <a
-              href={profile.links.resume}
-              {...ext}
-              className="rounded-full bg-orange px-3.5 py-1.5 font-medium text-lacquer transition-[filter] hover:brightness-110"
-            >
-              Resume
-            </a>
-            <a href={profile.links.github} {...ext} className="text-ash hover:text-rice">
-              GitHub
-            </a>
-            <a href={profile.links.linkedin} {...ext} className="text-ash hover:text-rice">
-              LinkedIn
-            </a>
-            <a href={`mailto:${profile.links.email}`} className="text-ash hover:text-rice">
-              Email
-            </a>
-          </div>
+          <p className="font-crt text-base leading-tight text-ash">{profile.skills.join(' · ').toLowerCase()}</p>
         </div>
         <section
           aria-label="Experience"

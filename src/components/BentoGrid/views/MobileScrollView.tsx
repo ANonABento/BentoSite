@@ -165,8 +165,8 @@ function spanOf(card: CardData): 1 | 2 {
 }
 
 function heightOf(card: CardData, trayWidth: number, columnWidth: number): number {
-  if (card.type === 'intro') return 720;
-  if (card.type === 'info' && card.variant === 'skills') return 150;
+  if (card.type === 'intro') return 620;
+  if (card.type === 'info' && card.variant === 'contact') return 140;
   if (spanOf(card) === 2) return Math.round(trayWidth * 0.75);
   return Math.round(columnWidth * 1.1);
 }

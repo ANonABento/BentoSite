@@ -16,7 +16,7 @@ import {
 } from '@/components/BentoGrid';
 
 const INTRO: IntroCardData = { id: 'intro', type: 'intro', title: 'Kevin Jiang', size: '3x2' };
-const SKILLS: InfoCardData = { id: 'skills', type: 'info', variant: 'skills', title: 'Skills', size: '2x1', pinned: true };
+const CONTACT: InfoCardData = { id: 'contact', type: 'info', variant: 'contact', title: 'Contact', size: '2x1', pinned: true };
 
 export interface ProjectsGridProps {
   projects: ProjectCardData[];
@@ -69,7 +69,7 @@ function makeRenderCard(profile: IntroProfile, info: InfoContent) {
 export function ProjectsGridClient({ projects, profile, info }: ProjectsGridProps) {
   const router = useRouter();
   // Every card goes on the board once; the board repeats it in every direction.
-  const cards = useMemo<CardData[]>(() => [INTRO, SKILLS, ...projects], [projects]);
+  const cards = useMemo<CardData[]>(() => [INTRO, CONTACT, ...projects], [projects]);
   const renderCard = useMemo(() => makeRenderCard(profile, info), [profile, info]);
 
   const handleCardSelect = useCallback(

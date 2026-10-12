@@ -1,14 +1,16 @@
 'use client';
 
 /**
- * InfoCard — the non-project compartment: the skills list, under the search card.
+ * InfoCard — the non-project compartment under the search card: resume and contact links.
  */
 
 import type { CardPosition, InfoCardData, ThemeConfig } from '../BentoGrid.types';
 import { BaseCard } from './BaseCard';
 
+const ext = { target: '_blank', rel: 'noopener noreferrer' } as const;
+
 export interface InfoContent {
-  skills: string[];
+  links: { resume: string; github: string; linkedin: string; email: string };
 }
 
 export interface InfoCardProps {
@@ -25,10 +27,27 @@ export function InfoCard({ card, position, theme, content, isFocused, onClick, e
   const shared = { id: card.id, position, theme, isFocused, entranceIndex };
 
   return (
-    <BaseCard {...shared} hoverEnabled={false} ariaLabel="Skills">
-      <div className="flex h-full flex-col gap-3 p-5">
-        <h2 className="text-sm text-ash">Skills</h2>
-        <p className="line-clamp-5 font-crt text-lg leading-tight text-rice/80">{content.skills.join(' · ').toLowerCase()}</p>
+    <BaseCard {...shared} hoverEnabled={false} ariaLabel="Contact">
+      <div className="flex h-full flex-col justify-between p-5" data-no-drag>
+        <h2 className="text-sm text-ash">Get in touch</h2>
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-3 text-sm">
+          <a
+            href={content.links.resume}
+            {...ext}
+            className="rounded-full bg-orange px-4 py-2 font-medium text-lacquer transition-[filter] hover:brightness-110"
+          >
+            Resume
+          </a>
+          <a href={content.links.github} {...ext} className="text-ash hover:text-rice">
+            GitHub
+          </a>
+          <a href={content.links.linkedin} {...ext} className="text-ash hover:text-rice">
+            LinkedIn
+          </a>
+          <a href={`mailto:${content.links.email}`} className="text-ash hover:text-rice">
+            Email
+          </a>
+        </div>
       </div>
     </BaseCard>
   );

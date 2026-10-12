@@ -9,7 +9,7 @@ export function filterCards(
   const normalizedSearch = searchTerm.trim().toLowerCase();
 
   return cards.filter((card) => {
-    // Pinned cards (intro, skills) are part of the board, not the result set.
+    // Pinned cards (intro, contact) are part of the board, not the result set.
     if (isPinnedCard(card)) return true;
     if (category && card.category !== category) return false;
     if (!normalizedSearch) return true;

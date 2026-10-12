@@ -37,13 +37,14 @@ export default function Home() {
     name: profile.name,
     title: profile.title,
     pitch: 'I build robots and the software that runs them, from PCBs and printed joints up to ROS2 and LLM pipelines.',
-    about: about.split('\n\n')[0],
+    // The first sentence is enough beside the pitch.
+    about: about.split(/(?<=\.)\s/)[0],
+    skills: [...skills.hardware, ...skills.software].slice(0, 10),
     jobs: experience.map((e) => ({ role: e.role, company: e.company, period: e.period })),
-    links: { resume: RESUME_URL, github: profile.github, linkedin: profile.linkedin, email: profile.email },
   };
 
   const info = {
-    skills: [...skills.hardware, ...skills.software].slice(0, 10),
+    links: { resume: RESUME_URL, github: profile.github, linkedin: profile.linkedin, email: profile.email },
   };
 
   return <HomeGrid projects={projects} profile={intro} info={info} />;
