@@ -23,9 +23,11 @@ export interface Tile {
   cols: number;
   rows: number;
   slots: TileSlot[];
-  /** Pixel point in the tile that sits at the canvas origin: the intro's centre. */
+  /** Pixel point in the tile that sits at the canvas origin: the home group's centre. */
   origin: { x: number; y: number };
 }
+
+const HOME_IDS = ['intro', LAYOUT_SEARCH_ID, 'contact'];
 
 export function tileFromLayout(layout: BoardLayout, cards: CardData[]): Tile {
   const known = new Set(cards.map((card) => card.id));
@@ -36,11 +38,12 @@ export function tileFromLayout(layout: BoardLayout, cards: CardData[]): Tile {
     slots.push({ id, col: card.col, row: card.row, size: sizeOf(card) });
   }
 
-  const intro = layout.cards.find((card) => card.id === 'intro');
-  const origin = intro
+  // The camera opens on the home group (intro, search and contact) as a whole.
+  const home = layout.cards.filter((card) => HOME_IDS.includes(card.id));
+  const origin = home.length
     ? {
-        x: intro.col * GRID_STEP + (intro.w * GRID_STEP - GRID.GAP) / 2,
-        y: intro.row * GRID_STEP + (intro.h * GRID_STEP - GRID.GAP) / 2,
+        x: (Math.min(...home.map((c) => c.col)) * GRID_STEP + Math.max(...home.map((c) => c.col + c.w)) * GRID_STEP - GRID.GAP) / 2,
+        y: (Math.min(...home.map((c) => c.row)) * GRID_STEP + Math.max(...home.map((c) => c.row + c.h)) * GRID_STEP - GRID.GAP) / 2,
       }
     : { x: (layout.cols * GRID_STEP) / 2, y: (layout.rows * GRID_STEP) / 2 };
 
