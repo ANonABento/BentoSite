@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchCardState } from '../cards';
 import {
+  countContentCards,
   filterCards,
   getCameraTransform,
   startsOnInteractiveControl,
@@ -11,24 +12,19 @@ import {
   useCardNavigation,
   useWindowSize,
 } from '../core';
-import { countDistinctCards } from '../duplicate-fill';
-import { useBoardController } from '../core/useBoardController';
-import { usePhysicsWorld } from '../physics';
+import { SEARCH_DOCK_PREFIX, useTiledBoard } from '../core/useTiledBoard';
 import { SEARCH_CARD_ID } from '../BentoGrid.constants';
 import { ArrowLeftIcon, ChevronDownIcon, ChevronRightIcon, CloseIcon, RefreshIcon, SearchIcon } from '@/components/ui/Icons';
 import type { CardData, CardPosition, CardSizeMode, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
-function withoutSearchCard(layouts: Map<string, CardPosition>): Map<string, CardPosition> {
-  if (!layouts.has(SEARCH_CARD_ID)) return layouts;
-
-  const nextLayouts = new Map(layouts);
-  nextLayouts.delete(SEARCH_CARD_ID);
-  return nextLayouts;
+/** Cards keyboard focus can land on: not the search card or the empty docks. */
+function navigable(layouts: Map<string, CardPosition>): Map<string, CardPosition> {
+  return new Map([...layouts].filter(([id]) => id !== SEARCH_CARD_ID && !id.startsWith(SEARCH_DOCK_PREFIX)));
 }
 
-const BOARD_LOOP_IDLE_VELOCITY = 0.05;
-const BOARD_LOOP_WAKE_MS = 300;
+/** How long the search card glides when it docks in another copy of the board. */
+const DOCK_GLIDE_MS = 320;
 
 interface DesktopCanvasViewProps {
   className?: string;
@@ -47,7 +43,6 @@ export function DesktopCanvasView({
   cards,
   theme,
   categories,
-  cardSizeMode,
   breadcrumb,
   onCardSelect,
   renderCard,
@@ -59,21 +54,23 @@ export function DesktopCanvasView({
     windowSize,
   });
 
-  const board = useBoardController({
-    cards,
-    rotationRange: theme.card.rotationRange,
-    cardSizeMode,
-  });
+  const board = useTiledBoard({ cards, camera: navigation.camera, windowSize });
 
   const searchCardLayout = board.visible.get(SEARCH_CARD_ID);
 
+  const { applyFilter, resetAnchor } = board;
+  const { reset: resetCamera } = navigation;
   const handleFilterChange = useCallback(
     (searchTerm: string, category: string | null) => {
-      board.applyFilter(searchTerm, category);
-      navigation.reset();
+      applyFilter(searchTerm, category);
+      resetCamera();
     },
-    [board, navigation],
+    [applyFilter, resetCamera],
   );
+  const resetView = useCallback(() => {
+    resetAnchor();
+    resetCamera();
+  }, [resetAnchor, resetCamera]);
 
   const searchState = useSearchCardState({
     camera: navigation.camera,
@@ -85,20 +82,14 @@ export function DesktopCanvasView({
 
   const isSearchSticky = searchState.compression > 0;
 
-  // Rehome the search card when compression transitions from >0 to 0.
-  // This anchors the grid home to wherever the ghost currently is.
-  const prevCompressionRef = useRef(0);
+  // When the search card docks in another copy of the board, it glides there
+  // rather than jumping. The glide lasts until the new anchor has settled.
+  const [settledAnchor, setSettledAnchor] = useState(board.anchorKey);
+  const gliding = settledAnchor !== board.anchorKey;
   useEffect(() => {
-    const prev = prevCompressionRef.current;
-    prevCompressionRef.current = searchState.compression;
-
-    if (prev > 0 && searchState.compression === 0 && searchState.ghostCanvasPosition) {
-      board.rehomeSearchCard(
-        searchState.ghostCanvasPosition.x,
-        searchState.ghostCanvasPosition.y,
-      );
-    }
-  }, [searchState.compression, searchState.ghostCanvasPosition, board]);
+    const timer = window.setTimeout(() => setSettledAnchor(board.anchorKey), DOCK_GLIDE_MS);
+    return () => window.clearTimeout(timer);
+  }, [board.anchorKey]);
 
   // Display layouts: content cards at grid positions.
   // Search card uses sticky override when compressed, grid position when free.
@@ -109,123 +100,7 @@ export function DesktopCanvasView({
     return layouts;
   }, [board.visible, searchState.stickyCanvasPosition]);
 
-  // Physics is only used for search card collision body
-  const { updateSearchCard, hasAwakeBodies } = usePhysicsWorld({
-    layouts: displayLayouts,
-    enabled: true,
-    isMobile: false,
-  });
-
-  // Update search card physics body: static when sticky, dynamic when free
-  const searchDisplayPos = displayLayouts.get(SEARCH_CARD_ID);
-  useEffect(() => {
-    if (!searchDisplayPos) return;
-    updateSearchCard(
-      { id: SEARCH_CARD_ID, ...searchDisplayPos },
-      isSearchSticky,
-    );
-  }, [searchDisplayPos, isSearchSticky, updateSearchCard]);
-
-  // Refs for the rAF loop
-  const visibleRef = useRef<Map<string, CardPosition>>(displayLayouts);
-  const windowSizeRef = useRef(windowSize);
-  useEffect(() => { visibleRef.current = displayLayouts; }, [displayLayouts]);
-  useEffect(() => { windowSizeRef.current = windowSize; }, [windowSize]);
-
-  // getCurrentLayouts returns grid positions directly — no physics merge
-  const getCurrentLayouts = useCallback((): Map<string, CardPosition> => {
-    return new Map(visibleRef.current);
-  }, []);
-
-  // rAF loop — runs spawn/despawn at display refresh rate
-  const boardTickRef = useRef(board.tick);
-  useEffect(() => { boardTickRef.current = board.tick; }, [board.tick]);
-
-  // Track last camera position so we can derive per-frame velocity for the
-  // spawn anchor's direction-bias. Smoothed with a low-pass filter to avoid
-  // jitter on near-stationary frames.
-  const lastCameraRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const velocityRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const rafIdRef = useRef<number | null>(null);
-  const activeUntilRef = useRef(0);
-  const startBoardLoopRef = useRef<() => void>(() => {});
-  const hasAwakeBodiesRef = useRef(hasAwakeBodies);
-
-  useEffect(() => {
-    hasAwakeBodiesRef.current = hasAwakeBodies;
-  }, [hasAwakeBodies]);
-
-  const wakeBoardLoop = useCallback(() => {
-    activeUntilRef.current = performance.now() + BOARD_LOOP_WAKE_MS;
-    startBoardLoopRef.current();
-  }, []);
-
-  useEffect(() => {
-    let mounted = true;
-
-    function loop(now: number) {
-      rafIdRef.current = null;
-      if (!mounted) return;
-
-      const cam = navigation.cameraRef.current;
-      let speed = 0;
-      let tickChanged = false;
-
-      if (cam) {
-        const last = lastCameraRef.current;
-        const dx = cam.x - last.x;
-        const dy = cam.y - last.y;
-        speed = Math.sqrt(dx * dx + dy * dy);
-        // Exponential smoothing — keeps responsive while damping single-frame spikes.
-        velocityRef.current = {
-          x: velocityRef.current.x * 0.6 + dx * 0.4,
-          y: velocityRef.current.y * 0.6 + dy * 0.4,
-        };
-        lastCameraRef.current = { x: cam.x, y: cam.y };
-        tickChanged = boardTickRef.current(
-          cam,
-          windowSizeRef.current,
-          getCurrentLayouts,
-          velocityRef.current,
-        );
-      }
-
-      if (
-        tickChanged ||
-        speed > BOARD_LOOP_IDLE_VELOCITY ||
-        hasAwakeBodiesRef.current() ||
-        now < activeUntilRef.current
-      ) {
-        rafIdRef.current = requestAnimationFrame(loop);
-      }
-    }
-
-    const start = () => {
-      if (!mounted || rafIdRef.current !== null) return;
-      rafIdRef.current = requestAnimationFrame(loop);
-    };
-
-    startBoardLoopRef.current = start;
-    start();
-
-    return () => {
-      mounted = false;
-      startBoardLoopRef.current = () => {};
-      if (rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current);
-        rafIdRef.current = null;
-      }
-    };
-  }, [navigation.cameraRef, getCurrentLayouts]);
-
-  useEffect(() => {
-    wakeBoardLoop();
-  }, [board.queue.length, displayLayouts, navigation.camera, wakeBoardLoop, windowSize]);
-
-  const navigableLayouts = useMemo(
-    () => withoutSearchCard(displayLayouts),
-    [displayLayouts],
-  );
+  const navigableLayouts = useMemo(() => navigable(displayLayouts), [displayLayouts]);
 
   // Cards carrying a filter term (tech tiles) search the board instead of navigating.
   const { setSearchTerm } = searchState;
@@ -236,7 +111,7 @@ export function DesktopCanvasView({
 
   const cardNavigation = useCardNavigation({
     visible: navigableLayouts,
-    cards,
+    cardDataMap: board.cardDataMap,
     onSelect: selectCard,
     enabled: true,
   });
@@ -252,8 +127,6 @@ export function DesktopCanvasView({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      wakeBoardLoop();
-
       if (event.key === '/' || event.key === 'f') {
         if (!isEditableTarget(event.target)) {
           event.preventDefault();
@@ -271,7 +144,7 @@ export function DesktopCanvasView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onBack, searchState, wakeBoardLoop]);
+  }, [onBack, searchState]);
 
   const transform = useMemo(
     () => getCameraTransform(navigation.camera, windowSize),
@@ -307,50 +180,27 @@ export function DesktopCanvasView({
   }, []);
 
 
+  // Counts shown to the visitor are projects, not board occupancy: the board
+  // shows every card many times over.
+  const projectTotal = useMemo(() => countContentCards(cards), [cards]);
+  const projectMatches = useMemo(
+    () => countContentCards(filterCards(cards, searchState.searchTerm, searchState.category)),
+    [cards, searchState.searchTerm, searchState.category],
+  );
+
   // Tracks the timestamp of the last wheel event that reached the canvas
   // pan handler. If the cursor crosses an element that normally swallows
   // wheel (chip row, search input) WHILE a pan is in motion, that element
   // checks this ref and lets the event bubble through so panning doesn't
   // stutter mid-gesture. After ~100ms of inactivity, the element resumes
   // its native behavior (chip scroll, text caret).
-  // Counts shown to the visitor are content counts, not board occupancy:
-  // `cards` is already clone-filled to cover a wide canvas, and
-  // `board.filteredCount` counts card instances on and near the board.
-  const distinctTotal = useMemo(() => countDistinctCards(cards), [cards]);
-  const distinctFiltered = useMemo(
-    () => countDistinctCards(filterCards(cards, searchState.searchTerm, searchState.category)),
-    [cards, searchState.searchTerm, searchState.category],
-  );
-
   const panAtRef = useRef(0);
   const handleWrapperWheel = useCallback(
     (event: React.WheelEvent<HTMLDivElement>) => {
-      wakeBoardLoop();
       panAtRef.current = Date.now();
       navBindings.onWheel?.(event);
     },
-    [navBindings, wakeBoardLoop],
-  );
-  const handleWrapperPointerDown = useCallback(
-    (event: React.PointerEvent<HTMLDivElement>) => {
-      wakeBoardLoop();
-      navBindings.onPointerDown?.(event);
-    },
-    [navBindings, wakeBoardLoop],
-  );
-  const handleWrapperPointerUp = useCallback(
-    (event: React.PointerEvent<HTMLDivElement>) => {
-      wakeBoardLoop();
-      navBindings.onPointerUp?.(event);
-    },
-    [navBindings, wakeBoardLoop],
-  );
-  const handleWrapperMouseDown = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      wakeBoardLoop();
-      navBindings.onMouseDown?.(event);
-    },
-    [navBindings, wakeBoardLoop],
+    [navBindings],
   );
 
   return (
@@ -373,9 +223,6 @@ export function DesktopCanvasView({
         // The dot grid pans with the board, at a fifth of the speed, for depth.
         backgroundPosition: `${navigation.camera.x * navigation.camera.zoom * 0.2}px ${navigation.camera.y * navigation.camera.zoom * 0.2}px`,
       }}
-      onPointerDown={handleWrapperPointerDown}
-      onPointerUp={handleWrapperPointerUp}
-      onMouseDown={handleWrapperMouseDown}
     >
       {/* Canvas layer — clips the transformed card grid */}
       <div className="absolute inset-0 overflow-hidden">
@@ -408,7 +255,9 @@ export function DesktopCanvasView({
             top: searchState.screenPosition.y - searchState.height / 2,
             width: searchState.width,
             height: searchState.height,
-            transition: 'width 200ms ease-out, height 200ms ease-out',
+            transition: gliding
+              ? `width 200ms ease-out, height 200ms ease-out, left ${DOCK_GLIDE_MS}ms ease-out, top ${DOCK_GLIDE_MS}ms ease-out`
+              : 'width 200ms ease-out, height 200ms ease-out',
           }}
         >
           <div
@@ -440,9 +289,9 @@ export function DesktopCanvasView({
                 onSearchChange={searchState.setSearchTerm}
                 onCategoryChange={searchState.setCategory}
                 onBack={onBack}
-                onReset={navigation.reset}
-                totalCards={distinctTotal}
-                filteredCards={distinctFiltered}
+                onReset={resetView}
+                totalCards={projectTotal}
+                filteredCards={projectMatches}
                 panAtRef={panAtRef}
               />
             )}

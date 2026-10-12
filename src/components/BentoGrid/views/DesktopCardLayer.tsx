@@ -3,6 +3,7 @@
 import { Fragment } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { SEARCH_CARD_ID } from '../BentoGrid.constants';
+import { SEARCH_DOCK_PREFIX } from '../core/useTiledBoard';
 import type {
   CardData,
   CardPosition,
@@ -44,6 +45,9 @@ export function DesktopCardLayer({
       {Array.from(layouts.entries()).map(([cardId, layout], index) => {
         // Search card is rendered as a fixed overlay by DesktopCanvasView
         if (cardId === SEARCH_CARD_ID) return null;
+        if (cardId.startsWith(SEARCH_DOCK_PREFIX)) {
+          return <SearchDock key={cardId} layout={layout} radius={theme.card.borderRadius} />;
+        }
 
         // Content cards render directly at grid positions — no physics override
         const cardData = cardDataMap.get(cardId);
@@ -79,5 +83,23 @@ export function DesktopCardLayer({
         );
       })}
     </AnimatePresence>
+  );
+}
+
+/** Where the search card would sit in this copy of the board; it docks here when it comes into view. */
+function SearchDock({ layout, radius }: { layout: CardPosition; radius: number }) {
+  return (
+    <div
+      aria-hidden
+      className="absolute left-0 top-0"
+      style={{
+        width: layout.width,
+        height: layout.height,
+        transform: `translate(${layout.x}px, ${layout.y}px)`,
+        borderRadius: radius,
+        border: '1.5px dashed var(--board-dock-bg)',
+        opacity: 0.35,
+      }}
+    />
   );
 }

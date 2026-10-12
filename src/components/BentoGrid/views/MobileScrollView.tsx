@@ -3,8 +3,7 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { SearchMenuCard, useSearchCardState } from '../cards';
-import { filterCards, useWindowSize } from '../core';
-import { countDistinctCards, isClone } from '../duplicate-fill';
+import { countContentCards, filterCards, useWindowSize } from '../core';
 import { MOBILE, isPinnedCard } from '../BentoGrid.constants';
 import type { CardData, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import { DefaultCard } from './DefaultCard';
@@ -35,8 +34,7 @@ export function MobileScrollView({
   const [category, setCategory] = useState<string | null>(null);
 
   const localFilteredCards = useMemo(
-    // A scrolling list has no canvas to fill, so canvas-fill clones would just repeat projects.
-    () => filterCards(cards, searchTerm, category).filter((card) => !isClone(card.id)),
+    () => filterCards(cards, searchTerm, category),
     [cards, searchTerm, category]
   );
 
@@ -95,8 +93,8 @@ export function MobileScrollView({
         onSearchChange={searchState.setSearchTerm}
         onCategoryChange={searchState.setCategory}
         onBack={onBack}
-        totalCards={countDistinctCards(cards)}
-        filteredCards={countDistinctCards(localFilteredCards)}
+        totalCards={countContentCards(cards)}
+        filteredCards={countContentCards(localFilteredCards)}
       />
 
       <div

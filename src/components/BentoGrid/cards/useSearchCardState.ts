@@ -1,19 +1,18 @@
 /**
- * useSearchCardState - Search Card Edge Compression & Ghost Tracking
+ * useSearchCardState - Search Card Edge Compression
  *
  * The search card renders as a position:fixed overlay in screen space
  * (DesktopCardLayer skips SEARCH_CARD_ID). When the camera pans so the
  * card's grid slot nears a viewport edge, this hook computes:
  *   - Which edge is closest and the compression ratio (0 = free, 1 = fully squashed)
- *   - A "ghost" canvas position that tracks near the viewport edge while
- *     compressed, enabling smooth decompression on pan-back
- *   - The screen-space position for rendering the fixed overlay
+ *   - The screen-space position for rendering the fixed overlay, clamped to that edge
  *
- * On decompression (compression -> 0), DesktopCanvasView calls
- * rehomeSearchCard to snap the grid slot to the ghost's position.
+ * While the slot is off screen the card stays stuck to the edge. It comes
+ * free when its slot is back in view, or when DesktopCanvasView docks it in
+ * another copy of the board that is.
  */
 
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { Position, SearchCardState, SearchCardEdge, Camera, CardPosition } from '../BentoGrid.types';
 import { SEARCH_CARD } from '../BentoGrid.constants';
 import { canvasToScreen, screenToCanvas } from '../core/useViewport';
@@ -36,8 +35,6 @@ interface UseSearchCardStateReturn extends SearchCardState {
   clearFilters: () => void;
   /** Overridden canvas position when compressed (null when free) */
   stickyCanvasPosition: CardPosition | null;
-  /** The ghost's current effective canvas position (used for rehoming) */
-  ghostCanvasPosition: { x: number; y: number } | null;
 }
 
 interface SearchCardPresentation {
@@ -176,18 +173,9 @@ export function useSearchCardState(
   const [searchTerm, setSearchTermState] = useState('');
   const [category, setCategoryState] = useState<string | null>(null);
 
-  // Ghost position tracking: the search card's effective canvas position.
-  // When the grid home is on-screen, the ghost matches it. When off-screen,
-  // the ghost tracks viewportEdge - COMPRESSION_DISTANCE so compression stays
-  // in the 0..1 range and decompression happens immediately on pan-back.
-  const ghostPosRef = useRef<{ x: number; y: number } | null>(null);
-
-  /* eslint-disable react-hooks/refs -- ghostPosRef requires synchronous read/write in useMemo and return */
-
   const effectivePresentation = useMemo(() => {
     if (isMobile) return getMobilePresentation(windowSize, userExpanded);
     if (!searchCardLayout) {
-      ghostPosRef.current = null;
       return {
         edge: 'none' as SearchCardEdge,
         compression: 0,
@@ -199,107 +187,31 @@ export function useSearchCardState(
         screenPosition: { x: windowSize.width / 2, y: windowSize.height / 2 },
       };
     }
-
-    const w = searchCardLayout.width;
-    const h = searchCardLayout.height;
-    const padding = SEARCH_CARD.EDGE_PADDING;
-    const compDist = SEARCH_CARD.COMPRESSION_DISTANCE;
-
-    // Use the ghost's previous position (or grid home if no ghost yet) to
-    // check if the card is on-screen. This is critical — using the grid home
-    // (which can be far away) would keep the card permanently compressed.
-    const prevGhost = ghostPosRef.current ?? { x: searchCardLayout.x, y: searchCardLayout.y };
-    const checkScreen = canvasToScreen(
-      prevGhost.x + w / 2,
-      prevGhost.y + h / 2,
+    // The card sticks to whichever edge its slot left by, until the slot (or
+    // another copy's dock, see useTiledBoard) is back on screen.
+    return getSearchCardPresentation(
+      searchCardLayout.x,
+      searchCardLayout.y,
+      searchCardLayout.width,
+      searchCardLayout.height,
       camera,
       windowSize,
-    );
-    const scaledW = w * camera.zoom;
-    const scaledH = h * camera.zoom;
-
-    const checkLeft = checkScreen.x - scaledW / 2;
-    const checkRight = checkScreen.x + scaledW / 2;
-    const checkTop = checkScreen.y - scaledH / 2;
-    const checkBottom = checkScreen.y + scaledH / 2;
-
-    const offLeft = Math.max(0, padding - checkLeft);
-    const offRight = Math.max(0, checkRight - (windowSize.width - padding));
-    const offTop = Math.max(0, padding - checkTop);
-    const offBottom = Math.max(0, checkBottom - (windowSize.height - padding));
-
-    const isOnScreen = offLeft === 0 && offRight === 0 && offTop === 0 && offBottom === 0;
-
-    if (isOnScreen) {
-      // Ghost entered the viewport. Snap to grid home if it's nearby
-      // (post-rehome the grid home will be close). If grid home is far
-      // away (pre-rehome), keep the ghost at prevGhost to avoid the
-      // oscillation bug (ghost snaps far → off-screen → back → repeat).
-      const dx = Math.abs(prevGhost.x - searchCardLayout.x);
-      const dy = Math.abs(prevGhost.y - searchCardLayout.y);
-      if (dx <= compDist && dy <= compDist) {
-        // Grid home is nearby — snap for grid alignment
-        ghostPosRef.current = { x: searchCardLayout.x, y: searchCardLayout.y };
-      } else {
-        // Grid home is far — keep ghost here, rehome will update it
-        ghostPosRef.current = prevGhost;
-      }
-    } else {
-      // Ghost stays at a fixed canvas position near the viewport edge.
-      // It only moves DEEPER off-screen (when the user pans further away)
-      // but stays put when panning back. This way the viewport moves
-      // toward the ghost on pan-back, reducing compression immediately.
-      // Ghost tracks just outside the viewport edge. Key behavior:
-      // - Going off left: ghost.x = max(prevGhost.x, edgePos) — stays put
-      //   when panning further, viewport approaches when panning back
-      // - The "max" ensures the ghost is always as close to the viewport
-      //   as possible (edgePos is just outside the viewport edge)
-      let ghostX = prevGhost.x;
-      let ghostY = prevGhost.y;
-
-      if (offLeft > 0) {
-        const edgeCanvasX = screenToCanvas(padding + scaledW / 2, 0, camera, windowSize).x - w / 2;
-        const edgePos = edgeCanvasX - compDist / camera.zoom;
-        // Ghost should be as close to viewport as possible (higher X = closer)
-        ghostX = Math.max(ghostX, edgePos);
-      } else if (offRight > 0) {
-        const edgeCanvasX = screenToCanvas(windowSize.width - padding - scaledW / 2, 0, camera, windowSize).x - w / 2;
-        const edgePos = edgeCanvasX + compDist / camera.zoom;
-        ghostX = Math.min(ghostX, edgePos);
-      }
-
-      if (offTop > 0) {
-        const edgeCanvasY = screenToCanvas(0, padding + scaledH / 2, camera, windowSize).y - h / 2;
-        const edgePos = edgeCanvasY - compDist / camera.zoom;
-        ghostY = Math.max(ghostY, edgePos);
-      } else if (offBottom > 0) {
-        const edgeCanvasY = screenToCanvas(0, windowSize.height - padding - scaledH / 2, camera, windowSize).y - h / 2;
-        const edgePos = edgeCanvasY + compDist / camera.zoom;
-        ghostY = Math.min(ghostY, edgePos);
-      }
-
-      ghostPosRef.current = { x: ghostX, y: ghostY };
-    }
-
-    return getSearchCardPresentation(
-      ghostPosRef.current.x,
-      ghostPosRef.current.y,
-      w, h, camera, windowSize,
     );
   }, [camera, windowSize, isMobile, userExpanded, searchCardLayout]);
 
   const stickyCanvasPosition = useMemo((): CardPosition | null => {
-    if (effectivePresentation.compression === 0 || !searchCardLayout || !ghostPosRef.current) return null;
+    if (effectivePresentation.compression === 0 || !searchCardLayout) return null;
+    const { screenPosition, width, height } = effectivePresentation;
+    const topLeft = screenToCanvas(screenPosition.x - width / 2, screenPosition.y - height / 2, camera, windowSize);
 
     return {
-      x: ghostPosRef.current.x,
-      y: ghostPosRef.current.y,
+      ...topLeft,
       width: effectivePresentation.canvasWidth,
       height: effectivePresentation.canvasHeight,
       size: searchCardLayout.size,
       rotation: 0,
     };
-  }, [effectivePresentation, searchCardLayout]);
+  }, [effectivePresentation, searchCardLayout, camera, windowSize]);
 
   const toggleExpanded = useCallback(() => {
     setUserExpanded((prev) => !prev);
@@ -343,7 +255,5 @@ export function useSearchCardState(
     clearFilters,
     screenPosition: effectivePresentation.screenPosition,
     stickyCanvasPosition,
-    ghostCanvasPosition: ghostPosRef.current,
   };
-  /* eslint-enable react-hooks/refs */
 }

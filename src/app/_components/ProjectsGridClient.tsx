@@ -5,7 +5,6 @@ import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { PaletteSwitcher } from './PaletteSwitcher';
 import { InfoCard, IntroCard, ProjectCard, type InfoContent, type IntroProfile } from '@/components/BentoGrid/cards';
-import { duplicateCardsForFill, stripCloneSuffix } from '@/components/BentoGrid/duplicate-fill';
 import {
   BentoGrid,
   type CardData,
@@ -79,10 +78,8 @@ function makeRenderCard(profile: IntroProfile, info: InfoContent) {
 
 export function ProjectsGridClient({ projects, profile, info, techs }: ProjectsGridProps) {
   const router = useRouter();
-  // Fill the canvas — cycle the source pool with clone IDs so the
-  // grid feels populated even when the project count is small. The intro
-  // and info compartments are pinned, so they go in once, ahead of the pool.
-  // Tech tiles plug the holes between projects; selecting one searches for it.
+  // Every card goes on the board once; the board repeats it in every
+  // direction. Tech tiles pad out the layout; selecting one searches for it.
   const cards = useMemo<CardData[]>(() => {
     const tiles = techs.map(
       (tech): InfoCardData => ({
@@ -96,15 +93,13 @@ export function ProjectsGridClient({ projects, profile, info, techs }: ProjectsG
         filter: tech.name,
       }),
     );
-    return [INTRO, EXPERIENCE, ABOUT, ...duplicateCardsForFill(projects), ...tiles];
+    return [INTRO, EXPERIENCE, ABOUT, ...projects, ...tiles];
   }, [projects, techs]);
   const renderCard = useMemo(() => makeRenderCard(profile, info), [profile, info]);
 
   const handleCardSelect = useCallback(
     (card: CardData) => {
-      // Clones share the source project's id under a `-clone-N` suffix;
-      // strip it before navigating to the project page.
-      if (card.type === 'project') router.push(`/projects/${stripCloneSuffix(card.id)}`);
+      if (card.type === 'project') router.push(`/projects/${card.id}`);
     },
     [router],
   );
