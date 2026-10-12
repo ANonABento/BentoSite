@@ -24,14 +24,12 @@ const EXPERIENCE: InfoCardData = {
   size: '2x2',
   pinned: true,
 };
-const ABOUT: InfoCardData = { id: 'about', type: 'info', variant: 'about', title: 'About', size: '2x2', pinned: true };
+const ABOUT: InfoCardData = { id: 'about', type: 'info', variant: 'about', title: 'About', size: '2x1', pinned: true };
 
 export interface ProjectsGridProps {
   projects: ProjectCardData[];
   profile: IntroProfile;
   info: InfoContent;
-  /** Technologies used by two or more projects, most-used first. */
-  techs: { name: string; count: number }[];
 }
 
 function makeRenderCard(profile: IntroProfile, info: InfoContent) {
@@ -76,25 +74,10 @@ function makeRenderCard(profile: IntroProfile, info: InfoContent) {
   };
 }
 
-export function ProjectsGridClient({ projects, profile, info, techs }: ProjectsGridProps) {
+export function ProjectsGridClient({ projects, profile, info }: ProjectsGridProps) {
   const router = useRouter();
-  // Every card goes on the board once; the board repeats it in every
-  // direction. Tech tiles pad out the layout; selecting one searches for it.
-  const cards = useMemo<CardData[]>(() => {
-    const tiles = techs.map(
-      (tech): InfoCardData => ({
-        id: `tech-${tech.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
-        type: 'info',
-        variant: 'tech',
-        title: tech.name,
-        count: tech.count,
-        size: '1x1',
-        filler: true,
-        filter: tech.name,
-      }),
-    );
-    return [INTRO, EXPERIENCE, ABOUT, ...projects, ...tiles];
-  }, [projects, techs]);
+  // Every card goes on the board once; the board repeats it in every direction.
+  const cards = useMemo<CardData[]>(() => [INTRO, EXPERIENCE, ABOUT, ...projects], [projects]);
   const renderCard = useMemo(() => makeRenderCard(profile, info), [profile, info]);
 
   const handleCardSelect = useCallback(

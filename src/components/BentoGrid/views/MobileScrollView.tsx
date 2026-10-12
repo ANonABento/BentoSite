@@ -38,24 +38,19 @@ export function MobileScrollView({
     [cards, searchTerm, category]
   );
 
-  // Two-column tray: intro, featured work, the info compartments, then the
-  // rest. Filler tiles are capped and topped up to an even count of
-  // single-column cards, so the last row never ends on a hole.
+  // Two-column tray: intro, featured work, the info compartments, then the rest.
   const trayCards = useMemo(() => {
     const isFeatured = (card: CardData) => card.type === 'project' && Boolean(card.featured);
-    const content = localFilteredCards.filter((card) => !card.filler);
-    const ordered = [
+    const content = localFilteredCards;
+    return [
       ...content.filter((card) => card.type === 'intro'),
       ...content.filter(isFeatured),
       ...content.filter((card) => card.type !== 'intro' && isPinnedCard(card)),
       ...content.filter((card) => !isPinnedCard(card) && !isFeatured(card)),
     ];
-    const singles = ordered.filter((card) => spanOf(card) === 1).length;
-    const fillerCount = Math.min(MOBILE_FILLERS + (singles % 2), localFilteredCards.length);
-    return [...ordered, ...localFilteredCards.filter((card) => card.filler).slice(0, fillerCount)];
   }, [localFilteredCards]);
 
-  const select = (card: CardData) => (card.filter ? searchState.setSearchTerm(card.filter) : onCardSelect?.(card));
+  const select = (card: CardData) => onCardSelect?.(card);
   const trayWidth = Math.min(windowSize.width, MOBILE.TRAY_MAX_WIDTH) - MOBILE.SCROLL_PADDING * 2;
   const columnWidth = (trayWidth - MOBILE.TRAY_GAP) / 2;
 
@@ -163,8 +158,6 @@ export function MobileScrollView({
 }
 
 /** Filler tiles shown on mobile, before topping up to an even count. */
-const MOBILE_FILLERS = 4;
-
 /** Intro, info compartments and featured work span both columns. */
 function spanOf(card: CardData): 1 | 2 {
   if (card.type === 'intro' || isPinnedCard(card)) return 2;

@@ -9,9 +9,8 @@ export function filterCards(
   const normalizedSearch = searchTerm.trim().toLowerCase();
 
   return cards.filter((card) => {
-    // Pinned cards (intro, experience, about) and filler tiles are part of the
-    // board, not the result set.
-    if (isPinnedCard(card) || card.filler) return true;
+    // Pinned cards (intro, experience, about) are part of the board, not the result set.
+    if (isPinnedCard(card)) return true;
     if (category && card.category !== category) return false;
     if (!normalizedSearch) return true;
 

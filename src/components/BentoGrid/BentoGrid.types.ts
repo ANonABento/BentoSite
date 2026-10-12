@@ -48,12 +48,8 @@ export interface BaseCardData {
   /** Fixed footprint chosen by the caller (e.g. from the image's aspect ratio).
    *  Overrides the size mode when set. */
   size?: CardSize;
-  /** Placed beside the search card at start and never recycled or filtered out. */
+  /** Sits beside the search card in the home band and is never filtered out. */
   pinned?: boolean;
-  /** Small tile that plugs holes left in the opening layout instead of queueing for a spawn. */
-  filler?: boolean;
-  /** Selecting the card searches for this term instead of calling onCardSelect. */
-  filter?: string;
 }
 
 export interface GameCardData extends BaseCardData {
@@ -95,12 +91,10 @@ export interface IntroCardData extends BaseCardData {
   type: 'intro';
 }
 
-/** Non-project compartment: experience, about, or a technology tile. */
+/** Non-project compartment: experience or about. */
 export interface InfoCardData extends BaseCardData {
   type: 'info';
-  variant: 'experience' | 'about' | 'tech';
-  /** Tech tiles: how many projects use it. */
-  count?: number;
+  variant: 'experience' | 'about';
 }
 
 export type CardData = GameCardData | ProjectCardData | PhotoCardData | IntroCardData | InfoCardData;

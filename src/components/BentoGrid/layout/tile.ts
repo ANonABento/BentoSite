@@ -5,8 +5,8 @@
  * every copy of the block is identical.
  *
  * The block is built from bands two rows tall. Each band is a run of columns:
- * a 2x2 or 3x2 card, the search card over two 1x1 tiles, or two stacked 1x1
- * tiles. Every band is padded to the same width, so the block is a gapless
+ * a 2x2 or 3x2 card, or the search card over a 2x1 card. Every band is padded
+ * to the same width by widening 2x2 projects, so the block is a gapless
  * rectangle and its copies meet without seams.
  */
 
@@ -41,7 +41,8 @@ const TILE_ASPECT = 1.6;
 export function buildTile(cards: CardData[]): Tile {
   const intro = cards.find((card) => card.type === 'intro');
   const pinned = cards.filter((card) => card.pinned && card !== intro);
-  const area = cards.reduce((sum, card) => sum + (card.size === '1x1' ? 0 : widthOfCard(card)), 0) + 2;
+  // A 2x1 pinned card (about) sits under the search card; that column is 2 wide.
+  const area = cards.reduce((sum, card) => sum + (card.size === '2x1' ? 0 : widthOfCard(card)), 0) + 2;
   const ideal = Math.sqrt(area * BAND_ROWS * TILE_ASPECT);
 
   // Try widths around the ideal and keep the one that leaves the fewest holes,
@@ -76,19 +77,17 @@ export function buildTile(cards: CardData[]): Tile {
 }
 
 function layBands(cards: CardData[], intro: CardData | undefined, pinned: CardData[], width: number) {
-  const tiles = cards.filter((card) => card.size === '1x1');
-
-  // The opening group shares the home band: one pinned card, the intro, the
-  // search card, then any other pinned cards.
+  // The opening group shares the home band: the intro, then the search card
+  // with the 2x1 pinned card under it, then any other pinned cards.
+  const under = pinned.find((card) => card.size === '2x1');
   const home: Column[] = [];
-  if (pinned[0]) home.push(single(pinned[0]));
   if (intro) home.push(single(intro));
-  home.push(searchColumn(tiles.shift(), tiles.shift()));
-  pinned.slice(1).forEach((card) => home.push(single(card)));
+  home.push(searchColumn(under));
+  pinned.filter((card) => card !== under).forEach((card) => home.push(single(card)));
 
   const widthOf = (band: Column[]) => band.reduce((sum, col) => sum + col.width, 0);
   if (width < widthOf(home)) return null;
-  const rest = cards.filter((card) => card !== intro && !pinned.includes(card) && card.size !== '1x1').map(single);
+  const rest = cards.filter((card) => card !== intro && !pinned.includes(card)).map(single);
   const bandCount = Math.max(1, Math.round((widthOf(home) + widthOf(rest)) / width));
 
   // Fill bands nearest the home band first, so cards listed first (featured
@@ -108,33 +107,24 @@ function layBands(cards: CardData[], intro: CardData | undefined, pinned: CardDa
     }
   }
 
-  // Pad every band to full width: pairs of 1x1 tiles first, then widen 2x2 cards.
+  // Pad every band to full width by widening 2x2 projects to 3x2, spread
+  // evenly through the band so the wide cards don't bunch up.
   let holes = 0;
-  bands.forEach((band, index) => {
-    let gap = width - widthOf(band);
-    while (gap > 0 && tiles.length >= 2) {
-      const pair: Column = {
-        width: 1,
-        cards: [
-          { id: tiles.shift()!.id, size: '1x1', dc: 0, dr: 0 },
-          { id: tiles.shift()!.id, size: '1x1', dc: 0, dr: 1 },
-        ],
-      };
-      // Spread pads through the band so columns don't line up between bands.
-      band.splice((index * 3 + gap * 2) % (band.length + 1), 0, pair);
-      gap--;
+  for (const band of bands) {
+    const gap = width - widthOf(band);
+    const widenable = band.filter((col) => col.cards.length === 1 && col.cards[0].size === '2x2' && !isPinned(col.cards[0].id));
+    const count = Math.min(gap, widenable.length);
+    for (let k = 0; k < count; k++) {
+      const col = widenable[Math.floor(((k + 0.5) * widenable.length) / count)];
+      col.width = 3;
+      col.cards = [{ ...col.cards[0], size: '3x2' }];
     }
-    for (const col of band) {
-      if (gap === 0) break;
-      const [card] = col.cards;
-      if (col.cards.length === 1 && card.size === '2x2' && card.id !== intro?.id && !pinned.some((p) => p.id === card.id)) {
-        col.width = 3;
-        col.cards = [{ ...card, size: '3x2' }];
-        gap--;
-      }
-    }
-    holes += gap;
-  });
+    holes += gap - count;
+  }
+
+  function isPinned(id: string) {
+    return id === intro?.id || pinned.some((card) => card.id === id);
+  }
 
   return { bands, width, holes };
 }
@@ -150,11 +140,10 @@ function single(card: CardData): Column {
   return { width: SPAN[size] ?? 2, cards: [{ id: card.id, size, dc: 0, dr: 0 }] };
 }
 
-/** The search card on top, with up to two 1x1 tiles side by side under it. */
-function searchColumn(left?: CardData, right?: CardData): Column {
+/** The search card on top, with a 2x1 card under it. */
+function searchColumn(under?: CardData): Column {
   const cards: Column['cards'] = [{ id: SEARCH_CARD_ID, size: '2x1', dc: 0, dr: 0 }];
-  if (left) cards.push({ id: left.id, size: '1x1', dc: 0, dr: 1 });
-  if (right) cards.push({ id: right.id, size: '1x1', dc: 1, dr: 1 });
+  if (under) cards.push({ id: under.id, size: '2x1', dc: 0, dr: 1 });
   return { width: 2, cards };
 }
 

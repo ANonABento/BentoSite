@@ -1,9 +1,8 @@
 'use client';
 
 /**
- * InfoCard — the non-project compartments: work history, an about blurb with
- * skills, and small CRT tech tiles that plug the holes between projects.
- * Tech tiles carry a `filter` term, so selecting one searches the board.
+ * InfoCard — the non-project compartments: work history, and an about blurb
+ * with skills.
  */
 
 import type { CardPosition, InfoCardData, ThemeConfig } from '../BentoGrid.types';
@@ -27,17 +26,6 @@ export interface InfoCardProps {
 
 export function InfoCard({ card, position, theme, content, isFocused, onClick, entranceIndex }: InfoCardProps) {
   const shared = { id: card.id, position, theme, isFocused, entranceIndex };
-
-  if (card.variant === 'tech') {
-    return (
-      <BaseCard {...shared} onClick={onClick} ariaLabel={`Show projects using ${card.title}`}>
-        <div className="crt flex h-full w-full flex-col items-start justify-between p-4 text-left">
-          <span className="text-lg text-orange">×{card.count}</span>
-          <span className="w-full break-words text-[1.6rem] leading-none">{card.title.toLowerCase()}</span>
-        </div>
-      </BaseCard>
-    );
-  }
 
   if (card.variant === 'experience') {
     return (

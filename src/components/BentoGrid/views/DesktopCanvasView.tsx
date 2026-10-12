@@ -102,12 +102,7 @@ export function DesktopCanvasView({
 
   const navigableLayouts = useMemo(() => navigable(displayLayouts), [displayLayouts]);
 
-  // Cards carrying a filter term (tech tiles) search the board instead of navigating.
-  const { setSearchTerm } = searchState;
-  const selectCard = useCallback(
-    (card: CardData) => (card.filter ? setSearchTerm(card.filter) : onCardSelect?.(card)),
-    [onCardSelect, setSearchTerm],
-  );
+  const selectCard = useCallback((card: CardData) => onCardSelect?.(card), [onCardSelect]);
 
   const cardNavigation = useCardNavigation({
     visible: navigableLayouts,

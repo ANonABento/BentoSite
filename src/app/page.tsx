@@ -48,22 +48,6 @@ export default function Home() {
     skills: [...skills.hardware, ...skills.software].slice(0, 10),
   };
 
-  return <HomeGrid projects={projects} profile={intro} info={info} techs={topTechnologies(ordered)} />;
+  return <HomeGrid projects={projects} profile={intro} info={info} />;
 }
 
-/** Few enough that the tiles punctuate the projects rather than outnumber them. */
-const MAX_TECH_TILES = 8;
-
-/** The most-used technologies (two or more projects), most-used first. */
-function topTechnologies(projects: { technologies: string[] }[]) {
-  const counts = new Map<string, { name: string; count: number }>();
-  for (const tech of projects.flatMap((p) => p.technologies)) {
-    const entry = counts.get(tech.toLowerCase()) ?? { name: tech, count: 0 };
-    entry.count++;
-    counts.set(tech.toLowerCase(), entry);
-  }
-  return [...counts.values()]
-    .filter((t) => t.count >= 2)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, MAX_TECH_TILES);
-}
