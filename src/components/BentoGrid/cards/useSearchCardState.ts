@@ -122,7 +122,9 @@ export function getSearchCardPresentation(
     : scaledWidth;
   const height = isHorizontalEdge
     ? lerp(scaledHeight, SEARCH_CARD.COLLAPSED_HEIGHT, compression)
-    : scaledHeight;
+    : isSideEdge
+      ? lerp(scaledHeight, SEARCH_CARD.SQUASHED_SIDE_HEIGHT, compression)
+      : scaledHeight;
 
   const minX = padding + width / 2;
   const maxX = windowSize.width - padding - width / 2;

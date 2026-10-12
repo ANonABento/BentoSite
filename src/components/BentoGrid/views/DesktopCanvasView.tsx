@@ -6,7 +6,6 @@ import {
   countContentCards,
   filterCards,
   getCameraTransform,
-  screenToCanvas,
   startsOnInteractiveControl,
   isEditableTarget,
   useCamera,
@@ -15,7 +14,7 @@ import {
 } from '../core';
 import { SEARCH_DOCK_PREFIX, useTiledBoard } from '../core/useTiledBoard';
 import { SEARCH_CARD, SEARCH_CARD_ID } from '../BentoGrid.constants';
-import { ArrowLeftIcon, CloseIcon, RefreshIcon, SearchIcon } from '@/components/ui/Icons';
+import { CloseIcon, RefreshIcon, SearchIcon } from '@/components/ui/Icons';
 import type { CardData, CardPosition, CardSizeMode, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import type { BoardLayout } from '../layout/boardLayout';
 import { DesktopCardLayer } from './DesktopCardLayer';
@@ -25,8 +24,9 @@ function navigable(layouts: Map<string, CardPosition>): Map<string, CardPosition
   return new Map([...layouts].filter(([id]) => id !== SEARCH_CARD_ID && !id.startsWith(SEARCH_DOCK_PREFIX)));
 }
 
-/** How long the search card glides when it docks in another copy of the board. */
+/** How long the search card glides when it docks in another copy of the board, or its drawer opens or closes. */
 const DOCK_GLIDE_MS = 320;
+
 interface ScreenBox {
   x: number;
   y: number;
@@ -41,9 +41,6 @@ function lerpBox(a: ScreenBox, b: ScreenBox, t: number): ScreenBox {
 function clamp01(value: number) {
   return Math.min(1, Math.max(0, value));
 }
-
-/** How long the camera takes to bring the search card into view. */
-const SUMMON_MS = 450;
 
 interface DesktopCanvasViewProps {
   className?: string;
@@ -101,12 +98,27 @@ export function DesktopCanvasView({
   // the board it glides from where it was to the dock, and the dock's position
   // is recomputed every frame, so the glide follows the camera instead of
   // chasing a stale target.
-  const target: ScreenBox = {
-    x: searchState.screenPosition.x,
-    y: searchState.screenPosition.y,
-    w: searchState.width,
-    h: searchState.height,
-  };
+  const stuckToSide = isSearchSticky && (searchState.edge === 'left' || searchState.edge === 'right');
+  // Against a side the card is a drawer tab; opening it slides the input bar
+  // out from that edge, at the tab's height, without moving the camera.
+  const [drawer, setDrawer] = useState(false);
+  if (drawer && !stuckToSide) setDrawer(false);
+  const drawerOpen = drawer && stuckToSide;
+  const fullW = SEARCH_CARD.EXPANDED_WIDTH * navigation.camera.zoom;
+  const fullH = SEARCH_CARD.EXPANDED_HEIGHT * navigation.camera.zoom;
+  const target: ScreenBox = drawerOpen
+    ? {
+        x: searchState.edge === 'right' ? windowSize.width - SEARCH_CARD.EDGE_PADDING - fullW / 2 : SEARCH_CARD.EDGE_PADDING + fullW / 2,
+        y: searchState.screenPosition.y,
+        w: fullW,
+        h: SEARCH_CARD.COLLAPSED_HEIGHT,
+      }
+    : {
+        x: searchState.screenPosition.x,
+        y: searchState.screenPosition.y,
+        w: searchState.width,
+        h: searchState.height,
+      };
   const shownRef = useRef<ScreenBox>(target);
   const [glide, setGlide] = useState<{ from: ScreenBox; t: number } | null>(null);
   const firstAnchor = useRef(true);
@@ -123,20 +135,18 @@ export function DesktopCanvasView({
       if (t < 1) frame = requestAnimationFrame(step);
     });
     return () => cancelAnimationFrame(frame);
-  }, [board.anchorKey]);
+  }, [board.anchorKey, drawerOpen]);
   const shown = glide ? lerpBox(glide.from, target, 1 - (1 - glide.t) ** 3) : target;
   useLayoutEffect(() => {
     shownRef.current = shown;
   });
 
   // How open the card is, from its drawn size: against a top or bottom edge
-  // it folds down to the input row; against a side it narrows to icons.
-  const fullW = SEARCH_CARD.EXPANDED_WIDTH * navigation.camera.zoom;
-  const fullH = SEARCH_CARD.EXPANDED_HEIGHT * navigation.camera.zoom;
+  // it folds down to the input row; against a side it narrows to a tab.
   const unfold = clamp01((shown.h - SEARCH_CARD.COLLAPSED_HEIGHT) / (fullH - SEARCH_CARD.COLLAPSED_HEIGHT));
   const narrow = 1 - clamp01((shown.w - SEARCH_CARD.SQUASHED_SIDE_WIDTH) / (fullW - SEARCH_CARD.SQUASHED_SIDE_WIDTH));
   const contentOpacity = clamp01(1 - narrow * 2);
-  const stripOpacity = clamp01(narrow * 2 - 1);
+  const tabOpacity = clamp01(narrow * 2 - 1);
 
   // Display layouts: content cards at grid positions.
   // Search card uses sticky override when compressed, grid position when free.
@@ -167,51 +177,17 @@ export function DesktopCanvasView({
     [selectCard, setFocusedCardId],
   );
 
-  // Bring the search card into view and focus its input. If it's stuck to an
-  // edge, the camera glides until the nearest copy of its slot is on screen,
-  // and the card docks there.
-  const { cameraRef, setCamera, stopMomentum } = navigation;
-  const glideRef = useRef<number | null>(null);
+  // Focus the search input. Docked, or folded to a bar at the top or bottom,
+  // it's right there; stuck to a side, the drawer slides it out first.
   const searchInputRef = useRef<HTMLInputElement | null>(null);
-  const stopGlide = useCallback(() => {
-    if (glideRef.current !== null) cancelAnimationFrame(glideRef.current);
-    glideRef.current = null;
-  }, []);
-  const { nearestSearchSlot } = board;
-  const stuckToSide = isSearchSticky && (searchState.edge === 'left' || searchState.edge === 'right');
   const summonSearch = useCallback(() => {
-    // Docked, or folded to a bar at the top or bottom: the input is right there.
-    if (!stuckToSide) {
-      searchInputRef.current?.focus({ preventScroll: true });
-      return;
-    }
-    const from = cameraRef.current;
-    const center = screenToCanvas(windowSize.width / 2, windowSize.height / 2, from, windowSize);
-    const slot = nearestSearchSlot(center);
-    if (!slot) return;
-
-    // Shift the camera just enough to bring the slot inside the view, with a margin.
-    const margin = 64 / from.zoom;
-    const topLeft = screenToCanvas(0, 0, from, windowSize);
-    const bottomRight = screenToCanvas(windowSize.width, windowSize.height, from, windowSize);
-    const shift = (start: number, size: number, min: number, max: number) =>
-      start < min + margin ? min + margin - start : start + size > max - margin ? max - margin - (start + size) : 0;
-    const dx = shift(slot.x, slot.width, topLeft.x, bottomRight.x);
-    const dy = shift(slot.y, slot.height, topLeft.y, bottomRight.y);
-
-    stopMomentum();
-    stopGlide();
-    const startedAt = performance.now();
-    const step = (now: number) => {
-      const t = Math.min(1, (now - startedAt) / SUMMON_MS);
-      const eased = 1 - (1 - t) ** 3;
-      setCamera({ x: from.x + dx * eased, y: from.y + dy * eased });
-      glideRef.current = t < 1 ? requestAnimationFrame(step) : null;
-      // The card docks as the camera arrives; the input is ready once it has unfolded.
-      if (t >= 1) window.setTimeout(() => searchInputRef.current?.focus({ preventScroll: true }), DOCK_GLIDE_MS);
-    };
-    glideRef.current = requestAnimationFrame(step);
-  }, [stuckToSide, cameraRef, windowSize, nearestSearchSlot, setCamera, stopMomentum, stopGlide]);
+    if (stuckToSide) setDrawer(true);
+    searchInputRef.current?.focus({ preventScroll: true });
+  }, [stuckToSide]);
+  const closeDrawer = useCallback(() => {
+    setDrawer(false);
+    searchInputRef.current?.blur();
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -219,6 +195,7 @@ export function DesktopCanvasView({
         event.preventDefault();
         summonSearch();
       }
+      if (event.key === 'Escape' && drawerOpen) closeDrawer();
 
       if (event.key === 'Backspace' && onBack) {
         if (!isEditableTarget(event.target)) {
@@ -230,7 +207,7 @@ export function DesktopCanvasView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onBack, summonSearch]);
+  }, [onBack, summonSearch, drawerOpen, closeDrawer]);
 
   const transform = useMemo(
     () => getCameraTransform(navigation.camera, windowSize),
@@ -301,7 +278,6 @@ export function DesktopCanvasView({
       className={['board-canvas fixed inset-0 isolate overscroll-none', className].filter(Boolean).join(' ')}
       {...navBindings}
       onWheel={handleWrapperWheel}
-      onPointerDownCapture={stopGlide}
       role="application"
       aria-label={`${breadcrumb ?? 'Card grid'} interactive grid. Drag or use WASD to pan, arrow keys to focus cards, Enter to open one, slash to search, and R to recenter.`}
       tabIndex={-1}
@@ -335,6 +311,10 @@ export function DesktopCanvasView({
         <div
           className="pointer-events-auto absolute"
           style={{ left: shown.x - shown.w / 2, top: shown.y - shown.h / 2, width: shown.w, height: shown.h }}
+          onBlur={(event) => {
+            // Clicking or tabbing away tucks the drawer back in.
+            if (drawerOpen && !event.currentTarget.contains(event.relatedTarget as Node | null)) setDrawer(false);
+          }}
         >
           <div
             className="relative h-full w-full overflow-hidden"
@@ -365,9 +345,13 @@ export function DesktopCanvasView({
                 unfold={unfold}
               />
             </div>
-            {stripOpacity > 0 && (
-              <div className="absolute inset-0" style={{ opacity: stripOpacity, pointerEvents: stripOpacity > 0.5 ? undefined : 'none' }}>
-                <IconStripContent onBack={onBack} onSearch={summonSearch} />
+            {tabOpacity > 0 && (
+              <div className="absolute inset-0" style={{ opacity: tabOpacity, pointerEvents: tabOpacity > 0.5 ? undefined : 'none' }}>
+                <SideTabContent
+                  onOpen={summonSearch}
+                  matches={projectMatches !== projectTotal ? projectMatches : null}
+                  query={searchState.searchTerm}
+                />
               </div>
             )}
           </div>
@@ -377,24 +361,26 @@ export function DesktopCanvasView({
   );
 }
 
-// Inline sticky content components (imported from SearchMenuCard would create circular dep)
-function IconStripContent({ onBack, onSearch }: { onBack?: () => void; onSearch: () => void }) {
+/** The search card as a drawer tab against a side edge. Opening it slides the input bar out. */
+function SideTabContent({ onOpen, matches, query }: { onOpen: () => void; matches: number | null; query: string }) {
   return (
-    <div className="h-full flex flex-col items-center justify-center gap-3 py-3">
-      {onBack && (
-        <button onClick={onBack} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-black/10 transition-colors" aria-label="Go back">
-          <ArrowLeftIcon className="w-5 h-5" />
-        </button>
+    <button
+      onClick={onOpen}
+      className="flex h-full w-full flex-col items-center justify-center gap-2 transition-colors hover:bg-black/10"
+      aria-label={query ? `Search projects (filtered by “${query}”)` : 'Search projects'}
+      title="Search (/)"
+    >
+      <SearchIcon className="h-5 w-5 shrink-0" />
+      <span className="font-crt text-lg leading-none [writing-mode:vertical-rl]">{query ? query.slice(0, 10) : 'search'}</span>
+      {matches !== null && (
+        <span
+          className="min-w-5 rounded-full px-1.5 py-0.5 text-center text-[10px] font-semibold leading-none"
+          style={{ background: 'var(--board-dock-chip-on)', color: 'var(--board-dock-chip-on-fg)' }}
+        >
+          {matches}
+        </span>
       )}
-      <button
-        onClick={onSearch}
-        className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-black/10 transition-colors"
-        aria-label="Search projects"
-        title="Search (/)"
-      >
-        <SearchIcon className="w-5 h-5" />
-      </button>
-    </div>
+    </button>
   );
 }
 

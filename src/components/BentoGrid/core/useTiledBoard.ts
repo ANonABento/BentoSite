@@ -49,8 +49,6 @@ export interface TiledBoardReturn {
   anchorKey: string;
   /** Move the search card back to the copy at the origin. */
   resetAnchor: () => void;
-  /** The search slot (in any copy of the board) nearest a canvas point. */
-  nearestSearchSlot: (point: { x: number; y: number }) => { x: number; y: number; width: number; height: number } | null;
 }
 
 export function instanceId(cardId: string, copy: Copy): string {
@@ -160,27 +158,5 @@ export function useTiledBoard({ cards, layout, camera, windowSize }: TiledBoardO
 
   const resetAnchor = useCallback(() => setAnchor({ i: 0, j: 0 }), []);
 
-  const nearestSearchSlot = useCallback(
-    (point: { x: number; y: number }) => {
-      if (!searchSlot) return null;
-      const i = Math.floor((point.x + tile.origin.x) / (tile.cols * GRID_STEP));
-      const j = Math.floor((point.y + tile.origin.y) / (tile.rows * GRID_STEP));
-      let best: ReturnType<typeof slotRect> | null = null;
-      let bestDistance = Infinity;
-      for (let di = -1; di <= 1; di++) {
-        for (let dj = -1; dj <= 1; dj++) {
-          const rect = slotRect(tile, searchSlot, { i: i + di, j: j + dj });
-          const distance = Math.hypot(rect.x + rect.width / 2 - point.x, rect.y + rect.height / 2 - point.y);
-          if (distance < bestDistance) {
-            best = rect;
-            bestDistance = distance;
-          }
-        }
-      }
-      return best;
-    },
-    [searchSlot, tile],
-  );
-
-  return { visible, cardDataMap, anchorKey: `${anchor.i},${anchor.j}`, applyFilter, dimmed, resetAnchor, nearestSearchSlot };
+  return { visible, cardDataMap, anchorKey: `${anchor.i},${anchor.j}`, applyFilter, dimmed, resetAnchor };
 }
