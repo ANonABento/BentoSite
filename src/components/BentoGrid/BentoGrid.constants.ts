@@ -112,7 +112,8 @@ const SEARCH_CARD_DIMENSIONS = getCardDimensions('2x1');
 const SEARCH_CARD_VALUES = {
   expandedWidth: SEARCH_CARD_DIMENSIONS.width,
   expandedHeight: SEARCH_CARD_DIMENSIONS.height,
-  collapsedHeight: 64,
+  // Just the input row: the full card folds down to this against a top or bottom edge.
+  collapsedHeight: 72,
   squashedSideWidth: 64,
   compressionDistance: 180,
   stickyThreshold: 60,

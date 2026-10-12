@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSearchCardState } from '../cards';
 import {
   countContentCards,
@@ -14,7 +14,7 @@ import {
   useWindowSize,
 } from '../core';
 import { SEARCH_DOCK_PREFIX, useTiledBoard } from '../core/useTiledBoard';
-import { SEARCH_CARD_ID } from '../BentoGrid.constants';
+import { SEARCH_CARD, SEARCH_CARD_ID } from '../BentoGrid.constants';
 import { ArrowLeftIcon, CloseIcon, RefreshIcon, SearchIcon } from '@/components/ui/Icons';
 import type { CardData, CardPosition, CardSizeMode, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import type { BoardLayout } from '../layout/boardLayout';
@@ -27,6 +27,21 @@ function navigable(layouts: Map<string, CardPosition>): Map<string, CardPosition
 
 /** How long the search card glides when it docks in another copy of the board. */
 const DOCK_GLIDE_MS = 320;
+interface ScreenBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+function lerpBox(a: ScreenBox, b: ScreenBox, t: number): ScreenBox {
+  return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, w: a.w + (b.w - a.w) * t, h: a.h + (b.h - a.h) * t };
+}
+
+function clamp01(value: number) {
+  return Math.min(1, Math.max(0, value));
+}
+
 /** How long the camera takes to bring the search card into view. */
 const SUMMON_MS = 450;
 
@@ -81,14 +96,47 @@ export function DesktopCanvasView({
 
   const isSearchSticky = searchState.compression > 0;
 
-  // When the search card docks in another copy of the board, it glides there
-  // rather than jumping. The glide lasts until the new anchor has settled.
-  const [settledAnchor, setSettledAnchor] = useState(board.anchorKey);
-  const gliding = settledAnchor !== board.anchorKey;
-  useEffect(() => {
-    const timer = window.setTimeout(() => setSettledAnchor(board.anchorKey), DOCK_GLIDE_MS);
-    return () => window.clearTimeout(timer);
+  // Where the search card is drawn, in screen px (centre and size). Normally
+  // that's where useSearchCardState puts it. When it docks in another copy of
+  // the board it glides from where it was to the dock, and the dock's position
+  // is recomputed every frame, so the glide follows the camera instead of
+  // chasing a stale target.
+  const target: ScreenBox = {
+    x: searchState.screenPosition.x,
+    y: searchState.screenPosition.y,
+    w: searchState.width,
+    h: searchState.height,
+  };
+  const shownRef = useRef<ScreenBox>(target);
+  const [glide, setGlide] = useState<{ from: ScreenBox; t: number } | null>(null);
+  const firstAnchor = useRef(true);
+  useLayoutEffect(() => {
+    if (firstAnchor.current) {
+      firstAnchor.current = false;
+      return;
+    }
+    setGlide({ from: shownRef.current, t: 0 });
+    const startedAt = performance.now();
+    let frame = requestAnimationFrame(function step(now) {
+      const t = Math.min(1, (now - startedAt) / DOCK_GLIDE_MS);
+      setGlide((g) => (g && t < 1 ? { ...g, t } : null));
+      if (t < 1) frame = requestAnimationFrame(step);
+    });
+    return () => cancelAnimationFrame(frame);
   }, [board.anchorKey]);
+  const shown = glide ? lerpBox(glide.from, target, 1 - (1 - glide.t) ** 3) : target;
+  useLayoutEffect(() => {
+    shownRef.current = shown;
+  });
+
+  // How open the card is, from its drawn size: against a top or bottom edge
+  // it folds down to the input row; against a side it narrows to icons.
+  const fullW = SEARCH_CARD.EXPANDED_WIDTH * navigation.camera.zoom;
+  const fullH = SEARCH_CARD.EXPANDED_HEIGHT * navigation.camera.zoom;
+  const unfold = clamp01((shown.h - SEARCH_CARD.COLLAPSED_HEIGHT) / (fullH - SEARCH_CARD.COLLAPSED_HEIGHT));
+  const narrow = 1 - clamp01((shown.w - SEARCH_CARD.SQUASHED_SIDE_WIDTH) / (fullW - SEARCH_CARD.SQUASHED_SIDE_WIDTH));
+  const contentOpacity = clamp01(1 - narrow * 2);
+  const stripOpacity = clamp01(narrow * 2 - 1);
 
   // Display layouts: content cards at grid positions.
   // Search card uses sticky override when compressed, grid position when free.
@@ -124,16 +172,17 @@ export function DesktopCanvasView({
   // and the card docks there.
   const { cameraRef, setCamera, stopMomentum } = navigation;
   const glideRef = useRef<number | null>(null);
-  const focusPendingRef = useRef(false);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const stopGlide = useCallback(() => {
     if (glideRef.current !== null) cancelAnimationFrame(glideRef.current);
     glideRef.current = null;
   }, []);
   const { nearestSearchSlot } = board;
+  const stuckToSide = isSearchSticky && (searchState.edge === 'left' || searchState.edge === 'right');
   const summonSearch = useCallback(() => {
-    if (!isSearchSticky) {
-      searchInputRef.current?.focus();
+    // Docked, or folded to a bar at the top or bottom: the input is right there.
+    if (!stuckToSide) {
+      searchInputRef.current?.focus({ preventScroll: true });
       return;
     }
     const from = cameraRef.current;
@@ -152,25 +201,17 @@ export function DesktopCanvasView({
 
     stopMomentum();
     stopGlide();
-    focusPendingRef.current = true;
     const startedAt = performance.now();
     const step = (now: number) => {
       const t = Math.min(1, (now - startedAt) / SUMMON_MS);
       const eased = 1 - (1 - t) ** 3;
       setCamera({ x: from.x + dx * eased, y: from.y + dy * eased });
       glideRef.current = t < 1 ? requestAnimationFrame(step) : null;
+      // The card docks as the camera arrives; the input is ready once it has unfolded.
+      if (t >= 1) window.setTimeout(() => searchInputRef.current?.focus({ preventScroll: true }), DOCK_GLIDE_MS);
     };
     glideRef.current = requestAnimationFrame(step);
-  }, [isSearchSticky, cameraRef, windowSize, nearestSearchSlot, setCamera, stopMomentum, stopGlide]);
-
-  // The input mounts again when the card docks; take focus then if a summon asked for it.
-  const takeSearchFocus = useCallback((input: HTMLInputElement | null) => {
-    searchInputRef.current = input;
-    if (input && focusPendingRef.current) {
-      focusPendingRef.current = false;
-      input.focus({ preventScroll: true });
-    }
-  }, []);
+  }, [stuckToSide, cameraRef, windowSize, nearestSearchSlot, setCamera, stopMomentum, stopGlide]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -293,35 +334,23 @@ export function DesktopCanvasView({
       <div className="absolute inset-0 pointer-events-none z-10">
         <div
           className="pointer-events-auto absolute"
-          style={{
-            left: searchState.screenPosition.x - searchState.width / 2,
-            top: searchState.screenPosition.y - searchState.height / 2,
-            width: searchState.width,
-            height: searchState.height,
-            transition: gliding
-              ? `width 200ms ease-out, height 200ms ease-out, left ${DOCK_GLIDE_MS}ms ease-out, top ${DOCK_GLIDE_MS}ms ease-out`
-              : 'width 200ms ease-out, height 200ms ease-out',
-          }}
+          style={{ left: shown.x - shown.w / 2, top: shown.y - shown.h / 2, width: shown.w, height: shown.h }}
         >
           <div
-            className="h-full w-full overflow-hidden"
+            className="relative h-full w-full overflow-hidden"
             style={{
               background: 'var(--board-dock-bg)',
               color: 'var(--board-dock-fg)',
-              boxShadow: isSearchSticky ? theme.card.hoverShadow : theme.card.shadow,
+              // Lifted off the board while stuck to an edge, flush in its compartment when docked.
+              boxShadow: isSearchSticky ? '0 10px 30px rgb(0 0 0 / 0.45)' : 'none',
               borderRadius: theme.card.borderRadius,
             }}
           >
-            {isSearchSticky && (searchState.edge === 'left' || searchState.edge === 'right') ? (
-              <IconStripContent onBack={onBack} onSearch={summonSearch} />
-            ) : isSearchSticky ? (
-              <CompactBarContent
-                searchTerm={searchState.searchTerm}
-                onSearchChange={searchState.setSearchTerm}
-                onBack={onBack}
-                inputRef={takeSearchFocus}
-              />
-            ) : (
+            {/* Laid out at full size and clipped, so folding never reflows it; the input row stays put on top. */}
+            <div
+              className="absolute left-0 top-0"
+              style={{ width: fullW, height: fullH, opacity: contentOpacity, pointerEvents: contentOpacity > 0.5 ? undefined : 'none' }}
+            >
               <FullSearchContent
                 searchTerm={searchState.searchTerm}
                 category={searchState.category}
@@ -332,8 +361,14 @@ export function DesktopCanvasView({
                 totalCards={projectTotal}
                 filteredCards={projectMatches}
                 panAtRef={panAtRef}
-                inputRef={takeSearchFocus}
+                inputRef={searchInputRef}
+                unfold={unfold}
               />
+            </div>
+            {stripOpacity > 0 && (
+              <div className="absolute inset-0" style={{ opacity: stripOpacity, pointerEvents: stripOpacity > 0.5 ? undefined : 'none' }}>
+                <IconStripContent onBack={onBack} onSearch={summonSearch} />
+              </div>
             )}
           </div>
         </div>
@@ -368,7 +403,7 @@ function IconStripContent({ onBack, onSearch }: { onBack?: () => void; onSearch:
  *  stutter. ~100ms covers a typical trackpad wheel inter-event gap. */
 const MID_PAN_BUBBLE_WINDOW_MS = 120;
 
-function FullSearchContent({ searchTerm, category, categories, onSearchChange, onCategoryChange, onRecenter, totalCards, filteredCards, panAtRef, inputRef }: {
+function FullSearchContent({ searchTerm, category, categories, onSearchChange, onCategoryChange, onRecenter, totalCards, filteredCards, panAtRef, inputRef, unfold }: {
   searchTerm: string;
   category: string | null;
   categories: string[];
@@ -378,8 +413,12 @@ function FullSearchContent({ searchTerm, category, categories, onSearchChange, o
   totalCards: number;
   filteredCards: number;
   panAtRef: React.MutableRefObject<number>;
-  inputRef: (input: HTMLInputElement | null) => void;
+  inputRef: React.Ref<HTMLInputElement>;
+  /** 1 when the card is fully open; falls to 0 as it folds down to the input row. */
+  unfold: number;
 }) {
+  // The chips and footer fade out as the card folds, a little ahead of being clipped.
+  const detail = { opacity: Math.max(0, unfold * 1.6 - 0.6), pointerEvents: unfold > 0.6 ? undefined : ('none' as const) };
   const allCount = filteredCards !== totalCards ? `${filteredCards}/${totalCards}` : `${totalCards}`;
 
   // Same chips as the dock, so the card and the bar read as one object.
@@ -433,7 +472,7 @@ function FullSearchContent({ searchTerm, category, categories, onSearchChange, o
       </label>
 
       {/* Categories wrap rather than scroll, so every one is visible. */}
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-1.5" style={detail}>
         <button
           onClick={() => onCategoryChange(null)}
           className="px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors font-medium"
@@ -453,7 +492,7 @@ function FullSearchContent({ searchTerm, category, categories, onSearchChange, o
         ))}
       </div>
 
-      <div className="mt-auto flex items-center justify-between gap-2 text-[11px] opacity-70">
+      <div className="mt-auto flex items-center justify-between gap-2 text-[11px]" style={{ ...detail, opacity: detail.opacity * 0.7 }}>
         <span>Drag or WASD to explore</span>
         <button
           onClick={onRecenter}
@@ -465,37 +504,6 @@ function FullSearchContent({ searchTerm, category, categories, onSearchChange, o
           <kbd className="font-mono text-[10px] opacity-70">R</kbd>
         </button>
       </div>
-    </div>
-  );
-}
-
-function CompactBarContent({ searchTerm, onSearchChange, onBack, inputRef }: {
-  searchTerm: string;
-  onSearchChange: (term: string) => void;
-  onBack?: () => void;
-  inputRef: (input: HTMLInputElement | null) => void;
-}) {
-  return (
-    <div className="h-full flex items-center gap-2 px-3">
-      {onBack && (
-        <button onClick={onBack} className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md hover:bg-black/10 transition-colors" aria-label="Go back">
-          <ArrowLeftIcon className="w-4 h-4" />
-        </button>
-      )}
-      <label
-        onPointerDown={(event) => event.stopPropagation()}
-        onWheel={(event) => event.stopPropagation()}
-        className="flex-1 min-w-0 flex items-center gap-2 rounded-lg px-3 py-1.5"
-        style={{ background: 'var(--board-dock-field)' }}
-      >
-        <span className="font-crt text-xl leading-none">&gt;</span>
-        <input ref={inputRef} type="text" placeholder="search projects" value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent font-crt text-xl leading-none placeholder:text-current placeholder:opacity-55 outline-none" aria-label="Search cards" />
-        {searchTerm && (
-          <button onClick={() => onSearchChange('')} className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-black/10" aria-label="Clear search">
-            <CloseIcon className="w-3 h-3" />
-          </button>
-        )}
-      </label>
     </div>
   );
 }

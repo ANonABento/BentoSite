@@ -63,6 +63,9 @@ function lerp(from: number, to: number, progress: number): number {
  * Compute sticky presentation from the search card's canvas position.
  * Returns edge detection, compression, and clamped screen position.
  */
+/** How much further past a new edge the card must go, near a corner, before it switches edge. */
+const EDGE_SWITCH_MARGIN = 48;
+
 export function getSearchCardPresentation(
   canvasX: number,
   canvasY: number,
@@ -70,6 +73,8 @@ export function getSearchCardPresentation(
   cardHeight: number,
   camera: Camera,
   windowSize: { width: number; height: number },
+  /** The edge it was stuck to last frame; it keeps that edge in a corner until another clearly wins. */
+  previousEdge: SearchCardEdge = 'none',
 ): SearchCardPresentation {
   // Convert the card's canvas center to screen coordinates
   const screenCenter = canvasToScreen(
@@ -95,12 +100,19 @@ export function getSearchCardPresentation(
     bottom: Math.max(0, cardBottom - (windowSize.height - padding)),
   };
 
-  const [edge, offscreenDistance] = (
+  let [edge, offscreenDistance] = (
     Object.entries(edgeDistances) as Array<[Exclude<SearchCardEdge, 'none'>, number]>
   ).reduce<[SearchCardEdge, number]>(
     (best, [nextEdge, distance]) => (distance > best[1] ? [nextEdge, distance] : best),
     ['none', 0],
   );
+  if (previousEdge !== 'none' && edge !== previousEdge) {
+    const kept = edgeDistances[previousEdge];
+    if (kept > 0 && offscreenDistance - kept < EDGE_SWITCH_MARGIN) {
+      edge = previousEdge;
+      offscreenDistance = kept;
+    }
+  }
 
   const compression = clamp(offscreenDistance / SEARCH_CARD.COMPRESSION_DISTANCE, 0, 1);
   const isSideEdge = edge === 'left' || edge === 'right';
@@ -170,6 +182,7 @@ export function useSearchCardState(
   } = options;
 
   const [userExpanded, setUserExpanded] = useState(true);
+  const [lastEdge, setLastEdge] = useState<SearchCardEdge>('none');
   const [searchTerm, setSearchTermState] = useState('');
   const [category, setCategoryState] = useState<string | null>(null);
 
@@ -196,8 +209,11 @@ export function useSearchCardState(
       searchCardLayout.height,
       camera,
       windowSize,
+      lastEdge,
     );
-  }, [camera, windowSize, isMobile, userExpanded, searchCardLayout]);
+  }, [camera, windowSize, isMobile, userExpanded, searchCardLayout, lastEdge]);
+  // Remember the edge for next frame's corner check (settled during render).
+  if (effectivePresentation.edge !== lastEdge) setLastEdge(effectivePresentation.edge);
 
   const stickyCanvasPosition = useMemo((): CardPosition | null => {
     if (effectivePresentation.compression === 0 || !searchCardLayout) return null;
