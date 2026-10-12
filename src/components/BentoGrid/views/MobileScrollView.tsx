@@ -157,7 +157,6 @@ export function MobileScrollView({
   );
 }
 
-/** Filler tiles shown on mobile, before topping up to an even count. */
 /** Intro, info compartments and featured work span both columns. */
 function spanOf(card: CardData): 1 | 2 {
   if (card.type === 'intro' || isPinnedCard(card)) return 2;
@@ -166,8 +165,7 @@ function spanOf(card: CardData): 1 | 2 {
 }
 
 function heightOf(card: CardData, trayWidth: number, columnWidth: number): number {
-  if (card.type === 'intro') return 470;
-  if (card.type === 'info' && card.variant === 'experience') return 270;
+  if (card.type === 'intro') return 560;
   if (card.type === 'info' && card.variant === 'about') return 240;
   if (spanOf(card) === 2) return Math.round(trayWidth * 0.75);
   return Math.round(columnWidth * 1.1);

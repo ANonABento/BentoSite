@@ -91,10 +91,10 @@ export interface IntroCardData extends BaseCardData {
   type: 'intro';
 }
 
-/** Non-project compartment: experience or about. */
+/** Non-project compartment: the about blurb. */
 export interface InfoCardData extends BaseCardData {
   type: 'info';
-  variant: 'experience' | 'about';
+  variant: 'about';
 }
 
 export type CardData = GameCardData | ProjectCardData | PhotoCardData | IntroCardData | InfoCardData;

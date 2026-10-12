@@ -37,13 +37,11 @@ export default function Home() {
     name: profile.name,
     title: profile.title,
     pitch: 'I build robots and the software that runs them, from PCBs and printed joints up to ROS2 and LLM pipelines.',
-    current: `${experience[0].role} @ ${experience[0].company}`,
-    projectCount: projects.length,
+    jobs: experience.map((e) => ({ role: e.role, company: e.company, period: e.period })),
     links: { resume: RESUME_URL, github: profile.github, linkedin: profile.linkedin, email: profile.email },
   };
 
   const info = {
-    jobs: experience.map((e) => ({ role: e.role, company: e.company, period: e.period })),
     about: about.split('\n\n')[0],
     skills: [...skills.hardware, ...skills.software].slice(0, 10),
   };

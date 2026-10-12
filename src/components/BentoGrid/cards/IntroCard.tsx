@@ -2,8 +2,7 @@
 
 /**
  * IntroCard — the pinned identity compartment that opens beside the search
- * card: name, one-line pitch, links, and a small CRT terminal readout.
- * It never recycles, so it is always where the board started.
+ * card: name, one-line pitch and links, with work history alongside.
  */
 
 import type { CardPosition, IntroCardData, ThemeConfig } from '../BentoGrid.types';
@@ -13,8 +12,7 @@ export interface IntroProfile {
   name: string;
   title: string;
   pitch: string;
-  current: string;
-  projectCount: number;
+  jobs: { role: string; company: string; period: string }[];
   links: { resume: string; github: string; linkedin: string; email: string };
 }
 
@@ -29,11 +27,6 @@ export interface IntroCardProps {
 const ext = { target: '_blank', rel: 'noopener noreferrer' } as const;
 
 export function IntroCard({ card, position, theme, profile, isFocused }: IntroCardProps) {
-  const lines: [string, string][] = [
-    ['whoami', `${profile.name}, ${profile.title}`.toLowerCase()],
-    ['status', profile.current.toLowerCase()],
-    ['ls ~/projects | wc -l', String(profile.projectCount)],
-  ];
   // Stack the halves when the card is narrower than it is tall (mobile).
   const stacked = position.width < position.height * 1.2;
 
@@ -71,29 +64,22 @@ export function IntroCard({ card, position, theme, profile, isFocused }: IntroCa
             </a>
           </div>
         </div>
-        <div
-          className={`crt crt-on flex min-w-0 flex-1 flex-col justify-between gap-3 p-5 ${stacked ? 'min-h-56' : ''}`}
-          aria-hidden="true"
+        <section
+          aria-label="Experience"
+          className={`flex min-w-0 flex-1 flex-col bg-black/20 p-5 ${stacked ? 'border-t' : 'border-l'} border-white/5`}
         >
-          <div className="flex justify-between text-base text-phosphor/55">
-            <span>bentOS</span>
-            <span className="text-purple">crt mode</span>
-          </div>
-          <div className="wordmark text-[2.7rem]">bentOS</div>
-          <div className="space-y-0.5 text-[1.05rem] leading-tight">
-            {lines.map(([cmd, out]) => (
-              <div key={cmd}>
-                <div>
-                  <span className="text-orange">&gt;</span> {cmd}
-                </div>
-                <div className="truncate text-phosphor/65">{out}</div>
-              </div>
+          <h2 className="text-sm text-ash">Experience</h2>
+          <ol className="mt-3 flex flex-1 flex-col justify-between gap-3">
+            {profile.jobs.map((job) => (
+              <li key={`${job.company}-${job.period}`}>
+                <p className="font-crt text-base leading-none text-ash">{job.period.toLowerCase()}</p>
+                <p className="mt-1 text-sm leading-snug text-rice">
+                  <span className="font-semibold">{job.role}</span> <span className="text-ash">at</span> {job.company}
+                </p>
+              </li>
             ))}
-            <div>
-              <span className="text-orange">&gt;</span> <span className="cursor" />
-            </div>
-          </div>
-        </div>
+          </ol>
+        </section>
       </div>
     </BaseCard>
   );
