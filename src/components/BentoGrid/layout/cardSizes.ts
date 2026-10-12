@@ -4,6 +4,7 @@ import { CARD_SIZES, getCardDimensions } from '../BentoGrid.constants';
 const SIZE_PATTERN: CardSize[] = ['1x1', '1x1', '2x1', '1x1', '1x2', '1x1', '1x1', '1x1'];
 
 export function getCardSizeForIndex(index: number, card?: CardData, sizeMode: CardSizeMode = 'mixed'): CardSize {
+  if (card?.size) return card.size;
   if (card?.type === 'photo') {
     if (index > 0 && index % 11 === 0) return '2x2';
     if (card.aspectRatio >= 1.35) return '2x1';

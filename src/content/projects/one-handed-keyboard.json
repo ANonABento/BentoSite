@@ -1,9 +1,10 @@
 {
   "id": "one-handed-keyboard",
   "name": "One Handed Keyboard",
-  "shortDescription": "Wrist-mounted AAC keyboard with only 5 GPIO buttons, trie-based predictive text, and STM32 firmware over UART. Project submission received a 99% grade.",
-  "description": "An AAC (augmentative and alternative communication) device in the form of a wrist-mounted keyboard, offering a more intuitive typing experience through simplified sequential input and predictive text for mobility-limited users.\n\nHighlights:\n- Designed a wrist-mounted keyboard with full functionality and autocorrect in software using only 5 GPIO buttons.\n- Fabricated the housing using CAD software, ensuring structural stability when typing and adjustability for user comfort.\n- Built and assembled a high-functioning transmitter, capable of transmitting data through UART over a meter long.\n- Programmed and integrated system components using STM32Cube, with wiring plans made in Altium Designer.\n- Combined a trie and fuzzy-search algorithm for an advanced word prediction system, allowing shortcuts for words.\n- Project submission received an overall 99% grade with thorough written documentation.\n\nRepos: [`SeqKeyTransmitter`](https://github.com/ANonABento/SeqKeyTransmitter) (wrist-side firmware) · [`SeqKeyReceiver`](https://github.com/ANonABento/SeqKeyReceiver) (host-side firmware).",
-  "category": "Accessibility",
+  "shortDescription": "Wrist-mounted keyboard for one hand: 5 buttons, sequence decoding and trie + fuzzy-search word prediction on STM32, sent over UART.",
+  "description": "An AAC (augmentative and alternative communication) device for mobility-limited users: a wrist-mounted keyboard that types with simple button sequences and predictive text, built for ECE 198.\n\nHighlights:\n- Full typing with only 5 GPIO buttons: the wrist-side STM32 decodes button sequences into letters and actions.\n- Word prediction combines a trie with fuzzy search over Google's 10,000 most common words, so words can be entered by shortcut.\n- A transmitter that sends over UART across more than a meter to a base-station STM32, which drives an LCD.\n- Housing designed in CAD and 3D-printed for stability while typing and adjustable fit; wiring plans in Altium Designer; firmware in STM32Cube.\n- The submission received a 99% overall grade, with full written documentation.\n\nRepos: [`SeqKeyTransmitter`](https://github.com/ANonABento/SeqKeyTransmitter) (wrist-side firmware) · [`SeqKeyReceiver`](https://github.com/ANonABento/SeqKeyReceiver) (base-station firmware).",
+  "category": "Hardware",
+  "context": "ECE 198",
   "status": "Completed",
   "technologies": [
     "C",
@@ -22,6 +23,5 @@
   "media": {
     "featuredImage": "/projects/one-handed-keyboard/hero.jpg"
   },
-  "featured": false,
   "dateCompleted": "2024-12"
 }

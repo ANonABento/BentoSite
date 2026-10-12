@@ -1,9 +1,10 @@
 {
   "id": "ar-gesture-robot",
   "name": "Kenesis — AR Gesture Controlled Robot",
-  "shortDescription": "Modular robot controlled through Snap Spectacles AR — finger gestures move and grab objects in the physical world with sub-100ms latency. Built at Hack the North 2025.",
-  "description": "Built a modular robot platform controlled through Snap Spectacles, enabling natural gesture-based navigation and robotic-arm manipulation. Teleoperation feels as natural as moving your own hands.\n\nHighlights:\n- Developed an end-to-end gesture-to-motion pipeline: Snap API → Flask server → HiveMQ MQTT → ROS2 nodes.\n- Implemented on NVIDIA Jetson Nano, handling motor drivers, camera streaming, and AI inference fully on-device.\n- Created a Lens Studio AR application for gesture recognition and live camera streaming back to the AR glasses.\n- Designed a mobile 2-wheel drive base with modular chassis attachments, including a 3DoF robotic arm.\n- Optimized the system for sub-100ms latency and introduced an MQTT communication layer that scales to multi-robot scenarios.\n\nSubmitted as 'Kenesis' at Hack the North 2025.",
-  "category": "VR/AR",
+  "shortDescription": "Robot driven by hand gestures through Snap Spectacles: Lens Studio → Flask → MQTT → ROS 2 on a Jetson Nano, with a 3-DoF arm.",
+  "description": "A modular robot you drive with your hands. Finger gestures tracked by Snap Spectacles move a 2-wheel drive base and a 3-DoF robotic arm, so teleoperation feels like moving your own hands.\n\nHighlights:\n- End-to-end gesture-to-motion pipeline: Snap API → Flask server → HiveMQ MQTT → ROS 2 nodes.\n- Runs on an NVIDIA Jetson Nano, which handles motor drivers, camera streaming and AI inference on-device.\n- A Lens Studio AR app for gesture recognition, with the robot's camera streamed back to the glasses.\n- Mobile 2-wheel drive base with modular chassis attachments, including the 3-DoF arm.\n- Optimized for sub-100 ms latency; the MQTT layer scales to multi-robot setups.\n\nRepos: [`kenesis`](https://github.com/KushalPraja/kenesis) (team repo) · [`htn_ros2_control_on_jetson_nano`](https://github.com/ANonABento/htn_ros2_control_on_jetson_nano) (ROS 2 motor-controller node on the Jetson).\n\nSubmitted as \"Kenesis\" at Hack the North 2025.",
+  "category": "Robotics",
+  "context": "Hack the North 2025",
   "status": "Completed",
   "technologies": [
     "JavaScript",
@@ -20,12 +21,7 @@
     "docs": "https://devpost.com/software/steven-lvnh4w"
   },
   "media": {
-    "featuredImage": "/projects/ar-gesture-robot/hero.jpg",
-    "images": [
-      "/projects/ar-gesture-robot/hero.jpg",
-      "/projects/ar-gesture-robot/overview.png"
-    ]
+    "featuredImage": "/projects/ar-gesture-robot/hero.jpg"
   },
-  "featured": true,
   "dateCompleted": "2025-09"
 }

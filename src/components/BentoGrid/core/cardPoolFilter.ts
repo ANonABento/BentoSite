@@ -1,4 +1,5 @@
 import type { CardData } from '../BentoGrid.types';
+import { isPinnedCard } from '../BentoGrid.constants';
 
 export function filterCards(
   cards: CardData[],
@@ -8,6 +9,8 @@ export function filterCards(
   const normalizedSearch = searchTerm.trim().toLowerCase();
 
   return cards.filter((card) => {
+    // Pinned cards (intro, experience, about) are part of the board, not the result set.
+    if (isPinnedCard(card)) return true;
     if (category && card.category !== category) return false;
     if (!normalizedSearch) return true;
 

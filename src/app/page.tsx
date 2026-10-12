@@ -1,133 +1,69 @@
-'use client';
+import { HomeGrid } from './_components/HomeGrid';
+import type { CardSize, IntroProfile, ProjectCardData } from '@/components/BentoGrid';
+import { RESUME_URL, about, experience, formatDate, getFeatured, getProjects, profile, skills } from '@/lib/content';
 
-import { Suspense, useCallback, useState, useSyncExternalStore } from 'react';
-import { useSearchParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
-import { LazyMotion, domAnimation } from 'framer-motion';
-import { BootScreen } from '@/components/BentoOS/BootScreen';
-import { DashboardLayout } from '@/components/Dashboard';
-import {
-  KeyboardShortcutsModal,
-  useKeyboardShortcutsHelp,
-} from '@/components/ui/KeyboardShortcutsHelp';
-import { LazyPanelFallback } from '@/components/ui';
-import { ViewerSkeleton } from '@/components/Viewfinder/ViewerSkeleton';
-import {
-  type BootState,
-  createHardReloadBootTracker,
-  readBootComplete,
-  resolveBootState,
-  writeBootComplete,
-} from '@/lib/boot-session';
-
-const Viewfinder = dynamic(
-  () => import('@/components/Viewfinder').then((mod) => mod.Viewfinder),
-  { ssr: false, loading: () => <ViewerSkeleton /> }
-);
-
-const Chatbot = dynamic(() => import('@/components/Chat'), {
-  ssr: false,
-  loading: () => (
-    <LazyPanelFallback
-      label="Initializing chat..."
-      spinnerSize="sm"
-      spinnerVariant="purple"
-    />
-  ),
-});
-
-const SkillsSection = dynamic(
-  () => import('@/components/Skills/SkillsSection'),
-  { ssr: false }
-);
-
-const hardReloadBootTracker = createHardReloadBootTracker();
-
-// Boot state changes only via local state setters (handleBootExiting /
-// handleBootComplete) and via re-render when the URL changes — no external
-// subscription needed.
-const subscribeNoop = () => () => {};
-
-// `?view=dashboard` AND `?project=<id>` are both dashboard deep-links —
-// visitors arriving on either skip the boot splash and land on the dashboard.
-function isDashboardDeepLink(params: URLSearchParams): boolean {
-  return params.get('view') === 'dashboard' || params.has('project');
-}
-
-function readBootStateClient(skipBootSplash: boolean): BootState {
-  return resolveBootState({
-    hasCompletedBoot: readBootComplete(window.sessionStorage),
-    skipBootSplash,
-    isHardReload: hardReloadBootTracker.getPending(window.performance),
-  });
-}
-
-// Inner component reads useSearchParams; Next requires it under a Suspense
-// boundary so the prerender step can bail out to client rendering cleanly.
-function HomeInner() {
-  // useSearchParams from next/navigation is reactive to both popstate and
-  // router.push (internally pushState), so navigating /?project=A →
-  // /?project=B inside the SPA updates `initialProjectId` and re-skins the
-  // dashboard.
-  const searchParams = useSearchParams();
-  // ReadonlyURLSearchParams shares the URLSearchParams shape (`get`, `has`).
-  const isDeepLink = isDashboardDeepLink(searchParams as unknown as URLSearchParams);
-  const initialProjectId = searchParams.get('project') ?? undefined;
-
-  // Reads sessionStorage + performance lazily via useSyncExternalStore so
-  // SSR returns 'checking' (hydration-safe) and the client returns the real
-  // boot state on first commit.
-  const sessionBootState = useSyncExternalStore<BootState>(
-    subscribeNoop,
-    () => readBootStateClient(isDeepLink),
-    () => 'checking',
-  );
-  const [bootStateOverride, setBootStateOverride] = useState<BootState | null>(null);
-  const bootState = bootStateOverride ?? sessionBootState;
-  const { isOpen: isShortcutsOpen, close: closeShortcuts } = useKeyboardShortcutsHelp();
-
-  const handleBootExiting = useCallback(() => {
-    setBootStateOverride('exiting');
-  }, []);
-
-  const handleBootComplete = useCallback(() => {
-    writeBootComplete(window.sessionStorage);
-    hardReloadBootTracker.markHandled();
-    setBootStateOverride('complete');
-  }, []);
-
-  const showBoot = !isDeepLink && bootState !== 'checking' && bootState !== 'complete';
-  const dashboardReady =
-    isDeepLink || (bootState !== 'checking' && bootState !== 'booting');
-
-  return (
-    <LazyMotion features={domAnimation}>
-      <main
-        id="main-content"
-        className="dashboard-crt h-screen overflow-hidden bg-[var(--background)] bg-grid transition-colors duration-300"
-      >
-        <DashboardLayout
-          Viewfinder={Viewfinder}
-          Chatbot={Chatbot}
-          SkillsSection={SkillsSection}
-          KeyboardShortcutsModal={KeyboardShortcutsModal}
-          isShortcutsOpen={isShortcutsOpen}
-          closeShortcuts={closeShortcuts}
-          ready={dashboardReady}
-          initialProjectId={initialProjectId}
-        />
-      </main>
-      {showBoot ? (
-        <BootScreen onExiting={handleBootExiting} onComplete={handleBootComplete} />
-      ) : null}
-    </LazyMotion>
-  );
+/**
+ * Card footprint by importance, not image shape: a few fixed shapes give the
+ * board a steady rhythm (everything is two rows tall), and images crop the
+ * same way every time. Featured work gets the wide compartment.
+ */
+function sizeFor(featured: boolean): CardSize {
+  return featured ? '3x2' : '2x2';
 }
 
 export default function Home() {
-  return (
-    <Suspense fallback={null}>
-      <HomeInner />
-    </Suspense>
-  );
+  const featured = getFeatured();
+  const featuredIds = new Set(featured.map((p) => p.id));
+  // Featured first so they claim the space around the intro.
+  const ordered = [...featured, ...getProjects().filter((p) => !featuredIds.has(p.id))];
+
+  const projects: ProjectCardData[] = ordered.map((p) => ({
+    id: p.id,
+    type: 'project',
+    title: p.name,
+    description: p.shortDescription,
+    thumbnail: p.media.featuredImage,
+    category: p.category,
+    technologies: p.technologies,
+    status: p.status,
+    links: { github: p.links.github, demo: p.links.liveDemo },
+    featured: featuredIds.has(p.id),
+    award: p.award,
+    date: formatDate(p.dateCompleted),
+    size: sizeFor(featuredIds.has(p.id)),
+  }));
+
+  const intro: IntroProfile = {
+    name: profile.name,
+    title: profile.title,
+    pitch: 'I build robots and the software that runs them, from PCBs and printed joints up to ROS2 and LLM pipelines.',
+    current: `${experience[0].role} @ ${experience[0].company}`,
+    projectCount: projects.length,
+    links: { resume: RESUME_URL, github: profile.github, linkedin: profile.linkedin, email: profile.email },
+  };
+
+  const info = {
+    jobs: experience.map((e) => ({ role: e.role, company: e.company, period: e.period })),
+    about: about.split('\n\n')[0],
+    skills: [...skills.hardware, ...skills.software].slice(0, 10),
+  };
+
+  return <HomeGrid projects={projects} profile={intro} info={info} techs={topTechnologies(ordered)} />;
+}
+
+/** Few enough that the tiles punctuate the projects rather than outnumber them. */
+const MAX_TECH_TILES = 8;
+
+/** The most-used technologies (two or more projects), most-used first. */
+function topTechnologies(projects: { technologies: string[] }[]) {
+  const counts = new Map<string, { name: string; count: number }>();
+  for (const tech of projects.flatMap((p) => p.technologies)) {
+    const entry = counts.get(tech.toLowerCase()) ?? { name: tech, count: 0 };
+    entry.count++;
+    counts.set(tech.toLowerCase(), entry);
+  }
+  return [...counts.values()]
+    .filter((t) => t.count >= 2)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, MAX_TECH_TILES);
 }

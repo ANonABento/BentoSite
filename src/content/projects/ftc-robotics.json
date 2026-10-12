@@ -1,9 +1,10 @@
 {
   "id": "ftc-robotics",
   "name": "FIRST Tech Challenge — Team Devolotics",
-  "shortDescription": "Lead builder and programmer for team Devolotics at the FIRST Tech Challenge World Championship. Built the drone launcher, deposit system, autonomous program, and CAD mechanisms.",
+  "shortDescription": "Lead builder and programmer for FTC team 19498 Devolotics at Worlds: drone launcher, deposit, hang, and a spline-based autonomous.",
   "description": "Competed at the FIRST Tech Challenge World Championship as the lead builder and programmer for team Devolotics (19498).\n\nHighlights:\n- Main contributions toward Pluto's deposit system, gate opener, hang, drone launcher, and the autonomous program.\n- Modeled various mechanisms using CAD, incorporating machined aluminum, polycarbonate, and 3D-printed components.\n- Created a rubber-band-tensioned drone launcher with a latch mechanism and spring absorption using just a single servo.\n- Programmed mecanum drive movement through splines and robot behaviour for an autonomous cycle.",
-  "category": "Competition",
+  "category": "Robotics",
+  "context": "FIRST Tech Challenge 2023-24",
   "status": "Completed",
   "technologies": [
     "Java",
@@ -20,6 +21,5 @@
   "media": {
     "featuredImage": "/projects/ftc-robotics/hero.jpg"
   },
-  "featured": false,
   "dateCompleted": "2024-04"
 }

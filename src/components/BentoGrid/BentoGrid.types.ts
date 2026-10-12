@@ -38,7 +38,7 @@ export interface ThemeConfig {
   };
 }
 
-export type CardType = 'game' | 'project' | 'photo';
+export type CardType = 'game' | 'project' | 'photo' | 'intro' | 'info';
 
 export interface BaseCardData {
   id: string;
@@ -47,6 +47,15 @@ export interface BaseCardData {
   description?: string;
   thumbnail?: string;
   category?: string;
+  /** Fixed footprint chosen by the caller (e.g. from the image's aspect ratio).
+   *  Overrides the size mode when set. */
+  size?: CardSize;
+  /** Placed beside the search card at start and never recycled or filtered out. */
+  pinned?: boolean;
+  /** Small tile that plugs holes left in the opening layout instead of queueing for a spawn. */
+  filler?: boolean;
+  /** Selecting the card searches for this term instead of calling onCardSelect. */
+  filter?: string;
 }
 
 export interface GameCardData extends BaseCardData {
@@ -67,6 +76,10 @@ export interface ProjectCardData extends BaseCardData {
     modelPath?: string;
   };
   featured?: boolean;
+  /** Award text, shown as a star badge. */
+  award?: string;
+  /** Short display date for the footer, e.g. "Oct 2026". */
+  date?: string;
 }
 
 export interface PhotoCardData extends BaseCardData {
@@ -79,9 +92,22 @@ export interface PhotoCardData extends BaseCardData {
   blurDataURL?: string;
 }
 
-export type CardData = GameCardData | ProjectCardData | PhotoCardData;
+/** Pinned identity card: placed beside the search card, never recycled or filtered out. */
+export interface IntroCardData extends BaseCardData {
+  type: 'intro';
+}
 
-export type CardSize = '1x1' | '2x1' | '1x2' | '2x2';
+/** Non-project compartment: experience, about, or a technology tile. */
+export interface InfoCardData extends BaseCardData {
+  type: 'info';
+  variant: 'experience' | 'about' | 'tech';
+  /** Tech tiles: how many projects use it. */
+  count?: number;
+}
+
+export type CardData = GameCardData | ProjectCardData | PhotoCardData | IntroCardData | InfoCardData;
+
+export type CardSize = '1x1' | '2x1' | '1x2' | '2x2' | '3x2' | '2x3' | '4x2';
 
 export interface Position {
   x: number;

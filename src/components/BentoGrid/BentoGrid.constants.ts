@@ -1,7 +1,7 @@
-import type { CardSize, GridTheme, PhysicsConfig, ThemeConfig } from './BentoGrid.types';
+import type { CardData, CardSize, GridTheme, PhysicsConfig, ThemeConfig } from './BentoGrid.types';
 
 const GRID_VALUES = {
-  cellSize: 180,
+  cellSize: 220,
   gap: 12,
   spawnBuffer: 100,
   despawnBuffer: 200,
@@ -23,6 +23,9 @@ export const CARD_SIZES: Record<CardSize, { cols: number; rows: number }> = {
   '2x1': { cols: 2, rows: 1 },
   '1x2': { cols: 1, rows: 2 },
   '2x2': { cols: 2, rows: 2 },
+  '3x2': { cols: 3, rows: 2 },
+  '2x3': { cols: 2, rows: 3 },
+  '4x2': { cols: 4, rows: 2 },
 };
 
 export function getCardDimensions(size: CardSize): { width: number; height: number } {
@@ -69,6 +72,11 @@ const CAMERA_VALUES = {
   keyboardPanSpeed: 30,
   wheelZoomOutFactor: 0.9,
   wheelZoomInFactor: 1.1,
+  // Window size at which the board renders at zoom 1, and the range fitZoom may use.
+  referenceWidth: 1760,
+  referenceHeight: 1040,
+  minFitZoom: 0.7,
+  maxFitZoom: 1.25,
 } as const;
 
 export const CAMERA = {
@@ -87,6 +95,10 @@ export const CAMERA = {
   keyboardPanSpeed: CAMERA_VALUES.keyboardPanSpeed,
   wheelZoomOutFactor: CAMERA_VALUES.wheelZoomOutFactor,
   wheelZoomInFactor: CAMERA_VALUES.wheelZoomInFactor,
+  referenceWidth: CAMERA_VALUES.referenceWidth,
+  referenceHeight: CAMERA_VALUES.referenceHeight,
+  minFitZoom: CAMERA_VALUES.minFitZoom,
+  maxFitZoom: CAMERA_VALUES.maxFitZoom,
   zoomSensitivity: CAMERA_VALUES.zoomSensitivity,
   panSpeed: CAMERA_VALUES.panSpeed,
   momentum: {
@@ -202,11 +214,12 @@ export const THEME_PLAYFUL: ThemeConfig = {
 
 export const THEME_PREMIUM: ThemeConfig = {
   name: 'premium',
-  background: 'linear-gradient(180deg, var(--background) 0%, var(--surface-deep) 100%)',
+  // The canvas paints its own background from the board palette (.board-canvas).
+  background: 'var(--board-bg)',
   card: {
-    background: 'var(--glass-bg-strong)',
-    border: '1px solid var(--glass-border)',
-    borderRadius: 8,
+    background: 'var(--board-card)',
+    border: '1px solid var(--board-card-border)',
+    borderRadius: 12,
     shadow: '0 4px 24px var(--shadow-color)',
     hoverShadow: '0 8px 40px var(--shadow-color), 0 0 0 1px var(--primary-muted)',
     rotationRange: 0,
@@ -272,6 +285,11 @@ export const THEMES = {
 } satisfies Record<GridTheme, ThemeConfig>;
 
 export const SEARCH_CARD_ID = '__search__' as const;
+
+/** Pinned cards (the intro, plus any flagged `pinned`) stay on the board permanently. */
+export function isPinnedCard(card: Pick<CardData, 'type' | 'pinned'> | undefined): boolean {
+  return card?.type === 'intro' || Boolean(card?.pinned);
+}
 export const INFO_CARD_ID = '__info__' as const;
 
 export const MOBILE = {
@@ -279,7 +297,9 @@ export const MOBILE = {
   CARD_WIDTH_PERCENT: 0.9,
   CARD_MAX_WIDTH: 400,
   SCROLL_GAP: 16,
-  SCROLL_PADDING: 24,
+  SCROLL_PADDING: 16,
+  TRAY_GAP: 10,
+  TRAY_MAX_WIDTH: 560,
 } as const;
 
 export const KEYBOARD = {

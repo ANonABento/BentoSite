@@ -227,10 +227,17 @@ export function DesktopCanvasView({
     [displayLayouts],
   );
 
+  // Cards carrying a filter term (tech tiles) search the board instead of navigating.
+  const { setSearchTerm } = searchState;
+  const selectCard = useCallback(
+    (card: CardData) => (card.filter ? setSearchTerm(card.filter) : onCardSelect?.(card)),
+    [onCardSelect, setSearchTerm],
+  );
+
   const cardNavigation = useCardNavigation({
     visible: navigableLayouts,
     cards,
-    onSelect: onCardSelect,
+    onSelect: selectCard,
     enabled: true,
   });
   const { focusedCardId, setFocusedCardId } = cardNavigation;
@@ -238,9 +245,9 @@ export function DesktopCanvasView({
   const handleCardClick = useCallback(
     (card: CardData) => {
       setFocusedCardId(card.id);
-      onCardSelect?.(card);
+      selectCard(card);
     },
-    [onCardSelect, setFocusedCardId],
+    [selectCard, setFocusedCardId],
   );
 
   useEffect(() => {
@@ -272,6 +279,33 @@ export function DesktopCanvasView({
   );
 
   const navBindings = navigation.bind();
+
+  // React registers wheel listeners as passive, so the gesture handler's
+  // preventDefault is ignored, and the browser reads a horizontal two-finger
+  // trackpad swipe as Back (and a pinch as page zoom). A native, non-passive
+  // listener claims every wheel on the board. Rows that scroll natively
+  // (category chips) opt out with data-wheel-scroll.
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const claimWheel = (event: WheelEvent) => {
+      const target = event.target as Element | null;
+      if (!event.ctrlKey && target?.closest('[data-wheel-scroll]')) return;
+      event.preventDefault();
+    };
+    // Safari's own pinch-zoom events.
+    const claimGesture = (event: Event) => event.preventDefault();
+    root.addEventListener('wheel', claimWheel, { passive: false });
+    root.addEventListener('gesturestart', claimGesture);
+    root.addEventListener('gesturechange', claimGesture);
+    return () => {
+      root.removeEventListener('wheel', claimWheel);
+      root.removeEventListener('gesturestart', claimGesture);
+      root.removeEventListener('gesturechange', claimGesture);
+    };
+  }, []);
+
 
   // Tracks the timestamp of the last wheel event that reached the canvas
   // pan handler. If the cursor crosses an element that normally swallows
@@ -326,14 +360,19 @@ export function DesktopCanvasView({
     // only fires onDrag past INTERACTION.dragThreshold (5px), so a click never
     // registers as a pan.
     <div
+      ref={rootRef}
       id="main-content"
-      className={['fixed inset-0 isolate', className].filter(Boolean).join(' ')}
+      className={['board-canvas fixed inset-0 isolate overscroll-none', className].filter(Boolean).join(' ')}
       {...navBindings}
       onWheel={handleWrapperWheel}
       role="application"
       aria-label={`${breadcrumb ?? 'Card grid'} interactive grid. Use arrow keys to focus cards, Enter to open, WASD to pan, and R to reset view.`}
       tabIndex={-1}
-      style={{ ...navBindings.style, background: theme.background }}
+      style={{
+        ...navBindings.style,
+        // The dot grid pans with the board, at a fifth of the speed, for depth.
+        backgroundPosition: `${navigation.camera.x * navigation.camera.zoom * 0.2}px ${navigation.camera.y * navigation.camera.zoom * 0.2}px`,
+      }}
       onPointerDown={handleWrapperPointerDown}
       onPointerUp={handleWrapperPointerUp}
       onMouseDown={handleWrapperMouseDown}
@@ -373,22 +412,18 @@ export function DesktopCanvasView({
           }}
         >
           <div
-            className="h-full w-full overflow-hidden backdrop-blur-xl"
+            className="h-full w-full overflow-hidden"
             style={{
-              background: theme.searchCard.background,
-              border: theme.searchCard.border,
-              boxShadow: isSearchSticky
-                ? `0 0 0 1px ${theme.accent.primary}33, ${theme.card.hoverShadow}`
-                : theme.card.shadow,
+              background: 'var(--board-dock-bg)',
+              color: 'var(--board-dock-fg)',
+              boxShadow: isSearchSticky ? theme.card.hoverShadow : theme.card.shadow,
               borderRadius: theme.card.borderRadius,
             }}
           >
             {isSearchSticky && (searchState.edge === 'left' || searchState.edge === 'right') ? (
               <IconStripContent
-                theme={theme}
                 onBack={onBack}
                 onToggleExpanded={searchState.toggleExpanded}
-                searchTerm={searchState.searchTerm}
               />
             ) : isSearchSticky ? (
               <CompactBarContent
@@ -419,23 +454,21 @@ export function DesktopCanvasView({
 }
 
 // Inline sticky content components (imported from SearchMenuCard would create circular dep)
-function IconStripContent({ theme, onBack, onToggleExpanded, searchTerm }: {
-  theme: ThemeConfig;
+function IconStripContent({ onBack, onToggleExpanded }: {
   onBack?: () => void;
   onToggleExpanded: () => void;
-  searchTerm: string;
 }) {
   return (
     <div className="h-full flex flex-col items-center justify-center gap-3 py-3">
       {onBack && (
-        <button onClick={onBack} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="Go back">
-          <ArrowLeftIcon className="w-5 h-5 text-white/70" />
+        <button onClick={onBack} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-black/10 transition-colors" aria-label="Go back">
+          <ArrowLeftIcon className="w-5 h-5" />
         </button>
       )}
-      <button onClick={onToggleExpanded} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="Search" style={{ color: searchTerm ? theme.accent.primary : undefined }}>
-        <SearchIcon className="w-5 h-5 text-white/70" />
+      <button onClick={onToggleExpanded} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-black/10 transition-colors" aria-label="Search">
+        <SearchIcon className="w-5 h-5" />
       </button>
-      <button onClick={onToggleExpanded} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="Toggle filters" style={{ color: theme.accent.primary }}>
+      <button onClick={onToggleExpanded} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-black/10 transition-colors" aria-label="Toggle filters">
         <ChevronDownIcon className="w-5 h-5" />
       </button>
     </div>
@@ -480,16 +513,11 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
     });
   }, []);
 
-  const categoryButtonStyles = useMemo(() => ({
-    active: {
-      background: `${theme.accent.primary}30`,
-      border: `1px solid ${theme.accent.primary}50`,
-    },
-    inactive: {
-      background: 'rgba(255,255,255,0.05)',
-      border: '1px solid transparent',
-    },
-  }), [theme.accent.primary]);
+  // Same chips as the dock, so the card and the bar read as one object.
+  const categoryButtonStyles = {
+    active: { background: 'var(--board-dock-chip-on)', color: 'var(--board-dock-chip-on-fg)' },
+    inactive: { background: 'var(--board-dock-chip)' },
+  };
 
   // Stop pointer/wheel events from bubbling up to the canvas gesture handler
   // for elements that need their own native interaction (text selection,
@@ -515,14 +543,14 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
         {onBack ? (
           <button
             onClick={onBack}
-            className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-xs opacity-70 hover:opacity-100 transition-opacity"
           >
             <ArrowLeftIcon className="w-3.5 h-3.5" /><span>Back</span>
           </button>
         ) : <span />}
         <button
           onClick={onReset}
-          className="flex items-center gap-1.5 text-[11px] text-white/50 hover:text-white/80 transition-colors"
+          className="flex items-center gap-1.5 text-[11px] opacity-70 hover:opacity-100 transition-opacity"
           aria-label="Reset view"
         >
           <RefreshIcon className="w-3 h-3" />
@@ -533,24 +561,25 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
       {/* Search input — stop propagation so text selection drags don't pan. */}
       <label
         {...stopGesture}
-        className="flex items-center gap-2 rounded-md bg-white/5 border border-white/10 px-3 py-2"
+        className="flex items-center gap-2 rounded-lg px-3 py-2"
+        style={{ background: 'var(--board-dock-field)' }}
       >
-        <SearchIcon className="w-4 h-4 text-white/40 flex-shrink-0" />
+        <span className="font-crt text-xl leading-none">&gt;</span>
         <input
           type="text"
-          placeholder="Search..."
+          placeholder="search projects"
           value={searchTerm}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)}
-          className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none"
+          className="flex-1 min-w-0 bg-transparent font-crt text-xl leading-none placeholder:text-current placeholder:opacity-55 outline-none"
           aria-label="Search cards"
         />
         {searchTerm && (
           <button
             onClick={() => onSearchChange('')}
-            className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-white/10"
+            className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-black/10"
             aria-label="Clear search"
           >
-            <CloseIcon className="w-3 h-3 text-white/50" />
+            <CloseIcon className="w-3 h-3" />
           </button>
         )}
       </label>
@@ -562,7 +591,8 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
         <div
           ref={categoryRowRef}
           {...stopGesture}
-          className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5"
+          data-wheel-scroll
+          className="flex gap-1.5 overflow-x-auto overscroll-x-contain scrollbar-hide pb-0.5"
           style={{
             maskImage: hasScrollableCategories
               ? 'linear-gradient(to right, black 0, black calc(100% - 28px), transparent 100%)'
@@ -574,7 +604,7 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
         >
           <button
             onClick={() => onCategoryChange(null)}
-            className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${category === null ? 'text-white' : 'text-white/60 hover:text-white/80'}`}
+            className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors font-medium`}
             style={category === null ? categoryButtonStyles.active : categoryButtonStyles.inactive}
           >
             All ({allCount})
@@ -583,7 +613,7 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
             <button
               key={cat}
               onClick={() => onCategoryChange(cat === category ? null : cat)}
-              className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${category === cat ? 'text-white' : 'text-white/60 hover:text-white/80'}`}
+              className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors font-medium`}
               style={category === cat ? categoryButtonStyles.active : categoryButtonStyles.inactive}
             >
               {cat}
@@ -597,8 +627,8 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
             onClick={scrollCategories}
             aria-label="Show more categories"
             title="More categories"
-            className="absolute right-0 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-white/70 transition-colors hover:text-white"
-            style={{ background: 'rgba(0,0,0,0.55)' }}
+            className="absolute right-0 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full transition-colors"
+            style={{ background: 'var(--board-dock-bg)', boxShadow: '0 0 0 1px var(--board-dock-chip)' }}
           >
             <ChevronRightIcon className="h-3.5 w-3.5" />
           </button>
@@ -606,15 +636,15 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
       </div>
 
       {/* Keyboard hints — pinned to bottom of the card, lo-fi terminal feel */}
-      <div className="mt-auto flex items-center justify-between gap-2 pt-1 text-[10px] font-mono uppercase tracking-wider text-white/35">
+      <div className="mt-auto flex items-center justify-between gap-2 pt-1 text-[10px] font-mono uppercase tracking-wider opacity-60">
         <span>
-          <span className="text-white/55">wasd</span> pan
+          <span className="font-semibold">wasd</span> pan
         </span>
         <span>
-          <span className="text-white/55">R</span> reset
+          <span className="font-semibold">R</span> reset
         </span>
         <span>
-          <span className="text-white/55">&#x21B5;</span> open
+          <span className="font-semibold">&#x21B5;</span> open
         </span>
       </div>
     </div>
@@ -629,20 +659,21 @@ function CompactBarContent({ searchTerm, onSearchChange, onBack }: {
   return (
     <div className="h-full flex items-center gap-2 px-3">
       {onBack && (
-        <button onClick={onBack} className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors" aria-label="Go back">
-          <ArrowLeftIcon className="w-4 h-4 text-white/70" />
+        <button onClick={onBack} className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md hover:bg-black/10 transition-colors" aria-label="Go back">
+          <ArrowLeftIcon className="w-4 h-4" />
         </button>
       )}
       <label
         onPointerDown={(event) => event.stopPropagation()}
         onWheel={(event) => event.stopPropagation()}
-        className="flex-1 min-w-0 flex items-center gap-2 rounded-md bg-white/5 border border-white/10 px-3 py-1.5"
+        className="flex-1 min-w-0 flex items-center gap-2 rounded-lg px-3 py-1.5"
+        style={{ background: 'var(--board-dock-field)' }}
       >
-        <SearchIcon className="w-4 h-4 text-white/40 flex-shrink-0" />
-        <input type="text" placeholder="Search..." value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none" aria-label="Search cards" />
+        <span className="font-crt text-xl leading-none">&gt;</span>
+        <input type="text" placeholder="search projects" value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent font-crt text-xl leading-none placeholder:text-current placeholder:opacity-55 outline-none" aria-label="Search cards" />
         {searchTerm && (
-          <button onClick={() => onSearchChange('')} className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-white/10" aria-label="Clear search">
-            <CloseIcon className="w-3 h-3 text-white/50" />
+          <button onClick={() => onSearchChange('')} className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-black/10" aria-label="Clear search">
+            <CloseIcon className="w-3 h-3" />
           </button>
         )}
       </label>

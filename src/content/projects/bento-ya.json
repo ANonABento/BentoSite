@@ -1,9 +1,10 @@
 {
   "id": "bento-ya",
-  "name": "bento-ya",
-  "shortDescription": "Tauri desktop app for orchestrating AI coding agents — a kanban board where columns are pipeline stages with trigger-driven automation.",
-  "description": "bento-ya is a Tauri desktop application for orchestrating AI coding agents through a kanban-style board. Each column is a pipeline stage with optional on_entry / on_exit triggers — describe the automation in natural language and the app generates the trigger config, or drop into an advanced editor for actions like spawn_cli, move_column, run_script, and create_pr.\n\nHighlights:\n- Per-task agent panel with embedded tmux-backed terminal, semantic transcript, lifecycle controls (Hold / Stop / Kill), and live model + thinking-effort selectors.\n- v2.0 adds GitHub PR auto-create on column exit, per-task git worktree isolation, and a DAG dependency UI with hover-reveal bezier lines and cycle detection.\n- v2.1 adds full per-task xterm.js terminals — WebGL renderer, 10k-line scrollback, Unicode 11, theme-reactive, lazy PTY sessions spawned on panel open.",
-  "category": "AI & Software",
+  "name": "KaitenCode",
+  "shortDescription": "Tauri desktop app that runs AI coding agents on a kanban board, with columns as pipeline stages that fire triggers, terminals and PRs.",
+  "description": "KaitenCode (formerly bento-ya) is a Tauri desktop app for orchestrating AI coding agents on an automated kanban board. Each column is a pipeline stage with optional `on_entry` / `on_exit` triggers: describe the automation in natural language and the app generates the trigger config, or use the advanced editor for actions like `spawn_cli`, `move_column`, `run_script` and `create_pr`.\n\nHighlights:\n- Per-task agent panel: semantic transcript, a tmux-backed terminal, lifecycle controls (Hold / Stop / Kill), model and thinking-effort selectors, and a chat box for steering the agent mid-run.\n- v2.0: GitHub PR auto-create on column exit, per-task git worktree isolation, and a task-dependency DAG with cycle detection and hover-reveal bezier lines.\n- v2.1: a full xterm.js terminal per task (WebGL renderer, 10k-line scrollback, Unicode 11, theme-reactive) with lazy PTY sessions and persistent tmux sessions.\n- A localhost-only HTTP API with a per-run bearer token powers an MCP server, so external agents can drive the board.\n- Tested in three modes: browser/Vite with mocked IPC, native Tauri, and native WebDriver E2E against the real binary.",
+  "category": "Developer Tools",
+  "context": "Personal",
   "status": "In Progress",
   "technologies": [
     "Rust",
@@ -15,15 +16,15 @@
     "SQLite"
   ],
   "links": {
-    "github": "https://github.com/ANonABento/bento-ya"
+    "github": "https://github.com/ANonABento/kaitencode"
   },
   "media": {
     "featuredImage": "/projects/bento-ya/hero.png",
     "images": [
       "/projects/bento-ya/hero.png",
-      "/projects/bento-ya/overview.png"
+      "/projects/bento-ya/task-detail.png",
+      "/projects/bento-ya/column-triggers.png"
     ]
   },
-  "featured": true,
   "dateCompleted": "2026"
 }

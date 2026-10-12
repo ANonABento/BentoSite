@@ -1,5 +1,282 @@
-@import "tailwindcss";
-@import "./styles/theme.css";
-@import "./styles/utilities.css";
-@import "./styles/animations.css";
-@import "./styles/content.css";
+@import 'tailwindcss';
+
+/*
+ * bentOS v2 — the page is a lacquered bento tray. Compartments sit inside
+ * walls; the walls are the tray colour showing through the gaps. Inner radius
+ * = outer radius − wall thickness so corners nest like a real box.
+ */
+@theme {
+  --color-lacquer: #0e0b0a;
+  --color-wall: #2a2421;
+  --color-cell: #171312;
+  --color-cell-raised: #201a18;
+  --color-rice: #f2ece2;
+  --color-ash: #a39a90;
+  --color-orange: #e8823f;
+  --color-purple: #a78bfa;
+  --color-phosphor: #f6f3ec;
+  --color-screen: #0a0909;
+
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+  --font-crt: var(--font-vt323), ui-monospace, monospace;
+  --font-mark: var(--font-orbitron), ui-sans-serif, sans-serif;
+
+  --radius-tray: 1.25rem;
+  --radius-cell: 0.875rem;
+  --spacing-wall: 0.375rem;
+}
+
+/* Variables the BentoGrid engine (restored from v1) reads. */
+:root {
+  --background: var(--color-lacquer);
+  --foreground: var(--color-rice);
+  --orange: #e07b3c;
+  --orange-muted: rgba(224, 123, 60, 0.2);
+  --purple: #a78bfa;
+  --purple-muted: rgba(167, 139, 250, 0.2);
+  --primary: var(--orange);
+  --primary-hover: #d4722f;
+  --primary-active: #c46526;
+  --primary-muted: var(--orange-muted);
+  --text-muted: #a1a1aa;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --surface-deep: #0f1016;
+  --overlay-strong: rgba(0, 0, 0, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-bg-strong: rgba(255, 255, 255, 0.1);
+  --status-success: #22c55e;
+  --status-success-muted: rgba(34, 197, 94, 0.2);
+  --pg-bg-deep: #050612;
+  --pg-bg-surface: #0c0c14;
+
+  /*
+   * Board palette. `ember` is the default; `?palette=tray` and `?palette=duo`
+   * swap these on <html data-palette> so the options can be compared live.
+   */
+  --board-bg: #080605;
+  --board-dots: rgb(232 130 63 / 0.1);
+  --board-card: #1d1816;
+  --board-card-border: #322a26;
+  --board-accent-2: var(--color-purple);
+  --board-dock-bg: var(--color-orange);
+  --board-dock-fg: var(--color-lacquer);
+  --board-dock-field: rgb(14 11 10 / 0.14);
+  --board-dock-chip: rgb(14 11 10 / 0.1);
+  --board-dock-chip-on: var(--color-lacquer);
+  --board-dock-chip-on-fg: var(--color-orange);
+
+  /* One hue per category, so footers scan by colour as well as by word. */
+  --cat-ai: #b39dfb;
+  --cat-robotics: #f0915a;
+  --cat-hardware: #f2c14e;
+  --cat-software: #6cc9a4;
+  --cat-developer-tools: #6db8e3;
+  --cat-games: #f28aa5;
+}
+
+/* The tray itself is orange and the compartments sit in it like a bento box. */
+/* Warm mid-brown tray, near-black compartments: a lacquer box on wood. */
+:root[data-palette='walnut'] {
+  --board-bg: #3a2c24;
+  --board-dots: rgb(242 236 226 / 0.07);
+  --board-card: #141010;
+  --board-card-border: #0c0909;
+}
+
+/* Cool slate behind warm black cards; the orange pops off both. */
+:root[data-palette='slate'] {
+  --board-bg: #2b3038;
+  --board-dots: rgb(242 236 226 / 0.06);
+  --board-card: #151212;
+  --board-card-border: #0d0b0b;
+}
+
+/* Rice-paper table under dark compartments: the highest contrast. */
+:root[data-palette='paper'] {
+  --board-bg: #e6ddcf;
+  --board-dots: rgb(14 11 10 / 0.1);
+  --board-card: #161212;
+  --board-card-border: #0e0b0a;
+}
+
+:root[data-palette='tray'] {
+  --board-bg: #c8642a;
+  --board-dots: rgb(14 11 10 / 0.14);
+  --board-card: #151111;
+  --board-card-border: #0e0b0a;
+  --board-dock-bg: var(--color-lacquer);
+  --board-dock-fg: var(--color-rice);
+  --board-dock-field: rgb(255 255 255 / 0.07);
+  --board-dock-chip: rgb(255 255 255 / 0.06);
+  --board-dock-chip-on: var(--color-orange);
+  --board-dock-chip-on-fg: var(--color-lacquer);
+}
+
+/* Orange stays the brand colour; a cool teal joins it for the controls. */
+:root[data-palette='duo'] {
+  --board-bg: #0b0d0d;
+  --board-dots: rgb(94 214 196 / 0.09);
+  --board-card: #141716;
+  --board-card-border: #232a28;
+  --board-accent-2: #5ed6c4;
+  --board-dock-bg: #5ed6c4;
+  --board-dock-fg: #08201c;
+  --board-dock-field: rgb(8 32 28 / 0.12);
+  --board-dock-chip: rgb(8 32 28 / 0.1);
+  --board-dock-chip-on: #08201c;
+  --board-dock-chip-on-fg: #5ed6c4;
+}
+
+.board-canvas {
+  background-color: var(--board-bg);
+  background-image: radial-gradient(var(--board-dots) 1.2px, transparent 1.4px);
+  background-size: 24px 24px;
+}
+
+html {
+  /* No rubber-band or swipe-to-navigate: a sideways trackpad pan on the
+     board must never turn into Back. */
+  overscroll-behavior: none;
+  background: var(--color-lacquer);
+  color: var(--color-rice);
+  color-scheme: dark;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  overscroll-behavior: none;
+  background: var(--color-lacquer);
+  font-family: var(--font-sans);
+  line-height: 1.55;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-orange) 40%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-purple);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ---------- Tray ---------- */
+
+.tray {
+  display: grid;
+  gap: var(--spacing-wall);
+  padding: var(--spacing-wall);
+  background: var(--color-wall);
+  border-radius: var(--radius-tray);
+}
+
+.cell {
+  background: var(--color-cell);
+  border-radius: var(--radius-cell);
+  min-width: 0;
+}
+
+/* ---------- CRT ---------- */
+
+.crt {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 50% 45%, #1a1614 0%, var(--color-screen) 70%);
+  color: var(--color-phosphor);
+  font-family: var(--font-crt);
+  text-shadow:
+    0 0 2px rgb(246 243 236 / 0.55),
+    0 0 12px rgb(232 130 63 / 0.18);
+}
+
+/* Scanlines + a faint vignette, above the content so they read as glass. */
+.crt::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 0) 0,
+      rgb(0 0 0 / 0) 2px,
+      rgb(0 0 0 / 0.28) 3px
+    ),
+    radial-gradient(130% 100% at 50% 50%, transparent 55%, rgb(0 0 0 / 0.55) 100%);
+}
+
+.crt-on {
+  animation: crt-on 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  transform-origin: center;
+}
+
+@keyframes crt-on {
+  0% { transform: scale(1, 0.006); filter: brightness(4); opacity: 0.9; }
+  45% { transform: scale(1, 0.006); filter: brightness(4); }
+  70% { transform: scale(1, 1); filter: brightness(1.8); }
+  100% { transform: scale(1, 1); filter: brightness(1); opacity: 1; }
+}
+
+.cursor {
+  display: inline-block;
+  width: 0.55em;
+  height: 0.95em;
+  translate: 0 0.12em;
+  background: var(--color-orange);
+  box-shadow: 0 0 8px rgb(232 130 63 / 0.6);
+  animation: blink 1.1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* The wordmark: Orbitron with a phosphor dot mask punched through it. */
+.wordmark {
+  font-family: var(--font-mark);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 0.85;
+  color: var(--color-phosphor);
+  -webkit-mask-image: radial-gradient(circle at center, #000 62%, transparent 64%);
+  -webkit-mask-size: 3px 3px;
+  mask-image: radial-gradient(circle at center, #000 62%, transparent 64%);
+  mask-size: 3px 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crt-on,
+  .cursor {
+    animation: none;
+  }
+}
+
+/* ---------- Project prose ---------- */
+
+.prose-bento {
+  max-width: 68ch;
+  color: color-mix(in srgb, var(--color-rice) 88%, var(--color-ash));
+}
+.prose-bento > * + * { margin-top: 1em; }
+.prose-bento ul { padding-left: 1.1em; list-style: square; }
+.prose-bento li + li { margin-top: 0.4em; }
+.prose-bento li::marker { color: var(--color-orange); }
+.prose-bento a {
+  color: var(--color-rice);
+  text-decoration: underline;
+  text-decoration-color: var(--color-orange);
+  text-underline-offset: 3px;
+}
+.prose-bento a:hover { color: var(--color-orange); }
+.prose-bento code {
+  font-family: var(--font-crt);
+  font-size: 1.15em;
+  color: var(--color-phosphor);
+}
+.prose-bento strong { color: var(--color-rice); font-weight: 600; }
+
+.no-scrollbar,
+.scrollbar-hide { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar { display: none; }

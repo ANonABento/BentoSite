@@ -1,0 +1,31 @@
+{
+  "id": "venturesauce",
+  "name": "VentureSauce",
+  "shortDescription": "Chrome side panel that checks founder claims in decks, emails and notes against SEC Form D, LinkedIn, Crunchbase and press, with sources.",
+  "description": "VentureSauce is a deal inbox for investors. Drop in a deck, an email, call notes or a screenshot; it files the item under the company, checks every claim against public records and against everything else the founder sent, and turns gaps and contradictions into questions to ask.\n\nHighlights:\n- An open model on Nebius only reads the material and extracts claims (amount raised, round, team size, board, ARR). Every verdict comes from plain rules in code, so the same input always gives the same answer.\n- Claims are checked against SEC Form D filings (EDGAR), live funding press and LinkedIn pages via Bright Data, and a pipeline of LinkedIn and Crunchbase data for 1,000 startups built from Form D filings and stored in OSO.\n- Accuracy over coverage: a LinkedIn profile is only used when its own website matches the company's domain; otherwise the claim is marked \"couldn't verify\".\n- Every number links to its source. A daily or weekly digest across companies can be spoken via Fish Audio.\n- Chrome MV3 extension + Next.js panel + FastAPI backend.\n\nBuilt as Team 11 (Andi, Surya, Javier, Kevin) at a hackathon.",
+  "category": "AI",
+  "status": "Completed",
+  "technologies": [
+    "TypeScript",
+    "Next.js",
+    "Chrome MV3",
+    "Python",
+    "FastAPI",
+    "Bright Data",
+    "SEC EDGAR",
+    "Nebius",
+    "Fish Audio"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento/VentureSauce"
+  },
+  "media": {
+    "featuredImage": "/projects/venturesauce/hero.webp",
+    "images": [
+      "/projects/venturesauce/hero.webp",
+      "/projects/venturesauce/inbox.webp",
+      "/projects/venturesauce/report.webp"
+    ]
+  },
+  "dateCompleted": "2026-10"
+}

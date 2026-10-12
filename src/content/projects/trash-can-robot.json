@@ -1,0 +1,26 @@
+{
+  "id": "trash-can-robot",
+  "name": "Trash Can Robot",
+  "shortDescription": "Mobile trash can on a differential-drive base: ESP32-S3 camera + motor firmware, ROS 2 nodes on a Mac, and a parametric OpenSCAD chassis.",
+  "description": "A trash can that drives itself around. The robot is a cutting-board base with two 12 V DC motors, a printed rear swivel caster and 3D-printed mounts, all generated from a parametric OpenSCAD model. An ESP32-S3 (OV3660 camera, L298N H-bridge) streams MJPEG video over HTTP and takes motor commands over UDP; inference and control run in a ROS 2 Humble stack on a MacBook Air.\n\nHighlights:\n- ESP32-S3 firmware (PlatformIO): MJPEG camera stream, JSON motor commands on UDP:4210, mDNS (`trashcam.local`), a `/health` endpoint and a once-a-second UDP heartbeat, plus serial test commands (`MOTOR`, `STOP`, `SCAN`, `CAPTURE`).\n- Failsafes at both ends: the firmware stops the motors if no command arrives for 300 ms and reboots on long WiFi outages or repeated camera failures; a ROS 2 `safety_monitor_node` clamps speeds and publishes zero when `/cmd_vel` goes stale or the heartbeat drops.\n- ROS 2 nodes for camera, motors, safety and keyboard teleop, with a Foxglove Studio layout for visualization.\n- Parametric OpenSCAD CAD (`cad/robot.scad`) for every printed part: motor brackets, camera cradle, caster, electronics mounts and the can tabs, rendered and exported to STL by a script.",
+  "category": "Robotics",
+  "context": "Personal",
+  "status": "In Progress",
+  "technologies": [
+    "C++",
+    "ESP32-S3",
+    "PlatformIO",
+    "Python",
+    "ROS 2",
+    "Foxglove",
+    "OpenSCAD",
+    "3D-Printing"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento/trash-can-robot"
+  },
+  "media": {
+    "featuredImage": "/projects/trash-can-robot/hero.png"
+  },
+  "dateCompleted": "2026-10"
+}

@@ -1,9 +1,10 @@
 {
   "id": "litter-caching",
   "name": "LitterCaching",
-  "shortDescription": "Intelligent waste-sorting system — ESP32-CAM + Edge Impulse ML identifies can types and routes them via 3D-printed servo mechanism. Built at MakeUofT 2025.",
-  "description": "LitterCaching is an intelligent waste-sorting system. An ESP32-CAM combined with an Edge Impulse ML model identifies different types of cans by sight; once detected, servos and a 3D-printed mechanism sort cans into the appropriate bins to enhance recycling efficiency and accessibility.\n\nBuilt at MakeUofT 2025 (February 2025).",
-  "category": "Hackathon",
+  "shortDescription": "MakeUofT 2025 build: ESP32-CAM glasses running an Edge Impulse can-recognition model, plus a 3D-printed claw grabber on a PVC pole.",
+  "description": "LitterCaching is a three-part litter-collection project built at MakeUofT 2025 (February 2025).\n\nWhat's in the repo:\n- Smart glasses with an ESP32-CAM in a 3D-printed housing, running an Edge Impulse model trained to recognize cans (firmware and training data in `glasses_software/`).\n- A handheld grabber: a PVC pole with a 3D-printed claw system, tension handle, rubber-band clamps and press-fit nut holders, controlled from an Arduino in its own housing.\n- A third part with an IR sensor housing.",
+  "category": "Hardware",
+  "context": "MakeUofT 2025",
   "status": "Completed",
   "technologies": [
     "Arduino",
@@ -13,12 +14,11 @@
     "3D-Printing"
   ],
   "links": {
-    "github": "https://github.com/flight/litter-caching",
+    "github": "https://github.com/VirtualFlight/LitterCaching",
     "docs": "https://devpost.com/software/littercaching"
   },
   "media": {
     "featuredImage": "/projects/litter-caching/hero.jpg"
   },
-  "featured": false,
   "dateCompleted": "2025-02"
 }

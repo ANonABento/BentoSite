@@ -1,24 +1,33 @@
 {
   "id": "slothing",
   "name": "Slothing",
-  "shortDescription": "Open-source, privacy-first job-application command center. Build tailored resumes and cover letters, track opportunities, and prep for interviews — self-host free or use slothing.work.",
-  "description": "Slothing is an open-source, privacy-first job-application assistant. Users upload career documents, build tailored resumes and cover letters in one workspace, track opportunities, and prepare for interviews — with AI doing the heavy lifting while their data stays under their control.\n\nThe product inverts the typical job-tool model: pay weekly only while actively searching ($6.99/week or $19.99/month on the hosted version at slothing.work), or self-host this repo for free forever. Hosted = same OSS code + a small proprietary billing module under an open-core split.",
-  "category": "AI & Software",
+  "shortDescription": "Open-source, self-hostable job-search workspace: tailored resumes and cover letters from your own documents, tracking, interview prep.",
+  "description": "Slothing is an open-source (AGPL v3), privacy-first job-application command center. Upload your career documents once, then build tailored resumes and cover letters, track opportunities and prep for interviews, with AI doing the heavy lifting while your data stays under your control.\n\nHighlights:\n- Document Studio: a single resume + cover-letter workspace with templates, version history and a TipTap editor.\n- Knowledge bank: AI extracts structured profile data from uploaded documents for reuse across applications.\n- Paste a job description and get a tailored resume and cover letter. Works with OpenAI, Anthropic, Ollama or OpenRouter.\n- Opportunity tracker for jobs and hackathons, a review queue, text and voice mock interviews, and a browser extension that autofills applications and captures job postings.\n- Turborepo + pnpm monorepo: Next.js App Router, Drizzle on libSQL/Turso, NextAuth, Vitest and Playwright.\n\nSelf-host it for free, or use the hosted version at slothing.work, which runs the same code plus a small proprietary billing module (open core).",
+  "category": "Software",
+  "context": "Personal",
   "status": "In Progress",
   "technologies": [
     "TypeScript",
-    "JavaScript",
     "Next.js",
-    "AI",
-    "AGPL-3"
+    "Turborepo",
+    "Drizzle",
+    "libSQL/Turso",
+    "NextAuth",
+    "TipTap",
+    "Tailwind CSS",
+    "Playwright"
   ],
   "links": {
     "github": "https://github.com/ANonABento/slothing",
     "liveDemo": "https://slothing.work"
   },
   "media": {
-    "featuredImage": "/projects/slothing/hero.png"
+    "featuredImage": "/projects/slothing/hero.jpg",
+    "images": [
+      "/projects/slothing/hero.jpg",
+      "/projects/slothing/dashboard.jpg",
+      "/projects/slothing/review-queue.png"
+    ]
   },
-  "featured": false,
   "dateCompleted": "2026"
 }

@@ -84,8 +84,11 @@ export function BaseCard({
         width: position.width,
         height: position.height,
       }}
-      initial={false}
+      // Mount in place and fade in, so a card that fills a hole in view
+      // appears rather than pops.
+      initial={{ opacity: 0, x: position.x, y: position.y, rotate: position.rotation }}
       animate={{
+        opacity: 1,
         x: position.x,
         y: position.y,
         rotate: position.rotation,
@@ -99,6 +102,7 @@ export function BaseCard({
         type: 'spring',
         stiffness: 300,
         damping: 30,
+        opacity: { duration: 0.35, ease: 'easeOut' },
       }}
       whileHover={hoverEnabled ? { scale: 1.02 } : undefined}
       whileTap={hoverEnabled ? { scale: 0.98 } : undefined}

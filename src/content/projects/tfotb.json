@@ -1,0 +1,24 @@
+{
+  "id": "tfotb",
+  "name": "TFOTB: The Flight of the Buffalo",
+  "shortDescription": "Rare-disease connection explorer: AI reads papers, but a claim is kept only if its quote is verbatim and every name resolves to an ontology ID.",
+  "description": "TFOTB is an evidence-backed rare-disease connection explorer built for Hack-Nation (Challenge 05), plus a bounded MuJoCo simulation of a lab liquid-handling workflow. It is research support only, not a clinical system.\n\nWhat it does:\n- For a disease, lists related diseases (via shared symptoms, shared genes and claims read from papers) and labels each link by evidence category, from *reviewed mechanistic lead* down to *insufficient coverage*. No combined score, no probabilities.\n- Reads open-access, PubMed-indexed papers with GPT-5 mini and keeps a claim only if its quote appears word for word in the paper, names what the claim is about, and resolves to real MONDO / HGNC / HPO / GO / ChEBI IDs. Every claim cites the paper.\n- Lets the model propose cross-paper hypotheses, always labelled \"AI hypothesis, not a finding\" and required to cite claims from at least two papers.\n- Shows contradictions, separates independent studies from background citations, and dates every gap instead of claiming no connection exists.\n- Checks proposed plate-preparation sequences for resource and motion failures in a MuJoCo model.\n\nThe principle throughout: the model proposes, code disposes. FastAPI backend, React frontend, SQLite claim store with checksummed snapshots, deployed on Cloud Run.",
+  "category": "AI",
+  "context": "Hack-Nation",
+  "status": "Completed",
+  "technologies": [
+    "Python",
+    "FastAPI",
+    "OpenAI",
+    "React",
+    "TypeScript",
+    "SQLite",
+    "MuJoCo",
+    "Cloud Run"
+  ],
+  "links": {
+    "github": "https://github.com/djang-c/TFOTB"
+  },
+  "dateCompleted": "2026-10",
+  "media": {}
+}

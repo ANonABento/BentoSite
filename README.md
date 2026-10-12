@@ -1,81 +1,22 @@
-# Kevin Jiang Portfolio
+# bentOS
 
-Next.js 16 portfolio site for Kevin Jiang with four main route surfaces:
-- `Dashboard`: bentOS-style landing page with a 3D viewfinder, terminal chat, skills panel, and project links
-- `Scrollable`: long-form portfolio view with lazy-loaded sections, featured project filtering, timeline, skills, and chat
-- `Projects`: BentoGrid-powered portfolio archive
-- `Playground`: BentoGrid-powered interactive game and experiment hub
-
-## Stack
-
-- Next.js 16
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- Framer Motion
-- Three.js with `@react-three/fiber` and `@react-three/drei`
-- Matter.js for BentoGrid card physics
-- Vitest for unit tests
-
-## Commands
+Kevin Jiang's portfolio. Next.js + Tailwind, fully static.
 
 ```bash
-npm run dev
+npm run dev     # localhost:3000
 npm run build
-npm run sync-portfolio
-npm run lint
-npm run type-check
-npm test
 ```
 
-### Portfolio sync workflow
+## Editing content
 
-- Configure repo source + tokens in `scripts/portfolio-sync.config.json`.
-- Run `npm run sync-portfolio` locally to update `src/content/portfolio.json` from remote `.portfolio.json` files.
-- Push both regenerated `src/content/portfolio.json` and any manual curation changes to update the live site.
+Everything the site shows lives in `src/content/`:
 
-The CI pipeline:
-- validates portfolio schema on pull requests (`npm run validate-portfolio-schema`)
-- runs a weekly/manual scheduled sync via GitHub Actions (`workflow_dispatch` and `cron` in `.github/workflows/ci.yml`)
-- uses a non-blocking stale fallback when GitHub API rate limits are encountered.
+- `portfolio.json`: bio, skills, experience, education, and the ordered `featured` list for the top tray on the home page.
+- `projects/<id>.json`: one file per project. The filename is the URL (`/projects/<id>`).
+  - `dateCompleted` is `YYYY` or `YYYY-MM` and sets sort order.
+  - `media.featuredImage` points into `public/projects/<id>/`.
+  - `description` is Markdown.
 
-## Project Structure
+Add a project by copying an existing JSON file and dropping its image in `public/projects/<id>/`. No build step or generator to run.
 
-```text
-src/app/                App Router entrypoints and route layouts
-src/components/         Feature components and UI primitives
-src/content/            Portfolio source content
-src/lib/                Shared helpers, tokens, constants, and data shaping
-public/                 Static assets
-```
-
-## Key Areas
-
-- `src/components/Dimension/`: 3D viewer shell, controller hook, canvas viewport, scene loaders, and viewer widgets
-- `src/components/BentoGrid/`: in-progress shared infinite grid system for `/projects` and `/playground`
-- `src/components/Projects/`: featured project cards, filtering, modal archive, and project media helpers
-- `src/components/Playground/`: game routes and split game modules, including `RhythmGame` audio analysis and mode-specific engines
-- `src/components/Chat/` and `src/components/Chat.tsx`: chatbot entrypoint, storage, request hooks, and presentational parts
-- `src/components/ui/`: loading skeletons, route fallbacks, page transitions, scroll reveal, toast, and error primitives
-- `src/components/seo/` and `src/lib/seo.ts`: JSON-LD helpers, sitemap data, robots metadata, and SEO tests
-- `src/app/styles/`: theme, utility, animation, and content CSS layers
-
-## Current Architecture Notes
-
-- Route files stay thin where possible. Heavy browser-only surfaces such as the 3D viewer, chat, BentoGrid, and playground games load behind dynamic client boundaries with route-level fallbacks.
-- Projects use `src/lib/projects-data.ts` as the shared pipeline for featured cards, BentoGrid cards, archive browsing, thumbnails, dates, and media metadata.
-- BentoGrid consolidates the older grid experiments into one card pool/camera/physics system. Desktop uses an infinite pan/zoom canvas; mobile falls back to a filtered scroll view.
-- Dimension is split between the public shell (`Dimension.tsx`), controller state (`useDimensionController.ts`), canvas viewport (`Dimension.viewport.tsx`), scene primitives (`scene/`), and UI widgets (`ui/`).
-- Chat is split into storage, hooks, typed props, and memoized parts. Timestamps wait for client mount to avoid locale hydration drift.
-- RhythmGame is split across core osu-style play, audio upload/analysis, generated beatmaps, and Taiko/Mania mode engines.
-- SEO is handled through Next metadata, generated Open Graph/Twitter images, `robots.ts`, `sitemap.ts`, escaped JSON-LD scripts, and tested schema builders.
-- Loading skeletons and route fallbacks live in shared UI primitives; page transitions and scroll reveal honor reduced-motion preferences.
-- Accessibility coverage includes skip-to-content, keyboard shortcut help, focus traps, ARIA labels/pressed states, reduced-motion paths, and keyboard navigation in grid surfaces.
-
-## Notes
-
-- Project content is sourced from `src/content/portfolio.json`.
-- Prefer semantic CSS variables and shared utility classes over hardcoded Tailwind colors.
-- Three.js surfaces should stay client-only via dynamic import with `ssr: false`.
-- For Playground score persistence, avoid save loops triggered by reactive score state. Finished runs should be persisted once per run, not once per rerender.
-- `npm run build` currently emits a non-blocking `baseline-browser-mapping` freshness warning even though the repo is already on the latest published package version.
+The previous version (boot screen, 3D viewer, physics grid, games, chat) is tagged `v1-bentos`.

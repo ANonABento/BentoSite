@@ -14,6 +14,11 @@
 import type { CardSize } from '../BentoGrid.types';
 import { CARD_SIZES, GRID } from '../BentoGrid.constants';
 
+/** Score bonus per bordering occupied cell, in squared-cell distance units.
+ *  High enough to prefer a snug slot one ring out, low enough that cards
+ *  still cluster around the anchor. */
+const CONTACT_WEIGHT = 0.9;
+
 /** Pixel distance per grid step (cell + gap). */
 export const GRID_STEP = GRID.CELL_SIZE + GRID.GAP;
 
@@ -146,8 +151,10 @@ export class GridOccupancy {
    * Find the nearest available grid cell for a card of the given size,
    * searching outward from (centerCol, centerRow).
    *
-   * Each ring collects every valid candidate, scored by true center-to-center
-   * Euclidean distance (each cell's center is at `col + 0.5, row + 0.5`).
+   * Rings are scanned outward until one yields a fit, plus one more ring.
+   * Candidates are scored by squared center-to-center distance (each cell's
+   * center is at `col + 0.5, row + 0.5`) minus a bonus per bordering occupied
+   * cell, so cards interlock instead of leaving holes.
    * Ties — frequent on the four cardinal/diagonal cells around the origin —
    * are broken by an angular sort whose origin rotates 90° per placement, so
    * cards fan out N → E → S → W → … instead of piling up in one quadrant.
@@ -178,14 +185,18 @@ export class GridOccupancy {
     const searchX = centerCol + 0.5;
     const searchY = centerRow + 0.5;
 
-    for (let radius = 1; radius <= maxRadius; radius++) {
-      const candidates: Array<{
-        col: number;
-        row: number;
-        distSq: number;
-        angle: number;
-      }> = [];
+    const candidates: Array<{
+      col: number;
+      row: number;
+      score: number;
+      angle: number;
+    }> = [];
+    // Scan rings outward. Once a ring yields a fit, also scan the next ring:
+    // a slightly farther slot that interlocks with its neighbours beats a
+    // nearer one that strands a hole (mixed card sizes make that common).
+    let lastRing = maxRadius;
 
+    for (let radius = 1; radius <= Math.min(lastRing, maxRadius); radius++) {
       for (let offset = -radius; offset <= radius; offset++) {
         const cells = [
           { col: centerCol + offset, row: centerRow - radius }, // top edge
@@ -202,40 +213,52 @@ export class GridOccupancy {
           if (!this.canPlace(cell.col, cell.row, size)) continue;
           if (accept && !accept(cell, size)) continue;
           // True center of the card placed at this anchor.
-          const cardCenterX = cell.col + cols / 2;
-          const cardCenterY = cell.row + rows / 2;
-          const dx = cardCenterX - searchX;
-          const dy = cardCenterY - searchY;
+          const dx = cell.col + cols / 2 - searchX;
+          const dy = cell.row + rows / 2 - searchY;
           candidates.push({
             col: cell.col,
             row: cell.row,
-            distSq: dx * dx + dy * dy,
+            score: dx * dx + dy * dy - CONTACT_WEIGHT * this.contact(cell.col, cell.row, cols, rows),
             angle: Math.atan2(dy, dx),
           });
         }
       }
 
-      if (candidates.length === 0) continue;
-
-      // Pick min distance; among ties, rotate quadrants per placement so the
-      // four cardinal/diagonal slots around the origin get filled evenly.
-      candidates.sort((a, b) => a.distSq - b.distSq);
-      const minDistSq = candidates[0].distSq;
-      const tied = candidates.filter((c) => c.distSq - minDistSq < 1e-9);
-
-      if (tied.length > 1) {
-        const baseAngle = (this.placementCount * Math.PI) / 2;
-        tied.sort((a, b) => {
-          const angA = ((a.angle - baseAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-          const angB = ((b.angle - baseAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-          return angA - angB;
-        });
-      }
-
-      this.placementCount++;
-      return { col: tied[0].col, row: tied[0].row };
+      if (candidates.length > 0 && lastRing === maxRadius) lastRing = radius + 1;
     }
 
-    return null;
+    if (candidates.length === 0) return null;
+
+    // Pick the best score; among ties, rotate quadrants per placement so the
+    // four cardinal/diagonal slots around the origin get filled evenly.
+    candidates.sort((a, b) => a.score - b.score);
+    const best = candidates[0].score;
+    const tied = candidates.filter((c) => c.score - best < 1e-9);
+
+    if (tied.length > 1) {
+      const baseAngle = (this.placementCount * Math.PI) / 2;
+      tied.sort((a, b) => {
+        const angA = ((a.angle - baseAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+        const angB = ((b.angle - baseAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+        return angA - angB;
+      });
+    }
+
+    this.placementCount++;
+    return { col: tied[0].col, row: tied[0].row };
+  }
+
+  /** How many occupied cells border a cols×rows block at (col, row). */
+  private contact(col: number, row: number, cols: number, rows: number): number {
+    let n = 0;
+    for (let c = col; c < col + cols; c++) {
+      if (this.cells.has(cellKey(c, row - 1))) n++;
+      if (this.cells.has(cellKey(c, row + rows))) n++;
+    }
+    for (let r = row; r < row + rows; r++) {
+      if (this.cells.has(cellKey(col - 1, r))) n++;
+      if (this.cells.has(cellKey(col + cols, r))) n++;
+    }
+    return n;
   }
 }

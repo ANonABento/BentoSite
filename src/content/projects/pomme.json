@@ -1,0 +1,37 @@
+{
+  "id": "pomme",
+  "name": "Pomme",
+  "shortDescription": "Autonomous fruit-picking rover: 5-DOF arm, on-device ripeness detection, lidar SLAM, and a fine-tuned model that turns commands into actions.",
+  "description": "Pomme is an autonomous fruit-picking and sorting robot built at Hack the 6ix 2026. A custom rover with a 5-DOF arm drives to fruit, an arm-mounted camera classifies type and ripeness on the robot itself (no cloud), and the fruit lands in the right bin. A 360° lidar builds a live SLAM map, a PlayStation controller handles manual teleop, and everything streams live to [pomme.live](https://pomme.live/).\n\nUnder the hood:\n- **Arduino UNO Q, split in two:** the Linux MPU runs the camera, on-device vision, arm IK and the pick/sort state machine; the STM32 MCU runs motor PWM, servo interpolation, a sub-10 ms ultrasonic e-stop and a watchdog, so motion never waits on AI.\n- **On-device vision:** a locally trained YOLOv8n (ONNX int8) deployed with Edge Impulse, with an OpenCV HSV fallback behind the same detector interface.\n- **Lidar SLAM:** RPLIDAR C1 with scan-to-scan ICP odometry and a log-odds occupancy grid, streamed to the dashboard.\n- **FarmHand:** a small language model fine-tuned (SFT + GRPO) to turn \"pick all the ripe apples\" into schema-validated robot actions, asking a clarifying question when a command is ambiguous.\n- **Hardware:** 3D-printed 5-DOF arm, differential-drive base, multi-rail power stack.\n- **Web:** React + Vite + Three.js dashboard, Express + Socket.IO hub, MongoDB Atlas, Auth0-gated teleop.\n\nEvery physical component has a simulated stand-in, so the whole system runs on a laptop.",
+  "category": "Robotics",
+  "context": "Hack the 6ix 2026",
+  "status": "Completed",
+  "technologies": [
+    "Arduino UNO Q",
+    "STM32",
+    "Python",
+    "C++",
+    "YOLOv8",
+    "Edge Impulse",
+    "RPLIDAR",
+    "SLAM",
+    "React",
+    "Three.js",
+    "Socket.IO",
+    "MongoDB"
+  ],
+  "links": {
+    "github": "https://github.com/DanielWLiu07/pomme",
+    "liveDemo": "https://pomme.live/",
+    "docs": "https://devpost.com/software/autoagrinator"
+  },
+  "media": {
+    "featuredImage": "/projects/pomme/pov.jpg",
+    "images": [
+      "/projects/pomme/pov.jpg",
+      "/projects/pomme/landing.jpg",
+      "/projects/pomme/teleop.jpg"
+    ]
+  },
+  "dateCompleted": "2026-07"
+}

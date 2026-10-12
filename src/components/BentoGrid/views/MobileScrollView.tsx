@@ -4,8 +4,8 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { SearchMenuCard, useSearchCardState } from '../cards';
 import { filterCards, useWindowSize } from '../core';
-import { countDistinctCards } from '../duplicate-fill';
-import { MOBILE } from '../BentoGrid.constants';
+import { countDistinctCards, isClone } from '../duplicate-fill';
+import { MOBILE, isPinnedCard } from '../BentoGrid.constants';
 import type { CardData, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import { DefaultCard } from './DefaultCard';
 
@@ -35,9 +35,31 @@ export function MobileScrollView({
   const [category, setCategory] = useState<string | null>(null);
 
   const localFilteredCards = useMemo(
-    () => filterCards(cards, searchTerm, category),
+    // A scrolling list has no canvas to fill, so canvas-fill clones would just repeat projects.
+    () => filterCards(cards, searchTerm, category).filter((card) => !isClone(card.id)),
     [cards, searchTerm, category]
   );
+
+  // Two-column tray: intro, featured work, the info compartments, then the
+  // rest. Filler tiles are capped and topped up to an even count of
+  // single-column cards, so the last row never ends on a hole.
+  const trayCards = useMemo(() => {
+    const isFeatured = (card: CardData) => card.type === 'project' && Boolean(card.featured);
+    const content = localFilteredCards.filter((card) => !card.filler);
+    const ordered = [
+      ...content.filter((card) => card.type === 'intro'),
+      ...content.filter(isFeatured),
+      ...content.filter((card) => card.type !== 'intro' && isPinnedCard(card)),
+      ...content.filter((card) => !isPinnedCard(card) && !isFeatured(card)),
+    ];
+    const singles = ordered.filter((card) => spanOf(card) === 1).length;
+    const fillerCount = Math.min(MOBILE_FILLERS + (singles % 2), localFilteredCards.length);
+    return [...ordered, ...localFilteredCards.filter((card) => card.filler).slice(0, fillerCount)];
+  }, [localFilteredCards]);
+
+  const select = (card: CardData) => (card.filter ? searchState.setSearchTerm(card.filter) : onCardSelect?.(card));
+  const trayWidth = Math.min(windowSize.width, MOBILE.TRAY_MAX_WIDTH) - MOBILE.SCROLL_PADDING * 2;
+  const columnWidth = (trayWidth - MOBILE.TRAY_GAP) / 2;
 
   const searchState = useSearchCardState({
     camera: { x: 0, y: 0, zoom: 1 },
@@ -82,20 +104,18 @@ export function MobileScrollView({
         style={{ paddingTop: searchState.height + MOBILE.SCROLL_GAP }}
       >
         <div
-          className="flex flex-col gap-4 max-w-md mx-auto"
-          style={{ padding: MOBILE.SCROLL_PADDING }}
+          className="mx-auto grid grid-cols-2 [grid-auto-flow:row_dense]"
+          style={{ padding: MOBILE.SCROLL_PADDING, gap: MOBILE.TRAY_GAP, width: trayWidth + MOBILE.SCROLL_PADDING * 2 }}
         >
-          {localFilteredCards.map((card, index) => {
-            const cardWidth = Math.min(
-              windowSize.width * MOBILE.CARD_WIDTH_PERCENT,
-              MOBILE.CARD_MAX_WIDTH
-            );
-            const cardHeight = 160;
+          {trayCards.map((card, index) => {
+            const span = spanOf(card);
+            const cardWidth = span === 2 ? trayWidth : columnWidth;
+            const cardHeight = heightOf(card, trayWidth, columnWidth);
             const position: CardPosition = {
               x: 0,
               y: 0,
               rotation: 0,
-              size: '1x1',
+              size: span === 2 ? '2x2' : '1x1',
               width: cardWidth,
               height: cardHeight,
             };
@@ -104,12 +124,13 @@ export function MobileScrollView({
               position: 'relative',
               width: cardWidth,
               height: cardHeight,
+              gridColumn: `span ${span}`,
             };
 
             if (renderCard) {
               return (
                 <div key={card.id} style={wrapperStyle}>
-                  {renderCard(card, position, theme, false, () => onCardSelect?.(card), index)}
+                  {renderCard(card, position, theme, false, () => select(card), index)}
                 </div>
               );
             }
@@ -126,14 +147,14 @@ export function MobileScrollView({
                   card={card}
                   position={position}
                   theme={theme}
-                  onClick={() => onCardSelect?.(card)}
+                  onClick={() => select(card)}
                 />
               </motion.div>
             );
           })}
 
-          {localFilteredCards.length === 0 && (
-            <div className="text-center text-white/50 py-12">
+          {trayCards.length === 0 && (
+            <div className="col-span-2 text-center text-white/50 py-12">
               No items found
             </div>
           )}
@@ -141,4 +162,22 @@ export function MobileScrollView({
       </div>
     </div>
   );
+}
+
+/** Filler tiles shown on mobile, before topping up to an even count. */
+const MOBILE_FILLERS = 4;
+
+/** Intro, info compartments and featured work span both columns. */
+function spanOf(card: CardData): 1 | 2 {
+  if (card.type === 'intro' || isPinnedCard(card)) return 2;
+  if (card.type === 'project' && card.featured) return 2;
+  return 1;
+}
+
+function heightOf(card: CardData, trayWidth: number, columnWidth: number): number {
+  if (card.type === 'intro') return 470;
+  if (card.type === 'info' && card.variant === 'experience') return 270;
+  if (card.type === 'info' && card.variant === 'about') return 240;
+  if (spanOf(card) === 2) return Math.round(trayWidth * 0.75);
+  return Math.round(columnWidth * 1.1);
 }

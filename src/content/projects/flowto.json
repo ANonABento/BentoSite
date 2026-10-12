@@ -1,0 +1,31 @@
+{
+  "id": "flowto",
+  "name": "FlowTO",
+  "shortDescription": "On-device digital twin of Toronto traffic on a DGX Spark: GNN demand prediction, cuGraph assignment and a Nemotron planning copilot.",
+  "description": "FlowTO is a city-scale traffic and transit digital twin of Toronto that runs entirely on-device on an NVIDIA DGX Spark (GB10), with no cloud. Planners can simulate the network, drop interventions (closures, lane reductions, one-ways, signal retiming) snapped to real roads, and watch it recompute. The hero scenario is FIFA World Cup 2026 post-match egress at BMO Field.\n\nHighlights:\n- Built on the committed Toronto road graph (27,411 nodes / 73,036 directed edges), recolored by the assignment engine rather than canned data.\n- cuGraph SSSP assignment backend and cuDF data pipeline tuned on the GB10 (aarch64), with an adaptive \"blast-radius\" recompute for local edits.\n- A PyTorch/PyG graph neural network for traffic-demand prediction.\n- A Nemotron copilot (via Ollama) that turns natural-language intent into validated, bylaw-checked tool calls using local RAG over Toronto bylaws.\n- Two-mode web app: Simulate (3D camera + timeline to scrub the matchday) and Edit (top-down workspace).\n\nWon 1st at the NVIDIA Spark Hack.",
+  "category": "AI",
+  "context": "NVIDIA Spark Hack",
+  "award": "1st place, NVIDIA Spark Hack",
+  "status": "Completed",
+  "technologies": [
+    "Python",
+    "FastAPI",
+    "PyTorch",
+    "PyG",
+    "cuGraph",
+    "cuDF",
+    "Ollama",
+    "Nemotron",
+    "React",
+    "TypeScript",
+    "DGX Spark"
+  ],
+  "links": {
+    "github": "https://github.com/Lironktf/flowTO",
+    "liveDemo": "https://youtu.be/Yh3Qg2grTw0"
+  },
+  "media": {
+    "featuredImage": "/projects/flowto/hero.png"
+  },
+  "dateCompleted": "2026-05"
+}

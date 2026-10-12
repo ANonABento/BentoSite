@@ -1,9 +1,11 @@
 {
   "id": "snapfire",
   "name": "SnapFire",
-  "shortDescription": "A dart launcher that wakes you up. OpenCV face detection + Raspberry Pi + salvaged Roomba motors aim and fire at a sleeping target. Won Wolfram Alpha Award + Staff Picks at AliceHacks.",
-  "description": "SnapFire is an automatic dart launcher that wakes a sleeping person by detecting their face with OpenCV and aiming the launcher to fire. Uses an automatic loading tension system, a Raspberry Pi, and salvaged Roomba motors for pan/tilt control.\n\nWon **Wolfram Alpha Award** and **Staff Picks** at AliceHacks (Nov 2023).",
-  "category": "Hackathon",
+  "shortDescription": "Alarm that fires darts at you: OpenCV face detection on a Raspberry Pi aims a launcher built from salvaged Roomba motors.",
+  "description": "SnapFire is an automatic dart launcher that wakes a sleeping person: OpenCV detects their face, and the launcher aims and fires. It uses an automatic tension-loading system, a Raspberry Pi, and salvaged Roomba motors for pan and tilt.\n\nWon the **Wolfram Alpha Award** and **Staff Picks** at AliceHacks (November 2023).",
+  "category": "Robotics",
+  "context": "AliceHacks 2023",
+  "award": "Wolfram Alpha Award + Staff Picks, AliceHacks",
   "status": "Completed",
   "technologies": [
     "Python",
@@ -19,12 +21,7 @@
     "docs": "https://devpost.com/software/snapfire"
   },
   "media": {
-    "featuredImage": "/projects/snapfire/hero.jpg",
-    "images": [
-      "/projects/snapfire/hero.jpg",
-      "/projects/snapfire/overview.png"
-    ]
+    "featuredImage": "/projects/snapfire/hero.jpg"
   },
-  "featured": true,
   "dateCompleted": "2023-11"
 }

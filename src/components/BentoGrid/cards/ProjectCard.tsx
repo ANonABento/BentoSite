@@ -1,25 +1,20 @@
 'use client';
 
 /**
- * ProjectCard — media-first card for projects.
+ * ProjectCard — image compartment over a solid footer.
  *
- * Thumbnail (or fallback icon) fills the card. Status badge and media
- * indicators (3D etc.) sit in the corners. The title stays readable at rest
- * (`titleAtRest`) so the grid is scannable without hovering; description,
- * category, and a truncated row of tech badges expand on hover/focus. Card
- * click navigates — github/demo links live on the project detail surface,
- * not the card.
+ * The footer carries the title, the category (in its own hue) and the date,
+ * or `wip` for work in progress, so the grid scans without hovering and the
+ * text never sits on top of a busy screenshot, plus the one-line
+ * description. The award star sits in the image's corner. Card
+ * click navigates; github/demo links live on the project page.
  */
 
 import { useState } from 'react';
 import Image from 'next/image';
 import type { ProjectCardData, CardPosition, ThemeConfig } from '../BentoGrid.types';
-import { Model3DIcon } from '@/components/ui/Icons';
-import { MediaCard } from './MediaCard';
-
-// =============================================================================
-// PROPS
-// =============================================================================
+import { BaseCard } from './BaseCard';
+import { useCardHover } from './useCardHover';
 
 export interface ProjectCardProps {
   card: ProjectCardData;
@@ -33,117 +28,13 @@ export interface ProjectCardProps {
   entranceIndex?: number;
 }
 
-// =============================================================================
-// PLACEHOLDER
-// =============================================================================
+/** Featured (3-wide) compartments get the larger title. */
+const BIG_CARD_WIDTH = 600;
 
-const BLUR_PLACEHOLDER =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
-
-// =============================================================================
-// STATUS BADGE
-// =============================================================================
-
-type ProjectStatus = ProjectCardData['status'];
-
-function StatusBadge({ status }: { status?: ProjectStatus }) {
-  if (!status) return null;
-
-  const statusConfig: Record<NonNullable<ProjectStatus>, {
-    label: string;
-    bg: string;
-    text: string;
-    border: string;
-  }> = {
-    Completed: {
-      label: 'READY',
-      bg: 'bg-[var(--status-success-muted)]',
-      text: 'text-[var(--status-success)]',
-      border: 'border-[var(--status-success)]/30',
-    },
-    'In Progress': {
-      label: 'WIP',
-      bg: 'bg-[var(--primary-muted)]',
-      text: 'text-[var(--primary)]',
-      border: 'border-[var(--primary)]/30',
-    },
-    Archived: {
-      label: 'ARCHIVED',
-      bg: 'bg-gray-500/10',
-      text: 'text-gray-400',
-      border: 'border-gray-500/30',
-    },
-  };
-  const config = statusConfig[status];
-
-  return (
-    <span
-      className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-semibold uppercase tracking-wider backdrop-blur-sm ${config.bg} ${config.text} border ${config.border}`}
-    >
-      {config.label}
-    </span>
-  );
+function categoryColor(category?: string): string {
+  if (!category) return 'var(--color-ash)';
+  return `var(--cat-${category.toLowerCase().replace(/[^a-z0-9]+/g, '-')}, var(--color-ash))`;
 }
-
-// =============================================================================
-// MEDIA INDICATORS
-// =============================================================================
-
-function MediaIndicators({ card }: { card: ProjectCardData }) {
-  const indicators: { icon: React.ReactNode; label: string }[] = [];
-
-  if (card.links?.modelPath) {
-    indicators.push({ icon: <Model3DIcon size={10} />, label: '3D' });
-  }
-
-  if (indicators.length === 0) return null;
-
-  return (
-    <div className="flex gap-1">
-      {indicators.slice(0, 3).map(({ icon, label }) => (
-        <span
-          key={label}
-          className="p-1 rounded bg-black/60 text-white/90 backdrop-blur-sm"
-          title={label}
-        >
-          {icon}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-// =============================================================================
-// TECH BADGES
-// =============================================================================
-
-const MAX_TECH_BADGES = 3;
-
-function TechBadges({ technologies }: { technologies?: string[] }) {
-  if (!technologies?.length) return null;
-  const visible = technologies.slice(0, MAX_TECH_BADGES);
-  const overflow = technologies.length - visible.length;
-
-  return (
-    <div className="flex flex-wrap gap-1">
-      {visible.map((tech) => (
-        <span
-          key={tech}
-          className="px-1.5 py-0.5 text-[9px] font-mono bg-white/10 text-white/80 border border-white/15 rounded"
-        >
-          {tech}
-        </span>
-      ))}
-      {overflow > 0 && (
-        <span className="text-[9px] font-mono text-white/60 self-center">+{overflow}</span>
-      )}
-    </div>
-  );
-}
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function ProjectCard({
   card,
@@ -155,29 +46,13 @@ export function ProjectCard({
   entranceIndex = 0,
 }: ProjectCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
-
-  const meta = (
-    <>
-      <div className="flex items-center gap-2">
-        <StatusBadge status={card.status} />
-        {card.category && (
-          <span
-            className="text-[9px] font-mono uppercase tracking-wider"
-            style={{ color: theme.accent.primary }}
-          >
-            {card.category}
-          </span>
-        )}
-      </div>
-      {card.description && (
-        <p className="line-clamp-2 text-xs text-white/75">{card.description}</p>
-      )}
-      <TechBadges technologies={card.technologies} />
-    </>
-  );
+  const { isHovered, onHoverStart, onHoverEnd } = useCardHover();
+  const big = position.width >= BIG_CARD_WIDTH;
+  const hue = categoryColor(card.category);
+  const highlighted = isHovered || isFocused;
 
   return (
-    <MediaCard
+    <BaseCard
       id={card.id}
       position={position}
       theme={theme}
@@ -186,35 +61,66 @@ export function ProjectCard({
       onClick={onClick}
       href={href}
       ariaLabel={`Open ${card.title}`}
-      title={card.title}
-      metaLines={meta}
-      titleAtRest
-      topRight={<MediaIndicators card={card} />}
+      onHoverStart={onHoverStart}
+      onHoverEnd={onHoverEnd}
+      shellClassName="group relative flex flex-col"
+      shellStyle={{
+        border: highlighted ? `1px solid ${hue}` : theme.card.border,
+        boxShadow: isFocused ? `0 0 0 3px ${theme.accent.primary}, ${theme.card.hoverShadow}` : theme.card.shadow,
+      }}
     >
-      {card.thumbnail ? (
-        <>
-          {!imageLoaded && (
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent animate-pulse" />
-          )}
+      <div className="relative min-h-0 flex-1 overflow-hidden bg-cell-raised">
+        {card.thumbnail ? (
           <Image
             src={card.thumbnail}
             alt={card.title}
             fill
-            className={`object-cover transition-all duration-500 ${
+            className={`object-cover transition-[opacity,transform] duration-500 group-hover:scale-[1.04] ${
               imageLoaded ? 'opacity-100' : 'opacity-0'
-            } group-hover:scale-105`}
+            }`}
             onLoad={() => setImageLoaded(true)}
-            sizes={`${position.width}px`}
-            placeholder="blur"
-            blurDataURL={BLUR_PLACEHOLDER}
+            sizes={`${Math.round(position.width * 1.5)}px`}
             draggable={false}
           />
-        </>
-      ) : (
-        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--primary-muted)] to-transparent">
-          <Model3DIcon size={48} className="text-[var(--text-muted)] opacity-40" />
+        ) : (
+          // No image yet: a CRT screen with the project's name, so the card still reads.
+          <div className="crt absolute inset-0 flex items-center justify-center p-4 text-center text-[1.7rem] leading-tight">
+            <span>
+              <span style={{ color: hue }}>&gt;</span> {card.title.toLowerCase()}
+              <span className="cursor ml-1" />
+            </span>
+          </div>
+        )}
+        {card.award && (
+          <span
+            className="absolute right-2 top-2 rounded-md bg-black/70 px-1.5 py-0.5 text-[11px] leading-none text-orange backdrop-blur-sm"
+            title={card.award}
+          >
+            ★
+          </span>
+        )}
+      </div>
+
+      <div className="flex shrink-0 flex-col gap-1 px-4 py-3">
+        <div className="flex items-baseline justify-between gap-3">
+          <h3
+            className={`truncate font-semibold tracking-tight text-rice transition-colors ${big ? 'text-lg' : 'text-base'}`}
+            style={highlighted ? { color: hue } : undefined}
+          >
+            {card.title}
+          </h3>
+          <span className="shrink-0 font-crt text-[0.95rem] leading-none text-ash">
+            {card.status === 'In Progress' ? <span className="text-purple">wip</span> : card.date?.toLowerCase()}
+          </span>
         </div>
-      )}
-    </MediaCard>
+        {card.description ? (
+          <p className="line-clamp-1 text-sm leading-snug text-ash">{card.description}</p>
+        ) : null}
+        <p className="flex items-center gap-1.5 truncate text-[0.7rem] font-medium uppercase tracking-[0.08em]" style={{ color: hue }}>
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: hue }} />
+          {card.category}
+        </p>
+      </div>
+    </BaseCard>
   );
 }

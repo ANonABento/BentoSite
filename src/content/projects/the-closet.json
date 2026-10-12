@@ -1,12 +1,18 @@
 {
   "id": "the-closet",
   "name": "TheCloset",
-  "shortDescription": "ICS4 Final Project — a Java game with a horror/mystery vibe (the icon shows a glowing doorway). Description stub — fill in via the repo or a quick blurb.",
-  "description": "ICS4 Final Project — a Java application with a horror/mystery aesthetic, judging by the title-card icon (a glowing closet door against a dark background).\n\nThis card is a stub. Point me at a README, gameplay screenshot, or a one-paragraph synopsis and I'll flesh it out.",
+  "shortDescription": "Java/Processing desktop app for ICS4U with sign-in, profiles, user search, a chatroom, and an AIML chatbot that talks back via FreeTTS.",
+  "description": "TheCloset is Kevin's ICS4U final project: a Java desktop app built with Processing, styled like a phone app (400×700 window).\n\nWhat's in it:\n- Splash screen, then a menu with login and profile screens backed by local files.\n- User search over the profile database.\n- A chatroom that reads and writes messages on a background thread.\n- A robot chatbot built on AIML (Program AB) with a typing animation, which speaks its replies aloud through FreeTTS using MBROLA voices.\n- Javadoc throughout.",
   "category": "Software",
+  "context": "ICS4U",
   "status": "Completed",
   "technologies": [
-    "Java"
+    "Java",
+    "Processing",
+    "AIML (Program AB)",
+    "FreeTTS",
+    "MBROLA",
+    "Maven"
   ],
   "links": {
     "github": "https://github.com/ANonABento/TheCloset"
@@ -14,6 +20,5 @@
   "media": {
     "featuredImage": "/projects/the-closet/hero.jpg"
   },
-  "featured": false,
-  "dateCompleted": "2024-06"
+  "dateCompleted": "2024-01"
 }

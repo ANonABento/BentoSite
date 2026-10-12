@@ -15,8 +15,8 @@
 import type { CardData } from './BentoGrid.types';
 
 /** Fill target — matches the upper end of dynamicMaxVisible in the
- *  board controller. Wide displays may use up to ~60 cards. */
-export const DEFAULT_FILL_TARGET = 48;
+ *  board controller. Wide displays may use up to ~72 cards. */
+export const DEFAULT_FILL_TARGET = 64;
 
 export const CLONE_SUFFIX = '-clone-';
 
@@ -58,6 +58,6 @@ export function isClone(id: string): boolean {
  */
 export function countDistinctCards(cards: readonly CardData[]): number {
   const seen = new Set<string>();
-  for (const card of cards) seen.add(stripCloneSuffix(card.id));
+  for (const card of cards) if (card.type !== 'intro' && card.type !== 'info') seen.add(stripCloneSuffix(card.id));
   return seen.size;
 }

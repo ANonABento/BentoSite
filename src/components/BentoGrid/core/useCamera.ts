@@ -26,13 +26,22 @@ function normalizeWheelDelta(delta: number, deltaMode: number): number {
   return delta;
 }
 
+/**
+ * Zoom that keeps cards a similar share of the screen on any display:
+ * 1.0 on a ~1760×1040 window, larger on big monitors, smaller on laptops.
+ */
+export function fitZoom({ width, height }: Size): number {
+  return clamp(Math.min(width / CAMERA.referenceWidth, height / CAMERA.referenceHeight), CAMERA.minFitZoom, CAMERA.maxFitZoom);
+}
+
 export function useCamera({
   enabled = true,
-  windowSize: _windowSize,
-  initialCamera = { ...DEFAULT_CAMERA },
+  windowSize,
+  initialCamera,
   onCameraChange,
 }: UseCameraOptions): UseCameraReturn {
-  const [camera, setCameraState] = useState<Camera>(initialCamera);
+  const baseZoom = fitZoom(windowSize);
+  const [camera, setCameraState] = useState<Camera>(() => initialCamera ?? { ...DEFAULT_CAMERA, zoom: baseZoom });
   const [isDragging, setIsDragging] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -120,9 +129,14 @@ export function useCamera({
     stopMomentum();
     setCamera((prev) => ({
       ...prev,
-      zoom: DEFAULT_CAMERA.zoom,
+      zoom: baseZoom,
     }));
-  }, [setCamera, stopMomentum]);
+  }, [baseZoom, setCamera, stopMomentum]);
+
+  // Follow window resizes so the board keeps its proportions.
+  useEffect(() => {
+    setCamera((prev) => (prev.zoom === baseZoom ? prev : { ...prev, zoom: baseZoom }));
+  }, [baseZoom, setCamera]);
 
   const handleWheelPan = useCallback((dx: number, dy: number, deltaMode: number) => {
     stopMomentum();
@@ -138,8 +152,8 @@ export function useCamera({
 
   const reset = useCallback(() => {
     stopMomentum();
-    setCamera({ ...DEFAULT_CAMERA });
-  }, [setCamera, stopMomentum]);
+    setCamera({ ...DEFAULT_CAMERA, zoom: baseZoom });
+  }, [baseZoom, setCamera, stopMomentum]);
 
   useEffect(() => () => stopMomentum(), [stopMomentum]);
 
