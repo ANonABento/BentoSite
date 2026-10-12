@@ -49,7 +49,10 @@ const CAMERA_VALUES = {
   minVelocity: 0.5,
   springStiffness: 200,
   springDamping: 30,
-  keyboardPanSpeed: 30,
+  // WASD: top speed in screen px per second, and how fast it eases to and
+  // from that speed (per second; higher is snappier).
+  keyboardPanSpeed: 1100,
+  keyboardPanResponse: 9,
   wheelZoomOutFactor: 0.9,
   wheelZoomInFactor: 1.1,
   // Window size at which the board renders at zoom 1, and the range fitZoom may use.
@@ -73,6 +76,7 @@ export const CAMERA = {
   maxZoom: CAMERA_VALUES.maxZoom,
   defaultZoom: CAMERA_VALUES.default.zoom,
   keyboardPanSpeed: CAMERA_VALUES.keyboardPanSpeed,
+  keyboardPanResponse: CAMERA_VALUES.keyboardPanResponse,
   wheelZoomOutFactor: CAMERA_VALUES.wheelZoomOutFactor,
   wheelZoomInFactor: CAMERA_VALUES.wheelZoomInFactor,
   referenceWidth: CAMERA_VALUES.referenceWidth,

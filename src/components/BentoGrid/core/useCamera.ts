@@ -239,41 +239,79 @@ export function useCamera({
     },
   );
 
+  // WASD pans continuously while held: velocity eases toward the held
+  // direction every frame and eases back to zero on release, rather than
+  // jumping on each key-repeat event.
   useEffect(() => {
     if (!enabled) return;
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (isEditableTarget(event.target)) return;
+    const held = new Set<string>();
+    const velocity = { x: 0, y: 0 };
+    let frame: number | null = null;
+    let last = 0;
 
-      const panAmount = CAMERA.keyboardPanSpeed;
+    const step = (now: number) => {
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
 
-      switch (event.key.toLowerCase()) {
-        case 'w':
-          event.preventDefault();
-          pan(0, panAmount);
-          break;
-        case 's':
-          event.preventDefault();
-          pan(0, -panAmount);
-          break;
-        case 'a':
-          event.preventDefault();
-          pan(panAmount, 0);
-          break;
-        case 'd':
-          event.preventDefault();
-          pan(-panAmount, 0);
-          break;
-        case 'r':
-          event.preventDefault();
-          reset();
-          break;
+      let dx = (held.has('a') ? 1 : 0) - (held.has('d') ? 1 : 0);
+      let dy = (held.has('w') ? 1 : 0) - (held.has('s') ? 1 : 0);
+      const length = Math.hypot(dx, dy);
+      if (length > 0) {
+        dx /= length;
+        dy /= length;
       }
+      const ease = 1 - Math.exp(-dt * CAMERA.keyboardPanResponse);
+      velocity.x += (dx * CAMERA.keyboardPanSpeed - velocity.x) * ease;
+      velocity.y += (dy * CAMERA.keyboardPanSpeed - velocity.y) * ease;
+
+      if (held.size === 0 && Math.hypot(velocity.x, velocity.y) < 5) {
+        velocity.x = 0;
+        velocity.y = 0;
+        frame = null;
+        return;
+      }
+
+      pan(velocity.x * dt, velocity.y * dt);
+      frame = requestAnimationFrame(step);
     };
 
+    const start = () => {
+      if (frame !== null) return;
+      last = performance.now();
+      frame = requestAnimationFrame(step);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (isEditableTarget(event.target) || event.metaKey || event.ctrlKey || event.altKey) return;
+      const key = event.key.toLowerCase();
+
+      if (key === 'w' || key === 'a' || key === 's' || key === 'd') {
+        event.preventDefault();
+        if (!held.has(key)) stopMomentum();
+        held.add(key);
+        start();
+      } else if (key === 'r' && !event.repeat) {
+        event.preventDefault();
+        held.clear();
+        velocity.x = 0;
+        velocity.y = 0;
+        reset();
+      }
+    };
+    const handleKeyUp = (event: KeyboardEvent) => held.delete(event.key.toLowerCase());
+    const releaseAll = () => held.clear();
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [enabled, pan, reset]);
+    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('blur', releaseAll);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('blur', releaseAll);
+      if (frame !== null) cancelAnimationFrame(frame);
+    };
+  }, [enabled, pan, reset, stopMomentum]);
 
   const bind = useCallback((): CameraBindings => ({
     ...bindGesture(),
