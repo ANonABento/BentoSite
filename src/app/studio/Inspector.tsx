@@ -146,13 +146,16 @@ function CardPanel({ card, project, images, onClose, onResize, onLook, onUnplace
       {project && (
         <>
           <Section title="Shows">
-            <div className="flex gap-1.5">
-              {(['full', 'image', 'text'] as CardVariant[]).map((variant) => (
-                <Chip key={variant} active={(look.variant ?? 'full') === variant} onClick={() => setLook({ variant })}>
-                  {{ full: 'Image + footer', image: 'Image only', text: 'Text only' }[variant]}
+            <div className="flex flex-wrap gap-1.5">
+              {([undefined, 'full', 'image', 'text'] as (CardVariant | undefined)[]).map((variant) => (
+                <Chip key={variant ?? 'auto'} active={look.variant === variant} onClick={() => setLook({ variant })}>
+                  {{ auto: 'Auto', full: 'Image + footer', image: 'Image only', text: 'Text only' }[variant ?? 'auto']}
                 </Chip>
               ))}
             </div>
+            {look.variant === undefined && (
+              <p className="text-xs text-ash">Auto: a footer on cards 3+ wide, image only on smaller ones, text if there&apos;s no image.</p>
+            )}
             {(look.variant ?? 'full') === 'full' && (
               <div className="flex items-center gap-1.5">
                 <span className="mr-1 text-xs text-ash">Description</span>
@@ -185,7 +188,7 @@ function CardPanel({ card, project, images, onClose, onResize, onLook, onUnplace
                   <FramingPreview
                     src={(look.image ?? project.thumbnail)!}
                     card={card}
-                    footer={(look.variant ?? 'full') === 'full'}
+                    footer={look.variant === 'full' || (look.variant === undefined && card.w >= 3)}
                     focus={look.focus ?? [50, 50]}
                     zoom={look.zoom ?? 1}
                     onFocus={(focus) => setLook({ focus }, `focus:${card.id}`)}

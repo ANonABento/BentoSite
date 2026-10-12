@@ -93,7 +93,7 @@ export function DesktopCardLayer({
   );
 }
 
-/** Where the search card would sit in this copy of the board; it docks here when it comes into view. */
+/** Where the search card would sit in this copy of the board: an empty compartment it docks into when it comes into view. */
 function SearchDock({ layout, radius }: { layout: CardPosition; radius: number }) {
   return (
     <div
@@ -104,8 +104,8 @@ function SearchDock({ layout, radius }: { layout: CardPosition; radius: number }
         height: layout.height,
         transform: `translate(${layout.x}px, ${layout.y}px)`,
         borderRadius: radius,
-        border: '1.5px dashed var(--board-dock-bg)',
-        opacity: 0.35,
+        background: 'var(--color-lacquer)',
+        boxShadow: 'inset 0 2px 10px rgb(0 0 0 / 0.5)',
       }}
     />
   );

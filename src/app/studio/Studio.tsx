@@ -597,7 +597,6 @@ function tidyLook(card: LayoutCard): LayoutCard {
   const look = { ...card.look };
   if (look.focus && look.focus[0] === 50 && look.focus[1] === 50) delete look.focus;
   if (look.zoom === 1) delete look.zoom;
-  if (look.variant === 'full') delete look.variant;
   for (const key of Object.keys(look) as (keyof typeof look)[]) if (look[key] === undefined) delete look[key];
   const { look: _drop, ...rest } = card;
   return Object.keys(look).length ? { ...rest, look } : rest;

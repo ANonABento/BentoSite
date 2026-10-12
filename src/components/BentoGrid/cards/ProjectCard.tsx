@@ -17,6 +17,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import type { ProjectCardData, CardPosition, ThemeConfig } from '../BentoGrid.types';
+import { cardSpan } from '../BentoGrid.constants';
 import { BaseCard } from './BaseCard';
 import { useCardHover } from './useCardHover';
 
@@ -34,6 +35,10 @@ export interface ProjectCardProps {
 
 /** Featured (3-wide) compartments get the larger title. */
 const BIG_CARD_WIDTH = 600;
+/** Images that have loaded once; later copies of the card skip the fade-in. */
+const loadedImages = new Set<string>();
+/** With no variant chosen, cards this many columns wide or more get the footer. */
+const FOOTER_MIN_COLS = 3;
 
 function categoryColor(category?: string): string {
   if (!category) return 'var(--color-ash)';
@@ -49,14 +54,17 @@ export function ProjectCard({
   isFocused = false,
   entranceIndex = 0,
 }: ProjectCardProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const look = card.look ?? {};
+  const image = look.image ?? card.thumbnail;
+  // A card mounting for an image already seen (another copy of the tile) shows it at once.
+  const [imageLoaded, setImageLoaded] = useState(() => Boolean(image && loadedImages.has(image)));
   const { isHovered, onHoverStart, onHoverEnd } = useCardHover();
   const big = position.width >= BIG_CARD_WIDTH;
   const hue = categoryColor(card.category);
   const highlighted = isHovered || isFocused;
-  const look = card.look ?? {};
-  const variant = look.variant ?? 'full';
-  const image = look.image ?? card.thumbnail;
+  // Auto: headliners carry a footer, smaller cards are all image, and a card
+  // with no image is all writing.
+  const variant = look.variant ?? (!image ? 'text' : cardSpan(position.size).cols >= FOOTER_MIN_COLS ? 'full' : 'image');
   const focus = look.focus ?? [50, 50];
   const zoom = look.zoom ?? 1;
   // A one-row card has no room for the description under its image.
@@ -99,7 +107,12 @@ export function ProjectCard({
                     imageLoaded ? 'opacity-100' : 'opacity-0'
                   }`}
                   style={{ objectPosition: `${focus[0]}% ${focus[1]}%`, transformOrigin: `${focus[0]}% ${focus[1]}%` }}
-                  onLoad={() => setImageLoaded(true)}
+                  onLoad={() => {
+                    loadedImages.add(image);
+                    setImageLoaded(true);
+                  }}
+                  // The board is a few dozen images that repeat; load them all up front so panning never waits.
+                  loading="eager"
                   sizes={`${Math.round(position.width * zoom * 1.5)}px`}
                   draggable={false}
                 />
@@ -123,11 +136,15 @@ export function ProjectCard({
             )}
             {variant === 'image' && (
               <div
-                className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-4 pb-3 pt-8 transition-opacity duration-300 ${
+                className={`absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-gradient-to-t from-black/90 via-black/70 to-transparent px-4 pb-3 pt-10 transition-opacity duration-200 ${
                   highlighted ? 'opacity-100' : 'opacity-0'
                 }`}
               >
-                <h3 className={`truncate font-semibold tracking-tight text-white ${big ? 'text-lg' : 'text-base'}`}>{card.title}</h3>
+                <div className="flex items-baseline justify-between gap-3">
+                  <h3 className={`truncate font-semibold tracking-tight text-white ${big ? 'text-lg' : 'text-base'}`}>{card.title}</h3>
+                  <DateTag card={card} />
+                </div>
+                <CategoryTag category={card.category} hue={hue} />
               </div>
             )}
           </div>

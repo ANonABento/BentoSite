@@ -264,11 +264,7 @@ export function DesktopCanvasView({
       role="application"
       aria-label={`${breadcrumb ?? 'Card grid'} interactive grid. Drag or use WASD to pan, arrow keys to focus cards, Enter to open one, slash to search, and R to recenter.`}
       tabIndex={-1}
-      style={{
-        ...navBindings.style,
-        // The dot grid pans with the board, at a fifth of the speed, for depth.
-        backgroundPosition: `${navigation.camera.x * navigation.camera.zoom * 0.2}px ${navigation.camera.y * navigation.camera.zoom * 0.2}px`,
-      }}
+      style={navBindings.style}
     >
       {/* Canvas layer — clips the transformed card grid */}
       <div className="absolute inset-0 overflow-hidden">

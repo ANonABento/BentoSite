@@ -2,9 +2,11 @@ import type { CardData, CardSize, GridTheme, ThemeConfig } from './BentoGrid.typ
 
 const GRID_VALUES = {
   cellSize: 220,
-  gap: 12,
+  // The tray's wall thickness, as on the project pages (--spacing-wall).
+  gap: 6,
   spawnBuffer: 100,
-  despawnBuffer: 200,
+  // Cards render this far past the viewport, so a fast pan never shows an empty edge.
+  despawnBuffer: 600,
 } as const;
 
 export const GRID = {
@@ -178,12 +180,13 @@ export const THEME_PREMIUM: ThemeConfig = {
   name: 'premium',
   // The canvas paints its own background from the board palette (.board-canvas).
   background: 'var(--board-bg)',
+  // Compartments sit flush in the tray: no drop shadow, radius as on the project pages.
   card: {
     background: 'var(--board-card)',
     border: '1px solid var(--board-card-border)',
-    borderRadius: 12,
-    shadow: '0 4px 24px var(--shadow-color)',
-    hoverShadow: '0 8px 40px var(--shadow-color), 0 0 0 1px var(--primary-muted)',
+    borderRadius: 14,
+    shadow: 'none',
+    hoverShadow: '0 0 0 1px var(--primary-muted)',
     rotationRange: 0,
   },
   accent: {

@@ -3,7 +3,6 @@
 import { useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { PaletteSwitcher } from './PaletteSwitcher';
 import { InfoCard, IntroCard, ProjectCard, type InfoContent, type IntroProfile } from '@/components/BentoGrid/cards';
 import {
   BentoGrid,
@@ -82,8 +81,7 @@ export function ProjectsGridClient({ layout, projects, profile, info }: Projects
   );
 
   return (
-    <>
-      <BentoGrid
+    <BentoGrid
         theme="premium"
         cards={cards}
         layout={layout}
@@ -91,8 +89,6 @@ export function ProjectsGridClient({ layout, projects, profile, info }: Projects
         onCardSelect={handleCardSelect}
         breadcrumb="bentOS / Kevin Jiang"
         renderCard={renderCard}
-      />
-      <PaletteSwitcher />
-    </>
+    />
   );
 }

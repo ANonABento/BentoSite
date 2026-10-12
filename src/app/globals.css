@@ -50,13 +50,12 @@
   --pg-bg-surface: #0c0c14;
 
   /*
-   * Board palette. `ember` is the default; `?palette=tray` and `?palette=duo`
-   * swap these on <html data-palette> so the options can be compared live.
+   * The board is a bento tray, like the project pages: the gaps between
+   * compartments are its walls, in the tray colour.
    */
-  --board-bg: #080605;
-  --board-dots: rgb(232 130 63 / 0.1);
-  --board-card: #1d1816;
-  --board-card-border: #322a26;
+  --board-bg: var(--color-wall);
+  --board-card: var(--color-cell);
+  --board-card-border: transparent;
   --board-accent-2: var(--color-purple);
   --board-dock-bg: var(--color-orange);
   --board-dock-fg: var(--color-lacquer);
@@ -74,63 +73,8 @@
   --cat-games: #f28aa5;
 }
 
-/* The tray itself is orange and the compartments sit in it like a bento box. */
-/* Warm mid-brown tray, near-black compartments: a lacquer box on wood. */
-:root[data-palette='walnut'] {
-  --board-bg: #3a2c24;
-  --board-dots: rgb(242 236 226 / 0.07);
-  --board-card: #141010;
-  --board-card-border: #0c0909;
-}
-
-/* Cool slate behind warm black cards; the orange pops off both. */
-:root[data-palette='slate'] {
-  --board-bg: #2b3038;
-  --board-dots: rgb(242 236 226 / 0.06);
-  --board-card: #151212;
-  --board-card-border: #0d0b0b;
-}
-
-/* Rice-paper table under dark compartments: the highest contrast. */
-:root[data-palette='paper'] {
-  --board-bg: #e6ddcf;
-  --board-dots: rgb(14 11 10 / 0.1);
-  --board-card: #161212;
-  --board-card-border: #0e0b0a;
-}
-
-:root[data-palette='tray'] {
-  --board-bg: #c8642a;
-  --board-dots: rgb(14 11 10 / 0.14);
-  --board-card: #151111;
-  --board-card-border: #0e0b0a;
-  --board-dock-bg: var(--color-lacquer);
-  --board-dock-fg: var(--color-rice);
-  --board-dock-field: rgb(255 255 255 / 0.07);
-  --board-dock-chip: rgb(255 255 255 / 0.06);
-  --board-dock-chip-on: var(--color-orange);
-  --board-dock-chip-on-fg: var(--color-lacquer);
-}
-
-/* Orange stays the brand colour; a cool teal joins it for the controls. */
-:root[data-palette='duo'] {
-  --board-bg: #0b0d0d;
-  --board-dots: rgb(94 214 196 / 0.09);
-  --board-card: #141716;
-  --board-card-border: #232a28;
-  --board-accent-2: #5ed6c4;
-  --board-dock-bg: #5ed6c4;
-  --board-dock-fg: #08201c;
-  --board-dock-field: rgb(8 32 28 / 0.12);
-  --board-dock-chip: rgb(8 32 28 / 0.1);
-  --board-dock-chip-on: #08201c;
-  --board-dock-chip-on-fg: #5ed6c4;
-}
-
 .board-canvas {
   background-color: var(--board-bg);
-  background-image: radial-gradient(var(--board-dots) 1.2px, transparent 1.4px);
-  background-size: 24px 24px;
 }
 
 html {
