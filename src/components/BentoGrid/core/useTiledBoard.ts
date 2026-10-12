@@ -16,9 +16,8 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import type { Camera, CardData, CardPosition } from '../BentoGrid.types';
-import { GRID, SEARCH_CARD, SEARCH_CARD_ID, getCardDimensions } from '../BentoGrid.constants';
+import { GRID, GRID_STEP, SEARCH_CARD, SEARCH_CARD_ID, getCardDimensions } from '../BentoGrid.constants';
 import { buildTile, type Tile } from '../layout/tile';
-import { GRID_STEP } from '../layout/gridOccupancy';
 import { filterCards } from './cardPoolFilter';
 import { screenToCanvas } from './useViewport';
 

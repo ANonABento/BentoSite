@@ -11,8 +11,7 @@
  */
 
 import type { CardData, CardSize } from '../BentoGrid.types';
-import { GRID, SEARCH_CARD_ID } from '../BentoGrid.constants';
-import { GRID_STEP } from './gridOccupancy';
+import { GRID, GRID_STEP, SEARCH_CARD_ID } from '../BentoGrid.constants';
 
 export interface TileSlot {
   id: string;

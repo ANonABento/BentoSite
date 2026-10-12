@@ -1,4 +1,4 @@
-import type { CardData, CardSize, GridTheme, PhysicsConfig, ThemeConfig } from './BentoGrid.types';
+import type { CardData, CardSize, GridTheme, ThemeConfig } from './BentoGrid.types';
 
 const GRID_VALUES = {
   cellSize: 220,
@@ -18,6 +18,9 @@ export const GRID = {
   despawnBuffer: GRID_VALUES.despawnBuffer,
 } as const;
 
+/** Distance from one grid cell to the next: a cell plus the gap. */
+export const GRID_STEP = GRID.CELL_SIZE + GRID.GAP;
+
 export const CARD_SIZES: Record<CardSize, { cols: number; rows: number }> = {
   '1x1': { cols: 1, rows: 1 },
   '2x1': { cols: 2, rows: 1 },
@@ -35,29 +38,6 @@ export function getCardDimensions(size: CardSize): { width: number; height: numb
     height: rows * GRID.CELL_SIZE + (rows - 1) * GRID.GAP,
   };
 }
-
-const QUEUE_VALUES = {
-  spawnDelay: 100,
-  maxVisible: 24,
-  initialSpawnCount: 14,
-  initialStagger: 50,
-  policy: 'FIFO',
-} as const;
-
-export const QUEUE = {
-  SPAWN_DELAY: QUEUE_VALUES.spawnDelay,
-  MAX_VISIBLE: QUEUE_VALUES.maxVisible,
-  INITIAL_SPAWN_COUNT: QUEUE_VALUES.initialSpawnCount,
-  INITIAL_STAGGER: QUEUE_VALUES.initialStagger,
-  POLICY: QUEUE_VALUES.policy,
-  spawnDelay: QUEUE_VALUES.spawnDelay,
-  maxVisible: QUEUE_VALUES.maxVisible,
-  initialSpawnCount: QUEUE_VALUES.initialSpawnCount,
-  initialStagger: QUEUE_VALUES.initialStagger,
-  policy: QUEUE_VALUES.policy,
-} as const;
-
-export const CARD_POOL = QUEUE;
 
 const CAMERA_VALUES = {
   default: { x: 0, y: 0, zoom: 1 },
@@ -171,24 +151,6 @@ export const ANIMATION = {
     damping: 25,
   },
 } as const;
-
-export const PHYSICS: PhysicsConfig = {
-  friction: 0.1,
-  frictionAir: 0.08,
-  restitution: 0.2,
-  density: 0.001,
-  sleepThreshold: 60,
-  settlingStrength: 0.015,
-};
-
-export const PHYSICS_MOBILE: PhysicsConfig = {
-  friction: 0.12,
-  frictionAir: 0.1,
-  restitution: 0.15,
-  density: 0.001,
-  sleepThreshold: 40,
-  settlingStrength: 0.02,
-};
 
 export const THEME_PLAYFUL: ThemeConfig = {
   name: 'playful',

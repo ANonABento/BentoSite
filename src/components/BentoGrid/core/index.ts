@@ -7,8 +7,6 @@ export {
   type UseCardNavigationReturn,
 } from './useCardNavigation';
 export { useCamera } from './useCamera';
-export { useCardPool, type UseCardPoolOptions } from './useCardPool';
-export { getMovementDirectionFromDelta, MOVEMENT_THRESHOLD } from './movement';
 export {
   clamp,
   canvasToScreen,
@@ -18,7 +16,3 @@ export {
   type UseViewportOptions,
   useWindowSize,
 } from './useViewport';
-export {
-  type UseSpawnManagerOptions,
-  useSpawnManager,
-} from './useSpawnManager';
