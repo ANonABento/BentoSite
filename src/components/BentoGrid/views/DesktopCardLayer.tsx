@@ -1,6 +1,5 @@
 'use client';
 
-import { Fragment } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { SEARCH_CARD_ID } from '../BentoGrid.constants';
 import { SEARCH_DOCK_PREFIX } from '../core/useTiledBoard';
@@ -17,6 +16,8 @@ interface DesktopCardLayerProps {
   cardDataMap: Map<string, CardData>;
   theme: ThemeConfig;
   focusedCardId: string | null;
+  /** Card ids the filter leaves out; they fade back rather than leave. */
+  dimmed: Set<string>;
   renderCard?: RenderCard;
   onCardClick: (card: CardData) => void;
 }
@@ -37,6 +38,7 @@ export function DesktopCardLayer({
   cardDataMap,
   theme,
   focusedCardId,
+  dimmed,
   renderCard,
   onCardClick,
 }: DesktopCardLayerProps) {
@@ -57,8 +59,13 @@ export function DesktopCardLayer({
         const key = presenceKey(cardId, layout);
 
         if (renderCard) {
+          const faded = dimmed.has(cardData.id);
           return (
-            <Fragment key={key}>
+            <div
+              key={key}
+              className="transition-opacity duration-300"
+              style={{ opacity: faded ? 0.15 : 1, pointerEvents: faded ? 'none' : undefined }}
+            >
               {renderCard(
                 cardData,
                 layout,
@@ -67,7 +74,7 @@ export function DesktopCardLayer({
                 () => onCardClick(cardData),
                 index,
               )}
-            </Fragment>
+            </div>
           );
         }
 

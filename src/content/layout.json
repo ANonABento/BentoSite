@@ -1,0 +1,209 @@
+{
+  "cols": 16,
+  "rows": 8,
+  "cards": [
+    {
+      "id": "pcb-design",
+      "col": 0,
+      "row": 0,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "litter-caching",
+      "col": 2,
+      "row": 0,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "one-handed-keyboard",
+      "col": 4,
+      "row": 0,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "unity-game-dev",
+      "col": 6,
+      "row": 0,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "vr-haptic-gloves",
+      "col": 8,
+      "row": 0,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "ftc-robotics",
+      "col": 10,
+      "row": 0,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "the-closet",
+      "col": 12,
+      "row": 0,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "decompos-it",
+      "col": 14,
+      "row": 0,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "shoulder-cupid",
+      "col": 0,
+      "row": 2,
+      "w": 3,
+      "h": 2
+    },
+    {
+      "id": "bento-ya",
+      "col": 3,
+      "row": 2,
+      "w": 3,
+      "h": 2
+    },
+    {
+      "id": "snapfire",
+      "col": 6,
+      "row": 2,
+      "w": 3,
+      "h": 2
+    },
+    {
+      "id": "tfotb",
+      "col": 9,
+      "row": 2,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "trash-can-robot",
+      "col": 11,
+      "row": 2,
+      "w": 3,
+      "h": 2
+    },
+    {
+      "id": "venturesauce",
+      "col": 14,
+      "row": 2,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "intro",
+      "col": 0,
+      "row": 4,
+      "w": 3,
+      "h": 2
+    },
+    {
+      "id": "search",
+      "col": 3,
+      "row": 4,
+      "w": 2,
+      "h": 1
+    },
+    {
+      "id": "robotic-arm-puppeteer",
+      "col": 5,
+      "row": 4,
+      "w": 3,
+      "h": 2
+    },
+    {
+      "id": "expressive-ai-robot-head",
+      "col": 8,
+      "row": 4,
+      "w": 3,
+      "h": 2
+    },
+    {
+      "id": "ar-gesture-robot",
+      "col": 11,
+      "row": 4,
+      "w": 3,
+      "h": 2
+    },
+    {
+      "id": "baseline",
+      "col": 14,
+      "row": 4,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "contact",
+      "col": 3,
+      "row": 5,
+      "w": 2,
+      "h": 1
+    },
+    {
+      "id": "pomme",
+      "col": 0,
+      "row": 6,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "bentosite",
+      "col": 2,
+      "row": 6,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "component-cop",
+      "col": 4,
+      "row": 6,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "flowto",
+      "col": 6,
+      "row": 6,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "choomfie",
+      "col": 8,
+      "row": 6,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "dead-internet-reality",
+      "col": 10,
+      "row": 6,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "slothing",
+      "col": 12,
+      "row": 6,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "taser-derby",
+      "col": 14,
+      "row": 6,
+      "w": 2,
+      "h": 2
+    }
+  ]
+}

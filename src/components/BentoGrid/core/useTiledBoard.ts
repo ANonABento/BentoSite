@@ -1,7 +1,7 @@
 /**
  * useTiledBoard - the board as one repeating tile
  *
- * Every card is laid out once (layout/tile.ts) and the tile repeats in every
+ * Every card is laid out once (layout.json, via layout/tile.ts) and the tile repeats in every
  * direction, so the board is endless without spawning, despawning or cloning
  * cards. Only the copies near the viewport render. Each rendered card has an
  * instance id, `<card id>@<copy col>,<copy row>`, so the same project can be
@@ -17,7 +17,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { Camera, CardData, CardPosition } from '../BentoGrid.types';
 import { GRID, GRID_STEP, SEARCH_CARD, SEARCH_CARD_ID, getCardDimensions } from '../BentoGrid.constants';
-import { buildTile, type Tile } from '../layout/tile';
+import { tileFromLayout, type Tile } from '../layout/tile';
+import type { BoardLayout } from '../layout/boardLayout';
 import { filterCards } from './cardPoolFilter';
 import { screenToCanvas } from './useViewport';
 
@@ -31,6 +32,7 @@ interface Copy {
 
 interface TiledBoardOptions {
   cards: CardData[];
+  layout: BoardLayout;
   camera: Camera;
   windowSize: { width: number; height: number };
 }
@@ -41,6 +43,8 @@ export interface TiledBoardReturn {
   /** Card data by instance id. */
   cardDataMap: Map<string, CardData>;
   applyFilter: (searchTerm: string, category: string | null) => void;
+  /** Cards the current filter leaves out. They stay in place, dimmed, so the board keeps its shape. */
+  dimmed: Set<string>;
   /** Which copy of the board holds the search card; changes when it docks elsewhere. */
   anchorKey: string;
   /** Move the search card back to the copy at the origin. */
@@ -82,9 +86,9 @@ function copiesIn(tile: Tile, bounds: ReturnType<typeof viewBounds>): Copy[] {
   return copies;
 }
 
-export function useTiledBoard({ cards, camera, windowSize }: TiledBoardOptions): TiledBoardReturn {
-  const [filtered, setFiltered] = useState(cards);
-  const tile = useMemo(() => buildTile(filtered), [filtered]);
+export function useTiledBoard({ cards, layout, camera, windowSize }: TiledBoardOptions): TiledBoardReturn {
+  const [dimmed, setDimmed] = useState<Set<string>>(() => new Set());
+  const tile = useMemo(() => tileFromLayout(layout, cards), [layout, cards]);
   const [anchor, setAnchor] = useState<Copy>({ i: 0, j: 0 });
   const byId = useMemo(() => new Map(cards.map((card) => [card.id, card])), [cards]);
   const searchSlot = tile.slots.find((slot) => slot.id === SEARCH_CARD_ID);
@@ -148,8 +152,8 @@ export function useTiledBoard({ cards, camera, windowSize }: TiledBoardOptions):
 
   const applyFilter = useCallback(
     (searchTerm: string, category: string | null) => {
-      setFiltered(filterCards(cards, searchTerm, category));
-      setAnchor({ i: 0, j: 0 });
+      const matches = new Set(filterCards(cards, searchTerm, category).map((card) => card.id));
+      setDimmed(new Set(cards.filter((card) => !matches.has(card.id)).map((card) => card.id)));
     },
     [cards],
   );
@@ -178,5 +182,5 @@ export function useTiledBoard({ cards, camera, windowSize }: TiledBoardOptions):
     [searchSlot, tile],
   );
 
-  return { visible, cardDataMap, anchorKey: `${anchor.i},${anchor.j}`, applyFilter, resetAnchor, nearestSearchSlot };
+  return { visible, cardDataMap, anchorKey: `${anchor.i},${anchor.j}`, applyFilter, dimmed, resetAnchor, nearestSearchSlot };
 }

@@ -21,18 +21,14 @@ export const GRID = {
 /** Distance from one grid cell to the next: a cell plus the gap. */
 export const GRID_STEP = GRID.CELL_SIZE + GRID.GAP;
 
-export const CARD_SIZES: Record<CardSize, { cols: number; rows: number }> = {
-  '1x1': { cols: 1, rows: 1 },
-  '2x1': { cols: 2, rows: 1 },
-  '1x2': { cols: 1, rows: 2 },
-  '2x2': { cols: 2, rows: 2 },
-  '3x2': { cols: 3, rows: 2 },
-  '2x3': { cols: 2, rows: 3 },
-  '4x2': { cols: 4, rows: 2 },
-};
+/** A size's footprint in cells. */
+export function cardSpan(size: CardSize): { cols: number; rows: number } {
+  const [cols, rows] = size.split('x').map(Number);
+  return { cols, rows };
+}
 
 export function getCardDimensions(size: CardSize): { width: number; height: number } {
-  const { cols, rows } = CARD_SIZES[size];
+  const { cols, rows } = cardSpan(size);
   return {
     width: cols * GRID.CELL_SIZE + (cols - 1) * GRID.GAP,
     height: rows * GRID.CELL_SIZE + (rows - 1) * GRID.GAP,

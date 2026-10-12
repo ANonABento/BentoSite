@@ -7,6 +7,7 @@ import { PaletteSwitcher } from './PaletteSwitcher';
 import { InfoCard, IntroCard, ProjectCard, type InfoContent, type IntroProfile } from '@/components/BentoGrid/cards';
 import {
   BentoGrid,
+  type BoardLayout,
   type CardData,
   type CardPosition,
   type InfoCardData,
@@ -15,16 +16,17 @@ import {
   type ThemeConfig,
 } from '@/components/BentoGrid';
 
-const INTRO: IntroCardData = { id: 'intro', type: 'intro', title: 'Kevin Jiang', size: '3x2' };
-const CONTACT: InfoCardData = { id: 'contact', type: 'info', variant: 'contact', title: 'Contact', size: '2x1', pinned: true };
+export const INTRO: IntroCardData = { id: 'intro', type: 'intro', title: 'Kevin Jiang' };
+export const CONTACT: InfoCardData = { id: 'contact', type: 'info', variant: 'contact', title: 'Contact', pinned: true };
 
 export interface ProjectsGridProps {
+  layout: BoardLayout;
   projects: ProjectCardData[];
   profile: IntroProfile;
   info: InfoContent;
 }
 
-function makeRenderCard(profile: IntroProfile, info: InfoContent) {
+export function makeRenderCard(profile: IntroProfile, info: InfoContent) {
   return function renderProjectCard(
     card: CardData,
     position: CardPosition,
@@ -66,7 +68,7 @@ function makeRenderCard(profile: IntroProfile, info: InfoContent) {
   };
 }
 
-export function ProjectsGridClient({ projects, profile, info }: ProjectsGridProps) {
+export function ProjectsGridClient({ layout, projects, profile, info }: ProjectsGridProps) {
   const router = useRouter();
   // Every card goes on the board once; the board repeats it in every direction.
   const cards = useMemo<CardData[]>(() => [INTRO, CONTACT, ...projects], [projects]);
@@ -84,6 +86,7 @@ export function ProjectsGridClient({ projects, profile, info }: ProjectsGridProp
       <BentoGrid
         theme="premium"
         cards={cards}
+        layout={layout}
         cardSizeMode="detail"
         onCardSelect={handleCardSelect}
         breadcrumb="bentOS / Kevin Jiang"

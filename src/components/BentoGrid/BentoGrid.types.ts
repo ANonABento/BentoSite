@@ -11,6 +11,7 @@ import type {
   ReactNode,
   WheelEventHandler,
 } from 'react';
+import type { BoardLayout, CardLook } from './layout/boardLayout';
 
 export type GridTheme = 'playful' | 'premium' | 'gallery' | 'arcade';
 
@@ -45,8 +46,7 @@ export interface BaseCardData {
   description?: string;
   thumbnail?: string;
   category?: string;
-  /** Fixed footprint chosen by the caller (e.g. from the image's aspect ratio).
-   *  Overrides the size mode when set. */
+  /** Footprint on the board, from the layout. */
   size?: CardSize;
   /** Sits beside the search card in the home band and is never filtered out. */
   pinned?: boolean;
@@ -74,6 +74,8 @@ export interface ProjectCardData extends BaseCardData {
   award?: string;
   /** Short display date for the footer, e.g. "Oct 2026". */
   date?: string;
+  /** How the card frames its image, from the layout. */
+  look?: CardLook;
 }
 
 export interface PhotoCardData extends BaseCardData {
@@ -99,7 +101,8 @@ export interface InfoCardData extends BaseCardData {
 
 export type CardData = GameCardData | ProjectCardData | PhotoCardData | IntroCardData | InfoCardData;
 
-export type CardSize = '1x1' | '2x1' | '1x2' | '2x2' | '3x2' | '2x3' | '4x2';
+/** Footprint in grid cells, columns by rows, e.g. '3x2'. */
+export type CardSize = `${number}x${number}`;
 
 export interface Position {
   x: number;
@@ -184,6 +187,8 @@ export type CardSizeMode = 'mixed' | 'detail' | '2x2';
 export interface GridConfig {
   theme: GridTheme;
   cards: CardData[];
+  /** Where every card sits in the repeating tile (src/content/layout.json). */
+  layout: BoardLayout;
   /** Force all content cards to a specific size. Default: 'mixed' (varied sizes). */
   cardSizeMode?: CardSizeMode;
   onCardSelect?: (card: CardData) => void;

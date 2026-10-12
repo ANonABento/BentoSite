@@ -38,6 +38,7 @@ export function BentoGrid({
   className,
   theme,
   cards,
+  layout,
   cardSizeMode,
   onCardSelect,
   onBack,
@@ -76,6 +77,7 @@ export function BentoGrid({
     <DesktopCanvasView
       className={className}
       cards={cards}
+      layout={layout}
       theme={themeConfig}
       categories={categories}
       cardSizeMode={cardSizeMode}

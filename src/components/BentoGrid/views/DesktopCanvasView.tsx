@@ -17,6 +17,7 @@ import { SEARCH_DOCK_PREFIX, useTiledBoard } from '../core/useTiledBoard';
 import { SEARCH_CARD_ID } from '../BentoGrid.constants';
 import { ArrowLeftIcon, CloseIcon, RefreshIcon, SearchIcon } from '@/components/ui/Icons';
 import type { CardData, CardPosition, CardSizeMode, RenderCard, ThemeConfig } from '../BentoGrid.types';
+import type { BoardLayout } from '../layout/boardLayout';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
 /** Cards keyboard focus can land on: not the search card or the empty docks. */
@@ -32,6 +33,7 @@ const SUMMON_MS = 450;
 interface DesktopCanvasViewProps {
   className?: string;
   cards: CardData[];
+  layout: BoardLayout;
   theme: ThemeConfig;
   categories: string[];
   cardSizeMode?: CardSizeMode;
@@ -44,6 +46,7 @@ interface DesktopCanvasViewProps {
 export function DesktopCanvasView({
   className,
   cards,
+  layout,
   theme,
   categories,
   breadcrumb,
@@ -57,19 +60,12 @@ export function DesktopCanvasView({
     windowSize,
   });
 
-  const board = useTiledBoard({ cards, camera: navigation.camera, windowSize });
+  const board = useTiledBoard({ cards, layout, camera: navigation.camera, windowSize });
 
   const searchCardLayout = board.visible.get(SEARCH_CARD_ID);
 
-  const { applyFilter, resetAnchor } = board;
+  const { applyFilter: handleFilterChange, resetAnchor } = board;
   const { reset: resetCamera } = navigation;
-  const handleFilterChange = useCallback(
-    (searchTerm: string, category: string | null) => {
-      applyFilter(searchTerm, category);
-      resetCamera();
-    },
-    [applyFilter, resetCamera],
-  );
   const resetView = useCallback(() => {
     resetAnchor();
     resetCamera();
@@ -288,6 +284,7 @@ export function DesktopCanvasView({
             cardDataMap={board.cardDataMap}
             theme={theme}
             focusedCardId={focusedCardId}
+            dimmed={board.dimmed}
             renderCard={renderCard}
             onCardClick={handleCardClick}
           />
