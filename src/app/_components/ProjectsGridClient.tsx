@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { PaletteSwitcher } from './PaletteSwitcher';
@@ -16,14 +16,12 @@ import {
 } from '@/components/BentoGrid';
 
 const INTRO: IntroCardData = { id: 'intro', type: 'intro', title: 'Kevin Jiang', size: '3x2' };
-const ABOUT: InfoCardData = { id: 'about', type: 'info', variant: 'about', title: 'About', size: '2x1', pinned: true };
+const SKILLS: InfoCardData = { id: 'skills', type: 'info', variant: 'skills', title: 'Skills', size: '2x1', pinned: true };
 
 export interface ProjectsGridProps {
   projects: ProjectCardData[];
   profile: IntroProfile;
   info: InfoContent;
-  /** Called once the board has mounted. */
-  onReady?: () => void;
 }
 
 function makeRenderCard(profile: IntroProfile, info: InfoContent) {
@@ -68,11 +66,10 @@ function makeRenderCard(profile: IntroProfile, info: InfoContent) {
   };
 }
 
-export function ProjectsGridClient({ projects, profile, info, onReady }: ProjectsGridProps) {
+export function ProjectsGridClient({ projects, profile, info }: ProjectsGridProps) {
   const router = useRouter();
-  useEffect(() => onReady?.(), [onReady]);
   // Every card goes on the board once; the board repeats it in every direction.
-  const cards = useMemo<CardData[]>(() => [INTRO, ABOUT, ...projects], [projects]);
+  const cards = useMemo<CardData[]>(() => [INTRO, SKILLS, ...projects], [projects]);
   const renderCard = useMemo(() => makeRenderCard(profile, info), [profile, info]);
 
   const handleCardSelect = useCallback(

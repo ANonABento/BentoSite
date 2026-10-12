@@ -1,14 +1,13 @@
 'use client';
 
 /**
- * InfoCard — the non-project compartment: an about blurb with skills.
+ * InfoCard — the non-project compartment: the skills list, under the search card.
  */
 
 import type { CardPosition, InfoCardData, ThemeConfig } from '../BentoGrid.types';
 import { BaseCard } from './BaseCard';
 
 export interface InfoContent {
-  about: string;
   skills: string[];
 }
 
@@ -26,10 +25,10 @@ export function InfoCard({ card, position, theme, content, isFocused, onClick, e
   const shared = { id: card.id, position, theme, isFocused, entranceIndex };
 
   return (
-    <BaseCard {...shared} hoverEnabled={false} ariaLabel="About">
-      <div className="flex h-full flex-col justify-between gap-3 p-5">
-        <p className="line-clamp-4 shrink-0 text-sm leading-snug text-rice/80">{content.about}</p>
-        <p className="line-clamp-2 font-crt text-base leading-tight text-ash">{content.skills.join(' · ').toLowerCase()}</p>
+    <BaseCard {...shared} hoverEnabled={false} ariaLabel="Skills">
+      <div className="flex h-full flex-col gap-3 p-5">
+        <h2 className="text-sm text-ash">Skills</h2>
+        <p className="line-clamp-5 font-crt text-lg leading-tight text-rice/80">{content.skills.join(' · ').toLowerCase()}</p>
       </div>
     </BaseCard>
   );

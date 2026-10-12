@@ -2,7 +2,7 @@
 
 /**
  * IntroCard — the pinned identity compartment that opens beside the search
- * card: name, one-line pitch and links, with work history alongside.
+ * card: name, pitch, about and links, with work history alongside.
  */
 
 import type { CardPosition, IntroCardData, ThemeConfig } from '../BentoGrid.types';
@@ -12,6 +12,7 @@ export interface IntroProfile {
   name: string;
   title: string;
   pitch: string;
+  about: string;
   jobs: { role: string; company: string; period: string }[];
   links: { resume: string; github: string; linkedin: string; email: string };
 }
@@ -44,6 +45,7 @@ export function IntroCard({ card, position, theme, profile, isFocused }: IntroCa
           <div>
             <h1 className="text-[2.6rem] font-semibold leading-none tracking-[-0.035em] text-rice">{profile.name}</h1>
             <p className="mt-3 max-w-[28ch] text-[0.95rem] leading-snug text-rice/80">{profile.pitch}</p>
+            <p className="mt-4 text-[0.8rem] leading-relaxed text-ash">{profile.about}</p>
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm" data-no-drag>
             <a
