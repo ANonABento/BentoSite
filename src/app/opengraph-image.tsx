@@ -98,7 +98,6 @@ export default async function OpengraphImage() {
                 background: CELL,
               }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element -- satori renders plain img */}
               <img src={s.data} width={SHOT_W} height={SHOT_H} style={{ objectFit: 'cover' }} alt="" />
             </div>
           ))}
