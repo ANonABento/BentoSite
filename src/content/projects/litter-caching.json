@@ -18,7 +18,46 @@
     "docs": "https://devpost.com/software/littercaching"
   },
   "media": {
-    "featuredImage": "/projects/litter-caching/hero.jpg"
+    "featuredImage": "/projects/litter-caching/hero.jpg",
+    "images": [
+      "/projects/litter-caching/hero.jpg",
+      "/projects/litter-caching/wearing.webp",
+      "/projects/litter-caching/grabber.webp",
+      "/projects/litter-caching/bin.webp",
+      "/projects/litter-caching/app.webp",
+      "/projects/litter-caching/printers.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/litter-caching/hero.jpg"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/litter-caching/wearing.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/litter-caching/grabber.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/litter-caching/bin.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/litter-caching/app.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/litter-caching/printers.webp"
+      },
+      {
+        "kind": "video",
+        "src": "https://youtu.be/-jQ8fRKn3Ms",
+        "label": "Demo video"
+      }
+    ]
   },
   "dateCompleted": "2025-02"
 }

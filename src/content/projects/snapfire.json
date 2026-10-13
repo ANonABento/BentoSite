@@ -21,7 +21,36 @@
     "docs": "https://devpost.com/software/snapfire"
   },
   "media": {
-    "featuredImage": "/projects/snapfire/hero.jpg"
+    "featuredImage": "/projects/snapfire/hero.jpg",
+    "images": [
+      "/projects/snapfire/hero.jpg",
+      "/projects/snapfire/turret.webp",
+      "/projects/snapfire/side.webp",
+      "/projects/snapfire/front.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/snapfire/hero.jpg"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/snapfire/turret.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/snapfire/side.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/snapfire/front.webp"
+      },
+      {
+        "kind": "video",
+        "src": "https://youtu.be/eU16VdNeQ-E",
+        "label": "Demo video"
+      }
+    ]
   },
   "dateCompleted": "2023-11"
 }

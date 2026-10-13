@@ -26,7 +26,41 @@
     "docs": "https://devpost.com/software/maidreal-head-v1"
   },
   "media": {
-    "featuredImage": "/projects/expressive-ai-robot-head/hero.jpg"
+    "featuredImage": "/projects/expressive-ai-robot-head/photo.webp",
+    "images": [
+      "/projects/expressive-ai-robot-head/photo.webp",
+      "/projects/expressive-ai-robot-head/bare.webp",
+      "/projects/expressive-ai-robot-head/render.webp",
+      "/projects/expressive-ai-robot-head/mesh.webp",
+      "/projects/expressive-ai-robot-head/flowchart.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/expressive-ai-robot-head/photo.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/expressive-ai-robot-head/bare.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/expressive-ai-robot-head/render.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/expressive-ai-robot-head/mesh.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/expressive-ai-robot-head/flowchart.webp"
+      },
+      {
+        "kind": "video",
+        "src": "https://youtu.be/_YeHNd3CJiE",
+        "label": "Demo video"
+      }
+    ]
   },
   "dateCompleted": "2025-09"
 }

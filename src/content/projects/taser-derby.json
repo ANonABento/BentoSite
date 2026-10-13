@@ -25,7 +25,41 @@
     "images": [
       "/projects/taser-derby/hero.png",
       "/projects/taser-derby/taser-photo.png",
-      "/projects/taser-derby/wiring.jpg"
+      "/projects/taser-derby/wiring.jpg",
+      "/projects/taser-derby/cad.webp",
+      "/projects/taser-derby/cad-open.webp",
+      "/projects/taser-derby/betting.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/taser-derby/hero.png"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/taser-derby/taser-photo.png"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/taser-derby/wiring.jpg"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/taser-derby/cad.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/taser-derby/cad-open.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/taser-derby/betting.webp"
+      },
+      {
+        "kind": "video",
+        "src": "https://youtu.be/yDChXUxZb8A",
+        "label": "Demo video"
+      }
     ]
   },
   "dateCompleted": "2025-11"

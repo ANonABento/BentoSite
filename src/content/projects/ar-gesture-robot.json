@@ -21,7 +21,12 @@
     "docs": "https://devpost.com/software/steven-lvnh4w"
   },
   "media": {
-    "featuredImage": "/projects/ar-gesture-robot/hero.jpg"
+    "featuredImage": "/projects/ar-gesture-robot/robot.webp",
+    "images": [
+      "/projects/ar-gesture-robot/robot.webp",
+      "/projects/ar-gesture-robot/arm.webp",
+      "/projects/ar-gesture-robot/dashboard.webp"
+    ]
   },
   "dateCompleted": "2025-09"
 }

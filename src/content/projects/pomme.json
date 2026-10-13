@@ -30,8 +30,73 @@
     "images": [
       "/projects/pomme/pov.jpg",
       "/projects/pomme/landing.jpg",
-      "/projects/pomme/teleop.jpg"
+      "/projects/pomme/teleop.jpg",
+      "/projects/pomme/robot.webp",
+      "/projects/pomme/robot-side.webp",
+      "/projects/pomme/stations.webp",
+      "/projects/pomme/harvest-log.webp",
+      "/projects/pomme/data.webp",
+      "/projects/pomme/build-1.webp",
+      "/projects/pomme/build-2.webp",
+      "/projects/pomme/team.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/pomme/pov.jpg"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/pomme/landing.jpg"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/pomme/teleop.jpg"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/pomme/robot.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/pomme/robot-side.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/pomme/stations.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/pomme/harvest-log.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/pomme/data.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/pomme/build-1.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/pomme/build-2.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/pomme/team.webp"
+      },
+      {
+        "kind": "video",
+        "src": "https://youtu.be/1vGxSPo5f9w",
+        "label": "Demo video"
+      },
+      {
+        "kind": "embed",
+        "src": "https://pomme.live/",
+        "label": "Live demo"
+      }
     ]
   },
-  "dateCompleted": "2026-07"
+  "dateCompleted": "2026-07",
+  "award": "Qualcomm: Build at the Edge with Arduino UNO Q, Hack the 6ix 2026"
 }

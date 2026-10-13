@@ -30,7 +30,46 @@
     "docs": "https://devpost.com/software/shouldercupid-0y6b5d"
   },
   "media": {
-    "featuredImage": "/projects/shoulder-cupid/hero.jpg"
+    "featuredImage": "/projects/shoulder-cupid/hero.jpg",
+    "images": [
+      "/projects/shoulder-cupid/hero.jpg",
+      "/projects/shoulder-cupid/cad.webp",
+      "/projects/shoulder-cupid/wiring.webp",
+      "/projects/shoulder-cupid/app.webp",
+      "/projects/shoulder-cupid/session.webp",
+      "/projects/shoulder-cupid/landing.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/shoulder-cupid/hero.jpg"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/shoulder-cupid/cad.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/shoulder-cupid/wiring.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/shoulder-cupid/app.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/shoulder-cupid/session.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/shoulder-cupid/landing.webp"
+      },
+      {
+        "kind": "video",
+        "src": "https://youtu.be/udE4eidY7g0",
+        "label": "Demo video"
+      }
+    ]
   },
   "dateCompleted": "2026-02"
 }
