@@ -54,7 +54,6 @@ interface Drag {
 export interface StudioProps {
   initialLayout: BoardLayout;
   projects: ProjectCardData[];
-  images: Record<string, string[]>;
   /** Every file in each project's public folder. */
   files: Record<string, string[]>;
   details: Record<string, ViewfinderProject>;
@@ -84,7 +83,6 @@ function defaultSpan(id: string) {
 export function Studio({
   initialLayout,
   projects,
-  images: initialImages,
   files: initialFiles,
   details,
   viewfinderDefaults,
@@ -114,7 +112,6 @@ export function Studio({
   const [preview, setPreview] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
-  const [images, setImages] = useState(initialImages);
   const [scale, setScale] = useState(0.5);
   const [neighbours, setNeighbours] = useState(true);
   const [status, setStatus] = useState<{ text: string; tone: 'ok' | 'warn' | 'error' } | null>(null);
@@ -310,7 +307,6 @@ export function Studio({
         }
         uploaded.push(body.src);
         setFiles((all) => ({ ...all, [projectId]: [...(all[projectId] ?? []), body.src] }));
-        if (IMAGE_FILE.test(body.src)) setImages((all) => ({ ...all, [projectId]: [...(all[projectId] ?? []), body.src] }));
       }
       return uploaded;
     },
@@ -319,13 +315,14 @@ export function Studio({
 
   const uploadToCard = useCallback(
     async (projectId: string, files: FileList) => {
-      const [src] = await upload(projectId, files);
-      if (!src) return;
-      // Use the new image right away; framing starts fresh.
+      const uploaded = await upload(projectId, files);
+      if (!uploaded.length) return;
+      // An image becomes the thumbnail right away; framing starts fresh.
+      const src = uploaded.find((file) => IMAGE_FILE.test(file));
       const card = layout.cards.find((c) => c.id === projectId);
-      if (card) setLook(projectId, { ...card.look, image: src, focus: undefined, zoom: undefined });
+      if (card && src) setLook(projectId, { ...card.look, image: src, focus: undefined, zoom: undefined });
       setSelected(projectId);
-      say('Uploaded.');
+      say(src ? 'Uploaded; now the thumbnail.' : 'Uploaded to Files.');
     },
     [upload, layout, setLook, say],
   );
@@ -551,7 +548,6 @@ export function Studio({
           layout={layout}
           card={selectedCard}
           project={selectedCard ? projectById.get(selectedCard.id) ?? null : null}
-          images={selectedCard ? images[selectedCard.id] ?? [] : []}
           unplaced={unplaced}
           holes={gaps.length}
           onClose={() => setSelected(null)}

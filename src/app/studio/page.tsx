@@ -9,9 +9,7 @@ import { Studio } from './Studio';
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Studio', robots: { index: false } };
 
-const IMAGE = /\.(png|jpe?g|webp|avif|gif)$/i;
-
-/** Files in a project's public folder: images for the picker, and anything else the viewfinder can show. */
+/** Files in a project's public folder: thumbnails, and anything the viewfinder can show. */
 function filesFor(id: string): string[] {
   const dir = path.join(process.cwd(), 'public/projects', id);
   if (!fs.existsSync(dir)) return [];
@@ -29,7 +27,6 @@ export default function StudioPage() {
   const all = getProjects();
   const projects = all.map((p) => projectCard(p));
   const files = Object.fromEntries(all.map((p) => [p.id, filesFor(p.id)]));
-  const images = Object.fromEntries(all.map((p) => [p.id, files[p.id].filter((src) => IMAGE.test(src))]));
   const details = Object.fromEntries(all.map((p) => [p.id, viewfinderProject(p)]));
   // What each project's viewfinder shows with no list of its own.
   const defaults = Object.fromEntries(all.map((p) => [p.id, viewfinderItems({ ...p, media: { ...p.media, viewfinder: undefined } })]));
@@ -38,7 +35,6 @@ export default function StudioPage() {
     <Studio
       initialLayout={getLayout()}
       projects={projects}
-      images={images}
       files={files}
       details={details}
       viewfinderDefaults={defaults}

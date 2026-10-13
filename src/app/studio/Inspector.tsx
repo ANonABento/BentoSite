@@ -1,10 +1,11 @@
 'use client';
 
 /**
- * The studio's side panel. With a card selected: its size, how it shows
- * (variant, description), which image, and how the image is framed (drag the
- * preview to set the focal point). With nothing selected: the tile's size and
- * the cards that aren't on the board.
+ * The studio's side panel. With a card selected, top to bottom: its size; the
+ * card on the board (what it shows, its thumbnail and how that's framed); the
+ * project's files, each of which can be the thumbnail or go in the viewfinder;
+ * and the viewfinder (what opens when the card is clicked). With nothing
+ * selected: the tile's size and the cards that aren't on the board.
  */
 
 import { useRef, useState } from 'react';
@@ -20,19 +21,14 @@ import {
   type LayoutCard,
   type ProjectCardData,
 } from '@/components/BentoGrid';
-import type { ViewfinderItem } from '@/components/Viewfinder/types';
+import { KIND_LABELS, type ViewfinderItem } from '@/components/Viewfinder/types';
 import type { ViewfinderEdit } from './Studio';
-import { ViewfinderEditor } from './ViewfinderEditor';
-
-const PRESETS: [number, number][] = [
-  [1, 1], [2, 1], [1, 2], [2, 2], [3, 2], [2, 3], [3, 3], [4, 2],
-];
+import { ViewfinderEditor, kindOf } from './ViewfinderEditor';
 
 interface InspectorProps {
   layout: BoardLayout;
   card: LayoutCard | null;
   project: ProjectCardData | null;
-  images: string[];
   unplaced: { id: string; title: string; thumbnail?: string }[];
   holes: number;
   onClose: () => void;
@@ -101,7 +97,7 @@ function BoardPanel({ layout, unplaced, holes, onPlace, onResizeTile }: Inspecto
           <dt className="font-crt text-base leading-none text-rice">⌫</dt><dd>take it off the board</dd>
           <dt className="font-crt text-base leading-none text-rice">⌘Z ⇧⌘Z</dt><dd>undo, redo</dd>
           <dt className="font-crt text-base leading-none text-rice">⌘S</dt><dd>save to layout.json</dd>
-          <dt className="font-crt text-base leading-none text-rice">drop</dt><dd>an image file on a card to upload and use it</dd>
+          <dt className="font-crt text-base leading-none text-rice">drop</dt><dd>a file on a card to upload it (an image becomes the thumbnail)</dd>
         </dl>
       </Section>
     </div>
@@ -113,7 +109,6 @@ function BoardPanel({ layout, unplaced, holes, onPlace, onResizeTile }: Inspecto
 function CardPanel({
   card,
   project,
-  images,
   files,
   viewfinder,
   onClose,
@@ -127,14 +122,17 @@ function CardPanel({
   const look = card.look ?? {};
   const fixedSize = card.id === 'search';
   const setLook = (patch: Partial<CardLook>, key?: string) => onLook(card.id, { ...look, ...patch }, key);
+  const thumbnail = look.image ?? project?.thumbnail;
+  const showsImage = (look.variant ?? 'full') !== 'text';
+  const items = viewfinder?.items ?? [];
 
   return (
-    <div className="flex flex-col gap-6 p-5">
+    <div className="flex flex-col gap-7 p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="truncate text-lg font-semibold tracking-tight">{project?.title ?? card.id}</h2>
           <p className="font-crt text-lg leading-none text-ash">
-            {card.w}x{card.h} at {card.col},{card.row}
+            at {card.col},{card.row}
             {project?.category ? ` · ${project.category}` : ''}
           </p>
         </div>
@@ -147,105 +145,105 @@ function CardPanel({
         {fixedSize ? (
           <p className="text-xs text-ash">The search card is always 2x1.</p>
         ) : (
-          <>
-            <div className="flex flex-wrap gap-1.5">
-              {PRESETS.map(([w, h]) => (
-                <Chip key={`${w}x${h}`} active={card.w === w && card.h === h} onClick={() => onResize(card.id, w, h)}>
-                  {w}x{h}
-                </Chip>
-              ))}
-            </div>
-            <div className="flex gap-4">
-              <Stepper label="Width" value={card.w} min={1} max={MAX_SPAN.w} onChange={(w) => onResize(card.id, w, card.h)} />
-              <Stepper label="Height" value={card.h} min={1} max={MAX_SPAN.h} onChange={(h) => onResize(card.id, card.w, h)} />
-            </div>
-          </>
+          <div className="flex items-end gap-3">
+            <Stepper label="Columns" value={card.w} min={1} max={MAX_SPAN.w} onChange={(w) => onResize(card.id, w, card.h)} />
+            <span className="pb-1.5 font-crt text-xl leading-none text-ash">×</span>
+            <Stepper label="Rows" value={card.h} min={1} max={MAX_SPAN.h} onChange={(h) => onResize(card.id, card.w, h)} />
+          </div>
         )}
       </Section>
 
       {project && (
-        <>
-          <Section title="Shows">
-            <div className="flex flex-wrap gap-1.5">
-              {([undefined, 'full', 'image', 'text'] as (CardVariant | undefined)[]).map((variant) => (
-                <Chip key={variant ?? 'auto'} active={look.variant === variant} onClick={() => setLook({ variant })}>
-                  {{ auto: 'Auto', full: 'Image + footer', image: 'Image only', text: 'Text only' }[variant ?? 'auto']}
+        <Section title="Card" hint="How it looks on the board.">
+          <div className="flex flex-wrap gap-1.5">
+            {([undefined, 'full', 'image', 'text'] as (CardVariant | undefined)[]).map((variant) => (
+              <Chip key={variant ?? 'auto'} active={look.variant === variant} onClick={() => setLook({ variant })}>
+                {{ auto: 'Auto', full: 'Image + footer', image: 'Image only', text: 'Text only' }[variant ?? 'auto']}
+              </Chip>
+            ))}
+          </div>
+          {look.variant === undefined && (
+            <p className="text-xs text-ash">Auto: a footer on cards 3+ wide, image only on smaller ones, text if there&apos;s no image.</p>
+          )}
+          {(look.variant ?? 'full') === 'full' && (
+            <div className="flex items-center gap-1.5">
+              <span className="mr-1 text-xs text-ash">Description</span>
+              {([['Auto', undefined], ['On', true], ['Off', false]] as const).map(([label, value]) => (
+                <Chip key={label} active={look.description === value} onClick={() => setLook({ description: value })}>
+                  {label}
                 </Chip>
               ))}
             </div>
-            {look.variant === undefined && (
-              <p className="text-xs text-ash">Auto: a footer on cards 3+ wide, image only on smaller ones, text if there&apos;s no image.</p>
-            )}
-            {(look.variant ?? 'full') === 'full' && (
-              <div className="flex items-center gap-1.5">
-                <span className="mr-1 text-xs text-ash">Description</span>
-                {([['Auto', undefined], ['On', true], ['Off', false]] as const).map(([label, value]) => (
-                  <Chip key={label} active={look.description === value} onClick={() => setLook({ description: value })}>
-                    {label}
-                  </Chip>
-                ))}
-              </div>
-            )}
-          </Section>
+          )}
 
-          {(look.variant ?? 'full') !== 'text' && (
-            <>
-              <Section title="Image">
-                <ImagePicker
-                  images={images}
-                  defaultImage={project.thumbnail}
-                  current={look.image ?? project.thumbnail}
-                  onPick={(src) => setLook({ image: src === project.thumbnail ? undefined : src, focus: undefined, zoom: undefined })}
-                  onUpload={async (files) => {
-                    const [src] = await onUpload(card.id, files);
-                    if (src) setLook({ image: src, focus: undefined, zoom: undefined });
-                  }}
+          {showsImage &&
+            (thumbnail ? (
+              <>
+                <p className="-mb-1 text-xs text-ash">
+                  Thumbnail{look.image && look.image !== project.thumbnail ? '' : ' (default)'}: drag to frame it.
+                </p>
+                <FramingPreview
+                  src={thumbnail}
+                  card={card}
+                  footer={look.variant === 'full' || (look.variant === undefined && card.w >= 3)}
+                  focus={look.focus ?? [50, 50]}
+                  zoom={look.zoom ?? 1}
+                  onFocus={(focus) => setLook({ focus }, `focus:${card.id}`)}
                 />
-              </Section>
-
-              {(look.image ?? project.thumbnail) && (
-                <Section title="Framing">
-                  <FramingPreview
-                    src={(look.image ?? project.thumbnail)!}
-                    card={card}
-                    footer={look.variant === 'full' || (look.variant === undefined && card.w >= 3)}
-                    focus={look.focus ?? [50, 50]}
-                    zoom={look.zoom ?? 1}
-                    onFocus={(focus) => setLook({ focus }, `focus:${card.id}`)}
+                <label className="flex items-center gap-3 text-xs text-ash">
+                  Zoom
+                  <input
+                    type="range"
+                    min={1}
+                    max={3}
+                    step={0.05}
+                    value={look.zoom ?? 1}
+                    onChange={(e) => setLook({ zoom: Number(e.target.value) }, `zoom:${card.id}`)}
+                    className="flex-1 accent-orange"
                   />
-                  <label className="flex items-center gap-3 text-xs text-ash">
-                    Zoom
-                    <input
-                      type="range"
-                      min={1}
-                      max={3}
-                      step={0.05}
-                      value={look.zoom ?? 1}
-                      onChange={(e) => setLook({ zoom: Number(e.target.value) }, `zoom:${card.id}`)}
-                      className="flex-1 accent-orange"
-                    />
-                    <span className="w-10 text-right font-crt text-base text-rice">{(look.zoom ?? 1).toFixed(2)}×</span>
-                  </label>
-                  <button className="self-start text-xs text-ash underline-offset-2 hover:text-rice hover:underline" onClick={() => setLook({ focus: undefined, zoom: undefined })}>
+                  <span className="w-10 text-right font-crt text-base text-rice">{(look.zoom ?? 1).toFixed(2)}×</span>
+                </label>
+                <div className="flex gap-3 text-xs text-ash">
+                  <button className="underline-offset-2 hover:text-rice hover:underline" onClick={() => setLook({ focus: undefined, zoom: undefined })}>
                     Reset framing
                   </button>
-                </Section>
-              )}
-            </>
-          )}
-        </>
+                  {look.image && look.image !== project.thumbnail && (
+                    <button
+                      className="underline-offset-2 hover:text-rice hover:underline"
+                      onClick={() => setLook({ image: undefined, focus: undefined, zoom: undefined })}
+                    >
+                      Back to the default thumbnail
+                    </button>
+                  )}
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-orange">No thumbnail. Pick one in Files below.</p>
+            ))}
+        </Section>
       )}
 
       {project && viewfinder && (
-        <Section title="Viewfinder">
-          <ViewfinderEditor
-            edit={viewfinder}
-            files={files}
-            onChange={(items) => onViewfinder(card.id, items)}
-            onUpload={(list) => onUpload(card.id, list)}
-            onPreview={() => onPreview(card.id)}
-          />
-        </Section>
+        <>
+          <Section title="Files" hint="Everything in the project's folder. Set the card's thumbnail, or toggle what the viewfinder shows.">
+            <FileShelf
+              files={files}
+              defaultThumbnail={project.thumbnail}
+              thumbnail={thumbnail}
+              viewfinder={items}
+              onThumbnail={(src) => setLook({ image: src === project.thumbnail ? undefined : src, focus: undefined, zoom: undefined })}
+              onViewfinder={(src) => {
+                const at = items.findIndex((item) => item.src === src);
+                onViewfinder(card.id, at >= 0 ? items.filter((_, i) => i !== at) : [...items, { kind: kindOf(src), src }]);
+              }}
+              onUpload={(list) => onUpload(card.id, list)}
+            />
+          </Section>
+
+          <Section title="Viewfinder" hint="What opens when the card is clicked, in order.">
+            <ViewfinderEditor edit={viewfinder} onChange={(next) => onViewfinder(card.id, next)} onPreview={() => onPreview(card.id)} />
+          </Section>
+        </>
       )}
 
       <button className="self-start rounded-md px-2 py-1 text-xs text-ash hover:bg-cell-raised hover:text-rice" onClick={() => onUnplace(card.id)}>
@@ -255,34 +253,45 @@ function CardPanel({
   );
 }
 
-function ImagePicker({
-  images,
-  defaultImage,
-  current,
-  onPick,
+const IMAGE_FILE = /\.(png|jpe?g|webp|avif|gif)$/i;
+
+/**
+ * The project's folder as one shelf. Each file shows whether it's the
+ * thumbnail and where it sits in the viewfinder, with a button for each.
+ * Uploads (or files dropped on the shelf) land here.
+ */
+function FileShelf({
+  files,
+  defaultThumbnail,
+  thumbnail,
+  viewfinder,
+  onThumbnail,
+  onViewfinder,
   onUpload,
 }: {
-  images: string[];
-  defaultImage?: string;
-  current?: string;
-  onPick: (src: string) => void;
-  onUpload: (files: FileList) => Promise<void>;
+  files: string[];
+  defaultThumbnail?: string;
+  thumbnail?: string;
+  viewfinder: ViewfinderItem[];
+  onThumbnail: (src: string) => void;
+  onViewfinder: (src: string) => void;
+  onUpload: (files: FileList) => Promise<string[]>;
 }) {
   const input = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
   const [busy, setBusy] = useState(false);
-  const all = defaultImage && !images.includes(defaultImage) ? [defaultImage, ...images] : images;
+  const all = defaultThumbnail && !files.includes(defaultThumbnail) ? [defaultThumbnail, ...files] : files;
 
-  const take = async (files: FileList | null) => {
-    if (!files?.length) return;
+  const take = async (list: FileList | null) => {
+    if (!list?.length) return;
     setBusy(true);
-    await onUpload(files);
+    await onUpload(list);
     setBusy(false);
   };
 
   return (
     <div
-      className={`flex flex-col gap-2 rounded-lg ${over ? 'outline-2 outline-dashed outline-orange' : ''}`}
+      className={`grid grid-cols-3 gap-1.5 rounded-lg ${over ? 'outline-2 outline-offset-2 outline-dashed outline-orange' : ''}`}
       onDragOver={(e) => {
         e.preventDefault();
         setOver(true);
@@ -294,27 +303,72 @@ function ImagePicker({
         void take(e.dataTransfer.files);
       }}
     >
-      <div className="grid grid-cols-3 gap-1.5">
-        {all.map((src) => (
-          <button
-            key={src}
-            onClick={() => onPick(src)}
-            className={`relative aspect-[4/3] overflow-hidden rounded-md bg-lacquer ${src === current ? 'ring-2 ring-orange' : 'opacity-70 hover:opacity-100'}`}
-            title={src.split('/').pop()}
-          >
-            <Image src={src} alt="" fill sizes="110px" className="object-cover" />
-            {src === defaultImage && <span className="absolute bottom-1 left-1 rounded bg-black/70 px-1 text-[10px] text-ash">default</span>}
-          </button>
-        ))}
-        <button
-          onClick={() => input.current?.click()}
-          className="flex aspect-[4/3] flex-col items-center justify-center rounded-md border border-dashed border-wall text-xs text-ash hover:border-orange hover:text-orange"
-        >
-          {busy ? 'Uploading…' : <>+ Upload<span className="text-[10px] opacity-70">or drop here</span></>}
-        </button>
-      </div>
-      <input ref={input} type="file" accept="image/png,image/jpeg,image/webp,image/avif,image/gif" multiple hidden onChange={(e) => void take(e.target.files)} />
+      {all.map((src) => {
+        const image = IMAGE_FILE.test(src);
+        const isThumbnail = src === thumbnail;
+        const place = viewfinder.findIndex((item) => item.src === src);
+        return (
+          <div key={src} className="flex flex-col gap-1">
+            <div
+              className={`relative aspect-[4/3] overflow-hidden rounded-md bg-lacquer ${isThumbnail ? 'ring-2 ring-orange' : ''}`}
+              title={src.split('/').pop()}
+            >
+              {image ? (
+                <Image src={src} alt="" fill sizes="110px" className="object-cover" />
+              ) : (
+                <span className="absolute inset-0 flex items-center justify-center font-crt text-lg text-ash">{KIND_LABELS[kindOf(src)]}</span>
+              )}
+              <span className="absolute inset-x-1 bottom-1 truncate rounded bg-black/70 px-1 text-[10px] text-ash">{src.split('/').pop()}</span>
+              {place >= 0 && (
+                <span className="absolute right-1 top-1 rounded bg-purple px-1 font-crt text-sm leading-tight text-lacquer" title="Its place in the viewfinder">
+                  {place + 1}
+                </span>
+              )}
+            </div>
+            <div className="flex gap-1">
+              {image && (
+                <ShelfButton active={isThumbnail} onClick={() => onThumbnail(src)} label={isThumbnail ? 'The thumbnail' : 'Use as thumbnail'}>
+                  Thumb
+                </ShelfButton>
+              )}
+              <ShelfButton active={place >= 0} onClick={() => onViewfinder(src)} label={place >= 0 ? 'Take out of the viewfinder' : 'Add to the viewfinder'}>
+                {place >= 0 ? 'In VF' : '+ VF'}
+              </ShelfButton>
+            </div>
+          </div>
+        );
+      })}
+      <button
+        onClick={() => input.current?.click()}
+        className="flex aspect-[4/3] flex-col items-center justify-center rounded-md border border-dashed border-wall text-xs text-ash hover:border-orange hover:text-orange"
+      >
+        {busy ? 'Uploading…' : <>+ Upload<span className="text-[10px] opacity-70">or drop here</span></>}
+      </button>
+      <input
+        ref={input}
+        type="file"
+        multiple
+        hidden
+        accept="image/*,.stl,.glb,.gltf,.pdf,.mp4,.webm,.mov"
+        onChange={(e) => void take(e.target.files)}
+      />
     </div>
+  );
+}
+
+function ShelfButton({ active, onClick, label, children }: { active: boolean; onClick: () => void; label: string; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      title={label}
+      aria-label={label}
+      aria-pressed={active}
+      className={`flex-1 rounded px-1 py-0.5 text-[10px] font-medium transition-colors ${
+        active ? 'bg-orange text-lacquer' : 'bg-cell-raised text-ash hover:text-rice'
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -353,7 +407,7 @@ function FramingPreview({
           <Image src={src} alt="" fill sizes="320px" className="object-cover" style={{ objectPosition: `${focus[0]}% ${focus[1]}%` }} draggable={false} />
         </div>
       </div>
-      <p className="text-xs text-ash">Drag on the full image to choose what stays in view:</p>
+      <p className="text-xs text-ash">The whole image; the dot is what stays in view.</p>
       {/* The whole image, uncropped, with the focal point on it. */}
       <div
         ref={ref}
@@ -379,10 +433,13 @@ function FramingPreview({
 
 // ---------------------------------------------------------------------------
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
-      <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ash">{title}</h3>
+      <div className="flex flex-col gap-0.5">
+        <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ash">{title}</h3>
+        {hint && <p className="text-xs text-ash/70">{hint}</p>}
+      </div>
       {children}
     </section>
   );

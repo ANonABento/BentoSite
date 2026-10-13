@@ -3,10 +3,10 @@
 /**
  * The studio's viewfinder editor for one project: the items it shows, in
  * order. Each item is a kind (which viewer), a source and an optional tab
- * name. Images share one gallery tab; everything else gets its own.
+ * name. Images share one gallery tab; everything else gets its own. Files
+ * from the project folder are added from the Files shelf; links are added here.
  */
 
-import { useRef, useState } from 'react';
 import Image from 'next/image';
 import { KIND_LABELS, type ViewfinderItem, type ViewfinderKind } from '@/components/Viewfinder/types';
 import type { ViewfinderEdit } from './Studio';
@@ -21,7 +21,7 @@ const KIND_HINTS: Record<ViewfinderKind, string> = {
 };
 
 /** The kind a file most likely is, from its extension. */
-function kindOf(src: string): ViewfinderKind {
+export function kindOf(src: string): ViewfinderKind {
   if (/\.(png|jpe?g|webp|avif|gif)$/i.test(src)) return 'image';
   if (/\.(stl|glb|gltf)$/i.test(src)) return 'model';
   if (/\.pdf$/i.test(src)) return 'pdf';
@@ -31,17 +31,12 @@ function kindOf(src: string): ViewfinderKind {
 
 interface ViewfinderEditorProps {
   edit: ViewfinderEdit;
-  files: string[];
   onChange: (items: ViewfinderItem[] | null) => void;
-  onUpload: (files: FileList) => Promise<string[]>;
   onPreview: () => void;
 }
 
-export function ViewfinderEditor({ edit, files, onChange, onUpload, onPreview }: ViewfinderEditorProps) {
+export function ViewfinderEditor({ edit, onChange, onPreview }: ViewfinderEditorProps) {
   const { items, custom } = edit;
-  const [picking, setPicking] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const input = useRef<HTMLInputElement>(null);
 
   const update = (index: number, patch: Partial<ViewfinderItem>) => onChange(items.map((item, i) => (i === index ? { ...item, ...patch } : item)));
   const move = (index: number, delta: number) => {
@@ -51,15 +46,6 @@ export function ViewfinderEditor({ edit, files, onChange, onUpload, onPreview }:
     onChange(next);
   };
   const add = (item: ViewfinderItem) => onChange([...items, item]);
-  const unused = files.filter((src) => !items.some((item) => item.src === src));
-
-  const take = async (list: FileList | null) => {
-    if (!list?.length) return;
-    setBusy(true);
-    const srcs = await onUpload(list);
-    setBusy(false);
-    if (srcs.length) onChange([...items, ...srcs.map((src) => ({ kind: kindOf(src), src }))]);
-  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -77,7 +63,7 @@ export function ViewfinderEditor({ edit, files, onChange, onUpload, onPreview }:
         </div>
       </div>
 
-      {items.length === 0 && <p className="text-xs text-orange">Nothing yet; the viewfinder will say so.</p>}
+      {items.length === 0 && <p className="text-xs text-orange">Nothing yet. Add files from the shelf above, or a link below.</p>}
       <ol className="flex flex-col gap-1.5">
         {items.map((item, index) => (
           <li key={index} className="flex flex-col gap-1.5 rounded-lg bg-cell-raised p-2">
@@ -126,43 +112,13 @@ export function ViewfinderEditor({ edit, files, onChange, onUpload, onPreview }:
         ))}
       </ol>
 
-      <div className="flex flex-wrap gap-1.5">
-        <AddButton onClick={() => setPicking((p) => !p)}>+ From folder{unused.length ? ` (${unused.length})` : ''}</AddButton>
-        <AddButton onClick={() => add({ kind: 'video', src: '' })}>+ Video</AddButton>
-        <AddButton onClick={() => add({ kind: 'embed', src: '' })}>+ Live page</AddButton>
-        <AddButton onClick={() => add({ kind: 'model', src: '' })}>+ 3D</AddButton>
-        <AddButton onClick={() => add({ kind: 'pdf', src: '' })}>+ PDF</AddButton>
-        <AddButton onClick={() => input.current?.click()}>{busy ? 'Uploading…' : '+ Upload'}</AddButton>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="text-xs text-ash">Add a link:</span>
+        <AddButton onClick={() => add({ kind: 'video', src: '' })}>Video</AddButton>
+        <AddButton onClick={() => add({ kind: 'embed', src: '' })}>Live page</AddButton>
+        <AddButton onClick={() => add({ kind: 'model', src: '' })}>3D</AddButton>
+        <AddButton onClick={() => add({ kind: 'pdf', src: '' })}>PDF</AddButton>
       </div>
-      <input
-        ref={input}
-        type="file"
-        multiple
-        hidden
-        accept="image/*,.stl,.glb,.gltf,.pdf,.mp4,.webm,.mov"
-        onChange={(e) => void take(e.target.files)}
-      />
-
-      {picking && (
-        <div className="grid grid-cols-3 gap-1.5">
-          {unused.length === 0 && <p className="col-span-3 text-xs text-ash">Everything in the folder is already in the list.</p>}
-          {unused.map((src) => (
-            <button
-              key={src}
-              onClick={() => add({ kind: kindOf(src), src })}
-              className="relative flex aspect-[4/3] items-end overflow-hidden rounded-md bg-lacquer p-1 text-left hover:ring-2 hover:ring-orange"
-              title={src}
-            >
-              {kindOf(src) === 'image' ? (
-                <Image src={src} alt="" fill sizes="110px" className="object-cover" />
-              ) : (
-                <span className="font-crt text-base leading-none text-ash">{KIND_LABELS[kindOf(src)]}</span>
-              )}
-              <span className="relative truncate rounded bg-black/70 px-1 text-[10px] text-ash">{src.split('/').pop()}</span>
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
