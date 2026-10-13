@@ -51,12 +51,27 @@
   },
   "experience": [
     {
+      "id": "rlwrld",
+      "company": "RLWRLD",
+      "role": "Forward Deployed Engineer",
+      "location": "San Francisco, California, United States",
+      "period": "Aug 2026 - Present",
+      "description": "Captures multi-modal teleoperation data (Quest 3, Vive, Manus gloves) into LeRobot datasets to fine-tune the RLDX-1 foundation model. Builds feasibility proofs-of-concept with the AWS Prototyping team, and mobile-base teleop, auto-homing and state recovery for robot controllers.",
+      "type": "work",
+      "technologies": [
+        "Python",
+        "ROS2",
+        "LeRobot",
+        "Teleoperation"
+      ]
+    },
+    {
       "id": "hamming",
       "company": "Hamming AI",
       "role": "Software Engineer",
       "location": "Austin, Texas, United States",
-      "period": "Dec 2025 - Present",
-      "description": "YC S24 startup building AI-powered developer tools.",
+      "period": "Dec 2025 - Apr 2026",
+      "description": "YC S24. Shipped Red Teaming, an adversarial voice-agent evaluation suite with an adaptive attack selector on Temporal workflows. Built a dual-mode in-app chatbot for navigation and root-cause analysis over call data.",
       "type": "work",
       "technologies": [
         "Python",
