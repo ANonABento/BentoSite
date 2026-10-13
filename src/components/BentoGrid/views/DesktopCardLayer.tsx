@@ -19,7 +19,7 @@ interface DesktopCardLayerProps {
   /** Card ids the filter leaves out; they fade back rather than leave. */
   dimmed: Set<string>;
   renderCard?: RenderCard;
-  onCardClick: (card: CardData) => void;
+  onCardClick: (card: CardData, layout: CardPosition) => void;
 }
 
 /**
@@ -71,7 +71,7 @@ export function DesktopCardLayer({
                 layout,
                 theme,
                 isFocused,
-                () => onCardClick(cardData),
+                () => onCardClick(cardData, layout),
                 index,
               )}
             </div>
@@ -84,7 +84,7 @@ export function DesktopCardLayer({
             card={cardData}
             position={layout}
             theme={theme}
-            onClick={() => onCardClick(cardData)}
+            onClick={() => onCardClick(cardData, layout)}
             isFocused={isFocused}
           />
         );

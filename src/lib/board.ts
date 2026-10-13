@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { BoardLayout, InfoContent, IntroProfile, LayoutCard, ProjectCardData } from '@/components/BentoGrid';
 import { readingOrder, sizeOf } from '@/components/BentoGrid';
+import type { ViewfinderItem, ViewfinderProject } from '@/components/Viewfinder/types';
 import { RESUME_URL, about, experience, formatDate, getFeatured, getProjects, profile, skills, type Project } from './content';
 
 export const LAYOUT_PATH = path.join(process.cwd(), 'src/content/layout.json');
@@ -54,4 +55,35 @@ export function introProfile(): IntroProfile {
 
 export function infoContent(): InfoContent {
   return { links: { resume: RESUME_URL, github: profile.github, linkedin: profile.linkedin, email: profile.email } };
+}
+
+/** The viewfinder's items for a project: its own list, or its images then its live demo. */
+export function viewfinderItems(p: Project): ViewfinderItem[] {
+  if (p.media.viewfinder?.length) return p.media.viewfinder;
+  const images = [...new Set([p.media.featuredImage, ...(p.media.images ?? [])].filter((src): src is string => Boolean(src)))];
+  const items: ViewfinderItem[] = images.map((src) => ({ kind: 'image', src }));
+  if (p.links.liveDemo) items.push({ kind: 'embed', src: p.links.liveDemo, label: 'Live demo' });
+  return items;
+}
+
+export function viewfinderProject(p: Project): ViewfinderProject {
+  return {
+    id: p.id,
+    name: p.name,
+    shortDescription: p.shortDescription,
+    description: p.description,
+    category: p.category,
+    status: p.status,
+    date: formatDate(p.dateCompleted),
+    context: p.context,
+    award: p.award,
+    technologies: p.technologies,
+    links: p.links,
+    items: viewfinderItems(p),
+  };
+}
+
+/** Every project's viewfinder data, by id. */
+export function viewfinderProjects(): Record<string, ViewfinderProject> {
+  return Object.fromEntries(getProjects().map((p) => [p.id, viewfinderProject(p)]));
 }

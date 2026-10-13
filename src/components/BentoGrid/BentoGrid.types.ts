@@ -191,7 +191,8 @@ export interface GridConfig {
   layout: BoardLayout;
   /** Force all content cards to a specific size. Default: 'mixed' (varied sizes). */
   cardSizeMode?: CardSizeMode;
-  onCardSelect?: (card: CardData) => void;
+  /** A card was opened. `origin` is where it is on screen, when known, for an open animation to grow from. */
+  onCardSelect?: (card: CardData, origin?: Rect) => void;
   onBack?: () => void;
   pageTitle?: string;
   breadcrumb?: string;

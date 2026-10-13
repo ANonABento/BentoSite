@@ -11,6 +11,7 @@ export type {
   PhotoCardData,
   Position,
   ProjectCardData,
+  Rect,
   SearchCardEdge,
   SearchCardState,
   ThemeConfig,

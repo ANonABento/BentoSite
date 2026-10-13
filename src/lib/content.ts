@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import portfolio from '@/content/portfolio.json';
+import type { ViewfinderItem } from '@/components/Viewfinder/types';
 
 export type Project = {
   id: string;
@@ -11,7 +12,12 @@ export type Project = {
   status: 'Completed' | 'In Progress';
   technologies: string[];
   links: { github?: string; docs?: string; liveDemo?: string };
-  media: { featuredImage?: string; images?: string[] };
+  media: {
+    featuredImage?: string;
+    images?: string[];
+    /** What the viewfinder shows, in order. Without it: the images, then the live demo. */
+    viewfinder?: ViewfinderItem[];
+  };
   /** Where it was built: a hackathon, course, job, or "Personal". */
   context?: string;
   /** Only awards a source actually states. */
@@ -24,9 +30,10 @@ const PROJECTS_DIR = path.join(process.cwd(), 'src/content/projects');
 
 let cache: Project[] | undefined;
 
-/** Every project, newest first. */
+/** Every project, newest first. Cached in production; read fresh in dev so edits (and /studio saves) show on reload. */
 export function getProjects(): Project[] {
-  cache ??= fs
+  if (cache && process.env.NODE_ENV === 'production') return cache;
+  cache = fs
     .readdirSync(PROJECTS_DIR)
     .filter((f) => f.endsWith('.json'))
     .map((f) => {

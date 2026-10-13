@@ -1,8 +1,10 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { AnimatePresence } from 'framer-motion';
+import { Viewfinder } from '@/components/Viewfinder/Viewfinder';
+import type { ViewfinderProject } from '@/components/Viewfinder/types';
 import { InfoCard, IntroCard, ProjectCard, type InfoContent, type IntroProfile } from '@/components/BentoGrid/cards';
 import {
   BentoGrid,
@@ -12,6 +14,7 @@ import {
   type InfoCardData,
   type IntroCardData,
   type ProjectCardData,
+  type Rect,
   type ThemeConfig,
 } from '@/components/BentoGrid';
 
@@ -23,6 +26,8 @@ export interface ProjectsGridProps {
   projects: ProjectCardData[];
   profile: IntroProfile;
   info: InfoContent;
+  /** Each project's viewfinder data, by id. */
+  details: Record<string, ViewfinderProject>;
 }
 
 export function makeRenderCard(profile: IntroProfile, info: InfoContent) {
@@ -67,21 +72,62 @@ export function makeRenderCard(profile: IntroProfile, info: InfoContent) {
   };
 }
 
-export function ProjectsGridClient({ layout, projects, profile, info }: ProjectsGridProps) {
-  const router = useRouter();
+/** The project named in the URL (`/?project=<id>`), if it's one we know. */
+function projectInUrl(details: Record<string, ViewfinderProject>): string | null {
+  const id = new URLSearchParams(window.location.search).get('project');
+  return id && details[id] ? id : null;
+}
+
+export function ProjectsGridClient({ layout, projects, profile, info, details }: ProjectsGridProps) {
   // Every card goes on the board once; the board repeats it in every direction.
   const cards = useMemo<CardData[]>(() => [INTRO, CONTACT, ...projects], [projects]);
   const renderCard = useMemo(() => makeRenderCard(profile, info), [profile, info]);
 
+  // Clicking a project opens it in the viewfinder over the board. The URL
+  // follows (`/?project=<id>`), so the link can be shared and Back closes it.
+  const [open, setOpen] = useState<{ id: string; origin: Rect | null } | null>(() => {
+    const id = projectInUrl(details);
+    return id ? { id, origin: null } : null;
+  });
+  const pushed = useRef(false);
+
+  useEffect(() => {
+    const sync = () => {
+      const id = projectInUrl(details);
+      if (!id) pushed.current = false;
+      setOpen((current) => (id ? (current?.id === id ? current : { id, origin: null }) : null));
+    };
+    window.addEventListener('popstate', sync);
+    return () => window.removeEventListener('popstate', sync);
+  }, [details]);
+
   const handleCardSelect = useCallback(
-    (card: CardData) => {
-      if (card.type === 'project') router.push(`/projects/${card.id}`);
+    (card: CardData, origin?: Rect) => {
+      if (card.type !== 'project' || !details[card.id]) return;
+      const url = new URL(window.location.href);
+      url.searchParams.set('project', card.id);
+      window.history.pushState(null, '', url);
+      pushed.current = true;
+      setOpen({ id: card.id, origin: origin ?? null });
     },
-    [router],
+    [details],
   );
 
+  const close = useCallback(() => {
+    if (pushed.current) {
+      // Popping our own entry keeps history clean; popstate clears `open`.
+      window.history.back();
+      return;
+    }
+    const url = new URL(window.location.href);
+    url.searchParams.delete('project');
+    window.history.replaceState(null, '', url);
+    setOpen(null);
+  }, []);
+
   return (
-    <BentoGrid
+    <>
+      <BentoGrid
         theme="premium"
         cards={cards}
         layout={layout}
@@ -89,6 +135,10 @@ export function ProjectsGridClient({ layout, projects, profile, info }: Projects
         onCardSelect={handleCardSelect}
         breadcrumb="bentOS / Kevin Jiang"
         renderCard={renderCard}
-    />
+      />
+      <AnimatePresence>
+        {open && <Viewfinder key={open.id} project={details[open.id]} origin={open.origin} onClose={close} />}
+      </AnimatePresence>
+    </>
   );
 }

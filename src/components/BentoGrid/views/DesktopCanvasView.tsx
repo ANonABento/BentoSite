@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSearchCardState } from '../cards';
 import {
+  canvasToScreen,
   countContentCards,
   filterCards,
   getCameraTransform,
@@ -15,7 +16,7 @@ import {
 import { SEARCH_DOCK_PREFIX, useTiledBoard } from '../core/useTiledBoard';
 import { SEARCH_CARD, SEARCH_CARD_ID } from '../BentoGrid.constants';
 import { CloseIcon, RefreshIcon, SearchIcon } from '@/components/ui/Icons';
-import type { CardData, CardPosition, CardSizeMode, RenderCard, ThemeConfig } from '../BentoGrid.types';
+import type { CardData, CardPosition, CardSizeMode, Rect, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import type { BoardLayout } from '../layout/boardLayout';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
@@ -50,7 +51,7 @@ interface DesktopCanvasViewProps {
   categories: string[];
   cardSizeMode?: CardSizeMode;
   breadcrumb?: string;
-  onCardSelect?: (card: CardData) => void;
+  onCardSelect?: (card: CardData, origin?: Rect) => void;
   renderCard?: RenderCard;
   onBack?: () => void;
 }
@@ -159,7 +160,7 @@ export function DesktopCanvasView({
 
   const navigableLayouts = useMemo(() => navigable(displayLayouts), [displayLayouts]);
 
-  const selectCard = useCallback((card: CardData) => onCardSelect?.(card), [onCardSelect]);
+  const selectCard = useCallback((card: CardData, origin?: Rect) => onCardSelect?.(card, origin), [onCardSelect]);
 
   const cardNavigation = useCardNavigation({
     visible: navigableLayouts,
@@ -169,12 +170,15 @@ export function DesktopCanvasView({
   });
   const { focusedCardId, setFocusedCardId } = cardNavigation;
 
+  // A clicked card reports where it is on screen, so whatever opens can grow out of it.
+  const { camera } = navigation;
   const handleCardClick = useCallback(
-    (card: CardData) => {
+    (card: CardData, layout: CardPosition) => {
       setFocusedCardId(card.id);
-      selectCard(card);
+      const topLeft = canvasToScreen(layout.x, layout.y, camera, windowSize);
+      selectCard(card, { x: topLeft.x, y: topLeft.y, width: layout.width * camera.zoom, height: layout.height * camera.zoom });
     },
-    [selectCard, setFocusedCardId],
+    [selectCard, setFocusedCardId, camera, windowSize],
   );
 
   // Focus the search input. Docked, or folded to a bar at the top or bottom,

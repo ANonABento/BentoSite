@@ -21,7 +21,18 @@
   ],
   "links": {},
   "media": {
-    "featuredImage": "/projects/robotic-arm-puppeteer/hero.jpg"
+    "featuredImage": "/projects/robotic-arm-puppeteer/hero.jpg",
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/robotic-arm-puppeteer/hero.jpg"
+      },
+      {
+        "kind": "model",
+        "src": "/models/robotic-arm-puppeteer/main.stl",
+        "label": "3D arm"
+      }
+    ]
   },
   "dateCompleted": "2025-08"
 }
