@@ -25,6 +25,25 @@
       "/projects/venturesauce/hero.webp",
       "/projects/venturesauce/inbox.webp",
       "/projects/venturesauce/report.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/venturesauce/hero.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/venturesauce/inbox.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/venturesauce/report.webp"
+      },
+      {
+        "kind": "video",
+        "src": "/projects/venturesauce/walkthrough.mp4",
+        "label": "Walkthrough"
+      }
     ]
   },
   "dateCompleted": "2026-10"
