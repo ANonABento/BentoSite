@@ -20,7 +20,12 @@
     "github": "https://github.com/ANonABento/trash-can-robot"
   },
   "media": {
-    "featuredImage": "/projects/trash-can-robot/hero.png"
+    "featuredImage": "/projects/trash-can-robot/hero.png",
+    "images": [
+      "/projects/trash-can-robot/hero.png",
+      "/projects/trash-can-robot/side.webp",
+      "/projects/trash-can-robot/under.webp"
+    ]
   },
   "dateCompleted": "2026-10"
 }

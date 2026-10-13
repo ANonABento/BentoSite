@@ -20,5 +20,14 @@
     "github": "https://github.com/djang-c/TFOTB"
   },
   "dateCompleted": "2026-10",
-  "media": {}
+  "media": {
+    "featuredImage": "/projects/tfotb/hero.webp",
+    "images": [
+      "/projects/tfotb/hero.webp",
+      "/projects/tfotb/graph.webp",
+      "/projects/tfotb/dossier.webp",
+      "/projects/tfotb/evidence.webp",
+      "/projects/tfotb/robotics.webp"
+    ]
+  }
 }

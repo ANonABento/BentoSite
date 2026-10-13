@@ -28,10 +28,33 @@
         "src": "/projects/robotic-arm-puppeteer/hero.jpg"
       },
       {
+        "kind": "image",
+        "src": "/projects/robotic-arm-puppeteer/render.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/robotic-arm-puppeteer/worn.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/robotic-arm-puppeteer/apriltags.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/robotic-arm-puppeteer/calibration.webp"
+      },
+      {
         "kind": "model",
         "src": "/models/robotic-arm-puppeteer/main.stl",
         "label": "3D arm"
       }
+    ],
+    "images": [
+      "/projects/robotic-arm-puppeteer/hero.jpg",
+      "/projects/robotic-arm-puppeteer/render.webp",
+      "/projects/robotic-arm-puppeteer/worn.webp",
+      "/projects/robotic-arm-puppeteer/apriltags.webp",
+      "/projects/robotic-arm-puppeteer/calibration.webp"
     ]
   },
   "dateCompleted": "2025-08"
