@@ -31,6 +31,9 @@ import {
   type ProjectCardData,
 } from '@/components/BentoGrid';
 import { CONTACT, INTRO, makeRenderCard } from '../_components/ProjectsGridClient';
+import { AnimatePresence } from 'framer-motion';
+import { Viewfinder } from '@/components/Viewfinder/Viewfinder';
+import type { ViewfinderItem, ViewfinderProject } from '@/components/Viewfinder/types';
 import { Inspector } from './Inspector';
 import { useLayoutHistory } from './useLayoutHistory';
 
@@ -52,9 +55,24 @@ export interface StudioProps {
   initialLayout: BoardLayout;
   projects: ProjectCardData[];
   images: Record<string, string[]>;
+  /** Every file in each project's public folder. */
+  files: Record<string, string[]>;
+  details: Record<string, ViewfinderProject>;
+  /** What each project's viewfinder shows with no list of its own. */
+  viewfinderDefaults: Record<string, ViewfinderItem[]>;
+  /** Which projects have their own viewfinder list. */
+  viewfinderCustom: Record<string, boolean>;
   profile: IntroProfile;
   info: InfoContent;
 }
+
+/** A project's viewfinder as edited: its own list, or the default. */
+export interface ViewfinderEdit {
+  custom: boolean;
+  items: ViewfinderItem[];
+}
+
+const IMAGE_FILE = /\.(png|jpe?g|webp|avif|gif)$/i;
 
 /** Default footprint for a card placed from the tray. */
 function defaultSpan(id: string) {
@@ -63,9 +81,37 @@ function defaultSpan(id: string) {
   return { w: 2, h: 2 };
 }
 
-export function Studio({ initialLayout, projects, images: initialImages, profile, info }: StudioProps) {
+export function Studio({
+  initialLayout,
+  projects,
+  images: initialImages,
+  files: initialFiles,
+  details,
+  viewfinderDefaults,
+  viewfinderCustom,
+  profile,
+  info,
+}: StudioProps) {
   const history = useLayoutHistory(initialLayout);
-  const { layout, commit, undo, redo, dirty, markSaved } = history;
+  const { layout, commit, undo, redo, dirty: layoutDirty, markSaved } = history;
+  const [files, setFiles] = useState(initialFiles);
+
+  // Viewfinder lists live in the project files, so they save separately from
+  // the layout (and sit outside undo).
+  const initialViewfinders = useMemo(
+    () =>
+      Object.fromEntries(
+        projects.map((p) => [p.id, { custom: viewfinderCustom[p.id], items: viewfinderCustom[p.id] ? details[p.id].items : viewfinderDefaults[p.id] }]),
+      ) as Record<string, ViewfinderEdit>,
+    [projects, details, viewfinderDefaults, viewfinderCustom],
+  );
+  const [viewfinders, setViewfinders] = useState(initialViewfinders);
+  const [savedViewfinders, setSavedViewfinders] = useState(initialViewfinders);
+  const changedViewfinders = Object.keys(viewfinders).filter(
+    (id) => JSON.stringify(viewfinders[id]) !== JSON.stringify(savedViewfinders[id]),
+  );
+  const dirty = layoutDirty || changedViewfinders.length > 0;
+  const [preview, setPreview] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
   const [images, setImages] = useState(initialImages);
@@ -251,7 +297,7 @@ export function Studio({ initialLayout, projects, images: initialImages, profile
   // ---- uploads -----------------------------------------------------------------
   const upload = useCallback(
     async (projectId: string, files: FileList | File[]) => {
-      let first: string | null = null;
+      const uploaded: string[] = [];
       for (const file of Array.from(files)) {
         const form = new FormData();
         form.set('project', projectId);
@@ -262,17 +308,18 @@ export function Studio({ initialLayout, projects, images: initialImages, profile
           say(body.error ?? 'Upload failed', 'error');
           continue;
         }
-        first ??= body.src;
-        setImages((all) => ({ ...all, [projectId]: [...(all[projectId] ?? []), body.src] }));
+        uploaded.push(body.src);
+        setFiles((all) => ({ ...all, [projectId]: [...(all[projectId] ?? []), body.src] }));
+        if (IMAGE_FILE.test(body.src)) setImages((all) => ({ ...all, [projectId]: [...(all[projectId] ?? []), body.src] }));
       }
-      return first;
+      return uploaded;
     },
     [say],
   );
 
   const uploadToCard = useCallback(
     async (projectId: string, files: FileList) => {
-      const src = await upload(projectId, files);
+      const [src] = await upload(projectId, files);
       if (!src) return;
       // Use the new image right away; framing starts fresh.
       const card = layout.cards.find((c) => c.id === projectId);
@@ -285,14 +332,31 @@ export function Studio({ initialLayout, projects, images: initialImages, profile
 
   // ---- save -----------------------------------------------------------------
   const save = useCallback(async () => {
-    const res = await fetch('/api/studio', { method: 'POST', body: JSON.stringify(layout) });
-    if (res.ok) {
+    const saved: string[] = [];
+    if (layoutDirty) {
+      const res = await fetch('/api/studio', { method: 'POST', body: JSON.stringify(layout) });
+      if (!res.ok) return say((await res.json()).error ?? 'Save failed', 'error');
       markSaved(layout);
-      say('Saved to layout.json.');
-    } else {
-      say((await res.json()).error ?? 'Save failed', 'error');
+      saved.push('layout.json');
     }
-  }, [layout, markSaved, say]);
+    for (const id of changedViewfinders) {
+      const edit = viewfinders[id];
+      const res = await fetch('/api/studio/project', {
+        method: 'POST',
+        body: JSON.stringify({ id, viewfinder: edit.custom ? edit.items : null }),
+      });
+      if (!res.ok) return say((await res.json()).error ?? 'Save failed', 'error');
+      setSavedViewfinders((all) => ({ ...all, [id]: edit }));
+      saved.push(`${id}.json`);
+    }
+    if (saved.length) say(`Saved ${saved.join(', ')}.`);
+  }, [layoutDirty, layout, markSaved, changedViewfinders, viewfinders, say]);
+
+  const editViewfinder = useCallback(
+    (id: string, items: ViewfinderItem[] | null) =>
+      setViewfinders((all) => ({ ...all, [id]: items ? { custom: true, items } : { custom: false, items: viewfinderDefaults[id] } })),
+    [viewfinderDefaults],
+  );
 
   useEffect(() => {
     if (!dirty) return;
@@ -497,7 +561,21 @@ export function Studio({ initialLayout, projects, images: initialImages, profile
           onPlace={placeFromTray}
           onUpload={upload}
           onResizeTile={resizeTile}
+          files={selectedCard ? files[selectedCard.id] ?? [] : []}
+          viewfinder={selectedCard ? viewfinders[selectedCard.id] ?? null : null}
+          onViewfinder={editViewfinder}
+          onPreview={setPreview}
         />
+        <AnimatePresence>
+          {preview && details[preview] && (
+            <Viewfinder
+              key={preview}
+              project={{ ...details[preview], items: viewfinders[preview].items }}
+              origin={null}
+              onClose={() => setPreview(null)}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

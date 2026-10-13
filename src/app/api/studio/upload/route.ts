@@ -3,9 +3,10 @@ import path from 'node:path';
 import { NextResponse } from 'next/server';
 import { getProject } from '@/lib/content';
 
-const IMAGE = /\.(png|jpe?g|webp|avif|gif)$/i;
+/** Images for cards and galleries, plus what the viewfinder can show: models, PDFs and video files. */
+const ALLOWED = /\.(png|jpe?g|webp|avif|gif|stl|glb|gltf|pdf|mp4|webm|mov)$/i;
 
-/** Adds an image to public/projects/<id>/ from /studio. Dev only: it writes into the repo. */
+/** Adds a file to public/projects/<id>/ from /studio. Dev only: it writes into the repo. */
 export async function POST(request: Request) {
   if (process.env.NODE_ENV !== 'development') return new NextResponse(null, { status: 404 });
 
@@ -13,8 +14,8 @@ export async function POST(request: Request) {
   const id = String(form.get('project') ?? '');
   const file = form.get('file');
   if (!getProject(id)) return NextResponse.json({ error: `no project "${id}"` }, { status: 400 });
-  if (!(file instanceof File) || !IMAGE.test(file.name)) {
-    return NextResponse.json({ error: 'expected a png, jpg, webp, avif or gif' }, { status: 400 });
+  if (!(file instanceof File) || !ALLOWED.test(file.name)) {
+    return NextResponse.json({ error: 'expected an image, a model (stl, glb, gltf), a pdf or a video (mp4, webm, mov)' }, { status: 400 });
   }
 
   const dir = path.join(process.cwd(), 'public/projects', id);

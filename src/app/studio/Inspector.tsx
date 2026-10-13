@@ -20,6 +20,9 @@ import {
   type LayoutCard,
   type ProjectCardData,
 } from '@/components/BentoGrid';
+import type { ViewfinderItem } from '@/components/Viewfinder/types';
+import type { ViewfinderEdit } from './Studio';
+import { ViewfinderEditor } from './ViewfinderEditor';
 
 const PRESETS: [number, number][] = [
   [1, 1], [2, 1], [1, 2], [2, 2], [3, 2], [2, 3], [3, 3], [4, 2],
@@ -37,8 +40,12 @@ interface InspectorProps {
   onLook: (id: string, look: CardLook | undefined, key?: string) => void;
   onUnplace: (id: string) => void;
   onPlace: (id: string) => void;
-  onUpload: (id: string, files: FileList | File[]) => Promise<string | null>;
+  onUpload: (id: string, files: FileList | File[]) => Promise<string[]>;
   onResizeTile: (cols: number, rows: number) => void;
+  files: string[];
+  viewfinder: ViewfinderEdit | null;
+  onViewfinder: (id: string, items: ViewfinderItem[] | null) => void;
+  onPreview: (id: string) => void;
 }
 
 export function Inspector(props: InspectorProps) {
@@ -103,7 +110,20 @@ function BoardPanel({ layout, unplaced, holes, onPlace, onResizeTile }: Inspecto
 
 // ---------------------------------------------------------------------------
 
-function CardPanel({ card, project, images, onClose, onResize, onLook, onUnplace, onUpload }: InspectorProps & { card: LayoutCard }) {
+function CardPanel({
+  card,
+  project,
+  images,
+  files,
+  viewfinder,
+  onClose,
+  onResize,
+  onLook,
+  onUnplace,
+  onUpload,
+  onViewfinder,
+  onPreview,
+}: InspectorProps & { card: LayoutCard }) {
   const look = card.look ?? {};
   const fixedSize = card.id === 'search';
   const setLook = (patch: Partial<CardLook>, key?: string) => onLook(card.id, { ...look, ...patch }, key);
@@ -177,7 +197,7 @@ function CardPanel({ card, project, images, onClose, onResize, onLook, onUnplace
                   current={look.image ?? project.thumbnail}
                   onPick={(src) => setLook({ image: src === project.thumbnail ? undefined : src, focus: undefined, zoom: undefined })}
                   onUpload={async (files) => {
-                    const src = await onUpload(card.id, files);
+                    const [src] = await onUpload(card.id, files);
                     if (src) setLook({ image: src, focus: undefined, zoom: undefined });
                   }}
                 />
@@ -214,6 +234,18 @@ function CardPanel({ card, project, images, onClose, onResize, onLook, onUnplace
             </>
           )}
         </>
+      )}
+
+      {project && viewfinder && (
+        <Section title="Viewfinder">
+          <ViewfinderEditor
+            edit={viewfinder}
+            files={files}
+            onChange={(items) => onViewfinder(card.id, items)}
+            onUpload={(list) => onUpload(card.id, list)}
+            onPreview={() => onPreview(card.id)}
+          />
+        </Section>
       )}
 
       <button className="self-start rounded-md px-2 py-1 text-xs text-ash hover:bg-cell-raised hover:text-rice" onClick={() => onUnplace(card.id)}>

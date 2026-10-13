@@ -10,7 +10,7 @@
  * images, and the board's own keys (WASD, R, /, arrows) are held back.
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Markdown from 'react-markdown';
@@ -67,17 +67,24 @@ export function Viewfinder({ project, origin, onClose }: ViewfinderProps) {
 
   // Take the keyboard from the board while open.
   const gallery = tab?.kind === 'image' ? tab.items.length : 0;
+  // It lets go as soon as it starts closing (the exit animation keeps it
+  // mounted a moment longer), and never holds back ⌘/Ctrl shortcuts.
+  const closing = useRef(false);
+  const close = useCallback(() => {
+    closing.current = true;
+    onClose();
+  }, [onClose]);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Tab') return;
+      if (closing.current || event.key === 'Tab' || event.metaKey || event.ctrlKey) return;
       event.stopPropagation();
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape') close();
       if (gallery > 1 && event.key === 'ArrowRight') setImageIndex((i) => (i + 1) % gallery);
       if (gallery > 1 && event.key === 'ArrowLeft') setImageIndex((i) => (i - 1 + gallery) % gallery);
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [onClose, gallery]);
+  }, [close, gallery]);
 
   useEffect(() => closeRef.current?.focus({ preventScroll: true }), []);
 
@@ -92,7 +99,7 @@ export function Viewfinder({ project, origin, onClose }: ViewfinderProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.25 }}
-        onClick={onClose}
+        onClick={close}
       />
       <motion.div
         className="absolute overflow-hidden bg-wall shadow-[0_30px_80px_rgb(0_0_0/0.6)]"
@@ -150,7 +157,7 @@ export function Viewfinder({ project, origin, onClose }: ViewfinderProps) {
               </div>
               <button
                 ref={closeRef}
-                onClick={onClose}
+                onClick={close}
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cell-raised text-ash hover:bg-orange hover:text-lacquer"
                 aria-label="Close"
                 title="Close (Esc)"

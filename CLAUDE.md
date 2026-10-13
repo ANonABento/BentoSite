@@ -3,8 +3,9 @@
 Next.js 16 + Tailwind 4. Routes:
 - `/`: the BentoGrid, an infinite pannable canvas of project cards with a morphing search card and a pinned intro card. Its behaviour comes from v1 and Kevin likes it; improve it incrementally, don't rewrite it.
 - `/projects/[id]`: one static page per project.
+- `/?project=<id>`: the board with that project open in the viewfinder (`src/components/Viewfinder`). Clicking a card grows it into the viewfinder over the board; Esc, the backdrop or Back closes it.
 - `/projects`: a plain list of every project.
-- `/studio`: dev-only board editor (404 in production). Drag and resize cards, pick, upload and frame images; ⌘S writes `src/content/layout.json` through `/api/studio`, and uploads land in `public/projects/<id>/` through `/api/studio/upload`.
+- `/studio`: dev-only board editor (404 in production). Drag and resize cards, pick, upload and frame images; ⌘S writes `src/content/layout.json` through `/api/studio`, uploads land in `public/projects/<id>/` through `/api/studio/upload`, and each project's viewfinder list is saved into its JSON through `/api/studio/project`.
 
 Content is plain JSON in `src/content/`, read at build time by `src/lib/content.ts`. The build fails if any project file contains `TODO(`.
 
@@ -17,6 +18,12 @@ Content is plain JSON in `src/content/`, read at build time by `src/lib/content.
 - Filtering dims the cards it leaves out, in place, so the board keeps its shape. Pinned cards (intro, contact) always pass.
 - The camera's base zoom scales with the window (`fitZoom`, with references in `CAMERA`).
 - The engine reads the CSS variables defined at the top of `src/app/globals.css`.
+
+## Viewfinder (`src/components/Viewfinder/`)
+- A project's media, in tabs: all its images in one gallery, then a tab per video (YouTube, Vimeo, file), embed (any page in a frame, e.g. a live demo), 3D model (.stl/.glb) and PDF.
+- The list is `media.viewfinder` in the project's JSON, edited in `/studio`. Without it, the project shows its images, then its live demo (`viewfinderItems` in `src/lib/board.ts`).
+- three.js is loaded only when a 3D tab opens. Models are centred and scaled to a fixed size, so any unit works.
+- While open it takes the keyboard (capture phase), so the board's WASD, R and / stay still; ⌘/Ctrl shortcuts pass through.
 
 ## Design (project pages)
 - Pages are built as a bento tray: `.tray` holding `.cell` compartments. Orange is for links and highlights; purple is for terminal text, in-progress status and focus.
