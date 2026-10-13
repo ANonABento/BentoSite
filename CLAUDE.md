@@ -2,7 +2,7 @@
 
 Next.js 16 + Tailwind 4. Routes:
 - `/`: the BentoGrid, an infinite pannable canvas of project cards with a morphing search card and a pinned intro card. Its behaviour comes from v1 and Kevin likes it; improve it incrementally, don't rewrite it.
-- `/projects/[id]`: one static page per project.
+- `/projects/[id]`: gone; redirects (next.config) to `/?project=<id>`, which opens the viewfinder.
 - `/?project=<id>`: the board with that project open in the viewfinder (`src/components/Viewfinder`). Clicking a card grows it into the viewfinder over the board; Esc, the backdrop or Back closes it.
 - `/projects`: a plain list of every project.
 - `/studio`: dev-only board editor (404 in production). Drag and resize cards, pick, upload and frame images; ⌘S writes `src/content/layout.json` through `/api/studio`, uploads land in `public/projects/<id>/` through `/api/studio/upload`, and each project's viewfinder list is saved into its JSON through `/api/studio/project`.

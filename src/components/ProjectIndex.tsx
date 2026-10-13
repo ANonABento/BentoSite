@@ -36,7 +36,7 @@ export function ProjectIndex({ rows, categories }: { rows: Row[]; categories: st
         {visible.map((row) => (
           <li key={row.id} className="border-b border-wall/70 last:border-0">
             <Link
-              href={`/projects/${row.id}`}
+              href={`/?project=${row.id}`}
               className="group grid grid-cols-[3.5rem_1fr] items-baseline gap-x-4 gap-y-0.5 px-5 py-3.5 hover:bg-cell-raised sm:grid-cols-[3.5rem_1fr_11rem_7rem]"
             >
               <span className="font-crt text-lg text-ash">{row.year}</span>

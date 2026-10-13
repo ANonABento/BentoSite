@@ -12,7 +12,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 import Markdown from 'react-markdown';
 import { motion } from 'framer-motion';
 import { ImageGallery } from './viewers/ImageGallery';
@@ -196,9 +195,6 @@ export function Viewfinder({ project, origin, onClose }: ViewfinderProps) {
                   </li>
                 ))}
               </ul>
-              <Link href={`/projects/${project.id}`} className="mt-6 inline-block text-sm text-ash hover:text-orange">
-                Full page →
-              </Link>
             </div>
           </section>
         </motion.div>
