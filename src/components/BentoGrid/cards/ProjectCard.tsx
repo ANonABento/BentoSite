@@ -7,6 +7,7 @@
  * hide the description, or switch the variant: `image` drops the footer
  * and shows the title on hover; `text` drops the image for the writing.
  *
+ * The rim is the category's hue, faint at rest and lit with a glow on hover.
  * The footer carries the title, the category (in its own hue) and the date,
  * or `wip` for work in progress, so the grid scans without hovering and the
  * text never sits on top of a busy screenshot, plus the one-line
@@ -82,10 +83,17 @@ export function ProjectCard({
       ariaLabel={`Open ${card.title}`}
       onHoverStart={onHoverStart}
       onHoverEnd={onHoverEnd}
+      // Lifted while lit so its glow lands on the walls, not under the neighbours; still under the search card (z-10).
+      className={highlighted ? 'z-[5]' : undefined}
       shellClassName="group relative flex flex-col"
+      // Every compartment is rimmed in its category's hue; hovering lights the rim and lets it glow into the walls.
       shellStyle={{
-        border: highlighted ? `1px solid ${hue}` : theme.card.border,
-        boxShadow: isFocused ? `0 0 0 3px ${theme.accent.primary}, ${theme.card.hoverShadow}` : theme.card.shadow,
+        border: `1px solid ${highlighted ? hue : `color-mix(in srgb, ${hue} 32%, transparent)`}`,
+        boxShadow: isFocused
+          ? `0 0 0 3px ${theme.accent.primary}, ${theme.card.hoverShadow}`
+          : highlighted
+            ? `0 0 0 1px ${hue}, 0 0 24px -2px color-mix(in srgb, ${hue} 55%, transparent)`
+            : theme.card.shadow,
       }}
     >
       {variant === 'text' ? (
