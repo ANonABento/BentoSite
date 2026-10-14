@@ -117,7 +117,8 @@ const SEARCH_CARD_VALUES = {
   // Against a side edge it shrinks to a drawer tab this size.
   squashedSideWidth: 56,
   squashedSideHeight: 148,
-  compressionDistance: 180,
+  // How far past an edge the slot goes before the card is fully a tab or bar.
+  compressionDistance: 80,
   stickyThreshold: 60,
   edgePadding: 16,
   exclusionPadding: 24,
