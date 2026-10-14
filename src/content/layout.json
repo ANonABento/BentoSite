@@ -14,21 +14,34 @@
       "col": 2,
       "row": 0,
       "w": 2,
-      "h": 2
+      "h": 2,
+      "look": {
+        "image": "/projects/litter-caching/grabber.webp"
+      }
     },
     {
-      "id": "one-handed-keyboard",
+      "id": "venturesauce",
       "col": 4,
       "row": 0,
       "w": 2,
-      "h": 2
+      "h": 2,
+      "look": {
+        "image": "/projects/venturesauce/inbox.webp",
+        "focus": [
+          45,
+          0
+        ]
+      }
     },
     {
       "id": "unity-game-dev",
       "col": 6,
       "row": 0,
       "w": 2,
-      "h": 2
+      "h": 2,
+      "look": {
+        "image": "/projects/unity-game-dev/entitled-goose-game.png"
+      }
     },
     {
       "id": "vr-haptic-gloves",
@@ -38,11 +51,14 @@
       "h": 2
     },
     {
-      "id": "ftc-robotics",
+      "id": "tfotb",
       "col": 10,
       "row": 0,
       "w": 2,
-      "h": 2
+      "h": 2,
+      "look": {
+        "image": "/projects/tfotb/graph.webp"
+      }
     },
     {
       "id": "the-closet",
@@ -52,11 +68,14 @@
       "h": 2
     },
     {
-      "id": "decompos-it",
+      "id": "ar-gesture-robot",
       "col": 14,
       "row": 0,
       "w": 2,
-      "h": 2
+      "h": 3,
+      "look": {
+        "image": "/projects/ar-gesture-robot/arm.webp"
+      }
     },
     {
       "id": "shoulder-cupid",
@@ -80,77 +99,86 @@
       "h": 2
     },
     {
-      "id": "tfotb",
+      "id": "ftc-robotics",
       "col": 9,
       "row": 2,
       "w": 2,
       "h": 2
     },
     {
-      "id": "trash-can-robot",
+      "id": "baseline",
       "col": 11,
       "row": 2,
       "w": 3,
       "h": 2
     },
     {
-      "id": "venturesauce",
+      "id": "decompos-it",
       "col": 14,
-      "row": 2,
+      "row": 3,
+      "w": 2,
+      "h": 3
+    },
+    {
+      "id": "robotic-arm-puppeteer",
+      "col": 0,
+      "row": 4,
+      "w": 3,
+      "h": 2,
+      "look": {
+        "image": "/projects/robotic-arm-puppeteer/render.webp"
+      }
+    },
+    {
+      "id": "one-handed-keyboard",
+      "col": 3,
+      "row": 4,
       "w": 2,
       "h": 2
     },
     {
       "id": "intro",
-      "col": 0,
-      "row": 4,
-      "w": 3,
-      "h": 2
-    },
-    {
-      "id": "search",
-      "col": 3,
-      "row": 4,
-      "w": 2,
-      "h": 1
-    },
-    {
-      "id": "robotic-arm-puppeteer",
       "col": 5,
       "row": 4,
       "w": 3,
       "h": 2
     },
     {
-      "id": "expressive-ai-robot-head",
+      "id": "search",
       "col": 8,
       "row": 4,
-      "w": 3,
-      "h": 2
+      "w": 2,
+      "h": 1
     },
     {
-      "id": "ar-gesture-robot",
-      "col": 11,
-      "row": 4,
-      "w": 3,
-      "h": 2
-    },
-    {
-      "id": "baseline",
-      "col": 14,
+      "id": "expressive-ai-robot-head",
+      "col": 10,
       "row": 4,
       "w": 2,
       "h": 2
     },
     {
+      "id": "trash-can-robot",
+      "col": 12,
+      "row": 4,
+      "w": 2,
+      "h": 2,
+      "look": {
+        "focus": [
+          56,
+          38
+        ]
+      }
+    },
+    {
       "id": "contact",
-      "col": 3,
+      "col": 8,
       "row": 5,
       "w": 2,
       "h": 1
     },
     {
-      "id": "pomme",
+      "id": "component-cop",
       "col": 0,
       "row": 6,
       "w": 2,
@@ -164,11 +192,19 @@
       "h": 2
     },
     {
-      "id": "component-cop",
+      "id": "pomme",
       "col": 4,
       "row": 6,
       "w": 2,
-      "h": 2
+      "h": 2,
+      "look": {
+        "image": "/projects/pomme/robot-side.webp",
+        "zoom": 1.75,
+        "focus": [
+          48,
+          46
+        ]
+      }
     },
     {
       "id": "flowto",
@@ -178,28 +214,31 @@
       "h": 2
     },
     {
-      "id": "choomfie",
+      "id": "taser-derby",
       "col": 8,
       "row": 6,
       "w": 2,
-      "h": 2
+      "h": 2,
+      "look": {
+        "image": "/projects/taser-derby/taser-photo.png"
+      }
     },
     {
-      "id": "dead-internet-reality",
+      "id": "slothing",
       "col": 10,
       "row": 6,
       "w": 2,
       "h": 2
     },
     {
-      "id": "slothing",
+      "id": "dead-internet-reality",
       "col": 12,
       "row": 6,
       "w": 2,
       "h": 2
     },
     {
-      "id": "taser-derby",
+      "id": "choomfie",
       "col": 14,
       "row": 6,
       "w": 2,

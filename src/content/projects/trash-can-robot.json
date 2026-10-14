@@ -25,6 +25,20 @@
       "/projects/trash-can-robot/hero.png",
       "/projects/trash-can-robot/side.webp",
       "/projects/trash-can-robot/under.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/trash-can-robot/hero.png"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/trash-can-robot/under.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/trash-can-robot/side.webp"
+      }
     ]
   },
   "dateCompleted": "2026-10"

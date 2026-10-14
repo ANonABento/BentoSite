@@ -60,8 +60,7 @@
       },
       {
         "kind": "video",
-        "src": "/projects/baseline/walkthrough.mp4",
-        "label": "Walkthrough"
+        "src": "/projects/baseline/walkthrough.mp4"
       }
     ]
   },
