@@ -53,6 +53,7 @@ export function BaseCard({
   const isInteractive = Boolean(onClick) || Boolean(href);
   const shell = (
     <div
+      data-bento-cell
       className={[
         'h-full w-full overflow-hidden transition-all duration-300 ease-out',
         shellClassName,
