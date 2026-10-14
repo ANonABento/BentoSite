@@ -1,11 +1,9 @@
 /**
  * BentoGrid shared type definitions.
  *
- * The consolidated grid uses top-left card coordinates for layout/rendering.
- * The physics layer converts those rectangles to Matter.js body centers.
+ * The grid uses top-left card coordinates for layout and rendering.
  */
 
-import type Matter from 'matter-js';
 import type {
   CSSProperties,
   MouseEventHandler,
@@ -13,6 +11,7 @@ import type {
   ReactNode,
   WheelEventHandler,
 } from 'react';
+import type { BoardLayout, CardLook } from './layout/boardLayout';
 
 export type GridTheme = 'playful' | 'premium' | 'gallery' | 'arcade';
 
@@ -38,7 +37,7 @@ export interface ThemeConfig {
   };
 }
 
-export type CardType = 'game' | 'project' | 'photo';
+export type CardType = 'game' | 'project' | 'photo' | 'intro' | 'info';
 
 export interface BaseCardData {
   id: string;
@@ -47,6 +46,10 @@ export interface BaseCardData {
   description?: string;
   thumbnail?: string;
   category?: string;
+  /** Footprint on the board, from the layout. */
+  size?: CardSize;
+  /** Sits beside the search card in the home band and is never filtered out. */
+  pinned?: boolean;
 }
 
 export interface GameCardData extends BaseCardData {
@@ -67,6 +70,12 @@ export interface ProjectCardData extends BaseCardData {
     modelPath?: string;
   };
   featured?: boolean;
+  /** Award text, shown as a star badge. */
+  award?: string;
+  /** Short display date for the footer, e.g. "Oct 2026". */
+  date?: string;
+  /** How the card frames its image, from the layout. */
+  look?: CardLook;
 }
 
 export interface PhotoCardData extends BaseCardData {
@@ -79,9 +88,21 @@ export interface PhotoCardData extends BaseCardData {
   blurDataURL?: string;
 }
 
-export type CardData = GameCardData | ProjectCardData | PhotoCardData;
+/** Pinned identity card: placed beside the search card, never recycled or filtered out. */
+export interface IntroCardData extends BaseCardData {
+  type: 'intro';
+}
 
-export type CardSize = '1x1' | '2x1' | '1x2' | '2x2';
+/** Non-project compartment: resume and contact links. */
+export interface InfoCardData extends BaseCardData {
+  type: 'info';
+  variant: 'contact';
+}
+
+export type CardData = GameCardData | ProjectCardData | PhotoCardData | IntroCardData | InfoCardData;
+
+/** Footprint in grid cells, columns by rows, e.g. '3x2'. */
+export type CardSize = `${number}x${number}`;
 
 export interface Position {
   x: number;
@@ -106,10 +127,6 @@ export interface CardLayout extends CardPosition {
   id: string;
 }
 
-export interface ExclusionZone extends Rect {
-  padding?: number;
-}
-
 export type RenderCard = (
   card: CardData,
   position: CardPosition,
@@ -128,25 +145,6 @@ export interface ViewportBounds {
   bottom: number;
   width: number;
   height: number;
-}
-
-export interface GridLayoutConfig {
-  cellSize: number;
-  gap: number;
-  /** @deprecated Column count is removed from BentoGrid layout planning. */
-  columns?: number;
-}
-
-export interface QueuedCard {
-  id: string;
-  data: CardData;
-  queuedAt: number;
-}
-
-export interface CardPoolState {
-  visible: Map<string, CardPosition>;
-  queue: QueuedCard[];
-  cardDataMap: Map<string, CardData>;
 }
 
 export type SpawnEdge = 'top' | 'bottom' | 'left' | 'right';
@@ -189,33 +187,15 @@ export type CardSizeMode = 'mixed' | 'detail' | '2x2';
 export interface GridConfig {
   theme: GridTheme;
   cards: CardData[];
+  /** Where every card sits in the repeating tile (src/content/layout.json). */
+  layout: BoardLayout;
   /** Force all content cards to a specific size. Default: 'mixed' (varied sizes). */
   cardSizeMode?: CardSizeMode;
-  onCardSelect?: (card: CardData) => void;
+  /** A card was opened. `origin` is where it is on screen, when known, for an open animation to grow from. */
+  onCardSelect?: (card: CardData, origin?: Rect) => void;
   onBack?: () => void;
   pageTitle?: string;
   breadcrumb?: string;
-}
-
-export interface GridState {
-  visibleCards: Map<string, CardPosition>;
-  queuedCards: QueuedCard[];
-  search: SearchCardState;
-  navigation: NavigationState;
-  isMobile: boolean;
-}
-
-export interface UseCardPoolReturn {
-  visible: Map<string, CardPosition>;
-  queue: QueuedCard[];
-  cardDataMap: Map<string, CardData>;
-  maxVisible: number;
-  enqueue: (cardId: string) => void;
-  dequeue: () => QueuedCard | undefined;
-  removeVisible: (cardId: string) => void;
-  addVisible: (cardId: string, position: CardPosition) => boolean;
-  reset: () => void;
-  applyFilter: (searchTerm: string, category: string | null) => void;
 }
 
 export interface UseViewportReturn {
@@ -224,18 +204,6 @@ export interface UseViewportReturn {
   isCardInViewport: (card: CardPosition, buffer?: number) => boolean;
   getSpawnPosition: (edge: SpawnEdge) => Position;
   getExitEdge: (position: Position) => SpawnEdge | null;
-}
-
-export interface SpawnPhysicsBridge {
-  addCard: (cardId: string, position: CardPosition) => void;
-  removeCard: (cardId: string) => void;
-  applyEntranceBurst: (cardId: string, center?: Position) => void;
-  resetCards?: (layouts: Map<string, CardPosition>) => void;
-}
-
-export interface UseSpawnManagerReturn {
-  tick: () => void;
-  forceSpawn: (edge: SpawnEdge) => void;
 }
 
 export interface UseGridNavigationReturn {
@@ -268,33 +236,3 @@ export interface GridNavigationBindings {
 }
 
 export type CameraBindings = GridNavigationBindings;
-
-export interface PhysicsPosition {
-  x: number;
-  y: number;
-  angle: number;
-}
-
-export interface PhysicsCard {
-  id: string;
-  body: Matter.Body;
-  targetPosition: Position;
-  isRemoving: boolean;
-}
-
-export interface PhysicsConfig {
-  friction: number;
-  frictionAir: number;
-  restitution: number;
-  density: number;
-  sleepThreshold: number;
-  settlingStrength: number;
-}
-
-export interface UsePhysicsWorldReturn extends SpawnPhysicsBridge {
-  positions: Map<string, PhysicsPosition>;
-  isReady: boolean;
-  hasAwakeBodies: () => boolean;
-  updateSearchCard: (layout: CardLayout, isStatic: boolean) => void;
-  updateTargets: (layouts: Map<string, CardPosition>) => void;
-}

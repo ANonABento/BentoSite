@@ -1,23 +1,26 @@
 {
   "id": "decompos-it",
   "name": "Decompos_It",
-  "shortDescription": "Android app that detects objects with CameraX, then web-scrapes decomposition times from an environmental database to show how long the item takes to decompose.",
-  "description": "ICS4U environmental-assignment Android app: snap a photo with CameraX, run real-time object labeling, then web-scrape decomposition times for the detected item from an environmental database.\n\nHighlights:\n- Built with Android Studio + CameraX for camera capture and live preview.\n- Real-time item labeling via on-device computer vision.\n- Web-scraping pipeline pulls decomposition times (months/years) keyed to object class, with notes on factors like paper type, moisture, temperature, and microbial activity.\n- Designed an intuitive UI optimized for backwards compatibility across Android versions.",
+  "shortDescription": "Android app that labels a photographed item with ML Kit and shows how long it takes to decompose, with notes on what affects it.",
+  "description": "An Android app built for an ICS4U environmental assignment, to show people how long everyday items take to decompose. Take a photo with CameraX, and ML Kit image labeling identifies the item; the app then shows the photo, its best-guess label, an estimated decomposition time and notes on the factors involved (for example paper type, moisture, temperature and microbial activity for paper).\n\nHighlights:\n- CameraX capture and live preview, with ML Kit on-device image labeling (highest-confidence label wins).\n- A decomposition lookup keyed by label, with a time range and notes for each item.\n- Navigation-drawer UI with a gallery view.",
   "category": "Software",
+  "context": "ICS4U",
   "status": "Completed",
   "technologies": [
     "Java",
     "Android Studio",
     "CameraX",
-    "OpenCV",
-    "Web Scraping"
+    "ML Kit"
   ],
   "links": {
     "github": "https://github.com/ANonABento/Decompos_It"
   },
   "media": {
-    "featuredImage": "/projects/decompos-it/hero.jpg"
+    "featuredImage": "/projects/decompos-it/hero.png",
+    "images": [
+      "/projects/decompos-it/hero.png",
+      "/projects/decompos-it/screen-2.png"
+    ]
   },
-  "featured": false,
-  "dateCompleted": "2024-06"
+  "dateCompleted": "2023-10"
 }

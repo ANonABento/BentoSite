@@ -1,33 +1,23 @@
 {
   "id": "bentosite",
-  "name": "bentOS — This Portfolio",
-  "shortDescription": "The site you're on. A Next.js + Three.js portfolio with a 3D viewer, Matter.js BentoGrid, grounded chat assistant, and a boot-screen OS theme.",
-  "description": "bentOS is Kevin's personal portfolio, built as an interactive OS-themed surface rather than a static resume. Features include a boot splash gate, a procedural 3D cat in a Three.js viewer with LOD and FPS-aware perf, an infinite Matter.js-driven BentoGrid for /projects and /playground, a Gemini-backed chat assistant that only answers from grounded portfolio content, eight playable mini-games, and a long-form /scrollable view with a globe of life locations. Strict TypeScript, Tailwind CSS variables for theming, Vitest + Playwright tests, Lighthouse CI, and bundle-size budgets enforced on every PR. Content (projects, photos, talking points) is file-based JSON and rebuilt automatically by an update-portfolio agent skill.",
+  "name": "bentOS: This Portfolio",
+  "shortDescription": "This site: a static Next.js 16 + Tailwind 4 portfolio laid out as a bento tray, with project content as plain JSON.",
+  "description": "The site you're on. It's being rebuilt: the first version (boot screen, 3D viewer, physics-driven project grid, mini-games and chat assistant) is archived at the `v1-bentos` tag, and the new version is a simpler static Next.js site laid out as a bento tray of compartments, with a CRT-style accent used for system info.\n\nProject content is plain JSON read at build time.",
   "category": "Software",
+  "context": "Personal",
   "status": "In Progress",
   "technologies": [
     "Next.js",
     "React",
     "TypeScript",
-    "Three.js",
-    "@react-three/fiber",
-    "matter-js",
-    "Tailwind CSS",
-    "framer-motion"
+    "Tailwind CSS"
   ],
   "links": {
     "github": "https://github.com/ANonABento/BentoSite",
-    "docs": "https://github.com/ANonABento/BentoSite/blob/main/CLAUDE.md"
+    "liveDemo": "https://bento-site-sepia.vercel.app"
   },
   "media": {
-    "featuredImage": "/projects/bentosite/hero.png",
-    "images": [
-      "/projects/bentosite/hero.png",
-      "/projects/bentosite/projects.png",
-      "/projects/bentosite/playground.png",
-      "/projects/bentosite/mobile.png"
-    ]
+    "featuredImage": "/projects/bentosite/hero.png"
   },
-  "featured": true,
   "dateCompleted": "2026-05"
 }

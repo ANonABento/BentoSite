@@ -131,9 +131,10 @@ export function MediaCard({
 
   // With `titleAtRest` the meta block collapses to zero height at rest so the
   // scrim stays a thin bar under the title, then expands on hover/focus.
-  // `max-md:` keeps it open on touch, where there is no hover.
+  // On touch there is no hover, so it stays a title bar and the image stays
+  // visible; tapping opens the project page with the full detail.
   const metaWrapperClass = titleAtRest
-    ? `grid transition-all duration-300 max-md:grid-rows-[1fr] max-md:opacity-100 ${
+    ? `grid transition-all duration-300 ${
         isHighlighted ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
       }`
     : 'grid grid-rows-[1fr] opacity-100';

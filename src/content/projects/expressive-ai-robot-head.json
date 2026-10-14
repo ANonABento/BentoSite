@@ -1,9 +1,10 @@
 {
   "id": "expressive-ai-robot-head",
   "name": "Expressive AI Robot Head",
-  "shortDescription": "ROS2 robotic head that fuses LLM reasoning, speech, vision, and 12-servo control to push AI from text into physical interaction. Submitted as 'MaidReal Head' to the OpenAI Open Model Hackathon.",
-  "description": "A ROS2-based robotic head that integrates large language models (LLMs), speech, vision, and servo control to push AI beyond text into physical interaction — engaging more humanlike communication with AI through robots.\n\nHighlights:\n- Built a GPU-accelerated pipeline with CUDA and PyTorch, optimizing VRAM usage to run fully locally on Ubuntu/WSL2.\n- Implemented a real-time speech workflow: Silero VAD → Whisper (STT) → llama.cpp (running GPT-OSS-20B) → Zonos (TTS).\n- Designed a 12-servo robotic head combining organic mesh modeling in Blender with parametric solids in Fusion 360.\n- Controlled servos through ROS2 with a mapping layer that unites LLM reasoning, audio analysis, and OpenCV tracking.\n\nRepos: [`MaidReal/Head`](https://github.com/MaidReal/Head) (hardware + firmware) · [`MaidReal/brain`](https://github.com/MaidReal/brain) (LLM + speech pipeline).\n\nSubmitted to the OpenAI Open Model Hackathon (September 2025) as 'MaidReal Head'.",
-  "category": "AI & Robotics",
+  "shortDescription": "12-servo robot head that runs a local speech pipeline (Silero, Whisper, llama.cpp, Zonos) and drives expressions over ROS 2.",
+  "description": "A ROS 2 robotic head that connects a local LLM, speech, vision and servo control, taking AI past text into physical, more humanlike interaction.\n\nHighlights:\n- Real-time speech loop: Silero VAD → Whisper (STT) → llama.cpp running GPT-OSS-20B → Zonos (TTS).\n- GPU-accelerated with CUDA and PyTorch, with VRAM usage tuned so the whole pipeline runs locally on Ubuntu/WSL2.\n- A 12-servo head combining organic mesh modeling in Blender with parametric solids in Fusion 360.\n- FreeRTOS firmware on an ESP32 for synchronized servo actuation.\n- A ROS 2 mapping layer that ties LLM reasoning, audio analysis and OpenCV tracking to the servos.\n\nRepos: [`MaidReal/Head`](https://github.com/MaidReal/Head) (hardware + firmware) · [`MaidReal/brain`](https://github.com/MaidReal/brain) (LLM + speech pipeline).\n\nSubmitted to the OpenAI Open Model Hackathon (September 2025) as \"MaidReal Head\".",
+  "category": "Robotics",
+  "context": "OpenAI Open Model Hackathon",
   "status": "Completed",
   "technologies": [
     "Python",
@@ -25,12 +26,41 @@
     "docs": "https://devpost.com/software/maidreal-head-v1"
   },
   "media": {
-    "featuredImage": "/projects/expressive-ai-robot-head/hero.jpg",
+    "featuredImage": "/projects/expressive-ai-robot-head/photo.webp",
     "images": [
-      "/projects/expressive-ai-robot-head/hero.jpg",
-      "/projects/expressive-ai-robot-head/overview.png"
+      "/projects/expressive-ai-robot-head/photo.webp",
+      "/projects/expressive-ai-robot-head/bare.webp",
+      "/projects/expressive-ai-robot-head/render.webp",
+      "/projects/expressive-ai-robot-head/mesh.webp",
+      "/projects/expressive-ai-robot-head/flowchart.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/expressive-ai-robot-head/photo.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/expressive-ai-robot-head/bare.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/expressive-ai-robot-head/render.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/expressive-ai-robot-head/mesh.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/expressive-ai-robot-head/flowchart.webp"
+      },
+      {
+        "kind": "video",
+        "src": "https://youtu.be/_YeHNd3CJiE",
+        "label": "Demo video"
+      }
     ]
   },
-  "featured": true,
   "dateCompleted": "2025-09"
 }

@@ -1,10 +1,12 @@
-import type { CardSize, GridTheme, PhysicsConfig, ThemeConfig } from './BentoGrid.types';
+import type { CardData, CardSize, GridTheme, ThemeConfig } from './BentoGrid.types';
 
 const GRID_VALUES = {
-  cellSize: 180,
-  gap: 12,
+  cellSize: 220,
+  // The tray's wall thickness, as on the project pages (--spacing-wall).
+  gap: 6,
   spawnBuffer: 100,
-  despawnBuffer: 200,
+  // Cards render this far past the viewport, so a fast pan never shows an empty edge.
+  despawnBuffer: 600,
 } as const;
 
 export const GRID = {
@@ -18,43 +20,22 @@ export const GRID = {
   despawnBuffer: GRID_VALUES.despawnBuffer,
 } as const;
 
-export const CARD_SIZES: Record<CardSize, { cols: number; rows: number }> = {
-  '1x1': { cols: 1, rows: 1 },
-  '2x1': { cols: 2, rows: 1 },
-  '1x2': { cols: 1, rows: 2 },
-  '2x2': { cols: 2, rows: 2 },
-};
+/** Distance from one grid cell to the next: a cell plus the gap. */
+export const GRID_STEP = GRID.CELL_SIZE + GRID.GAP;
+
+/** A size's footprint in cells. */
+export function cardSpan(size: CardSize): { cols: number; rows: number } {
+  const [cols, rows] = size.split('x').map(Number);
+  return { cols, rows };
+}
 
 export function getCardDimensions(size: CardSize): { width: number; height: number } {
-  const { cols, rows } = CARD_SIZES[size];
+  const { cols, rows } = cardSpan(size);
   return {
     width: cols * GRID.CELL_SIZE + (cols - 1) * GRID.GAP,
     height: rows * GRID.CELL_SIZE + (rows - 1) * GRID.GAP,
   };
 }
-
-const QUEUE_VALUES = {
-  spawnDelay: 100,
-  maxVisible: 24,
-  initialSpawnCount: 14,
-  initialStagger: 50,
-  policy: 'FIFO',
-} as const;
-
-export const QUEUE = {
-  SPAWN_DELAY: QUEUE_VALUES.spawnDelay,
-  MAX_VISIBLE: QUEUE_VALUES.maxVisible,
-  INITIAL_SPAWN_COUNT: QUEUE_VALUES.initialSpawnCount,
-  INITIAL_STAGGER: QUEUE_VALUES.initialStagger,
-  POLICY: QUEUE_VALUES.policy,
-  spawnDelay: QUEUE_VALUES.spawnDelay,
-  maxVisible: QUEUE_VALUES.maxVisible,
-  initialSpawnCount: QUEUE_VALUES.initialSpawnCount,
-  initialStagger: QUEUE_VALUES.initialStagger,
-  policy: QUEUE_VALUES.policy,
-} as const;
-
-export const CARD_POOL = QUEUE;
 
 const CAMERA_VALUES = {
   default: { x: 0, y: 0, zoom: 1 },
@@ -66,9 +47,17 @@ const CAMERA_VALUES = {
   minVelocity: 0.5,
   springStiffness: 200,
   springDamping: 30,
-  keyboardPanSpeed: 30,
+  // WASD: top speed in screen px per second, and how fast it eases to and
+  // from that speed (per second; higher is snappier).
+  keyboardPanSpeed: 1100,
+  keyboardPanResponse: 9,
   wheelZoomOutFactor: 0.9,
   wheelZoomInFactor: 1.1,
+  // Window size at which the board renders at zoom 1, and the range fitZoom may use.
+  referenceWidth: 1760,
+  referenceHeight: 1040,
+  minFitZoom: 0.7,
+  maxFitZoom: 1.25,
 } as const;
 
 export const CAMERA = {
@@ -85,8 +74,13 @@ export const CAMERA = {
   maxZoom: CAMERA_VALUES.maxZoom,
   defaultZoom: CAMERA_VALUES.default.zoom,
   keyboardPanSpeed: CAMERA_VALUES.keyboardPanSpeed,
+  keyboardPanResponse: CAMERA_VALUES.keyboardPanResponse,
   wheelZoomOutFactor: CAMERA_VALUES.wheelZoomOutFactor,
   wheelZoomInFactor: CAMERA_VALUES.wheelZoomInFactor,
+  referenceWidth: CAMERA_VALUES.referenceWidth,
+  referenceHeight: CAMERA_VALUES.referenceHeight,
+  minFitZoom: CAMERA_VALUES.minFitZoom,
+  maxFitZoom: CAMERA_VALUES.maxFitZoom,
   zoomSensitivity: CAMERA_VALUES.zoomSensitivity,
   panSpeed: CAMERA_VALUES.panSpeed,
   momentum: {
@@ -118,8 +112,11 @@ const SEARCH_CARD_DIMENSIONS = getCardDimensions('2x1');
 const SEARCH_CARD_VALUES = {
   expandedWidth: SEARCH_CARD_DIMENSIONS.width,
   expandedHeight: SEARCH_CARD_DIMENSIONS.height,
-  collapsedHeight: 64,
-  squashedSideWidth: 64,
+  // Just the input row: the full card folds down to this against a top or bottom edge.
+  collapsedHeight: 72,
+  // Against a side edge it shrinks to a drawer tab this size.
+  squashedSideWidth: 56,
+  squashedSideHeight: 148,
   compressionDistance: 180,
   stickyThreshold: 60,
   edgePadding: 16,
@@ -131,6 +128,7 @@ export const SEARCH_CARD = {
   EXPANDED_HEIGHT: SEARCH_CARD_VALUES.expandedHeight,
   COLLAPSED_HEIGHT: SEARCH_CARD_VALUES.collapsedHeight,
   SQUASHED_SIDE_WIDTH: SEARCH_CARD_VALUES.squashedSideWidth,
+  SQUASHED_SIDE_HEIGHT: SEARCH_CARD_VALUES.squashedSideHeight,
   COMPRESSION_DISTANCE: SEARCH_CARD_VALUES.compressionDistance,
   STICKY_THRESHOLD: SEARCH_CARD_VALUES.stickyThreshold,
   EDGE_PADDING: SEARCH_CARD_VALUES.edgePadding,
@@ -160,24 +158,6 @@ export const ANIMATION = {
   },
 } as const;
 
-export const PHYSICS: PhysicsConfig = {
-  friction: 0.1,
-  frictionAir: 0.08,
-  restitution: 0.2,
-  density: 0.001,
-  sleepThreshold: 60,
-  settlingStrength: 0.015,
-};
-
-export const PHYSICS_MOBILE: PhysicsConfig = {
-  friction: 0.12,
-  frictionAir: 0.1,
-  restitution: 0.15,
-  density: 0.001,
-  sleepThreshold: 40,
-  settlingStrength: 0.02,
-};
-
 export const THEME_PLAYFUL: ThemeConfig = {
   name: 'playful',
   background: 'radial-gradient(ellipse at center, var(--surface-deep) 0%, var(--background) 100%)',
@@ -202,13 +182,15 @@ export const THEME_PLAYFUL: ThemeConfig = {
 
 export const THEME_PREMIUM: ThemeConfig = {
   name: 'premium',
-  background: 'linear-gradient(180deg, var(--background) 0%, var(--surface-deep) 100%)',
+  // The canvas paints its own background from the board palette (.board-canvas).
+  background: 'var(--board-bg)',
+  // Compartments sit flush in the tray: no drop shadow, radius as on the project pages.
   card: {
-    background: 'var(--glass-bg-strong)',
-    border: '1px solid var(--glass-border)',
-    borderRadius: 8,
-    shadow: '0 4px 24px var(--shadow-color)',
-    hoverShadow: '0 8px 40px var(--shadow-color), 0 0 0 1px var(--primary-muted)',
+    background: 'var(--board-card)',
+    border: '1px solid var(--board-card-border)',
+    borderRadius: 14,
+    shadow: 'none',
+    hoverShadow: '0 0 0 1px var(--primary-muted)',
     rotationRange: 0,
   },
   accent: {
@@ -272,6 +254,11 @@ export const THEMES = {
 } satisfies Record<GridTheme, ThemeConfig>;
 
 export const SEARCH_CARD_ID = '__search__' as const;
+
+/** Pinned cards (the intro, plus any flagged `pinned`) stay on the board permanently. */
+export function isPinnedCard(card: Pick<CardData, 'type' | 'pinned'> | undefined): boolean {
+  return card?.type === 'intro' || Boolean(card?.pinned);
+}
 export const INFO_CARD_ID = '__info__' as const;
 
 export const MOBILE = {
@@ -279,7 +266,9 @@ export const MOBILE = {
   CARD_WIDTH_PERCENT: 0.9,
   CARD_MAX_WIDTH: 400,
   SCROLL_GAP: 16,
-  SCROLL_PADDING: 24,
+  SCROLL_PADDING: 16,
+  TRAY_GAP: 10,
+  TRAY_MAX_WIDTH: 560,
 } as const;
 
 export const KEYBOARD = {

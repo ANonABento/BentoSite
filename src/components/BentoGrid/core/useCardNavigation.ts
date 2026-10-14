@@ -8,7 +8,7 @@
  * - Escape clears focus
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { CardPosition, CardData } from '../BentoGrid.types';
 import { isEditableTarget } from './keyboard';
 
@@ -19,8 +19,8 @@ import { isEditableTarget } from './keyboard';
 export interface UseCardNavigationOptions {
   /** Currently visible cards with positions */
   visible: Map<string, CardPosition>;
-  /** All card data for lookup */
-  cards: CardData[];
+  /** Card data by the ids in `visible` */
+  cardDataMap: Map<string, CardData>;
   /** Callback when a card is selected */
   onSelect?: (card: CardData) => void;
   /** Whether keyboard navigation is enabled */
@@ -172,7 +172,7 @@ function getCardsInTabOrder(visible: Map<string, CardPosition>): string[] {
 
 export function useCardNavigation({
   visible,
-  cards,
+  cardDataMap: cardMap,
   onSelect,
   enabled = true,
 }: UseCardNavigationOptions): UseCardNavigationReturn {
@@ -186,12 +186,6 @@ export function useCardNavigation({
       ? storedFocusedCardId
       : null;
 
-  // Build card lookup map
-  const cardMap = useMemo(() => {
-    const map = new Map<string, CardData>();
-    cards.forEach((card) => map.set(card.id, card));
-    return map;
-  }, [cards]);
 
   // Clear focus
   const clearFocus = useCallback(() => {

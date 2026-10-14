@@ -1,9 +1,11 @@
 {
   "id": "shoulder-cupid",
   "name": "ShoulderCupid",
-  "shortDescription": "Wearable AI dating coach — ESP32-CAM smart glasses extract emotional cues, AI whispers contextual advice through earbuds. Won MLH Best Use of Solana at MakeUofT 2026.",
+  "shortDescription": "Wearable AI dating coach: ESP32-CAM glasses read vital-sign cues, Gemini drafts advice, and ElevenLabs whispers it through earbuds.",
   "description": "ShoulderCupid is a wearable AI coach for real-time dating interactions. An ESP32-CAM mounted in smart glasses streams video to extract emotional data (heart rate, breathing rate) from the target. An ultrasonic sensor tracks distance, triggering different coaching modes. The system combines live speech transcription, AI-generated contextual advice via Google Gemini, and text-to-speech (ElevenLabs) whispered through earbuds. Users pick from AI coaches with different personalities before each session.\n\nRepos: [`ShoulderCupid`](https://github.com/LoveAtMakeUofT26/ShoulderCupid) (app) · [`hardware`](https://github.com/LoveAtMakeUofT26/hardware) (firmware).\n\nWon **MLH Best Use of Solana** at MakeUofT 2026.",
-  "category": "Hackathon",
+  "category": "Hardware",
+  "context": "MakeUofT 2026",
+  "award": "MLH Best Use of Solana, MakeUofT 2026",
   "status": "Completed",
   "technologies": [
     "Arduino",
@@ -14,13 +16,13 @@
     "TypeScript",
     "Node.js",
     "Express.js",
-    "Socket.io",
+    "Socket.IO",
     "MongoDB Atlas",
     "Google Gemini",
     "ElevenLabs",
     "Solana Pay",
     "Fusion 360",
-    "Onshape",
+    "OnShape",
     "Blender"
   ],
   "links": {
@@ -31,9 +33,43 @@
     "featuredImage": "/projects/shoulder-cupid/hero.jpg",
     "images": [
       "/projects/shoulder-cupid/hero.jpg",
-      "/projects/shoulder-cupid/overview.png"
+      "/projects/shoulder-cupid/cad.webp",
+      "/projects/shoulder-cupid/wiring.webp",
+      "/projects/shoulder-cupid/app.webp",
+      "/projects/shoulder-cupid/session.webp",
+      "/projects/shoulder-cupid/landing.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/shoulder-cupid/hero.jpg"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/shoulder-cupid/cad.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/shoulder-cupid/wiring.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/shoulder-cupid/app.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/shoulder-cupid/session.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/shoulder-cupid/landing.webp"
+      },
+      {
+        "kind": "video",
+        "src": "https://youtu.be/udE4eidY7g0",
+        "label": "Demo video"
+      }
     ]
   },
-  "featured": true,
   "dateCompleted": "2026-02"
 }

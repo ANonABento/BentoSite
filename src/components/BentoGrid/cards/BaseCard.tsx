@@ -84,8 +84,11 @@ export function BaseCard({
         width: position.width,
         height: position.height,
       }}
-      initial={false}
+      // Mount in place, fully drawn: cards mount as the board pans, and a
+      // fade-in there reads as the board loading.
+      initial={{ opacity: 1, x: position.x, y: position.y, rotate: position.rotation }}
       animate={{
+        opacity: 1,
         x: position.x,
         y: position.y,
         rotate: position.rotation,
@@ -99,9 +102,11 @@ export function BaseCard({
         type: 'spring',
         stiffness: 300,
         damping: 30,
+        opacity: { duration: 0.35, ease: 'easeOut' },
       }}
-      whileHover={hoverEnabled ? { scale: 1.02 } : undefined}
-      whileTap={hoverEnabled ? { scale: 0.98 } : undefined}
+      // Compartments sit in the tray's walls, so they don't grow on hover; the
+      // image inside does. A press still gives.
+      whileTap={hoverEnabled ? { scale: 0.985 } : undefined}
       onHoverStart={onHoverStart}
       onHoverEnd={onHoverEnd}
       onClick={onClick}

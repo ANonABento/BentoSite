@@ -1,16 +1,21 @@
 {
   "id": "choomfie",
   "name": "choomfie",
-  "shortDescription": "Personal AI agent powered by the Claude Code CLI — Discord, terminal, persistent memory, and a custom skill system.",
-  "description": "choomfie is Kevin's personal AI agent built on top of the Claude Code CLI. It runs as a long-lived daemon that's reachable from Discord and a local terminal, with persistent memory across sessions and a pluggable skill system for invoking tools, services, and bespoke workflows.\n\nBuilt as a multi-surface assistant rather than a one-off chatbot — Discord for casual conversation, terminal for power use, and a skill registry for deterministic actions.",
-  "category": "AI & Software",
+  "shortDescription": "Personal Discord agent that runs on the Claude Code CLI: persistent memory, personas, reminders, and voice/browser/tutor plugins.",
+  "description": "Choomfie is a personal Discord agent that runs through a Claude Code CLI plan. It's a multi-surface assistant rather than a one-off chatbot: talk to it in Discord DMs or servers, or drive it from the terminal.\n\nHighlights:\n- Persistent memory, switchable personas, reminders, GitHub checks, and Discord interactions (slash commands, buttons, modals).\n- An immortal supervisor over a disposable worker, connected to Claude Code over MCP stdio, so the worker can crash or reload without killing the session.\n- Daemon mode built on the Agent SDK for autonomous Discord-only operation; it cycles Claude sessions when context gets heavy and writes a handoff summary first.\n- Plugins: full-duplex voice chat (local STT/TTS, VAD, interruption handling), Playwright browsing, a language tutor with spaced repetition, and social-media workflows.\n- Access control by pairing codes and an allowlist.",
+  "category": "AI",
+  "context": "Personal",
   "status": "In Progress",
   "technologies": [
     "TypeScript",
-    "Shell",
-    "Python",
+    "Bun",
     "Claude Code CLI",
-    "Discord API"
+    "Claude Agent SDK",
+    "MCP",
+    "Discord API",
+    "Playwright",
+    "whisper.cpp",
+    "Kokoro"
   ],
   "links": {
     "github": "https://github.com/ANonABento/choomfie"
@@ -18,6 +23,5 @@
   "media": {
     "featuredImage": "/projects/choomfie/hero.png"
   },
-  "featured": false,
   "dateCompleted": "2026"
 }

@@ -1,9 +1,10 @@
 {
   "id": "dead-internet-reality",
   "name": "DeadInternetTheory",
-  "shortDescription": "Local-first marketing and content agent orchestrator — research, generate, approve, and publish across platforms with human-in-the-loop audit trails.",
-  "description": "DeadInternetTheory is a local-first marketing and content-agent orchestrator. Users plug in a product or content lane, configure supervised marketing/content agents, research relevant communities and approved sources, then generate posts, scripts, images, voice/video assets — with human approval gates, dry-run scheduling, export, and publishing through owned or authorized social accounts.\n\nCurrently a pivoting MVP: FastAPI backend, Next.js frontend, Celery/Redis workers, Postgres models, tests, and extensive planning docs. The direction expands marketing operations into a full content-production pipeline with agent handoffs, source provenance, human approval, and audit trails.",
-  "category": "AI & Software",
+  "shortDescription": "Local-first content-agent orchestrator: research, generate and publish posts and media, with human approval gates and audit trails.",
+  "description": "DeadInternetTheory is a local-first marketing and content-agent orchestrator. You plug in a product or content lane, configure supervised marketing/content agents, research relevant communities and approved sources, then generate posts, scripts, images and voice/video assets. Everything goes through human approval gates, dry-run scheduling, export, and publishing through owned or authorized social accounts.\n\nIt's an MVP that's pivoting: FastAPI backend, Next.js frontend, Celery/Redis workers, Postgres models, tests, and extensive planning docs. The direction is a visible content-production pipeline with agent handoffs, source provenance, human approval and audit trails.\n\nOut of scope by design: fake engagement, sockpuppet networks, ban evasion, automated likes/votes/follows/DMs and mass replies.",
+  "category": "AI",
+  "context": "Personal",
   "status": "In Progress",
   "technologies": [
     "Python",
@@ -14,12 +15,9 @@
     "Redis",
     "PostgreSQL"
   ],
-  "links": {
-    "github": "https://github.com/ANonABento/dead-internet-reality"
-  },
+  "links": {},
   "media": {
     "featuredImage": "/projects/dead-internet-reality/hero.png"
   },
-  "featured": false,
   "dateCompleted": "2026"
 }

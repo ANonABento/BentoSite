@@ -1,15 +1,17 @@
 {
   "id": "component-cop",
   "name": "component-cop",
-  "shortDescription": "Chrome DevTools extension that audits React apps for component duplication, inconsistent styling, and hardcoded colors.",
-  "description": "component-cop is a Chrome DevTools extension that audits a running React app in real time. It flags component duplication (similar trees that could be consolidated), inconsistent styling across the page, and hardcoded color values that should be design tokens — giving frontend engineers a fast, in-browser way to find drift before it ships.",
-  "category": "Software",
+  "shortDescription": "DevTools extension that walks a live React fiber tree to flag duplicate components, hardcoded colors, spacing drift and a11y issues.",
+  "description": "Component Cop is a Chrome DevTools extension (MV3, also packaged for Firefox) that audits a running React app for UI duplication and inconsistency. It works on both dev and production builds.\n\nHighlights:\n- An injected script in the page's main world walks React fiber trees and computed styles; findings flow through a content-script relay to a background worker that stores them in IndexedDB.\n- Audits: components grouped by visual similarity with variant diffs, hardcoded and near-duplicate colors, complexity scores, typography, spacing drift across pages, z-index collisions, accessibility (alt text, labels, WCAG AA contrast, touch targets), and design-token compliance.\n- An element picker, a multi-page crawler, and baseline snapshots to track whether the codebase is improving.\n- Consolidation suggestions with estimated bundle savings; exports to JSON, Markdown, design tokens (CSS / Tailwind / JSON), and an XML format meant for pasting into an LLM.\n- A CI report generator with pass/fail thresholds and regression detection.",
+  "category": "Developer Tools",
+  "context": "Personal",
   "status": "Completed",
   "technologies": [
     "TypeScript",
-    "Chrome Extension API",
-    "DevTools Protocol",
-    "React"
+    "React",
+    "Chrome Extension (MV3)",
+    "DevTools API",
+    "IndexedDB"
   ],
   "links": {
     "github": "https://github.com/ANonABento/component-cop"
@@ -17,6 +19,5 @@
   "media": {
     "featuredImage": "/projects/component-cop/hero.png"
   },
-  "featured": false,
   "dateCompleted": "2026-05"
 }

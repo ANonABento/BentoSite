@@ -1,4 +1,4 @@
-export { filterCards } from './cardPoolFilter';
+export { countContentCards, filterCards } from './cardPoolFilter';
 export { startsOnInteractiveControl } from './gestureTargets';
 export { isEditableTarget } from './keyboard';
 export {
@@ -7,9 +7,6 @@ export {
   type UseCardNavigationReturn,
 } from './useCardNavigation';
 export { useCamera } from './useCamera';
-export { useCardPool, type UseCardPoolOptions } from './useCardPool';
-export { useBoardController } from './useBoardController';
-export { getMovementDirectionFromDelta, MOVEMENT_THRESHOLD } from './movement';
 export {
   clamp,
   canvasToScreen,
@@ -19,7 +16,3 @@ export {
   type UseViewportOptions,
   useWindowSize,
 } from './useViewport';
-export {
-  type UseSpawnManagerOptions,
-  useSpawnManager,
-} from './useSpawnManager';

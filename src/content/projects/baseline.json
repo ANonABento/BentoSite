@@ -1,0 +1,68 @@
+{
+  "id": "baseline",
+  "name": "Baseline",
+  "shortDescription": "Call-fraud detector that fuses local Whisper transcripts, voice matching, deepfake-audio detection and LLM scam cues into a trust score.",
+  "description": "Baseline listens to both sides of a phone call and steps in when the voice or the story stops adding up, for example a cloned-voice \"grandparent scam\". It compares each speaker's delivery against their own earlier turns rather than a population average, and warns, alerts a trusted contact and holds transfers when signals agree.\n\nHighlights:\n- Pipeline: Silero VAD → Whisper (MLX, local) transcript, SpeechBrain ECAPA voice match, a deepfake-audio detector (WavLM + DeBERTa fine-tuned on an RTX 5090), pitch/pace/pause drift against the speaker's own baseline, and LLM + rule-based fraud patterns, fused into a trust score.\n- Two-sided demo: play the client being protected, or the scammer trying to get past it. The AI caller is an LLM persona with an ElevenLabs synthetic voice.\n- Every call ends with a report: transcript, per-detector signals and evidence linked to FTC scam guidance. Observations can be signed into an Ed25519 `did:key` credential that can be verified offline.\n- Most of it runs on the laptop (speech-to-text, voice match, deepfake detection, caller persona via Ollama).\n- Framed as hints, not verdicts: \"not a lie detector\", for consent-based use, with a human making the call.\n\nBuilt overnight at Building from the Farm (Stanford Founders Club, SF Tech Week 2026).",
+  "category": "AI",
+  "context": "Building from the Farm, SF Tech Week 2026",
+  "status": "Completed",
+  "technologies": [
+    "Python",
+    "FastAPI",
+    "Whisper (MLX)",
+    "Silero VAD",
+    "SpeechBrain",
+    "WavLM",
+    "DeBERTa",
+    "Ollama",
+    "ElevenLabs",
+    "React",
+    "Vite",
+    "WebGL"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento/baseline"
+  },
+  "media": {
+    "featuredImage": "/projects/baseline/hero.webp",
+    "images": [
+      "/projects/baseline/hero.webp",
+      "/projects/baseline/alert.webp",
+      "/projects/baseline/report.webp",
+      "/projects/baseline/landing.webp",
+      "/projects/baseline/call.webp",
+      "/projects/baseline/verdict.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/baseline/hero.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/baseline/alert.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/baseline/report.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/baseline/landing.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/baseline/call.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/baseline/verdict.webp"
+      },
+      {
+        "kind": "video",
+        "src": "/projects/baseline/walkthrough.mp4"
+      }
+    ]
+  },
+  "dateCompleted": "2026-10"
+}

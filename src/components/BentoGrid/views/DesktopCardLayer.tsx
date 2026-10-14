@@ -1,8 +1,8 @@
 'use client';
 
-import { Fragment } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { SEARCH_CARD_ID } from '../BentoGrid.constants';
+import { SEARCH_DOCK_PREFIX } from '../core/useTiledBoard';
 import type {
   CardData,
   CardPosition,
@@ -16,8 +16,10 @@ interface DesktopCardLayerProps {
   cardDataMap: Map<string, CardData>;
   theme: ThemeConfig;
   focusedCardId: string | null;
+  /** Card ids the filter leaves out; they fade back rather than leave. */
+  dimmed: Set<string>;
   renderCard?: RenderCard;
-  onCardClick: (card: CardData) => void;
+  onCardClick: (card: CardData, layout: CardPosition) => void;
 }
 
 /**
@@ -36,6 +38,7 @@ export function DesktopCardLayer({
   cardDataMap,
   theme,
   focusedCardId,
+  dimmed,
   renderCard,
   onCardClick,
 }: DesktopCardLayerProps) {
@@ -44,6 +47,9 @@ export function DesktopCardLayer({
       {Array.from(layouts.entries()).map(([cardId, layout], index) => {
         // Search card is rendered as a fixed overlay by DesktopCanvasView
         if (cardId === SEARCH_CARD_ID) return null;
+        if (cardId.startsWith(SEARCH_DOCK_PREFIX)) {
+          return <SearchDock key={cardId} layout={layout} radius={theme.card.borderRadius} />;
+        }
 
         // Content cards render directly at grid positions — no physics override
         const cardData = cardDataMap.get(cardId);
@@ -53,17 +59,22 @@ export function DesktopCardLayer({
         const key = presenceKey(cardId, layout);
 
         if (renderCard) {
+          const faded = dimmed.has(cardData.id);
           return (
-            <Fragment key={key}>
+            <div
+              key={key}
+              className="transition-opacity duration-300"
+              style={{ opacity: faded ? 0.15 : 1, pointerEvents: faded ? 'none' : undefined }}
+            >
               {renderCard(
                 cardData,
                 layout,
                 theme,
                 isFocused,
-                () => onCardClick(cardData),
+                () => onCardClick(cardData, layout),
                 index,
               )}
-            </Fragment>
+            </div>
           );
         }
 
@@ -73,11 +84,29 @@ export function DesktopCardLayer({
             card={cardData}
             position={layout}
             theme={theme}
-            onClick={() => onCardClick(cardData)}
+            onClick={() => onCardClick(cardData, layout)}
             isFocused={isFocused}
           />
         );
       })}
     </AnimatePresence>
+  );
+}
+
+/** Where the search card would sit in this copy of the board: an empty compartment it docks into when it comes into view. */
+function SearchDock({ layout, radius }: { layout: CardPosition; radius: number }) {
+  return (
+    <div
+      aria-hidden
+      className="absolute left-0 top-0"
+      style={{
+        width: layout.width,
+        height: layout.height,
+        transform: `translate(${layout.x}px, ${layout.y}px)`,
+        borderRadius: radius,
+        background: 'var(--color-lacquer)',
+        boxShadow: 'inset 0 2px 10px rgb(0 0 0 / 0.5)',
+      }}
+    />
   );
 }

@@ -1,1 +1,0 @@
-export { Pacman } from './Pacman';

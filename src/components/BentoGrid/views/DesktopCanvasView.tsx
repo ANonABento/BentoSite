@@ -1,8 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSearchCardState } from '../cards';
 import {
+  canvasToScreen,
+  countContentCards,
   filterCards,
   getCameraTransform,
   startsOnInteractiveControl,
@@ -11,33 +13,45 @@ import {
   useCardNavigation,
   useWindowSize,
 } from '../core';
-import { countDistinctCards } from '../duplicate-fill';
-import { useBoardController } from '../core/useBoardController';
-import { usePhysicsWorld } from '../physics';
-import { SEARCH_CARD_ID } from '../BentoGrid.constants';
-import { ArrowLeftIcon, ChevronDownIcon, ChevronRightIcon, CloseIcon, RefreshIcon, SearchIcon } from '@/components/ui/Icons';
-import type { CardData, CardPosition, CardSizeMode, RenderCard, ThemeConfig } from '../BentoGrid.types';
+import { SEARCH_DOCK_PREFIX, useTiledBoard } from '../core/useTiledBoard';
+import { SEARCH_CARD, SEARCH_CARD_ID } from '../BentoGrid.constants';
+import { CloseIcon, RefreshIcon, SearchIcon } from '@/components/ui/Icons';
+import type { CardData, CardPosition, CardSizeMode, Rect, RenderCard, ThemeConfig } from '../BentoGrid.types';
+import type { BoardLayout } from '../layout/boardLayout';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
-function withoutSearchCard(layouts: Map<string, CardPosition>): Map<string, CardPosition> {
-  if (!layouts.has(SEARCH_CARD_ID)) return layouts;
-
-  const nextLayouts = new Map(layouts);
-  nextLayouts.delete(SEARCH_CARD_ID);
-  return nextLayouts;
+/** Cards keyboard focus can land on: not the search card or the empty docks. */
+function navigable(layouts: Map<string, CardPosition>): Map<string, CardPosition> {
+  return new Map([...layouts].filter(([id]) => id !== SEARCH_CARD_ID && !id.startsWith(SEARCH_DOCK_PREFIX)));
 }
 
-const BOARD_LOOP_IDLE_VELOCITY = 0.05;
-const BOARD_LOOP_WAKE_MS = 300;
+/** How long the search card glides when it docks in another copy of the board, or its drawer opens or closes. */
+const DOCK_GLIDE_MS = 320;
+
+interface ScreenBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+function lerpBox(a: ScreenBox, b: ScreenBox, t: number): ScreenBox {
+  return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, w: a.w + (b.w - a.w) * t, h: a.h + (b.h - a.h) * t };
+}
+
+function clamp01(value: number) {
+  return Math.min(1, Math.max(0, value));
+}
 
 interface DesktopCanvasViewProps {
   className?: string;
   cards: CardData[];
+  layout: BoardLayout;
   theme: ThemeConfig;
   categories: string[];
   cardSizeMode?: CardSizeMode;
   breadcrumb?: string;
-  onCardSelect?: (card: CardData) => void;
+  onCardSelect?: (card: CardData, origin?: Rect) => void;
   renderCard?: RenderCard;
   onBack?: () => void;
 }
@@ -45,9 +59,9 @@ interface DesktopCanvasViewProps {
 export function DesktopCanvasView({
   className,
   cards,
+  layout,
   theme,
   categories,
-  cardSizeMode,
   breadcrumb,
   onCardSelect,
   renderCard,
@@ -59,21 +73,16 @@ export function DesktopCanvasView({
     windowSize,
   });
 
-  const board = useBoardController({
-    cards,
-    rotationRange: theme.card.rotationRange,
-    cardSizeMode,
-  });
+  const board = useTiledBoard({ cards, layout, camera: navigation.camera, windowSize });
 
   const searchCardLayout = board.visible.get(SEARCH_CARD_ID);
 
-  const handleFilterChange = useCallback(
-    (searchTerm: string, category: string | null) => {
-      board.applyFilter(searchTerm, category);
-      navigation.reset();
-    },
-    [board, navigation],
-  );
+  const { applyFilter: handleFilterChange, resetAnchor } = board;
+  const { reset: resetCamera } = navigation;
+  const resetView = useCallback(() => {
+    resetAnchor();
+    resetCamera();
+  }, [resetAnchor, resetCamera]);
 
   const searchState = useSearchCardState({
     camera: navigation.camera,
@@ -85,20 +94,60 @@ export function DesktopCanvasView({
 
   const isSearchSticky = searchState.compression > 0;
 
-  // Rehome the search card when compression transitions from >0 to 0.
-  // This anchors the grid home to wherever the ghost currently is.
-  const prevCompressionRef = useRef(0);
-  useEffect(() => {
-    const prev = prevCompressionRef.current;
-    prevCompressionRef.current = searchState.compression;
-
-    if (prev > 0 && searchState.compression === 0 && searchState.ghostCanvasPosition) {
-      board.rehomeSearchCard(
-        searchState.ghostCanvasPosition.x,
-        searchState.ghostCanvasPosition.y,
-      );
+  // Where the search card is drawn, in screen px (centre and size). Normally
+  // that's where useSearchCardState puts it. When it docks in another copy of
+  // the board it glides from where it was to the dock, and the dock's position
+  // is recomputed every frame, so the glide follows the camera instead of
+  // chasing a stale target.
+  const stuckToSide = isSearchSticky && (searchState.edge === 'left' || searchState.edge === 'right');
+  // Against a side the card is a drawer tab; opening it slides the input bar
+  // out from that edge, at the tab's height, without moving the camera.
+  const [drawer, setDrawer] = useState(false);
+  if (drawer && !stuckToSide) setDrawer(false);
+  const drawerOpen = drawer && stuckToSide;
+  const fullW = SEARCH_CARD.EXPANDED_WIDTH * navigation.camera.zoom;
+  const fullH = SEARCH_CARD.EXPANDED_HEIGHT * navigation.camera.zoom;
+  const target: ScreenBox = drawerOpen
+    ? {
+        x: searchState.edge === 'right' ? windowSize.width - SEARCH_CARD.EDGE_PADDING - fullW / 2 : SEARCH_CARD.EDGE_PADDING + fullW / 2,
+        y: searchState.screenPosition.y,
+        w: fullW,
+        h: SEARCH_CARD.COLLAPSED_HEIGHT,
+      }
+    : {
+        x: searchState.screenPosition.x,
+        y: searchState.screenPosition.y,
+        w: searchState.width,
+        h: searchState.height,
+      };
+  const shownRef = useRef<ScreenBox>(target);
+  const [glide, setGlide] = useState<{ from: ScreenBox; t: number } | null>(null);
+  const firstAnchor = useRef(true);
+  useLayoutEffect(() => {
+    if (firstAnchor.current) {
+      firstAnchor.current = false;
+      return;
     }
-  }, [searchState.compression, searchState.ghostCanvasPosition, board]);
+    setGlide({ from: shownRef.current, t: 0 });
+    const startedAt = performance.now();
+    let frame = requestAnimationFrame(function step(now) {
+      const t = Math.min(1, (now - startedAt) / DOCK_GLIDE_MS);
+      setGlide((g) => (g && t < 1 ? { ...g, t } : null));
+      if (t < 1) frame = requestAnimationFrame(step);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [board.anchorKey, drawerOpen]);
+  const shown = glide ? lerpBox(glide.from, target, 1 - (1 - glide.t) ** 3) : target;
+  useLayoutEffect(() => {
+    shownRef.current = shown;
+  });
+
+  // How open the card is, from its drawn size: against a top or bottom edge
+  // it folds down to the input row; against a side it narrows to a tab.
+  const unfold = clamp01((shown.h - SEARCH_CARD.COLLAPSED_HEIGHT) / (fullH - SEARCH_CARD.COLLAPSED_HEIGHT));
+  const narrow = 1 - clamp01((shown.w - SEARCH_CARD.SQUASHED_SIDE_WIDTH) / (fullW - SEARCH_CARD.SQUASHED_SIDE_WIDTH));
+  const contentOpacity = clamp01(1 - narrow * 2);
+  const tabOpacity = clamp01(narrow * 2 - 1);
 
   // Display layouts: content cards at grid positions.
   // Search card uses sticky override when compressed, grid position when free.
@@ -109,150 +158,48 @@ export function DesktopCanvasView({
     return layouts;
   }, [board.visible, searchState.stickyCanvasPosition]);
 
-  // Physics is only used for search card collision body
-  const { updateSearchCard, hasAwakeBodies } = usePhysicsWorld({
-    layouts: displayLayouts,
-    enabled: true,
-    isMobile: false,
-  });
+  const navigableLayouts = useMemo(() => navigable(displayLayouts), [displayLayouts]);
 
-  // Update search card physics body: static when sticky, dynamic when free
-  const searchDisplayPos = displayLayouts.get(SEARCH_CARD_ID);
-  useEffect(() => {
-    if (!searchDisplayPos) return;
-    updateSearchCard(
-      { id: SEARCH_CARD_ID, ...searchDisplayPos },
-      isSearchSticky,
-    );
-  }, [searchDisplayPos, isSearchSticky, updateSearchCard]);
-
-  // Refs for the rAF loop
-  const visibleRef = useRef<Map<string, CardPosition>>(displayLayouts);
-  const windowSizeRef = useRef(windowSize);
-  useEffect(() => { visibleRef.current = displayLayouts; }, [displayLayouts]);
-  useEffect(() => { windowSizeRef.current = windowSize; }, [windowSize]);
-
-  // getCurrentLayouts returns grid positions directly — no physics merge
-  const getCurrentLayouts = useCallback((): Map<string, CardPosition> => {
-    return new Map(visibleRef.current);
-  }, []);
-
-  // rAF loop — runs spawn/despawn at display refresh rate
-  const boardTickRef = useRef(board.tick);
-  useEffect(() => { boardTickRef.current = board.tick; }, [board.tick]);
-
-  // Track last camera position so we can derive per-frame velocity for the
-  // spawn anchor's direction-bias. Smoothed with a low-pass filter to avoid
-  // jitter on near-stationary frames.
-  const lastCameraRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const velocityRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const rafIdRef = useRef<number | null>(null);
-  const activeUntilRef = useRef(0);
-  const startBoardLoopRef = useRef<() => void>(() => {});
-  const hasAwakeBodiesRef = useRef(hasAwakeBodies);
-
-  useEffect(() => {
-    hasAwakeBodiesRef.current = hasAwakeBodies;
-  }, [hasAwakeBodies]);
-
-  const wakeBoardLoop = useCallback(() => {
-    activeUntilRef.current = performance.now() + BOARD_LOOP_WAKE_MS;
-    startBoardLoopRef.current();
-  }, []);
-
-  useEffect(() => {
-    let mounted = true;
-
-    function loop(now: number) {
-      rafIdRef.current = null;
-      if (!mounted) return;
-
-      const cam = navigation.cameraRef.current;
-      let speed = 0;
-      let tickChanged = false;
-
-      if (cam) {
-        const last = lastCameraRef.current;
-        const dx = cam.x - last.x;
-        const dy = cam.y - last.y;
-        speed = Math.sqrt(dx * dx + dy * dy);
-        // Exponential smoothing — keeps responsive while damping single-frame spikes.
-        velocityRef.current = {
-          x: velocityRef.current.x * 0.6 + dx * 0.4,
-          y: velocityRef.current.y * 0.6 + dy * 0.4,
-        };
-        lastCameraRef.current = { x: cam.x, y: cam.y };
-        tickChanged = boardTickRef.current(
-          cam,
-          windowSizeRef.current,
-          getCurrentLayouts,
-          velocityRef.current,
-        );
-      }
-
-      if (
-        tickChanged ||
-        speed > BOARD_LOOP_IDLE_VELOCITY ||
-        hasAwakeBodiesRef.current() ||
-        now < activeUntilRef.current
-      ) {
-        rafIdRef.current = requestAnimationFrame(loop);
-      }
-    }
-
-    const start = () => {
-      if (!mounted || rafIdRef.current !== null) return;
-      rafIdRef.current = requestAnimationFrame(loop);
-    };
-
-    startBoardLoopRef.current = start;
-    start();
-
-    return () => {
-      mounted = false;
-      startBoardLoopRef.current = () => {};
-      if (rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current);
-        rafIdRef.current = null;
-      }
-    };
-  }, [navigation.cameraRef, getCurrentLayouts]);
-
-  useEffect(() => {
-    wakeBoardLoop();
-  }, [board.queue.length, displayLayouts, navigation.camera, wakeBoardLoop, windowSize]);
-
-  const navigableLayouts = useMemo(
-    () => withoutSearchCard(displayLayouts),
-    [displayLayouts],
-  );
+  const selectCard = useCallback((card: CardData, origin?: Rect) => onCardSelect?.(card, origin), [onCardSelect]);
 
   const cardNavigation = useCardNavigation({
     visible: navigableLayouts,
-    cards,
-    onSelect: onCardSelect,
+    cardDataMap: board.cardDataMap,
+    onSelect: selectCard,
     enabled: true,
   });
   const { focusedCardId, setFocusedCardId } = cardNavigation;
 
+  // A clicked card reports where it is on screen, so whatever opens can grow out of it.
+  const { camera } = navigation;
   const handleCardClick = useCallback(
-    (card: CardData) => {
+    (card: CardData, layout: CardPosition) => {
       setFocusedCardId(card.id);
-      onCardSelect?.(card);
+      const topLeft = canvasToScreen(layout.x, layout.y, camera, windowSize);
+      selectCard(card, { x: topLeft.x, y: topLeft.y, width: layout.width * camera.zoom, height: layout.height * camera.zoom });
     },
-    [onCardSelect, setFocusedCardId],
+    [selectCard, setFocusedCardId, camera, windowSize],
   );
+
+  // Focus the search input. Docked, or folded to a bar at the top or bottom,
+  // it's right there; stuck to a side, the drawer slides it out first.
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const summonSearch = useCallback(() => {
+    if (stuckToSide) setDrawer(true);
+    searchInputRef.current?.focus({ preventScroll: true });
+  }, [stuckToSide]);
+  const closeDrawer = useCallback(() => {
+    setDrawer(false);
+    searchInputRef.current?.blur();
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      wakeBoardLoop();
-
-      if (event.key === '/' || event.key === 'f') {
-        if (!isEditableTarget(event.target)) {
-          event.preventDefault();
-          searchState.setExpanded(true);
-        }
+      if (event.key === '/' && !isEditableTarget(event.target)) {
+        event.preventDefault();
+        summonSearch();
       }
+      if (event.key === 'Escape' && drawerOpen) closeDrawer();
 
       if (event.key === 'Backspace' && onBack) {
         if (!isEditableTarget(event.target)) {
@@ -264,7 +211,7 @@ export function DesktopCanvasView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onBack, searchState, wakeBoardLoop]);
+  }, [onBack, summonSearch, drawerOpen, closeDrawer]);
 
   const transform = useMemo(
     () => getCameraTransform(navigation.camera, windowSize),
@@ -273,50 +220,54 @@ export function DesktopCanvasView({
 
   const navBindings = navigation.bind();
 
+  // React registers wheel listeners as passive, so the gesture handler's
+  // preventDefault is ignored, and the browser reads a horizontal two-finger
+  // trackpad swipe as Back (and a pinch as page zoom). A native, non-passive
+  // listener claims every wheel on the board. Rows that scroll natively
+  // (category chips) opt out with data-wheel-scroll.
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const claimWheel = (event: WheelEvent) => {
+      const target = event.target as Element | null;
+      if (!event.ctrlKey && target?.closest('[data-wheel-scroll]')) return;
+      event.preventDefault();
+    };
+    // Safari's own pinch-zoom events.
+    const claimGesture = (event: Event) => event.preventDefault();
+    root.addEventListener('wheel', claimWheel, { passive: false });
+    root.addEventListener('gesturestart', claimGesture);
+    root.addEventListener('gesturechange', claimGesture);
+    return () => {
+      root.removeEventListener('wheel', claimWheel);
+      root.removeEventListener('gesturestart', claimGesture);
+      root.removeEventListener('gesturechange', claimGesture);
+    };
+  }, []);
+
+
+  // Counts shown to the visitor are projects, not board occupancy: the board
+  // shows every card many times over.
+  const projectTotal = useMemo(() => countContentCards(cards), [cards]);
+  const projectMatches = useMemo(
+    () => countContentCards(filterCards(cards, searchState.searchTerm, searchState.category)),
+    [cards, searchState.searchTerm, searchState.category],
+  );
+
   // Tracks the timestamp of the last wheel event that reached the canvas
   // pan handler. If the cursor crosses an element that normally swallows
   // wheel (chip row, search input) WHILE a pan is in motion, that element
   // checks this ref and lets the event bubble through so panning doesn't
   // stutter mid-gesture. After ~100ms of inactivity, the element resumes
   // its native behavior (chip scroll, text caret).
-  // Counts shown to the visitor are content counts, not board occupancy:
-  // `cards` is already clone-filled to cover a wide canvas, and
-  // `board.filteredCount` counts card instances on and near the board.
-  const distinctTotal = useMemo(() => countDistinctCards(cards), [cards]);
-  const distinctFiltered = useMemo(
-    () => countDistinctCards(filterCards(cards, searchState.searchTerm, searchState.category)),
-    [cards, searchState.searchTerm, searchState.category],
-  );
-
   const panAtRef = useRef(0);
   const handleWrapperWheel = useCallback(
     (event: React.WheelEvent<HTMLDivElement>) => {
-      wakeBoardLoop();
       panAtRef.current = Date.now();
       navBindings.onWheel?.(event);
     },
-    [navBindings, wakeBoardLoop],
-  );
-  const handleWrapperPointerDown = useCallback(
-    (event: React.PointerEvent<HTMLDivElement>) => {
-      wakeBoardLoop();
-      navBindings.onPointerDown?.(event);
-    },
-    [navBindings, wakeBoardLoop],
-  );
-  const handleWrapperPointerUp = useCallback(
-    (event: React.PointerEvent<HTMLDivElement>) => {
-      wakeBoardLoop();
-      navBindings.onPointerUp?.(event);
-    },
-    [navBindings, wakeBoardLoop],
-  );
-  const handleWrapperMouseDown = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      wakeBoardLoop();
-      navBindings.onMouseDown?.(event);
-    },
-    [navBindings, wakeBoardLoop],
+    [navBindings],
   );
 
   return (
@@ -326,17 +277,15 @@ export function DesktopCanvasView({
     // only fires onDrag past INTERACTION.dragThreshold (5px), so a click never
     // registers as a pan.
     <div
+      ref={rootRef}
       id="main-content"
-      className={['fixed inset-0 isolate', className].filter(Boolean).join(' ')}
+      className={['board-canvas fixed inset-0 isolate overscroll-none', className].filter(Boolean).join(' ')}
       {...navBindings}
       onWheel={handleWrapperWheel}
       role="application"
-      aria-label={`${breadcrumb ?? 'Card grid'} interactive grid. Use arrow keys to focus cards, Enter to open, WASD to pan, and R to reset view.`}
+      aria-label={`${breadcrumb ?? 'Card grid'} interactive grid. Drag or use WASD to pan, arrow keys to focus cards, Enter to open one, slash to search, and R to recenter.`}
       tabIndex={-1}
-      style={{ ...navBindings.style, background: theme.background }}
-      onPointerDown={handleWrapperPointerDown}
-      onPointerUp={handleWrapperPointerUp}
-      onMouseDown={handleWrapperMouseDown}
+      style={navBindings.style}
     >
       {/* Canvas layer — clips the transformed card grid */}
       <div className="absolute inset-0 overflow-hidden">
@@ -352,6 +301,7 @@ export function DesktopCanvasView({
             cardDataMap={board.cardDataMap}
             theme={theme}
             focusedCardId={focusedCardId}
+            dimmed={board.dimmed}
             renderCard={renderCard}
             onCardClick={handleCardClick}
           />
@@ -364,52 +314,49 @@ export function DesktopCanvasView({
       <div className="absolute inset-0 pointer-events-none z-10">
         <div
           className="pointer-events-auto absolute"
-          style={{
-            left: searchState.screenPosition.x - searchState.width / 2,
-            top: searchState.screenPosition.y - searchState.height / 2,
-            width: searchState.width,
-            height: searchState.height,
-            transition: 'width 200ms ease-out, height 200ms ease-out',
+          style={{ left: shown.x - shown.w / 2, top: shown.y - shown.h / 2, width: shown.w, height: shown.h }}
+          onBlur={(event) => {
+            // Clicking or tabbing away tucks the drawer back in.
+            if (drawerOpen && !event.currentTarget.contains(event.relatedTarget as Node | null)) setDrawer(false);
           }}
         >
           <div
-            className="h-full w-full overflow-hidden backdrop-blur-xl"
+            className="relative h-full w-full overflow-hidden"
             style={{
-              background: theme.searchCard.background,
-              border: theme.searchCard.border,
-              boxShadow: isSearchSticky
-                ? `0 0 0 1px ${theme.accent.primary}33, ${theme.card.hoverShadow}`
-                : theme.card.shadow,
+              background: 'var(--board-dock-bg)',
+              color: 'var(--board-dock-fg)',
+              // Lifted off the board while stuck to an edge, flush in its compartment when docked.
+              boxShadow: isSearchSticky ? '0 10px 30px rgb(0 0 0 / 0.45)' : 'none',
               borderRadius: theme.card.borderRadius,
             }}
           >
-            {isSearchSticky && (searchState.edge === 'left' || searchState.edge === 'right') ? (
-              <IconStripContent
-                theme={theme}
-                onBack={onBack}
-                onToggleExpanded={searchState.toggleExpanded}
-                searchTerm={searchState.searchTerm}
-              />
-            ) : isSearchSticky ? (
-              <CompactBarContent
-                searchTerm={searchState.searchTerm}
-                onSearchChange={searchState.setSearchTerm}
-                onBack={onBack}
-              />
-            ) : (
+            {/* Laid out at full size and clipped, so folding never reflows it; the input row stays put on top. */}
+            <div
+              className="absolute left-0 top-0"
+              style={{ width: fullW, height: fullH, opacity: contentOpacity, pointerEvents: contentOpacity > 0.5 ? undefined : 'none' }}
+            >
               <FullSearchContent
-                theme={theme}
                 searchTerm={searchState.searchTerm}
                 category={searchState.category}
                 categories={categories}
                 onSearchChange={searchState.setSearchTerm}
                 onCategoryChange={searchState.setCategory}
-                onBack={onBack}
-                onReset={navigation.reset}
-                totalCards={distinctTotal}
-                filteredCards={distinctFiltered}
+                onRecenter={resetView}
+                totalCards={projectTotal}
+                filteredCards={projectMatches}
                 panAtRef={panAtRef}
+                inputRef={searchInputRef}
+                unfold={unfold}
               />
+            </div>
+            {tabOpacity > 0 && (
+              <div className="absolute inset-0" style={{ opacity: tabOpacity, pointerEvents: tabOpacity > 0.5 ? undefined : 'none' }}>
+                <SideTabContent
+                  onOpen={summonSearch}
+                  matches={projectMatches !== projectTotal ? projectMatches : null}
+                  query={searchState.searchTerm}
+                />
+              </div>
             )}
           </div>
         </div>
@@ -418,85 +365,63 @@ export function DesktopCanvasView({
   );
 }
 
-// Inline sticky content components (imported from SearchMenuCard would create circular dep)
-function IconStripContent({ theme, onBack, onToggleExpanded, searchTerm }: {
-  theme: ThemeConfig;
-  onBack?: () => void;
-  onToggleExpanded: () => void;
-  searchTerm: string;
-}) {
+/** The search card as a drawer tab against a side edge. Opening it slides the input bar out. */
+function SideTabContent({ onOpen, matches, query }: { onOpen: () => void; matches: number | null; query: string }) {
   return (
-    <div className="h-full flex flex-col items-center justify-center gap-3 py-3">
-      {onBack && (
-        <button onClick={onBack} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="Go back">
-          <ArrowLeftIcon className="w-5 h-5 text-white/70" />
-        </button>
+    <button
+      onClick={onOpen}
+      className="flex h-full w-full flex-col items-center justify-center gap-2 transition-colors hover:bg-black/10"
+      aria-label={query ? `Search projects (filtered by “${query}”)` : 'Search projects'}
+      title="Search (/)"
+    >
+      <SearchIcon className="h-5 w-5 shrink-0" />
+      <span className="font-crt text-lg leading-none [writing-mode:vertical-rl]">{query ? query.slice(0, 10) : 'search'}</span>
+      {matches !== null && (
+        <span
+          className="min-w-5 rounded-full px-1.5 py-0.5 text-center text-[10px] font-semibold leading-none"
+          style={{ background: 'var(--board-dock-chip-on)', color: 'var(--board-dock-chip-on-fg)' }}
+        >
+          {matches}
+        </span>
       )}
-      <button onClick={onToggleExpanded} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="Search" style={{ color: searchTerm ? theme.accent.primary : undefined }}>
-        <SearchIcon className="w-5 h-5 text-white/70" />
-      </button>
-      <button onClick={onToggleExpanded} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="Toggle filters" style={{ color: theme.accent.primary }}>
-        <ChevronDownIcon className="w-5 h-5" />
-      </button>
-    </div>
+    </button>
   );
 }
 
 /** Window after a pan during which we let wheel events bubble through
  *  swallow-zones (chip row, search input) so cursor-cross mid-pan doesn't
  *  stutter. ~100ms covers a typical trackpad wheel inter-event gap. */
-/** Categories beyond this many cannot fit the fixed-width panel in one row. */
-const CATEGORY_SCROLL_THRESHOLD = 3;
-const CATEGORY_SCROLL_STEP = 140;
-
 const MID_PAN_BUBBLE_WINDOW_MS = 120;
 
-function FullSearchContent({ theme, searchTerm, category, categories, onSearchChange, onCategoryChange, onBack, onReset, totalCards, filteredCards, panAtRef }: {
-  theme: ThemeConfig;
+function FullSearchContent({ searchTerm, category, categories, onSearchChange, onCategoryChange, onRecenter, totalCards, filteredCards, panAtRef, inputRef, unfold }: {
   searchTerm: string;
   category: string | null;
   categories: string[];
   onSearchChange: (term: string) => void;
   onCategoryChange: (category: string | null) => void;
-  onBack?: () => void;
-  onReset: () => void;
+  onRecenter: () => void;
   totalCards: number;
   filteredCards: number;
   panAtRef: React.MutableRefObject<number>;
+  inputRef: React.Ref<HTMLInputElement>;
+  /** 1 when the card is fully open; falls to 0 as it folds down to the input row. */
+  unfold: number;
 }) {
+  // The chips and footer fade out as the card folds, a little ahead of being clipped.
+  const detail = { opacity: Math.max(0, unfold * 1.6 - 0.6), pointerEvents: unfold > 0.6 ? undefined : ('none' as const) };
   const allCount = filteredCards !== totalCards ? `${filteredCards}/${totalCards}` : `${totalCards}`;
-  // The row holds far more chips than the panel is wide. Derive the affordance
-  // from the category count rather than measuring the DOM: the panel is a fixed
-  // size, so the threshold is stable, and no layout effect is needed.
-  const categoryRowRef = useRef<HTMLDivElement>(null);
-  const hasScrollableCategories = categories.length > CATEGORY_SCROLL_THRESHOLD;
-  const scrollCategories = useCallback(() => {
-    const row = categoryRowRef.current;
-    if (!row) return;
-    const atEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 4;
-    row.scrollTo({
-      left: atEnd ? 0 : row.scrollLeft + CATEGORY_SCROLL_STEP,
-      behavior: 'smooth',
-    });
-  }, []);
 
-  const categoryButtonStyles = useMemo(() => ({
-    active: {
-      background: `${theme.accent.primary}30`,
-      border: `1px solid ${theme.accent.primary}50`,
-    },
-    inactive: {
-      background: 'rgba(255,255,255,0.05)',
-      border: '1px solid transparent',
-    },
-  }), [theme.accent.primary]);
+  // Same chips as the dock, so the card and the bar read as one object.
+  const chipStyle = (active: boolean) =>
+    active
+      ? { background: 'var(--board-dock-chip-on)', color: 'var(--board-dock-chip-on-fg)' }
+      : { background: 'var(--board-dock-chip)' };
 
   // Stop pointer/wheel events from bubbling up to the canvas gesture handler
-  // for elements that need their own native interaction (text selection,
-  // native horizontal scroll). Buttons don't need this — useGesture's drag
-  // threshold (5px) keeps clicks from registering as pans.
-  // Wheel exception: if a pan is currently in motion, let the event bubble
-  // through so the pan continues smoothly when the cursor crosses this zone.
+  // for elements that need their own native interaction (text selection).
+  // Buttons don't need this — useGesture's drag threshold (5px) keeps clicks
+  // from registering as pans. Wheel exception: if a pan is currently in
+  // motion, let the event bubble so the pan continues across this zone.
   const stopGesture = {
     onPointerDown: (event: React.PointerEvent) => {
       if (startsOnInteractiveControl(event.target)) return;
@@ -509,143 +434,66 @@ function FullSearchContent({ theme, searchTerm, category, categories, onSearchCh
   };
 
   return (
-    <div className="h-full min-w-0 p-4 flex flex-col gap-2.5">
-      {/* Header: back left, reset right */}
-      <div className="flex items-center justify-between gap-2 min-w-0">
-        {onBack ? (
-          <button
-            onClick={onBack}
-            className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors"
-          >
-            <ArrowLeftIcon className="w-3.5 h-3.5" /><span>Back</span>
-          </button>
-        ) : <span />}
-        <button
-          onClick={onReset}
-          className="flex items-center gap-1.5 text-[11px] text-white/50 hover:text-white/80 transition-colors"
-          aria-label="Reset view"
-        >
-          <RefreshIcon className="w-3 h-3" />
-          <span>Reset</span>
-        </button>
-      </div>
-
-      {/* Search input — stop propagation so text selection drags don't pan. */}
+    <div className="h-full min-w-0 p-4 flex flex-col gap-3">
       <label
         {...stopGesture}
-        className="flex items-center gap-2 rounded-md bg-white/5 border border-white/10 px-3 py-2"
+        className="flex items-center gap-2 rounded-lg px-3 py-2"
+        style={{ background: 'var(--board-dock-field)' }}
       >
-        <SearchIcon className="w-4 h-4 text-white/40 flex-shrink-0" />
+        <span className="font-crt text-xl leading-none">&gt;</span>
         <input
+          ref={inputRef}
           type="text"
-          placeholder="Search..."
+          placeholder="search projects"
           value={searchTerm}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)}
-          className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none"
-          aria-label="Search cards"
+          className="flex-1 min-w-0 bg-transparent font-crt text-xl leading-none placeholder:text-current placeholder:opacity-55 outline-none"
+          aria-label="Search projects"
         />
         {searchTerm && (
           <button
             onClick={() => onSearchChange('')}
-            className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-white/10"
+            className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-black/10"
             aria-label="Clear search"
           >
-            <CloseIcon className="w-3 h-3 text-white/50" />
+            <CloseIcon className="w-3 h-3" />
           </button>
         )}
       </label>
 
-      {/* Category filters — single row, horizontal scroll. The panel is a fixed
-          2x1 card, so eight categories cannot fit: most of them start off-view.
-          A fade alone did not say so clearly enough, hence the arrow. */}
-      <div className="relative -mx-1 px-1">
-        <div
-          ref={categoryRowRef}
-          {...stopGesture}
-          className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5"
-          style={{
-            maskImage: hasScrollableCategories
-              ? 'linear-gradient(to right, black 0, black calc(100% - 28px), transparent 100%)'
-              : undefined,
-            WebkitMaskImage: hasScrollableCategories
-              ? 'linear-gradient(to right, black 0, black calc(100% - 28px), transparent 100%)'
-              : undefined,
-          }}
+      {/* Categories wrap rather than scroll, so every one is visible. */}
+      <div className="flex flex-wrap gap-1.5" style={detail}>
+        <button
+          onClick={() => onCategoryChange(null)}
+          className="px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors font-medium"
+          style={chipStyle(category === null)}
         >
-          <button
-            onClick={() => onCategoryChange(null)}
-            className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${category === null ? 'text-white' : 'text-white/60 hover:text-white/80'}`}
-            style={category === null ? categoryButtonStyles.active : categoryButtonStyles.inactive}
-          >
-            All ({allCount})
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => onCategoryChange(cat === category ? null : cat)}
-              className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${category === cat ? 'text-white' : 'text-white/60 hover:text-white/80'}`}
-              style={category === cat ? categoryButtonStyles.active : categoryButtonStyles.inactive}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {hasScrollableCategories ? (
-          <button
-            type="button"
-            onClick={scrollCategories}
-            aria-label="Show more categories"
-            title="More categories"
-            className="absolute right-0 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-white/70 transition-colors hover:text-white"
-            style={{ background: 'rgba(0,0,0,0.55)' }}
-          >
-            <ChevronRightIcon className="h-3.5 w-3.5" />
-          </button>
-        ) : null}
-      </div>
-
-      {/* Keyboard hints — pinned to bottom of the card, lo-fi terminal feel */}
-      <div className="mt-auto flex items-center justify-between gap-2 pt-1 text-[10px] font-mono uppercase tracking-wider text-white/35">
-        <span>
-          <span className="text-white/55">wasd</span> pan
-        </span>
-        <span>
-          <span className="text-white/55">R</span> reset
-        </span>
-        <span>
-          <span className="text-white/55">&#x21B5;</span> open
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function CompactBarContent({ searchTerm, onSearchChange, onBack }: {
-  searchTerm: string;
-  onSearchChange: (term: string) => void;
-  onBack?: () => void;
-}) {
-  return (
-    <div className="h-full flex items-center gap-2 px-3">
-      {onBack && (
-        <button onClick={onBack} className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors" aria-label="Go back">
-          <ArrowLeftIcon className="w-4 h-4 text-white/70" />
+          All ({allCount})
         </button>
-      )}
-      <label
-        onPointerDown={(event) => event.stopPropagation()}
-        onWheel={(event) => event.stopPropagation()}
-        className="flex-1 min-w-0 flex items-center gap-2 rounded-md bg-white/5 border border-white/10 px-3 py-1.5"
-      >
-        <SearchIcon className="w-4 h-4 text-white/40 flex-shrink-0" />
-        <input type="text" placeholder="Search..." value={searchTerm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)} className="flex-1 min-w-0 bg-transparent text-white text-sm placeholder:text-white/40 outline-none" aria-label="Search cards" />
-        {searchTerm && (
-          <button onClick={() => onSearchChange('')} className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-white/10" aria-label="Clear search">
-            <CloseIcon className="w-3 h-3 text-white/50" />
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => onCategoryChange(cat === category ? null : cat)}
+            className="px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors font-medium"
+            style={chipStyle(category === cat)}
+          >
+            {cat}
           </button>
-        )}
-      </label>
+        ))}
+      </div>
+
+      <div className="mt-auto flex items-center justify-between gap-2 text-[11px]" style={{ ...detail, opacity: detail.opacity * 0.7 }}>
+        <span>Drag or WASD to explore</span>
+        <button
+          onClick={onRecenter}
+          className="flex items-center gap-1.5 rounded-md px-1.5 py-0.5 hover:bg-black/10 hover:opacity-100 transition-colors"
+          aria-label="Recenter the board"
+        >
+          <RefreshIcon className="w-3 h-3" />
+          <span>Recenter</span>
+          <kbd className="font-mono text-[10px] opacity-70">R</kbd>
+        </button>
+      </div>
     </div>
   );
 }

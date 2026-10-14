@@ -1,9 +1,11 @@
 {
   "id": "unity-game-dev",
   "name": "C# Apps & Games",
-  "shortDescription": "C# applications and Unity 2D/3D games — won Best Overall at UWGDC Game Jam Fall 2024. Includes computer-vision-driven projects and FSM-based gameplay.",
-  "description": "A collection of C# work spanning vision-driven applications and Unity games — including the Best Overall winner at UWGDC Game Jam Fall 2024.\n\nHighlights:\n- Wrote C# code in Visual Studio 2022 using Emgu OpenCV as the computer-vision element for a larger alarm system.\n- Developed complex game logic using C# scripting in Unity for 2D and 3D games (physics, colliders, AI logic).\n- Utilized finite state machines for smooth animation transitions and character behaviour, leading to more interactivity.\n- Employed version control (Git) to manage codebase changes and collaborate with teammates effectively.\n- Conducted extensive testing and debugging to identify and fix issues, ensuring a polished final product.",
+  "shortDescription": "Unity game-jam games, including Entitled Goose Game (UW Game Jam Fall 2024) and Bandwidth (UW Winter 2025 jam).",
+  "description": "Unity games made mostly at game jams, plus earlier C# experiments.\n\n- **Entitled Goose Game** (UW Game Jam Fall 2024, 48 hours, team of six): play a magical goose that combines four elements (rock, wet, wind, hot) into spells in a real-time fight. Kevin: programming and design. [Play](https://matthewz80.itch.io/entitled-goose-game)\n- **Bandwidth** (UW Winter 2025 Game Jam, 72 hours, team game): an action game about an IT new hire at \"Tasla\". [Play](https://matthewz80.itch.io/bandwidth)\n- **Happy Santa Go Time** (Bear Hacks 2022): a short horror experience made to learn Unity. [Play](https://anonabento.itch.io/happy-santa-go-time)\n- **PROJECT: Apartment**: an 11-day showcase demo. [Play](https://anonabento.itch.io/project-apartment)\n\nAcross these: C# gameplay logic in Unity for 2D and 3D games (physics, colliders, AI logic), finite state machines for animation and character behaviour, and Git for team collaboration. Separately, a C# app using Emgu OpenCV as the vision part of a larger alarm system.\n\nWon **Best Overall** at UWGDC Game Jam Fall 2024.",
   "category": "Games",
+  "context": "UW game jams",
+  "award": "Best Overall, UWGDC Game Jam Fall 2024",
   "status": "Completed",
   "technologies": [
     "C#",
@@ -18,11 +20,11 @@
   },
   "media": {
     "featuredImage": "/projects/unity-game-dev/hero.jpg",
-    "game": {
-      "type": "itch",
-      "url": "https://anonabento.itch.io/"
-    }
+    "images": [
+      "/projects/unity-game-dev/hero.jpg",
+      "/projects/unity-game-dev/entitled-goose-game.png",
+      "/projects/unity-game-dev/project-apartment.png"
+    ]
   },
-  "featured": false,
   "dateCompleted": "2024-11"
 }

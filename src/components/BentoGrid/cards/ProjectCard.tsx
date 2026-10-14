@@ -1,25 +1,26 @@
 'use client';
 
 /**
- * ProjectCard — media-first card for projects.
+ * ProjectCard — image compartment over a solid footer.
  *
- * Thumbnail (or fallback icon) fills the card. Status badge and media
- * indicators (3D etc.) sit in the corners. The title stays readable at rest
- * (`titleAtRest`) so the grid is scannable without hovering; description,
- * category, and a truncated row of tech badges expand on hover/focus. Card
- * click navigates — github/demo links live on the project detail surface,
- * not the card.
+ * The layout's `look` can frame the image (focal point and zoom), swap it,
+ * hide the description, or switch the variant: `image` drops the footer
+ * and shows the title on hover; `text` drops the image for the writing.
+ *
+ * The rim is the category's hue, faint at rest and lit with a glow on hover.
+ * The footer carries the title, the category (in its own hue) and the date,
+ * or `wip` for work in progress, so the grid scans without hovering and the
+ * text never sits on top of a busy screenshot, plus the one-line
+ * description. The award star sits in the image's corner. Card
+ * click navigates; github/demo links live on the project page.
  */
 
 import { useState } from 'react';
 import Image from 'next/image';
 import type { ProjectCardData, CardPosition, ThemeConfig } from '../BentoGrid.types';
-import { Model3DIcon } from '@/components/ui/Icons';
-import { MediaCard } from './MediaCard';
-
-// =============================================================================
-// PROPS
-// =============================================================================
+import { cardSpan } from '../BentoGrid.constants';
+import { BaseCard } from './BaseCard';
+import { useCardHover } from './useCardHover';
 
 export interface ProjectCardProps {
   card: ProjectCardData;
@@ -33,117 +34,17 @@ export interface ProjectCardProps {
   entranceIndex?: number;
 }
 
-// =============================================================================
-// PLACEHOLDER
-// =============================================================================
+/** Featured (3-wide) compartments get the larger title. */
+const BIG_CARD_WIDTH = 600;
+/** Images that have loaded once; later copies of the card skip the fade-in. */
+const loadedImages = new Set<string>();
+/** With no variant chosen, cards this many columns wide or more get the footer. */
+const FOOTER_MIN_COLS = 3;
 
-const BLUR_PLACEHOLDER =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
-
-// =============================================================================
-// STATUS BADGE
-// =============================================================================
-
-type ProjectStatus = ProjectCardData['status'];
-
-function StatusBadge({ status }: { status?: ProjectStatus }) {
-  if (!status) return null;
-
-  const statusConfig: Record<NonNullable<ProjectStatus>, {
-    label: string;
-    bg: string;
-    text: string;
-    border: string;
-  }> = {
-    Completed: {
-      label: 'READY',
-      bg: 'bg-[var(--status-success-muted)]',
-      text: 'text-[var(--status-success)]',
-      border: 'border-[var(--status-success)]/30',
-    },
-    'In Progress': {
-      label: 'WIP',
-      bg: 'bg-[var(--primary-muted)]',
-      text: 'text-[var(--primary)]',
-      border: 'border-[var(--primary)]/30',
-    },
-    Archived: {
-      label: 'ARCHIVED',
-      bg: 'bg-gray-500/10',
-      text: 'text-gray-400',
-      border: 'border-gray-500/30',
-    },
-  };
-  const config = statusConfig[status];
-
-  return (
-    <span
-      className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-semibold uppercase tracking-wider backdrop-blur-sm ${config.bg} ${config.text} border ${config.border}`}
-    >
-      {config.label}
-    </span>
-  );
+function categoryColor(category?: string): string {
+  if (!category) return 'var(--color-ash)';
+  return `var(--cat-${category.toLowerCase().replace(/[^a-z0-9]+/g, '-')}, var(--color-ash))`;
 }
-
-// =============================================================================
-// MEDIA INDICATORS
-// =============================================================================
-
-function MediaIndicators({ card }: { card: ProjectCardData }) {
-  const indicators: { icon: React.ReactNode; label: string }[] = [];
-
-  if (card.links?.modelPath) {
-    indicators.push({ icon: <Model3DIcon size={10} />, label: '3D' });
-  }
-
-  if (indicators.length === 0) return null;
-
-  return (
-    <div className="flex gap-1">
-      {indicators.slice(0, 3).map(({ icon, label }) => (
-        <span
-          key={label}
-          className="p-1 rounded bg-black/60 text-white/90 backdrop-blur-sm"
-          title={label}
-        >
-          {icon}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-// =============================================================================
-// TECH BADGES
-// =============================================================================
-
-const MAX_TECH_BADGES = 3;
-
-function TechBadges({ technologies }: { technologies?: string[] }) {
-  if (!technologies?.length) return null;
-  const visible = technologies.slice(0, MAX_TECH_BADGES);
-  const overflow = technologies.length - visible.length;
-
-  return (
-    <div className="flex flex-wrap gap-1">
-      {visible.map((tech) => (
-        <span
-          key={tech}
-          className="px-1.5 py-0.5 text-[9px] font-mono bg-white/10 text-white/80 border border-white/15 rounded"
-        >
-          {tech}
-        </span>
-      ))}
-      {overflow > 0 && (
-        <span className="text-[9px] font-mono text-white/60 self-center">+{overflow}</span>
-      )}
-    </div>
-  );
-}
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function ProjectCard({
   card,
@@ -154,30 +55,24 @@ export function ProjectCard({
   isFocused = false,
   entranceIndex = 0,
 }: ProjectCardProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
-
-  const meta = (
-    <>
-      <div className="flex items-center gap-2">
-        <StatusBadge status={card.status} />
-        {card.category && (
-          <span
-            className="text-[9px] font-mono uppercase tracking-wider"
-            style={{ color: theme.accent.primary }}
-          >
-            {card.category}
-          </span>
-        )}
-      </div>
-      {card.description && (
-        <p className="line-clamp-2 text-xs text-white/75">{card.description}</p>
-      )}
-      <TechBadges technologies={card.technologies} />
-    </>
-  );
+  const look = card.look ?? {};
+  const image = look.image ?? card.thumbnail;
+  // A card mounting for an image already seen (another copy of the tile) shows it at once.
+  const [imageLoaded, setImageLoaded] = useState(() => Boolean(image && loadedImages.has(image)));
+  const { isHovered, onHoverStart, onHoverEnd } = useCardHover();
+  const big = position.width >= BIG_CARD_WIDTH;
+  const hue = categoryColor(card.category);
+  const highlighted = isHovered || isFocused;
+  // Auto: headliners carry a footer, smaller cards are all image, and a card
+  // with no image is all writing.
+  const variant = look.variant ?? (!image ? 'text' : cardSpan(position.size).cols >= FOOTER_MIN_COLS ? 'full' : 'image');
+  const focus = look.focus ?? [50, 50];
+  const zoom = look.zoom ?? 1;
+  // A one-row card has no room for the description under its image.
+  const showDescription = Boolean(card.description) && (look.description ?? position.height > 300);
 
   return (
-    <MediaCard
+    <BaseCard
       id={card.id}
       position={position}
       theme={theme}
@@ -186,35 +81,136 @@ export function ProjectCard({
       onClick={onClick}
       href={href}
       ariaLabel={`Open ${card.title}`}
-      title={card.title}
-      metaLines={meta}
-      titleAtRest
-      topRight={<MediaIndicators card={card} />}
+      onHoverStart={onHoverStart}
+      onHoverEnd={onHoverEnd}
+      // Lifted while lit so its glow lands on the walls, not under the neighbours; still under the search card (z-10).
+      className={highlighted ? 'z-[5]' : undefined}
+      shellClassName="group relative flex flex-col"
+      // Every compartment is rimmed in its category's hue; hovering lights the rim and lets it glow into the walls.
+      shellStyle={{
+        border: `1px solid ${highlighted ? hue : `color-mix(in srgb, ${hue} 32%, transparent)`}`,
+        boxShadow: isFocused
+          ? `0 0 0 3px ${theme.accent.primary}, ${theme.card.hoverShadow}`
+          : highlighted
+            ? `0 0 0 1px ${hue}, 0 0 24px -2px color-mix(in srgb, ${hue} 55%, transparent)`
+            : theme.card.shadow,
+      }}
     >
-      {card.thumbnail ? (
-        <>
-          {!imageLoaded && (
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent animate-pulse" />
-          )}
-          <Image
-            src={card.thumbnail}
-            alt={card.title}
-            fill
-            className={`object-cover transition-all duration-500 ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
-            } group-hover:scale-105`}
-            onLoad={() => setImageLoaded(true)}
-            sizes={`${position.width}px`}
-            placeholder="blur"
-            blurDataURL={BLUR_PLACEHOLDER}
-            draggable={false}
-          />
-        </>
+      {variant === 'text' ? (
+        <TextBody card={card} hue={hue} big={big} highlighted={highlighted} />
       ) : (
-        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--primary-muted)] to-transparent">
-          <Model3DIcon size={48} className="text-[var(--text-muted)] opacity-40" />
-        </div>
+        <>
+          <div className="relative min-h-0 flex-1 overflow-hidden bg-cell-raised">
+            {image ? (
+              // The zoom wrapper scales about the focal point; the hover lift scales the image inside it.
+              <div
+                className="absolute inset-0"
+                style={{ transform: `scale(${zoom})`, transformOrigin: `${focus[0]}% ${focus[1]}%` }}
+              >
+                <Image
+                  src={image}
+                  alt={card.title}
+                  fill
+                  className={`object-cover transition-[opacity,transform] duration-500 group-hover:scale-[1.04] ${
+                    imageLoaded ? 'opacity-100' : 'opacity-0'
+                  }`}
+                  style={{ objectPosition: `${focus[0]}% ${focus[1]}%`, transformOrigin: `${focus[0]}% ${focus[1]}%` }}
+                  onLoad={() => {
+                    loadedImages.add(image);
+                    setImageLoaded(true);
+                  }}
+                  // The board is a few dozen images that repeat; load them all up front so panning never waits.
+                  loading="eager"
+                  sizes={`${Math.round(position.width * zoom * 1.5)}px`}
+                  draggable={false}
+                />
+              </div>
+            ) : (
+              // No image yet: a CRT screen with the project's name, so the card still reads.
+              <div className="crt absolute inset-0 flex items-center justify-center p-4 text-center text-[1.7rem] leading-tight">
+                <span>
+                  <span style={{ color: hue }}>&gt;</span> {card.title.toLowerCase()}
+                  <span className="cursor ml-1" />
+                </span>
+              </div>
+            )}
+            {card.award && (
+              <span
+                className="absolute right-2 top-2 rounded-md bg-black/70 px-1.5 py-0.5 text-[11px] leading-none text-orange backdrop-blur-sm"
+                title={card.award}
+              >
+                ★
+              </span>
+            )}
+            {variant === 'image' && (
+              <div
+                className={`absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-gradient-to-t from-black/90 via-black/70 to-transparent px-4 pb-3 pt-10 transition-opacity duration-200 ${
+                  highlighted ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                <div className="flex items-baseline justify-between gap-3">
+                  <h3 className={`truncate font-semibold tracking-tight text-white ${big ? 'text-lg' : 'text-base'}`}>{card.title}</h3>
+                  <DateTag card={card} />
+                </div>
+                <CategoryTag category={card.category} hue={hue} />
+              </div>
+            )}
+          </div>
+
+          {variant === 'full' && (
+            <div className="flex shrink-0 flex-col gap-1 px-4 py-3">
+              <div className="flex items-baseline justify-between gap-3">
+                <h3
+                  className={`truncate font-semibold tracking-tight text-rice transition-colors ${big ? 'text-lg' : 'text-base'}`}
+                  style={highlighted ? { color: hue } : undefined}
+                >
+                  {card.title}
+                </h3>
+                <DateTag card={card} />
+              </div>
+              {showDescription ? <p className="line-clamp-1 text-sm leading-snug text-ash">{card.description}</p> : null}
+              <CategoryTag category={card.category} hue={hue} />
+            </div>
+          )}
+        </>
       )}
-    </MediaCard>
+    </BaseCard>
+  );
+}
+
+function DateTag({ card }: { card: ProjectCardData }) {
+  return (
+    <span className="shrink-0 font-crt text-[0.95rem] leading-none text-ash">
+      {card.status === 'In Progress' ? <span className="text-purple">wip</span> : card.date?.toLowerCase()}
+    </span>
+  );
+}
+
+function CategoryTag({ category, hue }: { category?: string; hue: string }) {
+  return (
+    <p className="flex items-center gap-1.5 truncate text-[0.7rem] font-medium uppercase tracking-[0.08em]" style={{ color: hue }}>
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: hue }} />
+      {category}
+    </p>
+  );
+}
+
+/** The `text` variant: the writing fills the card, for projects without a good image. */
+function TextBody({ card, hue, big, highlighted }: { card: ProjectCardData; hue: string; big: boolean; highlighted: boolean }) {
+  return (
+    <div className="flex h-full flex-col gap-2 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <CategoryTag category={card.category} hue={hue} />
+        <DateTag card={card} />
+      </div>
+      <h3
+        className={`font-semibold leading-tight tracking-tight text-rice transition-colors ${big ? 'text-2xl' : 'text-xl'}`}
+        style={highlighted ? { color: hue } : undefined}
+      >
+        {card.title}
+        {card.award ? <span className="ml-2 align-middle text-sm text-orange" title={card.award}>★</span> : null}
+      </h3>
+      {card.description ? <p className="line-clamp-[8] min-h-0 overflow-hidden text-sm leading-snug text-ash">{card.description}</p> : null}
+    </div>
   );
 }

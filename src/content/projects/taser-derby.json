@@ -1,9 +1,10 @@
 {
   "id": "taser-derby",
   "name": "TaserDerby",
-  "shortDescription": "Physics-based race-betting sim — lose your bet and an ESP32-C3 fires a real physical penalty pulse via a relay. Built at GoOnHacks 2025.",
-  "description": "TaserDerby is a physics-based simulation where users bet on microscopic racers competing toward a goal. When a bet loses, the web app fires an HTTP request to an ESP32-C3 microcontroller, which activates a relay for a 'physical penalty pulse' — merging digital outcomes with real-world consequences.\n\nBuilt at GoOnHacks (November 2025).",
-  "category": "Hackathon",
+  "shortDescription": "Party betting game: pick a racer in a physics sim; if it loses, the web app tells an ESP32-C3 to fire a handmade taser via a relay.",
+  "description": "TaserDerby is a race-betting game with real stakes. Bet on a racer in a physics-based \"microscopic\" race drawn on an HTML canvas; if your racer finishes outside the target rank, the React app sends a POST to an ESP32-C3, which triggers a relay on a handmade taser for a short shock.\n\nHighlights:\n- Real-time physics-based race on HTML Canvas, with a difficulty slider for the required finishing rank (top 1 to top 8).\n- ESP32-C3 running an async web server; a relay module on its own 5 V supply isolates the shock circuit.\n- 3D-printed enclosure (CAD in the repo) and a wiring diagram.\n- Fullscreen modal UI for betting and results, styled as a microscope view.\n\nBuilt at GoOnHacks (November 2025).",
+  "category": "Hardware",
+  "context": "GoOnHacks 2025",
   "status": "Completed",
   "technologies": [
     "C++",
@@ -16,12 +17,50 @@
     "Fetch API"
   ],
   "links": {
-    "github": "https://github.com/ANonABento/GoonHacksDerby",
+    "github": "https://github.com/ANonABento/TaserDerby",
     "docs": "https://devpost.com/software/taserderby"
   },
   "media": {
-    "featuredImage": "/projects/taser-derby/hero.jpg"
+    "featuredImage": "/projects/taser-derby/hero.png",
+    "images": [
+      "/projects/taser-derby/hero.png",
+      "/projects/taser-derby/taser-photo.png",
+      "/projects/taser-derby/wiring.jpg",
+      "/projects/taser-derby/cad.webp",
+      "/projects/taser-derby/cad-open.webp",
+      "/projects/taser-derby/betting.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/taser-derby/hero.png"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/taser-derby/taser-photo.png"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/taser-derby/wiring.jpg"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/taser-derby/cad.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/taser-derby/cad-open.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/taser-derby/betting.webp"
+      },
+      {
+        "kind": "video",
+        "src": "https://youtu.be/yDChXUxZb8A",
+        "label": "Demo video"
+      }
+    ]
   },
-  "featured": false,
   "dateCompleted": "2025-11"
 }
