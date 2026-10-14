@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { Viewfinder } from '@/components/Viewfinder/Viewfinder';
-import { BootFlash } from './BootFlash';
+import { TrayFill } from './TrayFill';
 import type { ViewfinderProject } from '@/components/Viewfinder/types';
 import { InfoCard, IntroCard, ProjectCard, type InfoContent, type IntroProfile } from '@/components/BentoGrid/cards';
 import {
@@ -137,7 +137,7 @@ export function ProjectsGridClient({ layout, projects, profile, info, details }:
         breadcrumb="bentOS / Kevin Jiang"
         renderCard={renderCard}
       />
-      <BootFlash />
+      <TrayFill />
       <AnimatePresence>
         {open && <Viewfinder key={open.id} project={details[open.id]} origin={open.origin} onClose={close} />}
       </AnimatePresence>
