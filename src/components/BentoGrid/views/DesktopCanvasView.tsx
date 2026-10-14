@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useSearchCardState } from '../cards';
+import { holdInsideEdges, searchCardShape, useSearchCardState } from '../cards';
 import {
   canvasToScreen,
   countContentCards,
@@ -41,6 +41,57 @@ function lerpBox(a: ScreenBox, b: ScreenBox, t: number): ScreenBox {
 
 function clamp01(value: number) {
   return Math.min(1, Math.max(0, value));
+}
+
+/**
+ * The search card's squeeze, on a slightly bouncy spring, so its shape lags
+ * the edges a touch and wobbles as it settles: squishy, not snapped. Only
+ * the shape is sprung; where it's held against the edge follows the camera.
+ */
+const SQUISH = { stiffness: 420, damping: 24, overshoot: 0.15 };
+
+function useSquish(target: { x: number; y: number }): { x: number; y: number } {
+  const [shown, setShown] = useState(target);
+  const state = useRef({ x: target.x, y: target.y, vx: 0, vy: 0 });
+  const targetRef = useRef(target);
+  const frame = useRef(0);
+  const reduced = useRef(false);
+  useLayoutEffect(() => {
+    targetRef.current = target;
+  });
+  useEffect(() => {
+    reduced.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return () => {
+      cancelAnimationFrame(frame.current);
+      frame.current = 0;
+    };
+  }, []);
+  useEffect(() => {
+    if (frame.current) return;
+    let last = performance.now();
+    const step = (now: number) => {
+      const dt = Math.min(0.032, (now - last) / 1000);
+      last = now;
+      const s = state.current;
+      const t = targetRef.current;
+      if (reduced.current) Object.assign(s, { x: t.x, y: t.y, vx: 0, vy: 0 });
+      s.vx += (-SQUISH.stiffness * (s.x - t.x) - SQUISH.damping * s.vx) * dt;
+      s.vy += (-SQUISH.stiffness * (s.y - t.y) - SQUISH.damping * s.vy) * dt;
+      s.x = Math.min(1 + SQUISH.overshoot, Math.max(-SQUISH.overshoot, s.x + s.vx * dt));
+      s.y = Math.min(1 + SQUISH.overshoot, Math.max(-SQUISH.overshoot, s.y + s.vy * dt));
+      const settled = Math.abs(s.x - t.x) < 0.002 && Math.abs(s.y - t.y) < 0.002 && Math.abs(s.vx) < 0.02 && Math.abs(s.vy) < 0.02;
+      if (settled) {
+        Object.assign(s, { x: t.x, y: t.y, vx: 0, vy: 0 });
+        frame.current = 0;
+        setShown(t);
+        return;
+      }
+      setShown({ x: s.x, y: s.y });
+      frame.current = requestAnimationFrame(step);
+    };
+    frame.current = requestAnimationFrame(step);
+  }, [target.x, target.y]);
+  return shown;
 }
 
 interface DesktopCanvasViewProps {
@@ -99,7 +150,7 @@ export function DesktopCanvasView({
   // the board it glides from where it was to the dock, and the dock's position
   // is recomputed every frame, so the glide follows the camera instead of
   // chasing a stale target.
-  const stuckToSide = isSearchSticky && (searchState.edge === 'left' || searchState.edge === 'right');
+  const stuckToSide = isSearchSticky && searchState.side !== null;
   // Against a side the card is a drawer tab; opening it slides the input bar
   // out from that edge, at the tab's height, without moving the camera.
   const [drawer, setDrawer] = useState(false);
@@ -107,19 +158,17 @@ export function DesktopCanvasView({
   const drawerOpen = drawer && stuckToSide;
   const fullW = SEARCH_CARD.EXPANDED_WIDTH * navigation.camera.zoom;
   const fullH = SEARCH_CARD.EXPANDED_HEIGHT * navigation.camera.zoom;
+  const squish = useSquish(searchState.squeeze);
+  const squished = searchCardShape(squish.x, squish.y, fullW, fullH);
+  const held = holdInsideEdges(searchState.slotCenter, squished.width, squished.height, windowSize);
   const target: ScreenBox = drawerOpen
     ? {
-        x: searchState.edge === 'right' ? windowSize.width - SEARCH_CARD.EDGE_PADDING - fullW / 2 : SEARCH_CARD.EDGE_PADDING + fullW / 2,
+        x: searchState.side === 'right' ? windowSize.width - SEARCH_CARD.EDGE_PADDING - fullW / 2 : SEARCH_CARD.EDGE_PADDING + fullW / 2,
         y: searchState.screenPosition.y,
         w: fullW,
         h: SEARCH_CARD.COLLAPSED_HEIGHT,
       }
-    : {
-        x: searchState.screenPosition.x,
-        y: searchState.screenPosition.y,
-        w: searchState.width,
-        h: searchState.height,
-      };
+    : { x: held.x, y: held.y, w: squished.width, h: squished.height };
   const shownRef = useRef<ScreenBox>(target);
   const [glide, setGlide] = useState<{ from: ScreenBox; t: number } | null>(null);
   const firstAnchor = useRef(true);

@@ -7,6 +7,10 @@
  *   - Which edge is closest and the compression ratio (0 = free, 1 = fully squashed)
  *   - The screen-space position for rendering the fixed overlay, clamped to that edge
  *
+ * Its shape squeezes on each axis separately: past a side it narrows to a
+ * tab, past the top or bottom it folds to the input row, and in a corner it
+ * becomes the tab, so it morphs continuously as the camera moves between edges.
+ *
  * While the slot is off screen the card stays stuck to the edge. It comes
  * free when its slot is back in view, or when DesktopCanvasView docks it in
  * another copy of the board that is.
@@ -33,6 +37,9 @@ interface UseSearchCardStateReturn extends SearchCardState {
   setSearchTerm: (term: string) => void;
   setCategory: (category: string | null) => void;
   clearFilters: () => void;
+  squeeze: SearchCardPresentation['squeeze'];
+  side: SearchCardPresentation['side'];
+  slotCenter: Position;
   /** Overridden canvas position when compressed (null when free) */
   stickyCanvasPosition: CardPosition | null;
 }
@@ -41,6 +48,12 @@ interface SearchCardPresentation {
   edge: SearchCardEdge;
   compression: number;
   rawOffscreenDistance: number;
+  /** How squeezed the card is by a side edge (x) and by the top or bottom (y), 0–1. */
+  squeeze: { x: number; y: number };
+  /** The side it's pressed against, if any; a drawer opens from there. */
+  side: 'left' | 'right' | null;
+  /** Where its slot is on screen, before it's held inside the edges. */
+  slotCenter: Position;
   screenPosition: Position;
   /** CSS pixel dimensions for the fixed overlay. */
   width: number;
@@ -57,6 +70,28 @@ function clamp(value: number, min: number, max: number): number {
 
 function lerp(from: number, to: number, progress: number): number {
   return from + (to - from) * progress;
+}
+
+/**
+ * The card's screen size for a given squeeze on each axis. Squeezes outside
+ * 0–1 (a spring overshooting) bulge or pinch it a little past either end.
+ */
+export function searchCardShape(squeezeX: number, squeezeY: number, fullWidth: number, fullHeight: number) {
+  return {
+    width: lerp(fullWidth, SEARCH_CARD.SQUASHED_SIDE_WIDTH, squeezeX),
+    // Folded by the top or bottom first, then pressed by a side into a tab:
+    // in a corner it's the tab, whichever edge it came from.
+    height: lerp(lerp(fullHeight, SEARCH_CARD.COLLAPSED_HEIGHT, squeezeY), SEARCH_CARD.SQUASHED_SIDE_HEIGHT, squeezeX),
+  };
+}
+
+/** Holds a card of this size inside the screen's padding, pressed against whichever edge its slot is past. */
+export function holdInsideEdges(slotCenter: Position, width: number, height: number, windowSize: { width: number; height: number }): Position {
+  const padding = SEARCH_CARD.EDGE_PADDING;
+  return {
+    x: clamp(slotCenter.x, padding + width / 2, windowSize.width - padding - width / 2),
+    y: clamp(slotCenter.y, padding + height / 2, windowSize.height - padding - height / 2),
+  };
 }
 
 /**
@@ -115,34 +150,25 @@ export function getSearchCardPresentation(
   }
 
   const compression = clamp(offscreenDistance / SEARCH_CARD.COMPRESSION_DISTANCE, 0, 1);
-  const isSideEdge = edge === 'left' || edge === 'right';
-  const isHorizontalEdge = edge === 'top' || edge === 'bottom';
-  const width = isSideEdge
-    ? lerp(scaledWidth, SEARCH_CARD.SQUASHED_SIDE_WIDTH, compression)
-    : scaledWidth;
-  const height = isHorizontalEdge
-    ? lerp(scaledHeight, SEARCH_CARD.COLLAPSED_HEIGHT, compression)
-    : isSideEdge
-      ? lerp(scaledHeight, SEARCH_CARD.SQUASHED_SIDE_HEIGHT, compression)
-      : scaledHeight;
-
-  const minX = padding + width / 2;
-  const maxX = windowSize.width - padding - width / 2;
-  const minY = padding + height / 2;
-  const maxY = windowSize.height - padding - height / 2;
+  const sideDistance = Math.max(edgeDistances.left, edgeDistances.right);
+  const squeeze = {
+    x: clamp(sideDistance / SEARCH_CARD.COMPRESSION_DISTANCE, 0, 1),
+    y: clamp(Math.max(edgeDistances.top, edgeDistances.bottom) / SEARCH_CARD.COMPRESSION_DISTANCE, 0, 1),
+  };
+  const { width, height } = searchCardShape(squeeze.x, squeeze.y, scaledWidth, scaledHeight);
 
   return {
     edge,
     compression,
     rawOffscreenDistance: offscreenDistance,
+    squeeze,
+    side: sideDistance > 0 ? (edgeDistances.left > edgeDistances.right ? 'left' : 'right') : null,
+    slotCenter: screenCenter,
     width,
     height,
     canvasWidth: width / camera.zoom,
     canvasHeight: height / camera.zoom,
-    screenPosition: {
-      x: compression > 0 ? clamp(screenCenter.x, minX, maxX) : screenCenter.x,
-      y: compression > 0 ? clamp(screenCenter.y, minY, maxY) : screenCenter.y,
-    },
+    screenPosition: compression > 0 ? holdInsideEdges(screenCenter, width, height, windowSize) : screenCenter,
   };
 }
 
@@ -160,6 +186,9 @@ function getMobilePresentation(
     edge: 'top',
     compression: expanded ? 0 : 1,
     rawOffscreenDistance: 0,
+    squeeze: { x: 0, y: expanded ? 0 : 1 },
+    side: null,
+    slotCenter: { x: windowSize.width / 2, y: SEARCH_CARD.EDGE_PADDING + height / 2 },
     width,
     height,
     canvasWidth: width,
@@ -195,6 +224,9 @@ export function useSearchCardState(
         edge: 'none' as SearchCardEdge,
         compression: 0,
         rawOffscreenDistance: 0,
+        squeeze: { x: 0, y: 0 },
+        side: null,
+        slotCenter: { x: windowSize.width / 2, y: windowSize.height / 2 },
         width: SEARCH_CARD.EXPANDED_WIDTH,
         height: SEARCH_CARD.EXPANDED_HEIGHT,
         canvasWidth: SEARCH_CARD.EXPANDED_WIDTH,
@@ -261,6 +293,9 @@ export function useSearchCardState(
     expanded: userExpanded,
     edge: effectivePresentation.edge,
     compression: effectivePresentation.compression,
+    squeeze: effectivePresentation.squeeze,
+    side: effectivePresentation.side,
+    slotCenter: effectivePresentation.slotCenter,
     width: effectivePresentation.width,
     height: effectivePresentation.height,
     searchTerm,
