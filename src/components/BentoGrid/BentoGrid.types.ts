@@ -228,7 +228,7 @@ export type CameraUpdate = Partial<Camera> | ((camera: Camera) => Camera);
 export interface UseCameraReturn extends UseGridNavigationReturn {
   cameraRef: React.RefObject<Camera>;
   /** End the zoomed-out intro, gliding in over `ms`. */
-  settle: (ms: number) => void;
+  settle: (ms: number) => boolean;
   stopMomentum: () => void;
   isDragging: boolean;
 }

@@ -9,6 +9,7 @@ import {
   filterCards,
   fitZoom,
   getCameraTransform,
+  screenToCanvas,
   startsOnInteractiveControl,
   isEditableTarget,
   useCamera,
@@ -108,20 +109,42 @@ export function DesktopCanvasView({
   // The intro: the board opens zoomed out so its scale shows while the cards
   // fall in (and their images load), then the camera glides in to the home
   // group. Any wheel, drag or key cuts it short.
+  //
+  // It has to stay smooth with five times the usual cards on screen, so while
+  // it runs (`booting`) the board renders as it stood at the opening zoom
+  // (nothing mounts or unmounts mid-glide), and only the cards that can be on
+  // screen when it lands are real; the rest are cheap stand-ins that become
+  // real once it's over and they're out of sight.
+  const [booting, setBooting] = useState(intro);
+  const [introCamera] = useState(navigation.camera);
   const { settle } = navigation;
   useEffect(() => {
     if (!intro) return;
-    const timer = window.setTimeout(() => settle(INTRO.glideMs), INTRO.holdMs);
-    const hurry = () => settle(INTRO.hurryMs);
+    let landed = 0;
+    const glide = (ms: number) => {
+      if (!settle(ms)) return;
+      landed = window.setTimeout(() => setBooting(false), ms + 100);
+    };
+    const timer = window.setTimeout(() => glide(INTRO.glideMs), INTRO.holdMs);
+    const hurry = () => glide(INTRO.hurryMs);
     const events = ['wheel', 'pointerdown', 'keydown'] as const;
     for (const e of events) window.addEventListener(e, hurry, { once: true, passive: true });
     return () => {
       window.clearTimeout(timer);
+      window.clearTimeout(landed);
       for (const e of events) window.removeEventListener(e, hurry);
     };
   }, [intro, settle]);
+  // Where the intro lands, in canvas px: cards outside it are stand-ins until then.
+  const landing = useMemo(() => {
+    if (!booting) return null;
+    const camera = { ...introCamera, zoom: fitZoom(windowSize) };
+    const topLeft = screenToCanvas(0, 0, camera, windowSize);
+    const bottomRight = screenToCanvas(windowSize.width, windowSize.height, camera, windowSize);
+    return { left: topLeft.x, top: topLeft.y, right: bottomRight.x, bottom: bottomRight.y };
+  }, [booting, introCamera, windowSize]);
 
-  const board = useTiledBoard({ cards, layout, camera: navigation.camera, windowSize });
+  const board = useTiledBoard({ cards, layout, camera: booting ? introCamera : navigation.camera, windowSize });
 
   const searchCardLayout = board.visible.get(SEARCH_CARD_ID);
 
@@ -222,14 +245,16 @@ export function DesktopCanvasView({
   const { focusedCardId, setFocusedCardId } = cardNavigation;
 
   // A clicked card reports where it is on screen, so whatever opens can grow out of it.
-  const { camera } = navigation;
+  // It reads the camera when clicked, so the card layer needn't re-render as the camera moves.
+  const { camera, cameraRef } = navigation;
   const handleCardClick = useCallback(
     (card: CardData, layout: CardPosition) => {
       setFocusedCardId(card.id);
-      const topLeft = canvasToScreen(layout.x, layout.y, camera, windowSize);
-      selectCard(card, { x: topLeft.x, y: topLeft.y, width: layout.width * camera.zoom, height: layout.height * camera.zoom });
+      const now = cameraRef.current;
+      const topLeft = canvasToScreen(layout.x, layout.y, now, windowSize);
+      selectCard(card, { x: topLeft.x, y: topLeft.y, width: layout.width * now.zoom, height: layout.height * now.zoom });
     },
-    [selectCard, setFocusedCardId, camera, windowSize],
+    [selectCard, setFocusedCardId, cameraRef, windowSize],
   );
 
   // Focus the search input. Docked, or folded to a bar at the top or bottom,
@@ -374,6 +399,7 @@ export function DesktopCanvasView({
             focusedCardId={focusedCardId}
             dimmed={board.dimmed}
             spotlit={lit ? null : inSpotlight}
+            live={landing}
             renderCard={renderCard}
             onCardClick={handleCardClick}
           />

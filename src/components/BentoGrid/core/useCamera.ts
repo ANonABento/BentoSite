@@ -173,13 +173,15 @@ export function useCamera({
     glideZoom(baseZoom * CAMERA.zoomLevels[index], CAMERA.zoomGlideMs, (t) => 1 - (1 - t) ** 3);
   }, [baseZoom, glideZoom, stopMomentum]);
 
-  // Ends the intro: glides from the zoomed-out opening to the visitor's zoom level.
+  // Ends the intro: glides from the zoomed-out opening to the visitor's zoom
+  // level. False if the intro had already ended.
   const settle = useCallback((ms: number) => {
-    if (!introRef.current) return;
+    if (!introRef.current) return false;
     introRef.current = false;
     glideZoom(baseZoom * CAMERA.zoomLevels[levelRef.current], ms, (t) =>
       t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2,
     );
+    return true;
   }, [baseZoom, glideZoom]);
 
   // Follow window resizes so the board keeps its proportions.
