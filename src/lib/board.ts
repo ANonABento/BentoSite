@@ -3,7 +3,8 @@ import path from 'node:path';
 import type { BoardLayout, InfoContent, IntroProfile, LayoutCard, ProjectCardData } from '@/components/BentoGrid';
 import { readingOrder, sizeOf } from '@/components/BentoGrid';
 import type { ViewfinderItem, ViewfinderProject } from '@/components/Viewfinder/types';
-import { RESUME_URL, about, experience, formatDate, getFeatured, getProjects, profile, skills, type Project } from './content';
+import portfolio from '@/content/portfolio.json';
+import { RESUME_URL, experience, formatDate, getFeatured, getJobs, getProjects, profile, skills, type Project } from './content';
 
 export const LAYOUT_PATH = path.join(process.cwd(), 'src/content/layout.json');
 
@@ -26,7 +27,8 @@ export function projectCard(p: Project, placed?: LayoutCard): ProjectCardData {
     links: { github: p.links.github, demo: p.links.liveDemo },
     featured,
     award: p.award,
-    date: formatDate(p.dateCompleted),
+    awardShort: p.awardShort,
+    date: p.period ?? formatDate(p.dateCompleted),
     size: placed ? sizeOf(placed) : '2x2',
     look: placed?.look,
   };
@@ -45,11 +47,24 @@ export function introProfile(): IntroProfile {
   return {
     name: profile.name,
     title: profile.title,
-    pitch: 'I build robots and the software that runs them, from PCBs and printed joints up to ROS2 and LLM pipelines.',
-    // The first sentence is enough beside the pitch.
-    about: about.split(/(?<=\.)\s/)[0],
-    skills: [...skills.hardware, ...skills.software].slice(0, 10),
-    jobs: experience.map((e) => ({ role: e.role, company: e.company, period: e.period })),
+    pitch: 'I build robots and the software that runs them, from PCBs and printed joints up to ROS 2, teleop and on-device AI.',
+    facts: [profile.location, `UWaterloo CE '${profile.gradYear.slice(2)}`, profile.workAuth],
+    // Awards a recruiter should see without opening a card, best first.
+    highlights: getProjects()
+      .filter((p) => p.award && portfolio.highlights.includes(p.id))
+      .sort((a, b) => portfolio.highlights.indexOf(a.id) - portfolio.highlights.indexOf(b.id))
+      .map((p) => ({ id: p.id, label: p.awardShort ?? p.award! })),
+    skills: [...skills.robotics, ...skills.ai].slice(0, 10),
+    // The card has room for the recent roles; the full history is on the résumé.
+    jobs: experience.slice(0, 4).map((e) => ({
+      // Jobs with details have a card of their own; the row opens it.
+      cardId: 'details' in e ? `job-${e.id}` : undefined,
+      role: e.role,
+      company: e.company,
+      note: 'note' in e ? e.note : undefined,
+      period: e.period,
+      summary: e.summary,
+    })),
   };
 }
 
@@ -74,7 +89,7 @@ export function viewfinderProject(p: Project): ViewfinderProject {
     description: p.description,
     category: p.category,
     status: p.status,
-    date: formatDate(p.dateCompleted),
+    date: p.period ?? formatDate(p.dateCompleted),
     context: p.context,
     award: p.award,
     technologies: p.technologies,
@@ -83,7 +98,7 @@ export function viewfinderProject(p: Project): ViewfinderProject {
   };
 }
 
-/** Every project's viewfinder data, by id. */
+/** Every project's (and job's) viewfinder data, by id. */
 export function viewfinderProjects(): Record<string, ViewfinderProject> {
-  return Object.fromEntries(getProjects().map((p) => [p.id, viewfinderProject(p)]));
+  return Object.fromEntries([...getProjects(), ...getJobs()].map((p) => [p.id, viewfinderProject(p)]));
 }

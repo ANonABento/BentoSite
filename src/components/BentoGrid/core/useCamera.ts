@@ -12,6 +12,8 @@ interface UseCameraOptions {
   windowSize: Size;
   initialCamera?: Camera;
   onCameraChange?: (camera: Camera) => void;
+  /** Open zoomed out to this multiple of the fit zoom, for the intro; `settle` glides in to the default. */
+  introZoom?: number;
 }
 
 /** How much ctrl+wheel (a trackpad pinch) builds up before the zoom takes a step. */
@@ -42,9 +44,18 @@ export function useCamera({
   windowSize,
   initialCamera,
   onCameraChange,
+  introZoom,
 }: UseCameraOptions): UseCameraReturn {
   const baseZoom = fitZoom(windowSize);
-  const [camera, setCameraState] = useState<Camera>(() => initialCamera ?? { ...DEFAULT_CAMERA, zoom: baseZoom });
+  const [camera, setCameraState] = useState<Camera>(
+    () =>
+      initialCamera ?? {
+        ...DEFAULT_CAMERA,
+        zoom: introZoom ? clamp(baseZoom * introZoom, CAMERA.minZoom, baseZoom) : baseZoom,
+      },
+  );
+  // While the intro holds the camera zoomed out, resizes don't snap it back.
+  const introRef = useRef(Boolean(introZoom));
   const [isDragging, setIsDragging] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -141,27 +152,41 @@ export function useCamera({
     zoomGlideRef.current = null;
   }, []);
 
+  const glideZoom = useCallback((to: number, ms: number, ease: (t: number) => number) => {
+    stopZoomGlide();
+    const from = cameraRef.current.zoom;
+    const startedAt = performance.now();
+    zoomGlideRef.current = requestAnimationFrame(function step(now) {
+      const t = Math.min(1, (now - startedAt) / ms);
+      setCamera((prev) => ({ ...prev, zoom: from + (to - from) * ease(t) }));
+      zoomGlideRef.current = t < 1 ? requestAnimationFrame(step) : null;
+    });
+  }, [setCamera, stopZoomGlide]);
+
   const zoom = useCallback((steps: number) => {
     const index = clamp(levelRef.current + steps, 0, CAMERA.zoomLevels.length - 1);
     if (index === levelRef.current) return;
+    introRef.current = false;
     levelRef.current = index;
     setLevelIndex(index);
     stopMomentum();
-    stopZoomGlide();
+    glideZoom(baseZoom * CAMERA.zoomLevels[index], CAMERA.zoomGlideMs, (t) => 1 - (1 - t) ** 3);
+  }, [baseZoom, glideZoom, stopMomentum]);
 
-    const from = cameraRef.current.zoom;
-    const to = baseZoom * CAMERA.zoomLevels[index];
-    const startedAt = performance.now();
-    zoomGlideRef.current = requestAnimationFrame(function step(now) {
-      const t = Math.min(1, (now - startedAt) / CAMERA.zoomGlideMs);
-      const eased = 1 - (1 - t) ** 3;
-      setCamera((prev) => ({ ...prev, zoom: from + (to - from) * eased }));
-      zoomGlideRef.current = t < 1 ? requestAnimationFrame(step) : null;
-    });
-  }, [baseZoom, setCamera, stopMomentum, stopZoomGlide]);
+  // Ends the intro: glides from the zoomed-out opening to the visitor's zoom
+  // level. False if the intro had already ended.
+  const settle = useCallback((ms: number) => {
+    if (!introRef.current) return false;
+    introRef.current = false;
+    glideZoom(baseZoom * CAMERA.zoomLevels[levelRef.current], ms, (t) =>
+      t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2,
+    );
+    return true;
+  }, [baseZoom, glideZoom]);
 
   // Follow window resizes so the board keeps its proportions.
   useEffect(() => {
+    if (introRef.current) return;
     stopZoomGlide();
     const target = baseZoom * CAMERA.zoomLevels[levelRef.current];
     setCamera((prev) => (prev.zoom === target ? prev : { ...prev, zoom: target }));
@@ -180,6 +205,7 @@ export function useCamera({
   }, [setCamera, stopMomentum]);
 
   const reset = useCallback(() => {
+    introRef.current = false;
     stopMomentum();
     stopZoomGlide();
     levelRef.current = defaultLevel;
@@ -389,6 +415,7 @@ export function useCamera({
     canZoomOut: levelIndex > 0,
     setCamera,
     reset,
+    settle,
     stopMomentum,
     isDragging,
     isAnimating: isAnimating || isDragging,

@@ -9,13 +9,13 @@ const orbitron = Orbitron({ subsets: ['latin'], weight: '700', variable: '--font
 const vt323 = VT323({ subsets: ['latin'], weight: '400', variable: '--font-vt323' });
 
 const description =
-  'Kevin Jiang is a computer engineering student at the University of Waterloo building robots and the software that runs them.';
+  `${profile.name}, ${profile.title}. Forward Deployed Engineer at RLWRLD and Computer Engineering at the University of Waterloo: robot teleoperation, ROS 2, on-device AI and the hardware under it.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: `${profile.name} — bentOS`, template: `%s — ${profile.name}` },
+  title: { default: `${profile.name} — ${profile.title}`, template: `%s — ${profile.name}` },
   description,
-  openGraph: { type: 'website', siteName: 'bentOS', title: profile.name, description },
+  openGraph: { type: 'website', siteName: profile.name, title: `${profile.name} — ${profile.title}`, description },
   twitter: { card: 'summary_large_image' },
 };
 

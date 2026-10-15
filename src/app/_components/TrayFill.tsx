@@ -3,16 +3,19 @@
 import { useEffect } from 'react';
 
 /*
- * The boot: the tray is drawn at once, and each compartment's contents are
- * set into it, rippling out from the middle of the screen. No overlay, no
- * click. Once per tab session; skipped for deep links and reduced motion.
+ * The boot: the tray is drawn at once, and each compartment's contents drop
+ * into it, rippling out from the middle of the screen. On desktop the board
+ * opens zoomed out for this and then glides in (the `intro` on BentoGrid).
+ * No overlay, no click. Once per tab session; skipped for deep links and
+ * reduced motion.
  */
 
 const SEEN_KEY = 'bentOS.booted';
-const STAGGER_MS = 300;
-const FILL_MS = 380;
+const STAGGER_MS = 550;
+const FILL_MS = 520;
 
-function shouldBoot(): boolean {
+/** Whether this visit gets the boot. Read once, on the client, before the board mounts. */
+export function shouldBoot(): boolean {
   if (new URLSearchParams(window.location.search).has('project')) return false;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
   try {
@@ -23,9 +26,9 @@ function shouldBoot(): boolean {
   }
 }
 
-export function TrayFill() {
+export function TrayFill({ active }: { active: boolean }) {
   useEffect(() => {
-    if (!shouldBoot()) return;
+    if (!active) return;
     const root = document.documentElement;
     root.classList.add('tray-pending');
     let frame = 0;
@@ -64,7 +67,7 @@ export function TrayFill() {
       window.clearTimeout(done);
       root.classList.remove('tray-pending', 'tray-filling');
     };
-  }, []);
+  }, [active]);
 
   return null;
 }

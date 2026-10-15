@@ -38,14 +38,15 @@ export function MobileScrollView({
     [cards, searchTerm, category]
   );
 
-  // Two-column tray: intro, featured work, the info compartments, then the rest.
+  // Two-column tray: intro and contact first (a phone visitor is often a recruiter
+  // with a minute), then featured work, then the rest.
   const trayCards = useMemo(() => {
     const isFeatured = (card: CardData) => card.type === 'project' && Boolean(card.featured);
     const content = localFilteredCards;
     return [
       ...content.filter((card) => card.type === 'intro'),
-      ...content.filter(isFeatured),
       ...content.filter((card) => card.type !== 'intro' && isPinnedCard(card)),
+      ...content.filter(isFeatured),
       ...content.filter((card) => !isPinnedCard(card) && !isFeatured(card)),
     ];
   }, [localFilteredCards]);
@@ -165,8 +166,8 @@ function spanOf(card: CardData): 1 | 2 {
 }
 
 function heightOf(card: CardData, trayWidth: number, columnWidth: number): number {
-  if (card.type === 'intro') return 620;
-  if (card.type === 'info' && card.variant === 'contact') return 140;
+  if (card.type === 'intro') return 780;
+  if (card.type === 'info' && card.variant === 'contact') return 150;
   if (spanOf(card) === 2) return Math.round(trayWidth * 0.75);
   return Math.round(columnWidth * 1.1);
 }

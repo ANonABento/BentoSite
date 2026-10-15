@@ -72,6 +72,8 @@ export interface ProjectCardData extends BaseCardData {
   featured?: boolean;
   /** Award text, shown as a star badge. */
   award?: string;
+  /** The award in a few words, written on the badge when the card has room. */
+  awardShort?: string;
   /** Short display date for the footer, e.g. "Oct 2026". */
   date?: string;
   /** How the card frames its image, from the layout. */
@@ -225,6 +227,8 @@ export type CameraUpdate = Partial<Camera> | ((camera: Camera) => Camera);
 
 export interface UseCameraReturn extends UseGridNavigationReturn {
   cameraRef: React.RefObject<Camera>;
+  /** End the zoomed-out intro, gliding in over `ms`. */
+  settle: (ms: number) => boolean;
   stopMomentum: () => void;
   isDragging: boolean;
 }

@@ -1,52 +1,61 @@
 {
   "personal": {
     "name": "Kevin Jiang",
-    "title": "The Everything Engineer",
-    "location": "Waterloo, Ontario, Canada",
+    "title": "Robotics & Physical AI Engineer",
+    "location": "San Francisco, CA",
     "email": "k69jiang@uwaterloo.ca",
     "github": "https://github.com/ANonABento",
     "linkedin": "https://linkedin.com/in/ANonABento",
     "university": "University of Waterloo",
-    "degree": "BASc in Computer Engineering"
+    "degree": "BASc in Computer Engineering",
+    "workAuth": "U.S. & Canadian citizen",
+    "gradYear": "2029"
   },
   "featured": [
     "robotic-arm-puppeteer",
+    "pomme",
     "expressive-ai-robot-head",
     "ar-gesture-robot",
-    "shoulder-cupid",
-    "bento-ya",
-    "snapfire"
+    "flowto",
+    "shoulder-cupid"
   ],
-  "about": "I'm a Computer Engineering student at the University of Waterloo with a passion for building robots that interact naturally with humans. My work spans the full stack of robotics—from designing custom PCBs and 3D-printed mechanisms to implementing GPU-accelerated AI pipelines with LLMs and computer vision.\n\nI've built everything from gesture-controlled robot arms using AR glasses to expressive robot heads that can hold conversations. When I'm not soldering or debugging ROS2 nodes, you'll find me competing at hackathons or tinkering with new sensor technologies.",
+  "highlights": [
+    "flowto",
+    "pomme",
+    "shoulder-cupid"
+  ],
+  "about": "Forward Deployed Engineer at RLWRLD, turning teleoperation data into robot foundation-model training sets, and a Computer Engineering student at the University of Waterloo. I've built exoskeleton controllers and AprilTag tracking for robot-arm teleop in Tokyo, on-device AI for robots at hackathons, and production AI systems at a YC startup.",
   "skills": {
+    "robotics": [
+      "ROS 2",
+      "Teleoperation",
+      "LeRobot",
+      "MuJoCo",
+      "Isaac Sim",
+      "Dynamixel",
+      "AprilTag / OpenCV",
+      "SLAM"
+    ],
+    "ai": [
+      "PyTorch",
+      "YOLOv8 / Edge Impulse",
+      "llama.cpp / Whisper",
+      "LLM tool use"
+    ],
     "hardware": [
       "STM32 & ESP32",
+      "FreeRTOS",
       "PCB Design (Altium)",
-      "Arduino & Microcontrollers",
-      "3D Printing & CAD",
-      "Soldering & Assembly",
-      "Servo & Motor Control",
-      "Sensor Integration"
+      "Fusion 360",
+      "3D Printing"
     ],
     "software": [
       "Python",
       "C / C++",
-      "JavaScript / TypeScript",
-      "ROS2",
-      "PyTorch",
-      "OpenCV",
+      "TypeScript",
       "React & Next.js",
-      "Three.js / WebGL"
-    ],
-    "tools": [
-      "Fusion 360",
-      "OnShape",
-      "Blender",
-      "Docker",
-      "Git & GitHub",
-      "Linux",
-      "Jetson Nano",
-      "llama.cpp / Whisper"
+      "Three.js",
+      "Rust (Tauri)"
     ]
   },
   "experience": [
@@ -63,7 +72,10 @@
         "ROS2",
         "LeRobot",
         "Teleoperation"
-      ]
+      ],
+      "summary": "Teleop data (Quest 3, Vive, Manus gloves) into LeRobot datasets that fine-tune the RLDX-1 robot model.",
+      "site": "https://www.rlwrld.ai",
+      "details": "RLWRLD builds RLDX-1, a foundation model for robots. As a Forward Deployed Engineer I work between the model, the robots and the customers who need them.\n\n- Capture multi-modal teleoperation data with Quest 3, Vive and Manus gloves, and convert the sensor streams and tactile flags into LeRobot datasets that fine-tune RLDX-1 for specific tasks.\n- Partner with the AWS Prototyping team to turn enterprise automation specs (heavy-load handling, stamping, pick-and-place) into live feasibility proofs-of-concept on two-week cycles.\n- Upgraded the robot controller stack: mobile-base teleoperation controllers, auto-homing routines and state recovery, so live executive demos run without downtime."
     },
     {
       "id": "hamming",
@@ -77,7 +89,11 @@
         "Python",
         "AI/ML",
         "Full Stack"
-      ]
+      ],
+      "summary": "Shipped an adaptive red-teaming eval suite for voice agents and an LLM root-cause chatbot.",
+      "note": "YC S24",
+      "site": "https://hamming.ai",
+      "details": "Hamming (YC S24) tests and monitors AI voice agents.\n\n- Shipped **Red Teaming**, an adversarial voice-agent evaluation suite: a three-axis attack matrix (category × technique × voice modification) with a UCB1/Bayesian selector that adaptively targets an agent's gaps, orchestrated on Temporal workflows.\n- Designed a dual-mode in-app chatbot: a discovery agent for navigation and feature guidance, and a root-cause-analysis mode that uses LLM tool calls to pull filter-aware call data and answer with evidence and inline charts.\n- Hardened transcript merging with provenance-aware source arbitration, turn-bounded alignment and similarity-based artifact filtering, plus an HTML diff harness that benchmarks pipeline regressions against production samples."
     },
     {
       "id": "reazon",
@@ -93,6 +109,15 @@
         "Fusion 360",
         "Three.js",
         "OpenCV"
+      ],
+      "summary": "<150 g exoskeleton wrist controller and AprilTag tracking (+20% accuracy) for robot-arm teleop.",
+      "site": "https://research.reazon.jp",
+      "details": "A summer in Akihabara building teleoperation hardware and perception for robot-arm data collection. The full build is the **Robotic Arm Puppeteer** project.\n\n- Designed a lightweight (<150 g) exoskeleton wrist controller in Fusion 360, with Dynamixel actuators for encoder feedback and haptic response, to teleoperate an 8-DOF Damiao arm for RL data collection.\n- Built wrist-mounted magnetic AprilTag tracking with two cameras, Python and ROS 2 for real-time motion capture, improving tag recognition and bundle pose accuracy by 20% over the lab's existing setup.\n- Wrote modular ROS 2 nodes that work across camera setups, and bridge nodes that map encoder readings to joint positions for inverse kinematics and TF in quaternion space, driving URDF simulators such as RViz2 and MuJoCo.\n- Built an interactive Three.js calibration and visualization tool with Flask and Blender bone rigging.",
+      "images": [
+        "/projects/robotic-arm-puppeteer/worn.webp",
+        "/projects/robotic-arm-puppeteer/render.webp",
+        "/projects/robotic-arm-puppeteer/apriltags.webp",
+        "/projects/robotic-arm-puppeteer/calibration.webp"
       ]
     },
     {
@@ -108,6 +133,12 @@
         "PCB Design",
         "Soldering",
         "Oscilloscope"
+      ],
+      "summary": "Double-layer PCBs for the solar car's controller; soldered and tested IMU and power boards.",
+      "site": "https://www.uwmidsun.com",
+      "details": "Midnight Sun is the University of Waterloo's solar car team.\n\n- Designed and routed double-layer PCBs for the car's controller subsystem in Altium Designer, with zero ERC/DRC violations across all layers.\n- Soldered and tested SMD boards, including the IMU and power-control circuits.",
+      "images": [
+        "/projects/pcb-design/hero.jpg"
       ]
     },
     {
@@ -123,7 +154,8 @@
         "Shopify",
         "Wix",
         "Adobe Photoshop"
-      ]
+      ],
+      "summary": "Built client e-commerce sites and brand graphics."
     }
   ],
   "education": [

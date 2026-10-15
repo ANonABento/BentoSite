@@ -6,6 +6,7 @@
   "category": "AI",
   "context": "NVIDIA Spark Hack",
   "award": "1st place, NVIDIA Spark Hack",
+  "awardShort": "1st place · NVIDIA Spark Hack",
   "status": "Completed",
   "technologies": [
     "Python",

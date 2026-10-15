@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { Viewfinder } from '@/components/Viewfinder/Viewfinder';
-import { TrayFill } from './TrayFill';
+import { TrayFill, shouldBoot } from './TrayFill';
 import type { ViewfinderProject } from '@/components/Viewfinder/types';
 import { InfoCard, IntroCard, ProjectCard, type InfoContent, type IntroProfile } from '@/components/BentoGrid/cards';
 import {
@@ -31,7 +31,7 @@ export interface ProjectsGridProps {
   details: Record<string, ViewfinderProject>;
 }
 
-export function makeRenderCard(profile: IntroProfile, info: InfoContent) {
+export function makeRenderCard(profile: IntroProfile, info: InfoContent, onOpen?: (id: string, origin: Rect) => void) {
   return function renderProjectCard(
     card: CardData,
     position: CardPosition,
@@ -41,7 +41,7 @@ export function makeRenderCard(profile: IntroProfile, info: InfoContent) {
     entranceIndex = 0,
   ): ReactNode {
     if (card.type === 'intro') {
-      return <IntroCard card={card} position={position} theme={theme} profile={profile} isFocused={isFocused} />;
+      return <IntroCard card={card} position={position} theme={theme} profile={profile} isFocused={isFocused} onOpen={onOpen} />;
     }
     if (card.type === 'info') {
       return (
@@ -82,7 +82,8 @@ function projectInUrl(details: Record<string, ViewfinderProject>): string | null
 export function ProjectsGridClient({ layout, projects, profile, info, details }: ProjectsGridProps) {
   // Every card goes on the board once; the board repeats it in every direction.
   const cards = useMemo<CardData[]>(() => [INTRO, CONTACT, ...projects], [projects]);
-  const renderCard = useMemo(() => makeRenderCard(profile, info), [profile, info]);
+  // Decided once, before the board mounts, so the camera can open zoomed out for it.
+  const [boot] = useState(shouldBoot);
 
   // Clicking a project opens it in the viewfinder over the board. The URL
   // follows (`/?project=<id>`), so the link can be shared and Back closes it.
@@ -102,17 +103,26 @@ export function ProjectsGridClient({ layout, projects, profile, info, details }:
     return () => window.removeEventListener('popstate', sync);
   }, [details]);
 
-  const handleCardSelect = useCallback(
-    (card: CardData, origin?: Rect) => {
-      if (card.type !== 'project' || !details[card.id]) return;
+  const openProject = useCallback(
+    (id: string, origin?: Rect) => {
+      if (!details[id]) return;
       const url = new URL(window.location.href);
-      url.searchParams.set('project', card.id);
+      url.searchParams.set('project', id);
       window.history.pushState(null, '', url);
       pushed.current = true;
-      setOpen({ id: card.id, origin: origin ?? null });
+      setOpen({ id, origin: origin ?? null });
     },
     [details],
   );
+  const handleCardSelect = useCallback(
+    (card: CardData, origin?: Rect) => {
+      if (card.type === 'project') openProject(card.id, origin);
+    },
+    [openProject],
+  );
+  // The intro's job rows open the viewfinder too. openProject only runs on click, never in render.
+  // eslint-disable-next-line react-hooks/refs
+  const renderCard = useMemo(() => makeRenderCard(profile, info, openProject), [profile, info, openProject]);
 
   const close = useCallback(() => {
     if (pushed.current) {
@@ -137,8 +147,9 @@ export function ProjectsGridClient({ layout, projects, profile, info, details }:
         breadcrumb="bentOS / Kevin Jiang"
         renderCard={renderCard}
         spotlight
+        intro={boot}
       />
-      <TrayFill />
+      <TrayFill active={boot} />
       <AnimatePresence>
         {open && <Viewfinder key={open.id} project={details[open.id]} origin={open.origin} onClose={close} />}
       </AnimatePresence>

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "resume": "curl -fsSL -o public/Kevin-Jiang-Resume.pdf 'https://docs.google.com/document/d/140poL_mXjYyzeCwDNUE6Fs4U9zUKyypF3m4gpUiO1ZU/export?format=pdf'"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

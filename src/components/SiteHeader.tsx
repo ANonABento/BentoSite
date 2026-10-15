@@ -13,13 +13,16 @@ export function SiteHeader() {
       </Link>
       <nav aria-label="Main" className="flex items-center gap-4 text-sm sm:gap-6">
         <Link href="/" className={`${linkClass} hidden sm:inline`}>
-          Grid
+          Home
         </Link>
         <Link href="/projects" className={`${linkClass} hidden sm:inline`}>
           All projects
         </Link>
         <a href={profile.github} className={linkClass} target="_blank" rel="noopener noreferrer">
           GitHub
+        </a>
+        <a href={profile.linkedin} className={`${linkClass} hidden sm:inline`} target="_blank" rel="noopener noreferrer">
+          LinkedIn
         </a>
         <a
           href={RESUME_URL}

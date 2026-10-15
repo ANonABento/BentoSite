@@ -27,7 +27,7 @@ const SHOTS = [
   { src: 'projects/expressive-ai-robot-head/photo.webp', hue: '#f0915a' },
   { src: 'projects/flowto/hero.png', hue: '#b39dfb' },
   { src: 'projects/pomme/robot.webp', hue: '#f0915a' },
-  { src: 'projects/shoulder-cupid/hero.jpg', hue: '#f2c14e' },
+  { src: 'projects/robotic-arm-puppeteer/worn.webp', hue: '#f0915a' },
 ];
 
 const INTRO_W = 560;
@@ -82,7 +82,7 @@ export default async function OpengraphImage() {
             <span style={{ fontSize: 76, fontWeight: 700, color: RICE, letterSpacing: -2, lineHeight: 1 }}>{profile.name}</span>
             <span style={{ fontSize: 28, color: ASH, lineHeight: 1.35 }}>{pitch}</span>
           </div>
-          <span style={{ fontSize: 22, color: ORANGE }}>{`> ${profile.university}`}</span>
+          <span style={{ fontSize: 22, color: ORANGE }}>{`> ${profile.title}`}</span>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', width: SHOTS_W, gap: GAP }}>
           {shots.map((s) => (
