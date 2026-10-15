@@ -22,6 +22,8 @@ export type Project = {
   context?: string;
   /** Only awards a source actually states. */
   award?: string;
+  /** The award in a few words, for card badges. */
+  awardShort?: string;
   /** "YYYY" or "YYYY-MM" */
   dateCompleted: string;
 };

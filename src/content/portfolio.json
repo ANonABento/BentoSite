@@ -1,52 +1,61 @@
 {
   "personal": {
     "name": "Kevin Jiang",
-    "title": "The Everything Engineer",
-    "location": "Waterloo, Ontario, Canada",
+    "title": "Robotics & Physical AI Engineer",
+    "location": "San Francisco, CA",
     "email": "k69jiang@uwaterloo.ca",
     "github": "https://github.com/ANonABento",
     "linkedin": "https://linkedin.com/in/ANonABento",
     "university": "University of Waterloo",
-    "degree": "BASc in Computer Engineering"
+    "degree": "BASc in Computer Engineering",
+    "workAuth": "U.S. & Canadian citizen",
+    "gradYear": "2029"
   },
   "featured": [
     "robotic-arm-puppeteer",
+    "pomme",
     "expressive-ai-robot-head",
     "ar-gesture-robot",
-    "shoulder-cupid",
-    "bento-ya",
-    "snapfire"
+    "flowto",
+    "shoulder-cupid"
   ],
-  "about": "I'm a Computer Engineering student at the University of Waterloo with a passion for building robots that interact naturally with humans. My work spans the full stack of robotics—from designing custom PCBs and 3D-printed mechanisms to implementing GPU-accelerated AI pipelines with LLMs and computer vision.\n\nI've built everything from gesture-controlled robot arms using AR glasses to expressive robot heads that can hold conversations. When I'm not soldering or debugging ROS2 nodes, you'll find me competing at hackathons or tinkering with new sensor technologies.",
+  "highlights": [
+    "flowto",
+    "pomme",
+    "shoulder-cupid"
+  ],
+  "about": "Forward Deployed Engineer at RLWRLD, turning teleoperation data into robot foundation-model training sets, and a Computer Engineering student at the University of Waterloo. I've built exoskeleton controllers and AprilTag tracking for robot-arm teleop in Tokyo, on-device AI for robots at hackathons, and production AI systems at a YC startup.",
   "skills": {
+    "robotics": [
+      "ROS 2",
+      "Teleoperation",
+      "LeRobot",
+      "MuJoCo",
+      "Isaac Sim",
+      "Dynamixel",
+      "AprilTag / OpenCV",
+      "SLAM"
+    ],
+    "ai": [
+      "PyTorch",
+      "YOLOv8 / Edge Impulse",
+      "llama.cpp / Whisper",
+      "LLM tool use"
+    ],
     "hardware": [
       "STM32 & ESP32",
+      "FreeRTOS",
       "PCB Design (Altium)",
-      "Arduino & Microcontrollers",
-      "3D Printing & CAD",
-      "Soldering & Assembly",
-      "Servo & Motor Control",
-      "Sensor Integration"
+      "Fusion 360",
+      "3D Printing"
     ],
     "software": [
       "Python",
       "C / C++",
-      "JavaScript / TypeScript",
-      "ROS2",
-      "PyTorch",
-      "OpenCV",
+      "TypeScript",
       "React & Next.js",
-      "Three.js / WebGL"
-    ],
-    "tools": [
-      "Fusion 360",
-      "OnShape",
-      "Blender",
-      "Docker",
-      "Git & GitHub",
-      "Linux",
-      "Jetson Nano",
-      "llama.cpp / Whisper"
+      "Three.js",
+      "Rust (Tauri)"
     ]
   },
   "experience": [
@@ -63,7 +72,8 @@
         "ROS2",
         "LeRobot",
         "Teleoperation"
-      ]
+      ],
+      "summary": "Teleop data (Quest 3, Vive, Manus gloves) into LeRobot datasets that fine-tune the RLDX-1 robot model."
     },
     {
       "id": "hamming",
@@ -77,7 +87,9 @@
         "Python",
         "AI/ML",
         "Full Stack"
-      ]
+      ],
+      "summary": "Shipped an adaptive red-teaming eval suite for voice agents and an LLM root-cause chatbot.",
+      "note": "YC S24"
     },
     {
       "id": "reazon",
@@ -93,7 +105,8 @@
         "Fusion 360",
         "Three.js",
         "OpenCV"
-      ]
+      ],
+      "summary": "<150 g exoskeleton wrist controller and AprilTag tracking (+20% accuracy) for robot-arm teleop."
     },
     {
       "id": "midnight-sun",
@@ -108,7 +121,8 @@
         "PCB Design",
         "Soldering",
         "Oscilloscope"
-      ]
+      ],
+      "summary": "Double-layer PCBs for the solar car's controller; soldered and tested IMU and power boards."
     },
     {
       "id": "zenith",
@@ -123,7 +137,8 @@
         "Shopify",
         "Wix",
         "Adobe Photoshop"
-      ]
+      ],
+      "summary": "Built client e-commerce sites and brand graphics."
     }
   ],
   "education": [

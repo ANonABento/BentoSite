@@ -5,14 +5,14 @@
  *
  * The layout's `look` can frame the image (focal point and zoom), swap it,
  * hide the description, or switch the variant: `image` drops the footer
- * and shows the title on hover; `text` drops the image for the writing.
+ * for a title over the image (date and category on hover); `text` drops the image for the writing.
  *
  * The rim is the category's hue, faint at rest and lit with a glow on hover.
  * The footer carries the title, the category (in its own hue) and the date,
  * or `wip` for work in progress, so the grid scans without hovering and the
  * text never sits on top of a busy screenshot, plus the one-line
- * description. The award star sits in the image's corner. Card
- * click navigates; github/demo links live on the project page.
+ * description. The award badge sits in the image's corner, spelled out
+ * when the card has room. Card click navigates; github/demo links live on the project page.
  */
 
 import { useState } from 'react';
@@ -38,6 +38,8 @@ export interface ProjectCardProps {
 const BIG_CARD_WIDTH = 600;
 /** Images that have loaded once; later copies of the card skip the fade-in. */
 const loadedImages = new Set<string>();
+/** Cards at least this wide spell the award out on the badge; narrower ones show the star. */
+const AWARD_LABEL_MIN_WIDTH = 240;
 /** With no variant chosen, cards this many columns wide or more get the footer. */
 const FOOTER_MIN_COLS = 3;
 
@@ -136,23 +138,31 @@ export function ProjectCard({
             )}
             {card.award && (
               <span
-                className="absolute right-2 top-2 rounded-md bg-black/70 px-1.5 py-0.5 text-[11px] leading-none text-orange backdrop-blur-sm"
+                className="absolute right-2 top-2 max-w-[calc(100%-1rem)] truncate rounded-md bg-black/75 px-1.5 py-1 text-[11px] font-medium leading-none text-orange backdrop-blur-sm"
                 title={card.award}
               >
-                ★
+                ★{card.awardShort && position.width >= AWARD_LABEL_MIN_WIDTH ? ` ${card.awardShort}` : ''}
               </span>
             )}
             {variant === 'image' && (
-              <div
-                className={`absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-gradient-to-t from-black/90 via-black/70 to-transparent px-4 pb-3 pt-10 transition-opacity duration-200 ${
-                  highlighted ? 'opacity-100' : 'opacity-0'
-                }`}
-              >
+              // The title always shows, so the board reads without hovering (and on touch);
+              // hovering adds the date and category.
+              <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-gradient-to-t from-black/85 via-black/55 to-transparent px-4 pb-3 pt-10">
                 <div className="flex items-baseline justify-between gap-3">
                   <h3 className={`truncate font-semibold tracking-tight text-white ${big ? 'text-lg' : 'text-base'}`}>{card.title}</h3>
-                  <DateTag card={card} />
+                  <span className={`transition-opacity duration-200 ${highlighted ? 'opacity-100' : 'opacity-0'}`}>
+                    <DateTag card={card} />
+                  </span>
                 </div>
-                <CategoryTag category={card.category} hue={hue} />
+                <div
+                  className={`grid transition-[grid-template-rows,opacity] duration-200 ${
+                    highlighted ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <CategoryTag category={card.category} hue={hue} />
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -208,8 +218,12 @@ function TextBody({ card, hue, big, highlighted }: { card: ProjectCardData; hue:
         style={highlighted ? { color: hue } : undefined}
       >
         {card.title}
-        {card.award ? <span className="ml-2 align-middle text-sm text-orange" title={card.award}>★</span> : null}
       </h3>
+      {card.award ? (
+        <p className="truncate text-xs font-medium text-orange" title={card.award}>
+          ★ {card.awardShort ?? card.award}
+        </p>
+      ) : null}
       {card.description ? <p className="line-clamp-[8] min-h-0 overflow-hidden text-sm leading-snug text-ash">{card.description}</p> : null}
     </div>
   );
