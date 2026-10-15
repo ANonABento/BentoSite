@@ -33,6 +33,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import GUI from 'three/addons/libs/lil-gui.module.min.js';
 import { Reflector } from 'three/addons/objects/Reflector.js';
 import { createRobot } from './robot.js';
+import { loadRobot } from './robot-glb.js';
 
 /* ------------------------------------------------------------------ *
  * Board facts, mirrored from the site (BentoGrid.constants, globals.css)
@@ -678,7 +679,8 @@ function renderReflection() {
 /* ------------------------------------------------------------------ *
  * The robot, and a cold moonlight so silhouettes read in the dark
  * ------------------------------------------------------------------ */
-const robot = createRobot();
+// ?robot=shapes brings back the procedural robot
+const robot = new URLSearchParams(location.search).get('robot') === 'shapes' ? createRobot() : await loadRobot();
 scene.add(robot.root);
 window.dbg = { robot, scene, camera, reflector, THREE };
 const moon = new THREE.DirectionalLight('#8a9bc4', 0.22);

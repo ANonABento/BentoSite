@@ -56,3 +56,4 @@ null
 
 # Licensed / purchased models: never commit (public repo)
 prototypes/robot/vendor/
+prototypes/robot/build/

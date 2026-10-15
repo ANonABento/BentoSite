@@ -18,6 +18,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { createRobot } from './robot.js';
+import { loadRobot } from './robot-glb.js';
 
 const q = new URLSearchParams(location.search);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -33,6 +34,7 @@ const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.01, 2
 const view = q.get('view') || 'front';
 const views = {
   front: [[0, 0.6, 1.5], [0, 0.55, 0]],
+  full: [[0, -0.8, 6.5], [0, -1.2, 0]],
   face: [[0, 0.6, 0.85], [0, 0.6, 0]],
   side: [[1.2, 0.6, 0.9], [0, 0.45, 0]],
   back: [[0.7, 0.85, -1.4], [0, 0.4, 0]],
@@ -48,7 +50,8 @@ const key = new THREE.DirectionalLight('#fff1e0', q.has('dark') ? 0 : 2);
 key.position.set(-2, 3, 3);
 scene.add(key);
 
-const robot = createRobot();
+// ?model=shapes shows the old procedural robot
+const robot = q.get('model') === 'shapes' ? createRobot() : await loadRobot();
 scene.add(robot.root);
 robot.setEyes(1, 1);
 robot.grip(+(q.get('curl') ?? 0.3), +(q.get('spread') ?? 0.5));
