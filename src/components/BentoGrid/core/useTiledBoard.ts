@@ -18,6 +18,7 @@ import { useCallback, useMemo, useState } from 'react';
 import type { Camera, CardData, CardPosition } from '../BentoGrid.types';
 import { GRID, GRID_STEP, SEARCH_CARD, SEARCH_CARD_ID, getCardDimensions } from '../BentoGrid.constants';
 import { tileFromLayout, type Tile } from '../layout/tile';
+import { copyOffset } from '../layout/boardLayout';
 import type { BoardLayout } from '../layout/boardLayout';
 import { filterCards } from './cardPoolFilter';
 import { screenToCanvas } from './useViewport';
@@ -57,9 +58,10 @@ export function instanceId(cardId: string, copy: Copy): string {
 
 function slotRect(tile: Tile, slot: Tile['slots'][number], copy: Copy) {
   const dims = getCardDimensions(slot.size);
+  const offset = copyOffset(tile, copy);
   return {
-    x: copy.i * tile.cols * GRID_STEP + slot.col * GRID_STEP - tile.origin.x,
-    y: copy.j * tile.rows * GRID_STEP + slot.row * GRID_STEP - tile.origin.y,
+    x: (offset.col + slot.col) * GRID_STEP - tile.origin.x,
+    y: (offset.row + slot.row) * GRID_STEP - tile.origin.y,
     width: dims.width,
     height: dims.height,
   };
@@ -71,16 +73,23 @@ function viewBounds(camera: Camera, windowSize: { width: number; height: number 
   return { left: topLeft.x, top: topLeft.y, right: bottomRight.x, bottom: bottomRight.y };
 }
 
-/** The copies whose area touches the given bounds. */
+/**
+ * The copies whose cards can touch the given bounds: those whose area does,
+ * plus one more on each side for cards hanging over a copy's edge.
+ */
 function copiesIn(tile: Tile, bounds: ReturnType<typeof viewBounds>): Copy[] {
   const tileW = tile.cols * GRID_STEP;
   const tileH = tile.rows * GRID_STEP;
-  const i0 = Math.floor((bounds.left + tile.origin.x) / tileW);
-  const i1 = Math.floor((bounds.right + tile.origin.x) / tileW);
-  const j0 = Math.floor((bounds.top + tile.origin.y) / tileH);
+  const j0 = Math.floor((bounds.top + tile.origin.y) / tileH) - 1;
   const j1 = Math.floor((bounds.bottom + tile.origin.y) / tileH);
   const copies: Copy[] = [];
-  for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) copies.push({ i, j });
+  for (let j = j0; j <= j1; j++) {
+    // Each row of copies is shifted by `shift` columns.
+    const rowX = j * tile.shift * GRID_STEP;
+    const i0 = Math.floor((bounds.left + tile.origin.x - rowX) / tileW) - 1;
+    const i1 = Math.floor((bounds.right + tile.origin.x - rowX) / tileW);
+    for (let i = i0; i <= i1; i++) copies.push({ i, j });
+  }
   return copies;
 }
 

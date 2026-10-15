@@ -37,7 +37,7 @@ interface InspectorProps {
   onUnplace: (id: string) => void;
   onPlace: (id: string) => void;
   onUpload: (id: string, files: FileList | File[]) => Promise<string[]>;
-  onResizeTile: (cols: number, rows: number) => void;
+  onResizeTile: (cols: number, rows: number, shift: number) => void;
   files: string[];
   viewfinder: ViewfinderEdit | null;
   onViewfinder: (id: string, items: ViewfinderItem[] | null) => void;
@@ -56,15 +56,19 @@ export function Inspector(props: InspectorProps) {
 
 function BoardPanel({ layout, unplaced, holes, onPlace, onResizeTile }: InspectorProps) {
   const min = minTileSize(layout);
+  const shift = layout.shift ?? 0;
   return (
     <div className="flex flex-col gap-6 p-5">
       <Section title="Tile">
         <p className="text-xs leading-relaxed text-ash">
-          The tile repeats in every direction. Cards can&apos;t cross its edge; shrink it only after moving cards out of the way.
+          The tile repeats in every direction and wraps: drag a card over an edge and it hangs into the next copy, filling
+          the gap on the opposite side, so the board needn&apos;t have straight seams. Shift slides each row of copies
+          sideways, like brickwork.
         </p>
         <div className="flex gap-4">
-          <Stepper label="Columns" value={layout.cols} min={min.cols} max={40} onChange={(cols) => onResizeTile(cols, layout.rows)} />
-          <Stepper label="Rows" value={layout.rows} min={min.rows} max={30} onChange={(rows) => onResizeTile(layout.cols, rows)} />
+          <Stepper label="Columns" value={layout.cols} min={min.cols} max={40} onChange={(cols) => onResizeTile(cols, layout.rows, shift)} />
+          <Stepper label="Rows" value={layout.rows} min={min.rows} max={30} onChange={(rows) => onResizeTile(layout.cols, rows, shift)} />
+          <Stepper label="Shift" value={shift} min={0} max={layout.cols - 1} onChange={(next) => onResizeTile(layout.cols, layout.rows, next)} />
         </div>
         <p className="text-xs text-ash">{holes ? <span className="text-orange">{holes} empty cells (hatched).</span> : 'No empty cells.'}</p>
       </Section>

@@ -4,8 +4,10 @@
  * Studio — the board editor (dev only). Shows the real tile with the real
  * cards, with a faded ring of the neighbouring copies so the seams are
  * visible. Drag a card to move it, drag its edges to resize it; cards it
- * lands on step aside to the nearest free spot. The inspector frames the
- * selected card. Save writes src/content/layout.json.
+ * lands on step aside to the nearest free spot. The tile wraps: drag a card
+ * over an edge and it hangs into the next copy, showing up on the opposite
+ * side too. The inspector frames the selected card. Save writes
+ * src/content/layout.json.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -16,12 +18,15 @@ import {
   LAYOUT_SEARCH_ID,
   MAX_SPAN,
   THEMES,
+  copyOffset,
+  firstClash,
   fits,
   getCardDimensions,
   holes,
   nearestFreeSpot,
   placeCard,
   sizeOf,
+  wrapRect,
   type BoardLayout,
   type CardData,
   type CardPosition,
@@ -47,6 +52,8 @@ interface Drag {
   handle: Handle;
   /** Cell offset of the pointer inside the card when a move started. */
   grab: { col: number; row: number };
+  /** Top-left cell of the copy of the card that was grabbed, in tile cells. */
+  origin: { x: number; y: number };
   preview: Omit<LayoutCard, 'id' | 'look'>;
   moved: boolean;
 }
@@ -179,7 +186,7 @@ export function Studio({
     [scale],
   );
 
-  const startDrag = (event: React.PointerEvent, card: LayoutCard, handle: Handle) => {
+  const startDrag = (event: React.PointerEvent, card: LayoutCard, handle: Handle, at: { col: number; row: number }) => {
     if (event.button !== 0) return;
     event.stopPropagation();
     event.preventDefault();
@@ -189,6 +196,7 @@ export function Studio({
       id: card.id,
       handle,
       grab: { col: Math.floor(p.x / GRID_STEP) - card.col, row: Math.floor(p.y / GRID_STEP) - card.row },
+      origin: { x: at.col, y: at.row },
       preview: { col: card.col, row: card.row, w: card.w, h: card.h },
       moved: false,
     });
@@ -205,12 +213,16 @@ export function Studio({
     const previewAt = (event: PointerEvent) => {
       const p = pointerCell(event);
       const next = { col: card.col, row: card.row, w: card.w, h: card.h };
+      // Positions are taken from the card's own copy, so a card grabbed in a
+      // neighbouring copy moves with the pointer too; the wrap folds it back.
       if (drag.handle === 'move') {
-        next.col = clamp(Math.floor(p.x / GRID_STEP) - drag.grab.col, 0, layout.cols - card.w);
-        next.row = clamp(Math.floor(p.y / GRID_STEP) - drag.grab.row, 0, layout.rows - card.h);
+        next.col = Math.floor(p.x / GRID_STEP) - drag.grab.col;
+        next.row = Math.floor(p.y / GRID_STEP) - drag.grab.row;
+        Object.assign(next, wrapRect(layout, next));
       } else if (!locked) {
-        if (drag.handle !== 's') next.w = clamp(Math.ceil((p.x - card.col * GRID_STEP) / GRID_STEP), 1, Math.min(MAX_SPAN.w, layout.cols - card.col));
-        if (drag.handle !== 'e') next.h = clamp(Math.ceil((p.y - card.row * GRID_STEP) / GRID_STEP), 1, Math.min(MAX_SPAN.h, layout.rows - card.row));
+        const from = { x: drag.origin.x * GRID_STEP, y: drag.origin.y * GRID_STEP };
+        if (drag.handle !== 's') next.w = clamp(Math.ceil((p.x - from.x) / GRID_STEP), 1, Math.min(MAX_SPAN.w, layout.cols));
+        if (drag.handle !== 'e') next.h = clamp(Math.ceil((p.y - from.y) / GRID_STEP), 1, Math.min(MAX_SPAN.h, layout.rows));
       }
       const changed = next.col !== card.col || next.row !== card.row || next.w !== card.w || next.h !== card.h;
       return { next, changed };
@@ -240,9 +252,6 @@ export function Studio({
       const card = layout.cards.find((c) => c.id === id);
       if (!card) return;
       const rect = { col: card.col, row: card.row, w, h };
-      // Shift left or up if the new size would hang off the tile.
-      rect.col = Math.min(rect.col, layout.cols - w);
-      rect.row = Math.min(rect.row, layout.rows - h);
       if (!fits(layout, rect)) return say(`The tile is too small for ${w}x${h}.`, 'warn');
       place(layout, id, rect);
     },
@@ -283,9 +292,11 @@ export function Studio({
   );
 
   const resizeTile = useCallback(
-    (cols: number, rows: number) => {
-      const next = { ...layout, cols, rows };
+    (cols: number, rows: number, shift: number) => {
+      const next: BoardLayout = { ...layout, cols, rows, shift: Math.min(shift, cols - 1) || undefined };
       if (layout.cards.some((card) => !fits(next, card))) return say('Cards are in the way; move them first.', 'warn');
+      const clash = firstClash(next);
+      if (clash) return say(`That would wrap ${clash[0].id} onto ${clash[1].id}; move one first.`, 'warn');
       commit(next);
     },
     [layout, commit, say],
@@ -387,7 +398,7 @@ export function Studio({
       const step = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[event.key];
       if (step) {
         event.preventDefault();
-        const rect = { col: selectedCard.col + step[0], row: selectedCard.row + step[1], w: selectedCard.w, h: selectedCard.h };
+        const rect = wrapRect(layout, { col: selectedCard.col + step[0], row: selectedCard.row + step[1], w: selectedCard.w, h: selectedCard.h });
         if (fits(layout, rect)) place(layout, selectedCard.id, rect);
       }
     };
@@ -423,9 +434,34 @@ export function Studio({
     return <div key={key}>{renderCard(card, position, THEME, false, undefined, 0)}</div>;
   };
 
-  const copies = neighbours
-    ? [-1, 0, 1].flatMap((i) => [-1, 0, 1].map((j) => ({ i, j }))).filter(({ i, j }) => i !== 0 || j !== 0)
-    : [];
+  // Every copy of every card near the tile. Inside the tile they draw solid
+  // (that's where wrapped cards show up opposite); around it, faded.
+  const instances = view.cards.flatMap((c) =>
+    [-1, 0, 1].flatMap((j) =>
+      [-2, -1, 0, 1, 2].map((i) => {
+        const o = copyOffset(layout, { i, j });
+        const col = o.col + c.col;
+        const row = o.row + c.row;
+        const { width, height } = getCardDimensions(sizeOf(c));
+        return {
+          card: c,
+          main: i === 0 && j === 0,
+          col,
+          row,
+          x: col * GRID_STEP,
+          y: row * GRID_STEP,
+          width,
+          height,
+          // Keyed by where it is, bucketed half a tile off the seams, so a card
+          // glides as it crosses an edge instead of its copies swapping places.
+          key: `${c.id}@${Math.floor((col + layout.cols / 2) / layout.cols)},${Math.floor((row + layout.rows / 2) / layout.rows)}`,
+        };
+      }),
+    ),
+  );
+  const inTile = (n: (typeof instances)[number]) => n.x < tileW && n.x + n.width > 0 && n.y < tileH && n.y + n.height > 0;
+  const nearTile = (n: (typeof instances)[number]) =>
+    n.x < tileW + MARGIN && n.x + n.width > -MARGIN && n.y < tileH + MARGIN && n.y + n.height > -MARGIN;
   const unplaced = [
     ...[INTRO.id, LAYOUT_SEARCH_ID, CONTACT.id].filter((id) => !layout.cards.some((c) => c.id === id)).map((id) => ({ id, title: id === LAYOUT_SEARCH_ID ? 'Search card' : id === INTRO.id ? 'Intro' : 'Contact', thumbnail: undefined as string | undefined })),
     ...projects.filter((p) => !layout.cards.some((c) => c.id === p.id)),
@@ -442,7 +478,7 @@ export function Studio({
         canRedo={history.canRedo}
         scale={scale}
         neighbours={neighbours}
-        tile={`${layout.cols}x${layout.rows}`}
+        tile={`${layout.cols}x${layout.rows}${layout.shift ? ` shift ${layout.shift}` : ''}`}
         holes={gaps.length}
         status={status}
         onSave={save}
@@ -465,13 +501,11 @@ export function Studio({
                 style={{ width: tileW + MARGIN * 2, height: tileH + MARGIN * 2, transform: `scale(${scale})`, transformOrigin: '0 0' }}
               >
                 {/* Neighbouring copies, faded, so the seams show. */}
-                <div className="pointer-events-none absolute opacity-30" style={{ left: MARGIN, top: MARGIN }}>
-                  {copies.flatMap(({ i, j }) =>
-                    view.cards
-                      .filter((c) => nearTile(c, i, j, layout))
-                      .map((c) => renderPlaced(c, { x: i * tileW, y: j * tileH }, `${c.id}@${i},${j}`)),
-                  )}
-                </div>
+                {neighbours && (
+                  <div className="pointer-events-none absolute opacity-30" style={{ left: MARGIN, top: MARGIN }}>
+                    {instances.filter(nearTile).map((n) => renderPlaced(n.card, { x: n.x - n.card.col * GRID_STEP, y: n.y - n.card.row * GRID_STEP }, n.key))}
+                  </div>
+                )}
 
                 <div ref={boardRef} className="absolute" style={{ left: MARGIN, top: MARGIN, width: tileW - GRID.GAP, height: tileH - GRID.GAP }}>
                   {/* Tile outline and empty cells. */}
@@ -492,29 +526,38 @@ export function Studio({
                     />
                   ))}
 
-                  {/* The cards themselves. Interaction happens on the layer above. */}
-                  <div className="pointer-events-none">{view.cards.map((c) => renderPlaced(c, { x: 0, y: 0 }, c.id))}</div>
+                  {/* The cards themselves, clipped to the tile (half a gap past its
+                      edge, so the seam's gap is split evenly). Interaction happens on the layer above. */}
+                  <div
+                    className="pointer-events-none absolute overflow-hidden"
+                    style={{ left: -GRID.GAP / 2, top: -GRID.GAP / 2, width: tileW, height: tileH }}
+                  >
+                    {instances.filter(inTile).map((n) =>
+                      renderPlaced(n.card, { x: n.x - n.card.col * GRID_STEP + GRID.GAP / 2, y: n.y - n.card.row * GRID_STEP + GRID.GAP / 2 }, n.key),
+                    )}
+                  </div>
 
-                  {/* Hit areas, outlines and resize handles. */}
-                  {view.cards.map((c) => {
-                    const dims = getCardDimensions(sizeOf(c));
+                  {/* Hit areas, outlines and resize handles, for every copy that shows in the tile. */}
+                  {instances.filter(inTile).map((n) => {
+                    const c = n.card;
                     const isSelected = c.id === selected;
                     const isDragged = drag?.id === c.id;
                     const project = projectById.has(c.id);
+                    const at = { col: n.col, row: n.row };
                     return (
                       <div
-                        key={c.id}
+                        key={n.key}
                         className={`group absolute rounded-[14px] ${isDragged ? 'cursor-grabbing' : 'cursor-grab'}`}
                         style={{
-                          left: c.col * GRID_STEP,
-                          top: c.row * GRID_STEP,
-                          width: dims.width,
-                          height: dims.height,
+                          left: n.x,
+                          top: n.y,
+                          width: n.width,
+                          height: n.height,
                           outline: isSelected ? '4px solid var(--color-orange)' : displaced.has(c.id) ? '3px dashed var(--color-purple)' : undefined,
                           outlineOffset: 3,
                           transition: 'left 150ms, top 150ms, width 150ms, height 150ms',
                         }}
-                        onPointerDown={(e) => startDrag(e, c, 'move')}
+                        onPointerDown={(e) => startDrag(e, c, 'move', at)}
                         onDragOver={project ? (e) => e.preventDefault() : undefined}
                         onDrop={
                           project
@@ -530,9 +573,9 @@ export function Studio({
                         </span>
                         {c.id !== LAYOUT_SEARCH_ID && (
                           <>
-                            <Grip className="-right-3 top-1/2 h-16 w-6 -translate-y-1/2 cursor-ew-resize" onPointerDown={(e) => startDrag(e, c, 'e')} />
-                            <Grip className="-bottom-3 left-1/2 h-6 w-16 -translate-x-1/2 cursor-ns-resize" onPointerDown={(e) => startDrag(e, c, 's')} />
-                            <Grip className="-bottom-3 -right-3 h-8 w-8 cursor-nwse-resize" onPointerDown={(e) => startDrag(e, c, 'se')} />
+                            <Grip className="-right-3 top-1/2 h-16 w-6 -translate-y-1/2 cursor-ew-resize" onPointerDown={(e) => startDrag(e, c, 'e', at)} />
+                            <Grip className="-bottom-3 left-1/2 h-6 w-16 -translate-x-1/2 cursor-ns-resize" onPointerDown={(e) => startDrag(e, c, 's', at)} />
+                            <Grip className="-bottom-3 -right-3 h-8 w-8 cursor-nwse-resize" onPointerDown={(e) => startDrag(e, c, 'se', at)} />
                           </>
                         )}
                       </div>
@@ -656,14 +699,6 @@ function clamp(value: number, min: number, max: number) {
 
 function isTyping(target: EventTarget | null) {
   return target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
-}
-
-/** Whether a card in the neighbouring copy (i, j) shows within the margin around the tile. */
-function nearTile(card: LayoutCard, i: number, j: number, layout: BoardLayout) {
-  const x = card.col * GRID_STEP + i * layout.cols * GRID_STEP;
-  const y = card.row * GRID_STEP + j * layout.rows * GRID_STEP;
-  const { width, height } = getCardDimensions(sizeOf(card));
-  return x < layout.cols * GRID_STEP + MARGIN && x + width > -MARGIN && y < layout.rows * GRID_STEP + MARGIN && y + height > -MARGIN;
 }
 
 /** Drop framing fields left at their defaults, so layout.json only holds real choices. */

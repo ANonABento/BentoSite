@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useSearchCardState } from '../cards';
+import { holdInsideEdges, searchCardShape, useSearchCardState } from '../cards';
 import {
   canvasToScreen,
   countContentCards,
@@ -99,7 +99,7 @@ export function DesktopCanvasView({
   // the board it glides from where it was to the dock, and the dock's position
   // is recomputed every frame, so the glide follows the camera instead of
   // chasing a stale target.
-  const stuckToSide = isSearchSticky && (searchState.edge === 'left' || searchState.edge === 'right');
+  const stuckToSide = isSearchSticky && searchState.side !== null;
   // Against a side the card is a drawer tab; opening it slides the input bar
   // out from that edge, at the tab's height, without moving the camera.
   const [drawer, setDrawer] = useState(false);
@@ -107,19 +107,16 @@ export function DesktopCanvasView({
   const drawerOpen = drawer && stuckToSide;
   const fullW = SEARCH_CARD.EXPANDED_WIDTH * navigation.camera.zoom;
   const fullH = SEARCH_CARD.EXPANDED_HEIGHT * navigation.camera.zoom;
+  const squished = searchCardShape(searchState.squeeze.x, searchState.squeeze.y, fullW, fullH);
+  const held = holdInsideEdges(searchState.slotCenter, squished.width, squished.height, windowSize);
   const target: ScreenBox = drawerOpen
     ? {
-        x: searchState.edge === 'right' ? windowSize.width - SEARCH_CARD.EDGE_PADDING - fullW / 2 : SEARCH_CARD.EDGE_PADDING + fullW / 2,
+        x: searchState.side === 'right' ? windowSize.width - SEARCH_CARD.EDGE_PADDING - fullW / 2 : SEARCH_CARD.EDGE_PADDING + fullW / 2,
         y: searchState.screenPosition.y,
         w: fullW,
         h: SEARCH_CARD.COLLAPSED_HEIGHT,
       }
-    : {
-        x: searchState.screenPosition.x,
-        y: searchState.screenPosition.y,
-        w: searchState.width,
-        h: searchState.height,
-      };
+    : { x: held.x, y: held.y, w: squished.width, h: squished.height };
   const shownRef = useRef<ScreenBox>(target);
   const [glide, setGlide] = useState<{ from: ScreenBox; t: number } | null>(null);
   const firstAnchor = useRef(true);

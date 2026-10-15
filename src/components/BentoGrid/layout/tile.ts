@@ -22,6 +22,8 @@ export interface TileSlot {
 export interface Tile {
   cols: number;
   rows: number;
+  /** Columns each row of copies is shifted right by. */
+  shift: number;
   slots: TileSlot[];
   /** Pixel point in the tile that sits at the canvas origin: the home group's centre. */
   origin: { x: number; y: number };
@@ -47,5 +49,5 @@ export function tileFromLayout(layout: BoardLayout, cards: CardData[]): Tile {
       }
     : { x: (layout.cols * GRID_STEP) / 2, y: (layout.rows * GRID_STEP) / 2 };
 
-  return { cols: layout.cols, rows: layout.rows, slots, origin };
+  return { cols: layout.cols, rows: layout.rows, shift: layout.shift ?? 0, slots, origin };
 }
