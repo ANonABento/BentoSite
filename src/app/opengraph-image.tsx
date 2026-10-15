@@ -27,7 +27,7 @@ const SHOTS = [
   { src: 'projects/expressive-ai-robot-head/photo.webp', hue: '#f0915a' },
   { src: 'projects/flowto/hero.png', hue: '#b39dfb' },
   { src: 'projects/pomme/robot.webp', hue: '#f0915a' },
-  { src: 'projects/shoulder-cupid/hero.jpg', hue: '#f2c14e' },
+  { src: 'projects/robotic-arm-puppeteer/worn.webp', hue: '#f0915a' },
 ];
 
 const INTRO_W = 560;
