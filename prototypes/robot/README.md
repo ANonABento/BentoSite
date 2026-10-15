@@ -31,6 +31,20 @@ It also scales the model so shoulder-to-wrist is 0.97 and places the head centre
 
 `index.html?robot=shapes` and `robot-viewer.html?model=shapes` bring back the procedural robot.
 
+## Candidates: VRoid samples
+- `assets/robot-v1.glb` is AvatarSample D.
+- `assets/robot-v2.glb` is AvatarSample D Darkness.
+
+Both are CC0 VRoid samples (https://opengameart.org/content/vroid-studio-cc0-models). Their licence allows modification, redistribution and commercial use, with no credit needed.
+
+Try them with `crt-site/?model=v1` or `?model=v2`; `robot-viewer.html` takes the same `?model=`.
+
+Build either one with:
+`Blender -b --factory-startup -P blender/vroid_model.py -- vendor/vroid/<dir>/<file>.vrm build/v1.glb`
+Then optimise it the same way as `build.sh` does.
+
+The script keeps their hair and outfit and makes the skin porcelain. It gives the eyes an emissive orange iris, removes the brows and paints out the mouth. It also renames VRoid bones to Mixamo names and finds the blink/happy/irisOff morphs automatically.
+
 ## Concept work
 `concept/`: scripted SVG sheets.
 - `sheet-v1` is the rejected visor mech.

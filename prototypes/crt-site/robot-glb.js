@@ -39,11 +39,13 @@ export async function loadRobot(url = new URL('./assets/robot.glb', import.meta.
   // ---------- fit the model to the robot.js frame ----------
   model.updateMatrixWorld(true);
   const wp = (b) => b.getWorldPosition(new THREE.Vector3());
+  // She must face +z with her right arm at -x; VRM 0.x exports face the other way.
+  if (wp(B('LeftArm')).x < wp(B('RightArm')).x) { model.rotation.y = Math.PI; model.updateMatrixWorld(true); }
   const armLen = wp(B('RightArm')).distanceTo(wp(B('RightForeArm'))) + wp(B('RightForeArm')).distanceTo(wp(B('RightHand')));
   const s = ARM_LEN / armLen;
   model.scale.setScalar(s);
   model.updateMatrixWorld(true);
-  const headC = wp(B('Head')).lerp(wp(B('HeadTop_End')), 0.4);
+  const headC = bones.HeadTop_End ? wp(B('Head')).lerp(wp(B('HeadTop_End')), 0.4) : wp(B('RightEye')).setX(wp(B('Head')).x);
   const shoulderMid = wp(B('RightArm')).lerp(wp(B('LeftArm')), 0.5);
   model.position.set(-shoulderMid.x, HEAD_Y - headC.y, -shoulderMid.z);
   root.updateMatrixWorld(true);

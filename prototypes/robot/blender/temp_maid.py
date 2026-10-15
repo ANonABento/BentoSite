@@ -115,6 +115,23 @@ def paint_out_mouth(px):
     return px
 
 
+def recolour_image(img, role, name):
+    """Recolour an already-loaded image into a new one (used for textures embedded in a VRM)."""
+    W, H = img.size
+    px = np.empty(W * H * 4, dtype=np.float32)
+    img.pixels.foreach_get(px)
+    px = px.reshape(H, W, 4)[::-1]
+    if role != 'eyewhite':
+        px = recolour(px, role)
+    clear = px[..., 3] < 0.5
+    if clear.any() and role in BASE:
+        px[clear, :3] = BASE[role]
+    out = bpy.data.images.new(name, W, H, alpha=True)
+    out.pixels.foreach_set(np.ascontiguousarray(px[::-1], dtype=np.float32).ravel())
+    out.pack()
+    return out
+
+
 def load_recoloured(fname, role):
     img = bpy.data.images.load(os.path.join(SRC, 'Textures', fname))
     W, H = img.size
@@ -201,14 +218,14 @@ def region_of(me, frag):
     return co.min(0), co.max(0)
 
 
-def flatten_mouth(me, box, iters=300):
+def flatten_mouth(me, box, iters=300, frags=('Face_00_SKIN',)):
     """Laplacian-smooth the face skin where the mouth was, so no lip crease is left.
     The kept shape keys don't move this area, so every key gets the same smoothed points."""
     lo, hi = box
     pad = (hi - lo) * np.array([0.8, 1.4, 1.0]) + 1e-4
     n = len(me.vertices)
     co = np.empty(n * 3); me.vertices.foreach_get('co', co); co = co.reshape(-1, 3)
-    face_v = {v for p in me.polygons if 'Face_00_SKIN' in me.materials[p.material_index].name for v in p.vertices}
+    face_v = {v for p in me.polygons if any(f in me.materials[p.material_index].name for f in frags) for v in p.vertices}
     inside = np.all((co > lo - pad) & (co < hi + pad), axis=1)
     sel = np.array(sorted(i for i in face_v if inside[i]))
     if not len(sel):
@@ -337,4 +354,5 @@ def render_checks(body):
         bpy.ops.render.render(write_still=True)
 
 
-main()
+if __name__ == '__main__':
+    main()

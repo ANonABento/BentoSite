@@ -51,7 +51,8 @@ key.position.set(-2, 3, 3);
 scene.add(key);
 
 // ?model=shapes shows the old procedural robot
-const robot = q.get('model') === 'shapes' ? createRobot() : await loadRobot();
+const robot = q.get('model') === 'shapes' ? createRobot()
+  : await loadRobot(q.get('model') ? new URL(`./assets/robot-${q.get('model')}.glb`, location.href).href : undefined);
 scene.add(robot.root);
 robot.setEyes(1, 1);
 robot.grip(+(q.get('curl') ?? 0.3), +(q.get('spread') ?? 0.5));
