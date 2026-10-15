@@ -321,10 +321,10 @@ export function createRobot() {
     hand.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), twist));
   }
 
-  /** curl 0 = flat, 1 = fist; spread 0..1; thumb curl separately. */
-  function grip(curl, spread = 0, thumbCurl = curl) {
-    for (const f of fingers) {
-      const c = f.thumb ? thumbCurl : curl;
+  /** curl 0 = flat, 1 = fist; spread 0..1; thumb curl separately; `per` = [index, middle, ring, pinky] curls override `curl`. */
+  function grip(curl, spread = 0, thumbCurl = curl, per = null) {
+    for (const [fi, f] of fingers.entries()) {
+      const c = f.thumb ? thumbCurl : per ? per[fi] : curl;
       f.joints.forEach((j, i) => { j.rotation.x = c * (i === 0 ? 1.05 : 1.25); });
       f.joints[0].rotation.y = f.spread * spread * (f.thumb ? 1 : 2.2);
     }

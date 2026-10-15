@@ -58,6 +58,7 @@ export async function loadRobot(url = new URL('./assets/robot.glb', import.meta.
       // whites stay below clipping under the screen light; gloss on hair and shoes only
       if (/cloth/i.test(m.name)) { m.color.multiplyScalar(0.62); m.roughness = 0.6; }
       if (/skin|face/i.test(m.name)) { m.color.multiplyScalar(0.8); m.roughness = 0.5; }
+      if (/hair/i.test(m.name)) { m.roughness = 0.42; }   // less mirror-like: point lights read as sheen, not hot spots
     }
   });
   const irisBase = iris ? iris.color.clone() : null;
@@ -159,22 +160,23 @@ export async function loadRobot(url = new URL('./assets/robot.glb', import.meta.
     b, flex: localAxis(b, flexAxisRoot), splay: localAxis(b, b0), sign: [1, 0.3, -0.4, -1][fi],
   })));
   const thumbRig = thumbBones.map((b) => ({ b, flex: localAxis(b, thumbAxisRoot) }));
-  let gripState = { curl: 0.2, spread: 0, thumb: 0.2 };
+  let gripState = { curl: 0.2, spread: 0, thumb: 0.2, per: null };
   function updateFingers() {
-    const { curl, spread, thumb } = gripState;
-    for (const chain of fingerRig) chain.forEach((j, i) => {
+    const { curl, spread, thumb, per } = gripState;
+    fingerRig.forEach((chain, fi) => chain.forEach((j, i) => {
+      const c = per ? per[fi] : curl;
       const q = rest.get(j.b).local.clone()
-        .multiply(_q.setFromAxisAngle(j.flex, curl * (i === 0 ? 1.15 : 1.35)));
+        .multiply(_q.setFromAxisAngle(j.flex, c * (i === 0 ? 1.15 : 1.35)));
       if (i === 0) q.multiply(new THREE.Quaternion().setFromAxisAngle(j.splay, -j.sign * spread * 0.22));
       j.b.quaternion.copy(q);
-    });
+    }));
     thumbRig.forEach((j, i) => {
       j.b.quaternion.copy(rest.get(j.b).local).multiply(_q.setFromAxisAngle(j.flex, thumb * (i === 0 ? 0.5 : 0.9)));
     });
   }
-  /** curl 0 = flat, 1 = fist; spread 0..1; thumb curl separately. */
-  function grip(curl, spread = 0, thumbCurl = curl) {
-    gripState = { curl, spread, thumb: thumbCurl };
+  /** curl 0 = flat, 1 = fist; spread 0..1; thumb curl separately; `per` = [index, middle, ring, pinky] curls override `curl`. */
+  function grip(curl, spread = 0, thumbCurl = curl, per = null) {
+    gripState = { curl, spread, thumb: thumbCurl, per };
     updateFingers();
   }
 
