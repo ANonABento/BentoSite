@@ -190,6 +190,28 @@ body {
   mask-size: 3px 3px;
 }
 
+/* ---------- Signal (useSignal) ----------
+ * CRT in motion: clean bento at rest; while the camera moves, scanlines fade
+ * in over the cards and their edges split red/cyan along the motion. The
+ * filter only applies while `data-signal` is set.
+ */
+.board-canvas::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  opacity: calc(var(--sig, 0) * 0.9);
+  background:
+    repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.38) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 90% at 50% 50%, transparent 55%, rgb(0 0 0 / 0.55) 100%);
+}
+
+.board-canvas[data-signal] .board-layer {
+  filter: drop-shadow(var(--sig-x) var(--sig-y) 0 rgb(255 46 96 / calc(var(--sig) * 0.65)))
+    drop-shadow(calc(var(--sig-x) * -1) calc(var(--sig-y) * -1) 0 rgb(40 210 255 / calc(var(--sig) * 0.55)));
+}
+
 /* ---------- Boot (TrayFill) ----------
  * The tray is there at once; each compartment's contents drop into it,
  * rippling out from the middle of the screen (about 1.1s; on desktop the

@@ -17,6 +17,7 @@ import {
   useWindowSize,
 } from '../core';
 import { SEARCH_DOCK_PREFIX, useTiledBoard } from '../core/useTiledBoard';
+import { useSignal } from '../core/useSignal';
 import { SEARCH_CARD, SEARCH_CARD_ID } from '../BentoGrid.constants';
 import { CloseIcon, RefreshIcon, SearchIcon, ZoomInIcon, ZoomOutIcon } from '@/components/ui/Icons';
 import type { CardData, CardPosition, CardSizeMode, Rect, RenderCard, ThemeConfig } from '../BentoGrid.types';
@@ -322,6 +323,8 @@ export function DesktopCanvasView({
     };
   }, []);
 
+  // CRT in motion: scanlines and colour fringes while the camera moves.
+  useSignal(rootRef, navigation.camera);
 
   // Counts shown to the visitor are projects, not board occupancy: the board
   // shows every card many times over.
@@ -386,7 +389,7 @@ export function DesktopCanvasView({
       {/* Canvas layer — clips the transformed card grid */}
       <div className="absolute inset-0 overflow-hidden">
         <div
-          className="absolute will-change-transform"
+          className="board-layer absolute will-change-transform"
           style={{
             transform,
             transformOrigin: '0 0',
