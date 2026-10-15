@@ -49,7 +49,10 @@ export function InfoCard({ card, position, theme, content, isFocused, entranceIn
           <div className="mt-2 flex items-center gap-2">
             <a
               href={`mailto:${links.email}`}
-              className="min-w-0 truncate font-crt text-[1.75rem] leading-none text-rice transition-colors hover:text-orange"
+              className={`min-w-0 truncate font-crt leading-none text-rice transition-colors hover:text-orange ${
+                // The whole address fits on a phone-width card too.
+                position.width < 420 ? 'text-[1.35rem]' : 'text-[1.75rem]'
+              }`}
             >
               <span className="text-orange">&gt;</span> {links.email}
             </a>

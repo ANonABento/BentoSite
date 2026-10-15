@@ -212,7 +212,8 @@ export function useSearchCardState(
     onFilterChange,
   } = options;
 
-  const [userExpanded, setUserExpanded] = useState(true);
+  // On a phone the card starts as just the search row; the chevron opens the categories.
+  const [userExpanded, setUserExpanded] = useState(!isMobile);
   const [lastEdge, setLastEdge] = useState<SearchCardEdge>('none');
   const [searchTerm, setSearchTermState] = useState('');
   const [category, setCategoryState] = useState<string | null>(null);
