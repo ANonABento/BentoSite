@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Robot Viewer</title>
+<style>html,body{margin:0;height:100%;background:#0a0807;overflow:hidden}</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.181.2/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.2/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { createRobot } from './robot.js';
+
+const q = new URLSearchParams(location.search);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(q.has('dark') ? '#050404' : '#2a2421');
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = q.has('dark') ? 0.02 : 0.8;
+const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.01, 20);
+const view = q.get('view') || 'front';
+const views = {
+  front: [[0, 0.6, 1.5], [0, 0.55, 0]],
+  face: [[0, 0.6, 0.85], [0, 0.6, 0]],
+  side: [[1.2, 0.6, 0.9], [0, 0.45, 0]],
+  back: [[0.7, 0.85, -1.4], [0, 0.4, 0]],
+  hand: [[0.35, -0.1, 0.9], [-0.3, -0.2, 0.4]],
+};
+camera.position.set(...views[view][0]);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(...views[view][1]);
+controls.update();
+const key = new THREE.DirectionalLight('#fff1e0', q.has('dark') ? 0 : 2);
+key.position.set(-2, 3, 3);
+scene.add(key);
+
+const robot = createRobot();
+scene.add(robot.root);
+robot.setEyes(1, 1);
+robot.grip(+(q.get('curl') ?? 0.3), +(q.get('spread') ?? 0.5));
+robot.reach(new THREE.Vector3(-0.15, -0.15, 0.45));
+robot.aim(new THREE.Vector3(0, 0.15, 1));
+window.robot = robot;
+
+renderer.setAnimationLoop(() => renderer.render(scene, camera));
+</script>
+</body>
+</html>
