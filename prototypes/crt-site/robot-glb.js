@@ -6,9 +6,10 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
  * The maid robot from a rigged GLB (assets/robot.glb), behind the same interface
  * as robot.js: { root, head, headPivot, hand, reach, aim, grip, setEyes }.
  *
- * Temp model: the CC0 "Maid Character" by 413 Games, restyled by
- * prototypes/robot/blender/temp_maid.py (Mixamo rig with finger bones,
- * morphs: blink, happy, irisOff; emissive iris material).
+ * Placeholder model: VRoid's CC0 AvatarSample D Darkness, restyled by
+ * prototypes/robot/blender/vroid_model.py (bones renamed to Mixamo names,
+ * morphs: blink, happy, irisOff; emissive iris material). Any GLB with the
+ * same bone names and morphs drops in.
  *
  * Local frame (same as robot.js): +z is her forward, +y up, origin at the chest,
  * head centre at y≈0.59, right arm (her right is -x) ≈0.97 long to the wrist.

@@ -1,20 +1,25 @@
 # Robot maid (B-01)
 
-## Current: temp model
-A stand-in until the original B-01 is made. It's **"Maid Character" by 413 Games**
-(https://413games.itch.io/maid-character, CC0 1.0, so modifying and committing it is fine; credit is optional).
+## Current: placeholder model
+**VRoid AvatarSample D Darkness**, a CC0 VRoid sample (https://opengameart.org/content/vroid-studio-cc0-models). Its VRoid Hub licence allows modification, redistribution and commercial use, with no credit needed.
 
-`blender/temp_maid.py` restyles it to the B-01 palette:
-- the pink dress becomes lacquer black, the hair gloss black and the skin porcelain;
-- the irises become emissive orange;
-- the mouth and brows are removed (mouth hole capped, lips smoothed flat);
-- the shape keys are cut down to `blink`, `happy` and `irisOff`.
+`blender/vroid_model.py` turns the VRM into `crt-site/assets/robot.glb`. It:
+- keeps her own hair and outfit;
+- makes the skin porcelain;
+- gives the eyes an emissive orange iris;
+- removes the brows and paints the mouth out (the lips can't be smoothed flat; see the script);
+- renames VRoid bones to Mixamo names;
+- finds the blink/happy/irisOff morphs automatically.
+
+The result is about 625 KB.
+
+`blender/temp_maid.py` is the earlier placeholder (413 Games' CC0 maid). It also holds the shared recolour and mouth tools that `vroid_model.py` imports.
 
 ### Rebuild
-1. Download the itch.io zip and unzip it into `vendor/maid413/` (gitignored), so that `vendor/maid413/Maid.fbx` and `vendor/maid413/Textures/` exist.
+1. Download `avatarsample_d_darkness.zip` from the link above and unzip it into `vendor/vroid/avatarsample_d_darkness/` (gitignored).
 2. Run `./build.sh`. It needs Blender 5.2 at `/Applications/Blender.app` (override with `BLENDER=`) and npx.
-   - It writes `build/temp-maid.glb` (gitignored) and the check renders `renders/temp-*.png`.
-   - It then optimises the GLB (meshopt, WebP, 1024px textures) into `../crt-site/assets/robot.glb`, about 420 KB and 26k tris.
+
+Reference renders are `renders/front.png`, `face.png`, `dark.png` and `prologue-contact.png` (the prologue at key times).
 
 ### In the prototype
 `../crt-site/robot-glb.js` exposes `loadRobot()`, which returns the same interface as `robot.js`:
@@ -30,20 +35,6 @@ A stand-in until the original B-01 is made. It's **"Maid Character" by 413 Games
 It also scales the model so shoulder-to-wrist is 0.97 and places the head centre at y=0.59 in the old robot's frame. That means the prologue (`ROBOT_HOME`, the `SHOT` camera keys and the pose targets in `prologue()`) works with any model fitted this way.
 
 `index.html?robot=shapes` and `robot-viewer.html?model=shapes` bring back the procedural robot.
-
-## Candidates: VRoid samples
-- `assets/robot-v1.glb` is AvatarSample D.
-- `assets/robot-v2.glb` is AvatarSample D Darkness.
-
-Both are CC0 VRoid samples (https://opengameart.org/content/vroid-studio-cc0-models). Their licence allows modification, redistribution and commercial use, with no credit needed.
-
-Try them with `crt-site/?model=v1` or `?model=v2`; `robot-viewer.html` takes the same `?model=`.
-
-Build either one with:
-`Blender -b --factory-startup -P blender/vroid_model.py -- vendor/vroid/<dir>/<file>.vrm build/v1.glb`
-Then optimise it the same way as `build.sh` does.
-
-The script keeps their hair and outfit and makes the skin porcelain. It gives the eyes an emissive orange iris, removes the brows and paints out the mouth. It also renames VRoid bones to Mixamo names and finds the blink/happy/irisOff morphs automatically.
 
 ## Concept work
 `concept/`: scripted SVG sheets.

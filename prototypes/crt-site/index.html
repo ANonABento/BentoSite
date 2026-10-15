@@ -680,10 +680,7 @@ function renderReflection() {
  * The robot, and a cold moonlight so silhouettes read in the dark
  * ------------------------------------------------------------------ */
 // ?robot=shapes brings back the procedural robot.
-// ?model=v1 | v2 tries the VRoid candidates (assets/robot-v1.glb, robot-v2.glb).
-const qModel = new URLSearchParams(location.search).get('model');
-const robot = new URLSearchParams(location.search).get('robot') === 'shapes' ? createRobot()
-  : await loadRobot(qModel ? new URL(`./assets/robot-${qModel}.glb`, location.href).href : undefined);
+const robot = new URLSearchParams(location.search).get('robot') === 'shapes' ? createRobot() : await loadRobot();
 scene.add(robot.root);
 window.dbg = { robot, scene, camera, reflector, THREE };
 const moon = new THREE.DirectionalLight('#8a9bc4', 0.22);
