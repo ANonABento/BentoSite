@@ -1,0 +1,926 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>bentOS Prologue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600&family=Orbitron:wght@700&family=VT323&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; height: 100%; background: #0a0807; overflow: hidden; }
+  canvas.stage { display: block; width: 100vw; height: 100vh; }
+  #hint { position: fixed; left: 16px; bottom: 14px; font: 13px/1.4 'VT323', monospace; color: #a39a90; letter-spacing: 0.04em; pointer-events: none; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.181.2/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.2/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="hint">SPACE replay · P pause · ← → scrub</div>
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import GUI from 'three/addons/libs/lil-gui.module.min.js';
+import { Reflector } from 'three/addons/objects/Reflector.js';
+import { createRobot } from './robot.js';
+
+/* ------------------------------------------------------------------ *
+ * Board facts, mirrored from the site (BentoGrid.constants, globals.css)
+ * ------------------------------------------------------------------ */
+const STEP = 226;                // cell + wall, px
+const GAP = 6 / STEP;            // wall, in cells
+const RADIUS = 14 / STEP;        // card corner, in cells
+const COLORS = {
+  wall: '#2a2421', cell: '#171312', phosphor: '#f6f3ec', orange: '#e8823f', rice: '#f2ece2', ash: '#a39a90', lacquer: '#0e0b0a',
+};
+const CAT = {
+  AI: '#b39dfb', Robotics: '#f0915a', Hardware: '#f2c14e', Software: '#6cc9a4',
+  'Developer Tools': '#6db8e3', Games: '#f28aa5',
+};
+const LIT = new Set(['intro', 'search', 'contact']);
+
+/* ------------------------------------------------------------------ *
+ * Tunables (lil-gui)
+ * ------------------------------------------------------------------ */
+const P = {
+  time: 0, playing: true, speed: 1,
+  palette: 'category',     // category | mono | rgb
+  ppc: 8,                  // phosphor pixels per board cell
+  maskGain: 2.4,
+  bloom: 0.9,
+  dim: true,
+  replay: () => restart(),
+};
+
+// Timeline, in seconds at speed 1.
+const T = {
+  led: 0.45,
+  power: [0.75, 1.55],
+  wordmark: [1.35, 1.9],
+  lines: 1.85,             // first boot line starts; each takes `lineDur`
+  lineDur: 0.34,
+  snow: [3.75, 4.35],
+  dive: [3.9, 6.0],
+  tint: [4.6, 5.8],
+  merge: [5.55, 7.15],
+  resolve: [6.95, 8.65],
+  fxOff: [7.9, 9.0],
+  end: 9.3,
+};
+
+const SPAN0 = 34;                // cells across the screen while it shows text
+
+/* ------------------------------------------------------------------ */
+const vpW = () => window.innerWidth, vpH = () => window.innerHeight;
+const fitZoom = () => Math.min(Math.max(Math.min(vpW() / 1760, vpH() / 1040), 0.7), 1.25);
+const clamp01 = (x) => Math.min(Math.max(x, 0), 1);
+const ramp = (t, [a, b]) => clamp01((t - a) / (b - a));
+const sstep = (x) => x * x * (3 - 2 * x);
+const easeInOutCubic = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const easeInOutSine = (x) => -(Math.cos(Math.PI * x) - 1) / 2;
+const mix = (a, b, t) => a + (b - a) * t;
+
+await Promise.all([
+  document.fonts.load('700 64px Orbitron'),
+  document.fonts.load('32px VT323'),
+  document.fonts.load('600 24px "Instrument Sans"'),
+  document.fonts.load('400 24px "Instrument Sans"'),
+]);
+const board = await (await fetch('../crt-boot/board.json')).json();
+const projectCount = board.cards.filter((c) => c.title).length;
+
+/* ------------------------------------------------------------------ *
+ * Renderer, scene
+ * ------------------------------------------------------------------ */
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(vpW(), vpH());
+renderer.toneMapping = THREE.NoToneMapping;
+renderer.domElement.className = 'stage';
+document.body.prepend(renderer.domElement);
+RectAreaLightUniformsLib.init();
+
+const scene = new THREE.Scene();
+const BG = new THREE.Color('#0a0807');
+scene.background = BG;
+scene.fog = new THREE.Fog(BG, 4.5, 11);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.35;
+
+const camera = new THREE.PerspectiveCamera(35, vpW() / vpH(), 0.01, 50);
+
+/* ------------------------------------------------------------------ *
+ * The monitor
+ * ------------------------------------------------------------------ */
+const SCREEN_A = Math.min(Math.max(vpW() / vpH(), 1.3), 1.78);
+const SH = 1.0, SW = SH * SCREEN_A;
+const SCREEN_Z = -0.055;
+const BULGE = 0.045;
+const BEZ = { side: 0.17, top: 0.15, bottom: 0.32 };
+const OUT_W = SW + BEZ.side * 2, OUT_H = SH + BEZ.top + BEZ.bottom;
+const OUT_CY = (BEZ.top - BEZ.bottom) / 2;
+const BOTTOM_Y = OUT_CY - OUT_H / 2;
+
+function roundedRect(path, cx, cy, w, h, r) {
+  const x = cx - w / 2, y = cy - h / 2;
+  path.moveTo(x + r, y);
+  path.lineTo(x + w - r, y); path.quadraticCurveTo(x + w, y, x + w, y + r);
+  path.lineTo(x + w, y + h - r); path.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  path.lineTo(x + r, y + h); path.quadraticCurveTo(x, y + h, x, y + h - r);
+  path.lineTo(x, y + r); path.quadraticCurveTo(x, y, x + r, y);
+  return path;
+}
+
+const monitor = new THREE.Group();
+scene.add(monitor);
+
+const plastic = new THREE.MeshPhysicalMaterial({ color: '#1b1816', roughness: 0.55, clearcoat: 0.25, clearcoatRoughness: 0.45 });
+const plasticDark = new THREE.MeshPhysicalMaterial({ color: '#121010', roughness: 0.7 });
+
+{ // Bezel: a rounded slab with a rounded hole, bevelled
+  const shape = roundedRect(new THREE.Shape(), 0, OUT_CY, OUT_W, OUT_H, 0.09);
+  shape.holes.push(roundedRect(new THREE.Path(), 0, 0, SW + 0.05, SH + 0.05, 0.075));
+  const depth = 0.1, bt = 0.03;
+  const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: bt, bevelSize: 0.022, bevelSegments: 5, curveSegments: 20 });
+  geo.translate(0, 0, -(depth + bt));
+  monitor.add(new THREE.Mesh(geo, plastic));
+
+  // Inner light seal behind the glass so nothing shows through the recess.
+  const seal = new THREE.Mesh(new THREE.PlaneGeometry(SW + 0.1, SH + 0.1), new THREE.MeshBasicMaterial({ color: '#050404' }));
+  seal.position.z = -0.12;
+  monitor.add(seal);
+
+  // Rear shell and the tapered tube housing.
+  const shell = new THREE.Mesh(new RoundedBoxGeometry(OUT_W, OUT_H, 0.34, 4, 0.07), plastic);
+  shell.position.set(0, OUT_CY, -0.32);
+  monitor.add(shell);
+  const tube = new THREE.BoxGeometry(OUT_W * 0.86, OUT_H * 0.8, 0.9, 1, 1, 1);
+  const pos = tube.attributes.position;
+  for (let i = 0; i < pos.count; i++) if (pos.getZ(i) < 0) { pos.setX(i, pos.getX(i) * 0.55); pos.setY(i, pos.getY(i) * 0.6); }
+  tube.computeVertexNormals();
+  const tubeMesh = new THREE.Mesh(tube, plasticDark);
+  tubeMesh.position.set(0, OUT_CY + 0.02, -0.9);
+  monitor.add(tubeMesh);
+
+  // Feet.
+  for (const x of [-OUT_W * 0.32, OUT_W * 0.32]) {
+    const foot = new THREE.Mesh(new RoundedBoxGeometry(0.22, 0.05, 0.5, 2, 0.02), plasticDark);
+    foot.position.set(x, BOTTOM_Y - 0.02, -0.4);
+    monitor.add(foot);
+  }
+}
+
+// Chin details: badge, knobs, power LED.
+const chinY = -SH / 2 - BEZ.bottom / 2 - 0.01;
+{
+  const c = document.createElement('canvas'); c.width = 512; c.height = 96;
+  const g = c.getContext('2d');
+  g.fillStyle = '#8f877d'; g.font = '700 58px Orbitron'; g.textBaseline = 'middle';
+  g.fillText('bentOS', 6, 50);
+  g.font = '30px VT323'; g.fillStyle = '#6b645c'; g.fillText('PVM-2026 · TRINI-CELL', 262, 52);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  const badge = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.116), new THREE.MeshStandardMaterial({ map: tex, transparent: true, roughness: 0.6 }));
+  badge.position.set(-SW / 2 + 0.31, chinY, 0.003);
+  monitor.add(badge);
+}
+const knobMat = new THREE.MeshPhysicalMaterial({ color: '#2a2522', roughness: 0.35, metalness: 0.2 });
+const knobs = [];
+for (const [i, x] of [SW / 2 - 0.42, SW / 2 - 0.28].entries()) {
+  const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.04, 0.035, 32), knobMat);
+  knob.rotation.x = Math.PI / 2; knob.rotation.y = i * 0.7;
+  knob.position.set(x, chinY, 0.015);
+  const notch = new THREE.Mesh(new THREE.BoxGeometry(0.006, 0.004, 0.026), new THREE.MeshStandardMaterial({ color: '#8f877d', roughness: 0.5 }));
+  notch.position.set(0, 0.0185, 0.013);
+  knob.add(notch);
+  monitor.add(knob);
+  knobs.push(knob);
+}
+const powerKnob = knobs[1];
+const POWER_KNOB_REST = powerKnob.rotation.y;
+const ledMat = new THREE.MeshStandardMaterial({ color: '#3a1a0a', emissive: new THREE.Color(COLORS.orange), emissiveIntensity: 0 });
+const led = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.01, 24), ledMat);
+led.rotation.x = Math.PI / 2;
+led.position.set(SW / 2 - 0.1, chinY, 0.006);
+monitor.add(led);
+const ledLight = new THREE.PointLight(COLORS.orange, 0, 0.6, 2);
+ledLight.position.set(SW / 2 - 0.1, chinY, 0.05);
+monitor.add(ledLight);
+
+// Desk.
+const DESK_FRONT = 0.42;
+const desk = new THREE.Mesh(new THREE.BoxGeometry(30, 0.06, 4), new THREE.MeshStandardMaterial({ color: '#100c0a', roughness: 0.42 }));
+desk.position.set(0, BOTTOM_Y - 0.075, DESK_FRONT - 2);
+scene.add(desk);
+
+// Lights: a warm key, an orange rim, and the screen's own glow.
+const key = new THREE.DirectionalLight('#fff1e0', 0);
+key.position.set(-3, 3.5, 3);
+scene.add(key);
+const rim = new THREE.SpotLight(COLORS.orange, 0, 12, 0.6, 0.6, 1.2);
+rim.position.set(2.8, 1.8, -2.4);
+rim.target.position.set(0, 0, -0.5);
+scene.add(rim, rim.target);
+const screenLight = new THREE.RectAreaLight('#f3eadf', 0, SW, SH);
+screenLight.position.set(0, 0, 0.02);
+screenLight.lookAt(0, 0, 1);
+monitor.add(screenLight);
+
+/* ------------------------------------------------------------------ *
+ * Screen content: text canvas, board textures, card atlas
+ * ------------------------------------------------------------------ */
+const textCanvas = document.createElement('canvas');
+const textCtx = textCanvas.getContext('2d');
+const textTex = new THREE.CanvasTexture(textCanvas);
+textTex.colorSpace = THREE.SRGBColorSpace;
+textTex.minFilter = textTex.magFilter = THREE.NearestFilter;
+textTex.generateMipmaps = false;
+textTex.flipY = false;
+
+const BOOT_LINES = [
+  ['KEVIN JIANG · ROBOTICS & PHYSICAL AI', ''],
+  ['> SELF TEST ................. ', 'OK'],
+  ['> ACTUATORS ............... ', '6/6'],
+  [`> MOUNTING ${projectCount} PROJECTS ....... `, 'OK'],
+  ['> TUNING SIGNAL', ''],
+];
+
+let textSig = '';
+function drawText(t) {
+  const W = Math.round(SPAN0 * P.ppc), H = Math.round(W / SCREEN_A);
+  const wm = ramp(t, T.wordmark);
+  const typed = BOOT_LINES.map((_, i) => clamp01((t - (T.lines + i * T.lineDur)) / (T.lineDur * 0.85)));
+  const cursorOn = Math.floor(t * 3.2) % 2 === 0;
+  const sig = `${W}x${H}|${wm.toFixed(2)}|${typed.map((x) => x.toFixed(2)).join(',')}|${cursorOn}`;
+  if (sig === textSig) return;
+  textSig = sig;
+  if (textCanvas.width !== W || textCanvas.height !== H) { textCanvas.width = W; textCanvas.height = H; }
+  const g = textCtx;
+  g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+  // Wordmark: it ignites, top row first, like a beam drawing it.
+  if (wm > 0) {
+    const size = Math.round(W * 0.17);
+    g.save();
+    g.beginPath(); g.rect(0, 0, W, H * 0.12 + size * 1.2 * wm); g.clip();
+    g.font = `700 ${size}px Orbitron`; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    g.fillStyle = COLORS.phosphor;
+    g.globalAlpha = 0.35 + 0.65 * wm;
+    g.fillText('bentOS', W / 2, H * 0.12 + size);
+    g.restore();
+  }
+  const fs = Math.max(9, Math.round(H * 0.072));
+  g.font = `${fs}px VT323`; g.textBaseline = 'top'; g.textAlign = 'left';
+  const x0 = Math.round(W * 0.13);
+  let y = Math.round(H * 0.47);
+  let lastTyping = -1;
+  BOOT_LINES.forEach(([body, ok], i) => {
+    const k = typed[i];
+    if (k <= 0) return;
+    lastTyping = i;
+    const full = body + ok;
+    const n = Math.floor(full.length * k);
+    const shown = full.slice(0, n);
+    const bodyPart = shown.slice(0, body.length), okPart = shown.slice(body.length);
+    g.fillStyle = i === 0 ? COLORS.orange : COLORS.phosphor;
+    g.fillText(bodyPart, x0, y);
+    if (okPart) { g.fillStyle = COLORS.orange; g.fillText(okPart, x0 + g.measureText(body).width, y); }
+    if (i === BOOT_LINES.length - 1 && k >= 1 && cursorOn) {
+      g.fillStyle = COLORS.phosphor;
+      g.fillRect(x0 + g.measureText(full).width + 2, y + fs * 0.12, fs * 0.45, fs * 0.78);
+    }
+    y += Math.round(fs * (i === 0 ? 1.45 : 1.08));
+  });
+  textTex.needsUpdate = true;
+}
+
+// Which card covers each cell of the tile (0 = none, else index + 1).
+const cols = board.cols, rows = board.rows;
+const cellData = new Uint8Array(cols * rows * 4);
+board.cards.forEach((c, i) => {
+  for (let dy = 0; dy < c.h; dy++) for (let dx = 0; dx < c.w; dx++) {
+    const x = (c.col + dx) % cols, y = (c.row + dy) % rows;
+    cellData[(y * cols + x) * 4] = i + 1;
+  }
+});
+const cellMap = new THREE.DataTexture(cellData, cols, rows, THREE.RGBAFormat, THREE.UnsignedByteType);
+cellMap.needsUpdate = true;
+
+// Card faces, packed into one atlas, drawn roughly like the real cards.
+const FACE = 0.8;  // atlas px per board px
+const loadImage = (src) => new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = '/public' + src; });
+const images = await Promise.all(board.cards.map((c) => (c.image ? loadImage(c.image) : null)));
+
+const rects = [];
+{
+  let x = 0, y = 0, rowH = 0; const AW = 4096;
+  for (const c of board.cards) {
+    const w = Math.round((c.w * STEP - 6) * FACE), h = Math.round((c.h * STEP - 6) * FACE);
+    if (x + w > AW) { x = 0; y += rowH + 2; rowH = 0; }
+    rects.push({ x, y, w, h }); x += w + 2; rowH = Math.max(rowH, h);
+  }
+  var atlasW = AW, atlasH = y + rowH;
+}
+const atlas = document.createElement('canvas');
+atlas.width = atlasW; atlas.height = atlasH;
+const ag = atlas.getContext('2d');
+
+function wrap(g, text, x, y, maxW, lh, maxLines) {
+  const words = text.split(/\s+/); let line = ''; let n = 0;
+  for (const w of words) {
+    const test = line ? line + ' ' + w : w;
+    if (g.measureText(test).width > maxW && line) { g.fillText(line, x, y); y += lh; line = w; if (++n >= maxLines - 1) { line += '…'; break; } } else line = test;
+  }
+  if (line) g.fillText(line, x, y);
+}
+
+board.cards.forEach((c, i) => {
+  const { x, y, w, h } = rects[i]; const s = FACE; const g = ag;
+  g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
+  const cat = CAT[c.category] ?? COLORS.rice;
+  if (c.kind === 'search') {
+    g.fillStyle = COLORS.orange; g.fillRect(x, y, w, h);
+    g.fillStyle = 'rgba(14,11,10,0.14)'; g.fillRect(x + 18 * s, y + h / 2 - 26 * s, w - 36 * s, 52 * s);
+    g.fillStyle = COLORS.lacquer; g.font = `600 ${22 * s}px "Instrument Sans"`; g.textBaseline = 'middle';
+    g.fillText('Search projects…', x + 34 * s, y + h / 2);
+    g.font = `${26 * s}px VT323`; g.fillText('/', x + w - 46 * s, y + h / 2);
+  } else if (c.kind === 'intro') {
+    g.fillStyle = COLORS.cell; g.fillRect(x, y, w, h);
+    g.fillStyle = COLORS.rice; g.textBaseline = 'top';
+    g.font = `600 ${40 * s}px "Instrument Sans"`; g.fillText('Kevin Jiang', x + 30 * s, y + 30 * s);
+    g.fillStyle = COLORS.orange; g.font = `600 ${20 * s}px "Instrument Sans"`; g.fillText('Robotics & Physical AI Engineer', x + 30 * s, y + 82 * s);
+    g.fillStyle = COLORS.ash; g.font = `400 ${17 * s}px "Instrument Sans"`;
+    wrap(g, 'I build robots and the software that runs them, from PCBs and printed joints up to ROS 2, teleop and on-device AI.', x + 30 * s, y + 124 * s, w - 60 * s, 25 * s, 3);
+    g.fillStyle = COLORS.rice; g.font = `${20 * s}px VT323`;
+    ['SF', "UWaterloo CE '29", 'U.S. & Canadian citizen'].forEach((f, k) => g.fillText(f, x + 30 * s + k * 150 * s, y + 220 * s));
+    g.fillStyle = COLORS.ash; g.font = `400 ${15 * s}px "Instrument Sans"`;
+    ['Robotics Engineer · RLWRLD', 'Robotics Intern · Reazon', 'Research Assistant · UW'].forEach((r, k) => g.fillText(r, x + 30 * s, y + 270 * s + k * 26 * s));
+  } else if (c.kind === 'contact') {
+    g.fillStyle = COLORS.cell; g.fillRect(x, y, w, h);
+    g.textBaseline = 'middle'; g.font = `600 ${18 * s}px "Instrument Sans"`;
+    ['Résumé', 'GitHub', 'LinkedIn', 'Email'].forEach((l, k) => { g.fillStyle = k === 0 ? COLORS.orange : COLORS.rice; g.fillText(l, x + 26 * s + k * 104 * s, y + h / 2); });
+  } else {
+    g.fillStyle = COLORS.cell; g.fillRect(x, y, w, h);
+    const im = images[i];
+    if (im) {
+      const r = Math.max(w / im.width, h / im.height);
+      g.drawImage(im, x + (w - im.width * r) / 2, y + (h - im.height * r) / 2, im.width * r, im.height * r);
+      const grad = g.createLinearGradient(0, y + h * 0.45, 0, y + h);
+      grad.addColorStop(0, 'rgba(14,11,10,0)'); grad.addColorStop(1, 'rgba(14,11,10,0.92)');
+      g.fillStyle = grad; g.fillRect(x, y, w, h);
+    } else {
+      const grad = g.createRadialGradient(x + w * 0.8, y + h * 0.1, 0, x + w * 0.8, y + h * 0.1, Math.max(w, h));
+      grad.addColorStop(0, cat + '33'); grad.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = grad; g.fillRect(x, y, w, h);
+      g.fillStyle = COLORS.ash; g.font = `400 ${15 * s}px "Instrument Sans"`; g.textBaseline = 'top';
+      wrap(g, c.desc ?? '', x + 22 * s, y + 64 * s, w - 44 * s, 22 * s, Math.max(2, Math.floor((h / s - 150) / 22)));
+    }
+    g.textBaseline = 'alphabetic';
+    g.fillStyle = cat; g.font = `${17 * s}px VT323`;
+    g.fillText((c.category ?? '').toUpperCase(), x + 22 * s, im ? y + h - 52 * s : y + 34 * s);
+    g.fillStyle = COLORS.rice; g.font = `600 ${21 * s}px "Instrument Sans"`;
+    g.fillText(c.title ?? '', x + 22 * s, im ? y + h - 24 * s : y + 58 * s);
+  }
+  g.restore();
+});
+const atlasTex = new THREE.CanvasTexture(atlas);
+atlasTex.colorSpace = THREE.SRGBColorSpace;
+atlasTex.flipY = false;
+atlasTex.anisotropy = 8;
+atlasTex.minFilter = THREE.LinearMipmapLinearFilter;
+
+// Per card: [col,row,w,h] [atlas u0,v0,u1,v1] [category rgb, lit]
+const N = board.cards.length;
+const info = new Float32Array(N * 3 * 4);
+board.cards.forEach((c, i) => {
+  const r = rects[i];
+  info.set([c.col, c.row, c.w, c.h], (0 * N + i) * 4);
+  info.set([r.x / atlasW, r.y / atlasH, (r.x + r.w) / atlasW, (r.y + r.h) / atlasH], (1 * N + i) * 4);
+  const col = new THREE.Color(c.kind === 'search' ? COLORS.orange : c.kind ? COLORS.phosphor : CAT[c.category] ?? COLORS.rice);
+  info.set([col.r, col.g, col.b, LIT.has(c.id) ? 1 : 0], (2 * N + i) * 4);
+});
+const cardInfo = new THREE.DataTexture(info, N, 3, THREE.RGBAFormat, THREE.FloatType);
+cardInfo.needsUpdate = true;
+
+/* ------------------------------------------------------------------ *
+ * The screen shader: the whole story happens here.
+ * ------------------------------------------------------------------ */
+const lin = (hex) => new THREE.Color(hex);
+const HOME = new THREE.Vector2(7.5 - GAP / 2, 5 - GAP / 2);
+const uniforms = {
+  uTime: { value: 0 }, uPower: { value: 0 }, uTextAmt: { value: 1 }, uSnow: { value: 0 },
+  uSpan: { value: SPAN0 }, uSpan0: { value: SPAN0 }, uAspect: { value: SCREEN_A }, uPPC: { value: P.ppc },
+  uMerge: { value: 0 }, uResolve: { value: 0 }, uMaskAmt: { value: 1 }, uMaskGain: { value: P.maskGain },
+  uFx: { value: 1 }, uTint: { value: 0 }, uDim: { value: 0 }, uPalette: { value: 0 }, uMaxR: { value: 8 },
+  uCenter: { value: HOME }, uTile: { value: new THREE.Vector2(cols, rows) },
+  uGap: { value: GAP }, uRadius: { value: RADIUS },
+  uText: { value: textTex }, uCellMap: { value: cellMap }, uCardInfo: { value: cardInfo }, uAtlas: { value: atlasTex },
+  tReflect: { value: null }, uReflMat: { value: new THREE.Matrix4() }, uRefl: { value: 0 },
+  uPhosphor: { value: lin('#f3e9dc') }, uWall: { value: lin(COLORS.wall) }, uOff: { value: lin('#0b0c0b') },
+};
+
+window.U = uniforms; window.P = P; // debugging
+const screenMat = new THREE.ShaderMaterial({
+  uniforms,
+  vertexShader: /* glsl */`
+    varying vec2 vUv;
+    varying vec3 vWorld;
+    void main() {
+      vUv = uv;
+      vWorld = (modelMatrix * vec4(position, 1.0)).xyz;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: /* glsl */`
+    precision highp float;
+    varying vec2 vUv;
+    varying vec3 vWorld;
+    uniform sampler2D tReflect;
+    uniform mat4 uReflMat;
+    uniform float uRefl;
+    uniform float uTime, uPower, uTextAmt, uSnow, uSpan, uSpan0, uAspect, uPPC, uMerge, uResolve;
+    uniform float uMaskAmt, uMaskGain, uFx, uTint, uDim, uPalette, uMaxR, uGap, uRadius;
+    uniform vec2 uCenter, uTile;
+    uniform sampler2D uText, uCellMap, uCardInfo, uAtlas;
+    uniform vec3 uPhosphor, uWall, uOff;
+
+    float h12(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+    float h13(vec3 p3) { p3 = fract(p3 * .1031); p3 += dot(p3, p3.zyx + 31.32); return fract((p3.x + p3.y) * p3.z); }
+    vec3 h33(vec3 p3) { p3 = fract(p3 * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yxz + 33.33); return fract((p3.xxy + p3.yxx) * p3.zyx); }
+    float sdRound(vec2 p, vec2 b, float r) { vec2 q = abs(p) - b + r; return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r; }
+
+    // One phosphor cell: a square with three vertical R/G/B bars and a dark border.
+    // f in 0..1 within the cell; aa is the cell's size in screen pixels, inverted.
+    vec3 phosphor(vec2 f, float aa, float gap, float bars) {
+      float inside = smoothstep(gap, gap + aa, f.x) * smoothstep(gap, gap + aa, 1.0 - f.x)
+                   * smoothstep(gap, gap + aa, f.y) * smoothstep(gap, gap + aa, 1.0 - f.y);
+      float sx = clamp((f.x - gap) / (1.0 - 2.0 * gap), 0.0, 0.9999) * 3.0;
+      float k = floor(sx), fs = fract(sx);
+      float aab = aa * 3.0;
+      float bar = smoothstep(0.07, 0.07 + aab, fs) * smoothstep(0.07, 0.07 + aab, 1.0 - fs);
+      // Bars balanced by luminance so bloom doesn't turn the mask green.
+      vec3 c = k < 0.5 ? vec3(1.25, 0.32, 0.22) : (k < 1.5 ? vec3(0.28, 0.82, 0.3) : vec3(0.3, 0.36, 1.35));
+      return mix(vec3(inside), c * bar * inside * 2.6, bars);
+    }
+
+    vec3 staticColor(float lum, vec3 rnd, vec3 cat) {
+      vec3 mono = uPhosphor * lum;
+      vec3 tinted = mix(mono, cat * (0.12 + 0.85 * lum), uTint);
+      vec3 rgb = mix(mono, rnd * lum * 1.6, 0.85);
+      return uPalette < 0.5 ? tinted : (uPalette < 1.5 ? mono * vec3(1.0, 0.86, 0.7) : rgb);
+    }
+
+    void main() {
+      vec2 uv = vUv;
+      float frame = floor(uTime * 24.0);
+
+      // Board coordinates (cells), y down, and phosphor pixel coordinates.
+      vec2 b = uCenter + vec2((uv.x - 0.5) * uSpan, -(uv.y - 0.5) * uSpan / uAspect);
+      vec2 q = b * uPPC;
+
+      // Analog tearing while the signal is noisy.
+      float tearAmt = uSnow * (1.0 - smoothstep(0.0, 0.5, uMerge));
+      float row = floor(q.y);
+      float tear = step(0.975, h12(vec2(row * 0.37, frame))) * (h12(vec2(row, frame + 3.0)) - 0.5) * 7.0 * tearAmt;
+      q.x += tear; b.x += tear / uPPC;
+
+      vec2 ip = floor(q);
+      vec2 fp = fract(q);
+      float pxScreen = fwidth(q.x);                 // phosphor cells per screen pixel
+      float aa = clamp(pxScreen * 1.2, 0.002, 0.5);
+      float maskVis = uMaskAmt * (1.0 - smoothstep(0.1, 0.2, pxScreen));
+
+      // Which card is here (this copy of the tile).
+      vec2 cell = floor(b);
+      vec2 tc = mod(cell, uTile);
+      float idx = floor(texelFetch(uCellMap, ivec2(tc), 0).r * 255.0 + 0.5) - 1.0;
+      bool onCard = idx >= 0.0;
+      vec4 i0 = vec4(0.0), i1 = vec4(0.0), i2 = vec4(uPhosphor, 0.0);
+      vec2 origin = cell, size = vec2(1.0), local = vec2(0.0);
+      float mC = 0.0, rC = 0.0, sdf = 1.0, copyHash = 0.0;
+      bool home = false;
+      if (onCard) {
+        i0 = texelFetch(uCardInfo, ivec2(int(idx), 0), 0);
+        i1 = texelFetch(uCardInfo, ivec2(int(idx), 1), 0);
+        i2 = texelFetch(uCardInfo, ivec2(int(idx), 2), 0);
+        vec2 d = mod(tc - i0.xy, uTile);
+        origin = cell - d;
+        size = i0.zw - uGap;
+        local = b - origin;
+        sdf = sdRound(local - size * 0.5, size * 0.5, uRadius);
+        vec2 copyIdx = floor((origin - i0.xy + 0.5) / uTile);
+        home = all(equal(copyIdx, vec2(0.0)));
+        copyHash = h12(copyIdx + 7.0) * 97.0;
+        float dn = clamp(length(origin + size * 0.5 - uCenter) / uMaxR, 0.0, 1.0);
+        mC = clamp((uMerge - dn * 0.45) / 0.55, 0.0, 1.0);
+        rC = clamp((uResolve - dn * 0.45) / 0.55, 0.0, 1.0);
+      }
+      vec3 cat = i2.rgb;
+
+      // ---- Layer 1: text, eaten by snow ----
+      vec2 pc = (ip + 0.5) / uPPC;   // this phosphor's centre, in cells
+      vec2 tuv = vec2((pc.x - uCenter.x) / uSpan0 + 0.5, (pc.y - uCenter.y) / (uSpan0 / uAspect) + 0.5);
+      vec3 txt = (tuv.x > 0.0 && tuv.x < 1.0 && tuv.y > 0.0 && tuv.y < 1.0) ? texture(uText, tuv).rgb : vec3(0.0);
+      txt *= 1.35;
+      float pixLum = pow(h13(vec3(ip, frame)), 1.6);
+      vec3 pixRnd = h33(vec3(ip, frame));
+      float eaten = step(h12(ip * 1.37 + 0.5), uSnow);
+      vec3 pixColor = mix(txt * uTextAmt, staticColor(pixLum * 1.15, pixRnd, cat), eaten);
+
+      // ---- Layer 2: the merge (pixel -> 2x2 -> 4x4 -> cell -> card) and resolve ----
+      vec3 col;
+      vec3 patt;
+      float flash = 0.0;
+      if (!onCard || mC <= 0.0) {
+        col = pixColor;
+        patt = phosphor(fp, aa, 0.06, 1.0);
+      } else {
+        vec2 lp = local * uPPC;                       // phosphor coords from the card's corner
+        float stage = floor(mC * 5.0);                // 0..5
+        flash = exp(-fract(mC * 5.0) * 7.0) * 0.25 * step(mC, 0.999);
+        if (stage < 4.0) {
+          float L = pow(2.0, stage);                  // 1, 2, 4, 8 phosphors per block
+          L = min(L, uPPC);
+          vec2 bid = floor(lp / L);
+          vec2 bf = fract(lp / L);
+          float lum = pow(h13(vec3(bid + idx * 31.0 + copyHash, frame)), 1.4);
+          vec3 rnd = h33(vec3(bid + idx * 31.0 + copyHash, frame));
+          col = staticColor(lum * 1.1, rnd, cat);
+          patt = phosphor(bf, aa / L, 0.06 / L, 1.0 - smoothstep(0.0, 0.15, mC));
+          // The card's outline starts to bite as blocks grow.
+          float edge = smoothstep(0.0, -aa / uPPC, sdf);
+          col = mix(uWall * 0.4, col, mix(1.0, edge, smoothstep(0.35, 0.75, mC)));
+        } else {
+          // One block per card: a humming slab of signal.
+          // A compartment full of live signal: dark body, glowing rim, rolling interference.
+          float hum = 0.85 + 0.15 * h13(vec3(idx, copyHash, frame));
+          float inner = clamp(-sdf / 0.35, 0.0, 1.0);
+          float rimGlow = exp(-(-sdf) * 9.0);
+          float band = 0.5 + 0.5 * sin((local.y * 3.0 - uTime * 2.2) * 3.14159 + idx);
+          float grainS = h13(vec3(ip, frame));
+          float lumS = hum * (0.16 + 0.1 * band + 0.18 * grainS + 0.75 * rimGlow);
+          vec3 slab = staticColor(lumS, h33(vec3(ip, frame)), cat);
+
+          // Resolve: the image sharpens through 8 -> 4 -> 2 -> 1 phosphor blocks, then clean.
+          if (rC > 0.0) {
+            float rs = floor(rC * 5.0);
+            float L = rs < 4.0 ? uPPC / pow(2.0, rs) : 0.0;
+            vec2 lpq = L > 0.0 ? (floor(lp / L) + 0.5) * L : lp;
+            vec2 cuv = clamp(lpq / (size * uPPC), 0.0, 1.0);
+            vec3 img = texture(uAtlas, mix(i1.xy, i1.zw, cuv)).rgb;
+            float grain = (h13(vec3(lp * 0.0 + floor(lp), frame)) - 0.5) * 0.35 * (1.0 - rC);
+            col = mix(slab, img, smoothstep(0.0, 0.18, rC)) + grain;
+            vec2 bf = L > 0.0 ? fract(lp / L) : vec2(0.5);
+            float gapL = L > 0.0 ? 0.05 / L * uPPC / 8.0 : 0.0;
+            patt = L > 0.0 ? phosphor(bf, aa / max(L, 1.0), gapL, L <= 1.0 ? 1.0 : 0.0) : phosphor(fp, aa, 0.06, 1.0);
+            flash += exp(-fract(rC * 5.0) * 9.0) * 0.18 * step(rC, 0.999);
+            if (home && i2.a > 0.5) {} else col *= mix(1.0, 0.42, uDim);
+          } else {
+            col = slab;
+            patt = phosphor(fp, aa, 0.06, 0.65);
+          }
+          float edge = smoothstep(aa / uPPC, -aa / uPPC, sdf);
+          col = mix(uWall, col, edge);
+          patt = mix(vec3(1.0), patt, edge);
+        }
+      }
+      if (!onCard && uMerge > 0.0) col = mix(col, uWall, smoothstep(0.3, 0.8, uMerge));
+
+      col *= 1.0 + flash;
+
+      // Phosphor mask: visible once a cell spans a few screen pixels.
+      vec3 masked = col * patt * uMaskGain / 2.6;
+      col = mix(col, masked, maskVis * uFx);
+
+      // ---- Glass, beam and tube ----
+      float vig = pow(16.0 * uv.x * uv.y * (1.0 - uv.x) * (1.0 - uv.y), 0.28);
+      col *= mix(1.0, vig, uFx);
+      col *= 1.0 + uFx * (0.025 * sin(uTime * 113.0) + 0.06 * exp(-pow((fract(uv.y * 0.6 - uTime * 0.18) - 0.5) * 10.0, 2.0)));
+
+      // Power-on: a hot line opens out into the picture.
+      float p = uPower;
+      float lw = smoothstep(0.0, 0.32, p), lh = mix(0.006, 1.0, pow(smoothstep(0.28, 1.0, p), 2.0));
+      float beam = (1.0 - smoothstep(lw * 0.5, lw * 0.5 + 0.004, abs(uv.x - 0.5))) * (1.0 - smoothstep(lh * 0.5, lh * 0.5 + 0.01, abs(uv.y - 0.5)));
+      float hot = 1.0 - smoothstep(0.3, 1.0, p);
+      vec3 off = uOff + uOff * phosphor(fp, aa, 0.06, 1.0) * 0.6 * maskVis;
+      col = mix(off, col + vec3(1.0, 0.96, 0.9) * hot * hot * 1.6, beam * step(0.001, p));
+      // A faint afterglow dot lingers at the centre while the tube warms up.
+      col += vec3(1.0, 0.9, 0.8) * exp(-length((uv - 0.5) * vec2(uAspect, 1.0)) * 40.0) * smoothstep(0.0, 0.05, p) * hot * 0.8;
+
+      // The dark glass is a mirror: whatever stands in front of the tube shows in it.
+      if (uRefl > 0.001) {
+        vec4 rc = uReflMat * vec4(vWorld, 1.0);
+        vec3 refl = texture(tReflect, rc.xy / rc.w).rgb;
+        float grain = 0.85 + 0.15 * phosphor(fp, aa, 0.06, 0.0).r * maskVis;
+        col += refl * uRefl * 0.75 * grain;
+      }
+
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `,
+});
+
+// Curved screen + glass share one geometry; the bulge flattens as we dive in.
+const screenGeo = new THREE.PlaneGeometry(SW, SH, 64, 40);
+const flat = Float32Array.from(screenGeo.attributes.position.array);
+let lastBulge = -1;
+function setBulge(k) {
+  if (Math.abs(k - lastBulge) < 1e-4) return;
+  lastBulge = k;
+  const pos = screenGeo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const x = flat[i * 3] / (SW / 2), y = flat[i * 3 + 1] / (SH / 2);
+    pos.setZ(i, BULGE * k * (1 - x * x * 0.85) * (1 - y * y * 0.85));
+  }
+  pos.needsUpdate = true;
+  screenGeo.computeVertexNormals();
+}
+setBulge(1);
+const screen = new THREE.Mesh(screenGeo, screenMat);
+screen.position.z = SCREEN_Z;
+monitor.add(screen);
+
+const glassMat = new THREE.MeshPhysicalMaterial({
+  color: '#000000', roughness: 0.06, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.03,
+  transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false, envMapIntensity: 0.7,
+});
+const glass = new THREE.Mesh(screenGeo, glassMat);
+glass.position.z = SCREEN_Z + 0.004;
+glass.renderOrder = 2;
+monitor.add(glass);
+
+const reflSize = () => [Math.min(2048, Math.round(vpW() * renderer.getPixelRatio())), Math.min(2048, Math.round(vpH() * renderer.getPixelRatio()))];
+const reflector = new Reflector(new THREE.PlaneGeometry(SW, SH), { textureWidth: reflSize()[0], textureHeight: reflSize()[1], clipBias: 0.003 });
+reflector.position.z = SCREEN_Z + BULGE + 0.012;
+reflector.visible = false;
+monitor.add(reflector);
+uniforms.tReflect.value = reflector.getRenderTarget().texture;
+const reflInv = new THREE.Matrix4();
+function renderReflection() {
+  scene.updateMatrixWorld();
+  camera.updateMatrixWorld(); // not in the scene, so not updated above
+  reflector.visible = true;
+  reflector.onBeforeRender(renderer, scene, camera);
+  reflector.visible = false;
+  reflInv.copy(reflector.matrixWorld).invert();
+  uniforms.uReflMat.value.copy(reflector.material.uniforms.textureMatrix.value).multiply(reflInv);
+}
+
+/* ------------------------------------------------------------------ *
+ * The robot, and a cold moonlight so silhouettes read in the dark
+ * ------------------------------------------------------------------ */
+const robot = createRobot();
+scene.add(robot.root);
+window.dbg = { robot, scene, camera, reflector, THREE };
+const moon = new THREE.DirectionalLight('#8a9bc4', 0.22);
+moon.position.set(-1.5, 2.6, -2.2);
+scene.add(moon);
+
+/* ------------------------------------------------------------------ *
+ * Post
+ * ------------------------------------------------------------------ */
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(vpW(), vpH()), 0.9, 0.5, 0.9);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+/* ------------------------------------------------------------------ *
+ * Camera path
+ * ------------------------------------------------------------------ */
+const tanHalf = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+function fillDistance() {
+  const a = vpW() / vpH();
+  return Math.min(SH, SW / a) / (2 * tanHalf);
+}
+function spanEnd() {
+  const d = fillDistance();
+  const visW = 2 * d * tanHalf * (vpW() / vpH());
+  return (vpW() / (STEP * fitZoom())) / (visW / SW);
+}
+
+// Prologue shots. C0: right up against the glass, looking at her reflection. C1: over her shoulder.
+const C0 = new THREE.Vector3(-0.15, 0.13, 0.2), L0 = new THREE.Vector3(-0.15, 0.13, -1);
+const C1 = new THREE.Vector3(0.9, 0.22, 2.45), L1 = new THREE.Vector3(0.18, -0.42, 0);
+const P0 = C1;
+const P1 = new THREE.Vector3(0.32, 0.08, 2.4);
+const tmpTarget = new THREE.Vector3();
+function placeCamera(t) {
+  const a = easeInOutSine(clamp01((t - T.led) / (T.dive[0] - T.led)));
+  const pos = new THREE.Vector3().lerpVectors(P0, P1, a);
+  // A slight handheld drift before the dive.
+  const drift = 1 - ramp(t, T.dive);
+  pos.x += Math.sin(t * 0.7) * 0.025 * drift; pos.y += Math.sin(t * 0.53 + 1) * 0.015 * drift;
+  tmpTarget.lerpVectors(L1, new THREE.Vector3(0, 0, 0), a);
+  const k = ramp(t, T.dive);
+  if (k > 0) {
+    const e = easeInOutCubic(k);
+    const zEnd = SCREEN_Z + fillDistance();
+    // Exponential approach reads as a constant-rate zoom into the glass.
+    const d0 = P1.length(), d1 = zEnd - SCREEN_Z;
+    const dist = Math.exp(mix(Math.log(d0), Math.log(d1), e));
+    const lateral = 1 - sstep(clamp01(k * 1.25));
+    const dir = new THREE.Vector3(P1.x * lateral, P1.y * lateral, Math.sqrt(Math.max(1e-6, P1.lengthSq() - (P1.x * lateral) ** 2 - (P1.y * lateral) ** 2))).normalize();
+    pos.copy(dir.multiplyScalar(dist)).add(new THREE.Vector3(0, 0, SCREEN_Z));
+    tmpTarget.set(0, 0, mix(0, SCREEN_Z, e));
+  }
+  camera.position.copy(pos);
+  camera.lookAt(tmpTarget);
+}
+
+/* ------------------------------------------------------------------ *
+ * The timeline: everything is a function of t, so scrubbing works.
+ * ------------------------------------------------------------------ */
+function apply(t) {
+  drawText(t);
+  const u = uniforms;
+  u.uTime.value = t;
+  u.uPower.value = ramp(t, T.power);
+  u.uSnow.value = sstep(ramp(t, T.snow));
+  u.uTextAmt.value = 1;
+  u.uPPC.value = P.ppc;
+  u.uMaskGain.value = P.maskGain;
+  u.uPalette.value = { category: 0, mono: 1, rgb: 2 }[P.palette];
+  u.uTint.value = sstep(ramp(t, T.tint));
+  u.uMerge.value = ramp(t, T.merge);
+  u.uResolve.value = ramp(t, T.resolve);
+  u.uDim.value = P.dim ? sstep(ramp(t, [T.resolve[1] - 0.3, T.end])) : 0;
+  const fxOff = sstep(ramp(t, T.fxOff));
+  u.uFx.value = 1 - fxOff;
+  u.uMaskAmt.value = 1;
+  const sEnd = spanEnd();
+  u.uMaxR.value = sEnd * 0.75;
+  // Content zoom: holds while text shows, then dives with the camera and on to the board's own zoom.
+  const z = easeInOutCubic(ramp(t, [T.dive[0] + 0.3, T.resolve[0] + 0.4]));
+  u.uSpan.value = Math.exp(mix(Math.log(SPAN0), Math.log(sEnd), z));
+
+  placeCamera(t);
+  setBulge(1 - sstep(ramp(t, [T.dive[0] + 0.6, T.dive[1]])));
+  glassMat.opacity = 1 - sstep(ramp(t, [T.dive[0] + 0.5, T.dive[1] - 0.2]));
+
+  // Room lights: up a touch at the start, out as we enter the screen.
+  const roomIn = sstep(ramp(t, [T.led, T.led + 1.4])), roomOut = 1 - sstep(ramp(t, [T.dive[0], T.dive[1] - 0.3]));
+  key.intensity = 1.6 * roomIn * roomOut;
+  rim.intensity = 30 * roomIn * roomOut;
+  scene.environmentIntensity = 0.35 * roomIn;
+  // Standby: a dim red LED that lights the knobs in the dark; on the click it goes orange.
+  const on = t > T.led ? 1 : 0;
+  ledMat.emissive.set(on ? COLORS.orange : '#ff3a1a');
+  ledLight.color.set(on ? COLORS.orange : '#ff3a1a');
+  ledMat.emissiveIntensity = on ? 3 + Math.sin(t * 3) * 0.2 : 0.9 + 0.25 * Math.sin(t * 2.2);
+  ledLight.intensity = on ? 0.25 : 0.06;
+  ledLight.distance = on ? 0.6 : 0.45;
+  const screenOn = ramp(t, T.power);
+  screenLight.intensity = (2.2 + 3 * (1 - sstep(ramp(t, [T.power[0] + 0.2, T.power[1] + 0.3])))) * screenOn * roomOut;
+
+  uniforms.uRefl.value = (1 - 0.88 * sstep(ramp(t, [T.power[0], T.power[1] + 0.4]))) * (1 - sstep(ramp(t, [T.dive[0], T.dive[0] + 0.8])));
+  bloom.strength = P.bloom * (1 + 0.5 * (1 - sstep(ramp(t, [T.power[0] + 0.25, T.power[1] + 0.4]))) * screenOn) * (1 - 0.55 * sstep(ramp(t, T.dive))) * (1 - fxOff);
+}
+
+/* ------------------------------------------------------------------ *
+ * The prologue: she wakes, reaches for the glass, we pull back, she turns it on.
+ * Master time t; the boot runs on tb, which reaches T.led as the knob clicks.
+ * ------------------------------------------------------------------ */
+const PRO_END = 6.6;
+const TOTAL = PRO_END - T.led + T.end;
+const ROBOT_HOME = new THREE.Vector3(-0.15, -0.5, 0.86);
+const ROBOT_AWAY = new THREE.Vector3(-1.2, -0.5, 1.5);
+const easeOutCubic = (x) => 1 - Math.pow(1 - x, 3);
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+
+// Eye ignition flicker, like a tube striking: [time, glow] keys.
+const FLICKER = [[0.7, 0], [0.74, 0.55], [0.79, 0.05], [0.86, 0.8], [0.9, 0.25], [1.02, 1]];
+function eyeGlow(t) {
+  if (t < FLICKER[0][0]) return 0;
+  for (let i = 1; i < FLICKER.length; i++) if (t < FLICKER[i][0]) return FLICKER[i - 1][1];
+  return 1;
+}
+
+function lerpPose(a, b, k) {
+  return { w: a.w.clone().lerp(b.w, k), d: a.d.clone().lerp(b.d, k).normalize(), curl: mix(a.curl, b.curl, k), spread: mix(a.spread, b.spread, k) };
+}
+
+function prologue(t) {
+  const r = robot.root;
+  // Where she stands: at the desk, then she steps back to the left to watch.
+  const away = sstep(ramp(t, [7.6, 9.6]));
+  r.position.lerpVectors(ROBOT_HOME, ROBOT_AWAY, away);
+  r.position.y += Math.sin(t * 1.3) * 0.004 + Math.sin(Math.PI * away) * 0.03;
+  r.rotation.set(0, Math.PI - 0.62 * away, 0);
+  const lean = 0.08 * sstep(ramp(t, [3.9, 5.2])) * (1 - sstep(ramp(t, [6.7, 7.6])));
+  r.rotation.x = -lean;
+  r.updateMatrixWorld(true);
+
+  // Eyes.
+  const blink = Math.max(Math.sin(Math.PI * clamp01((t - 2.15) / 0.2)), Math.sin(Math.PI * clamp01((t - 8.4) / 0.18)));
+  robot.setEyes(eyeGlow(t), sstep(ramp(t, [0.86, 1.22])) * (1 - blink));
+
+  // Head: a curious tilt, a look down at the knob, then up at the screen.
+  const hp = robot.headPivot.rotation;
+  hp.z = 0.13 * sstep(ramp(t, [1.4, 2.1])) * (1 - sstep(ramp(t, [3.0, 3.7])));
+  hp.x = 0.28 * sstep(ramp(t, [4.2, 5.2])) * (1 - sstep(ramp(t, [6.6, 7.4]))) - 0.06 * sstep(ramp(t, [7.2, 8]));
+  hp.y = 0.25 * sstep(ramp(t, [8.6, 9.8]));
+
+  // Arm: poses in world space, converted into her frame.
+  const inv = r.quaternion.clone().invert();
+  const loc = (v) => r.worldToLocal(v.clone());
+  const dirL = (v) => v.clone().normalize().applyQuaternion(inv);
+  const knobFront = powerKnob.getWorldPosition(new THREE.Vector3()).add(V(0, 0, 0.02));
+  const knobDir = V(0.05, -0.32, -1).normalize();
+  const rest = { w: V(-0.3, -0.72, 0.12), d: V(0, -1, 0.25).normalize(), curl: 0.25, spread: 0 };
+  const glassP = { w: loc(V(0.02, -0.02, 0.37)), d: dirL(V(-0.05, 0.12, -1)), curl: 0.05, spread: 0.85 };
+  const approach = { w: loc(knobFront.clone().addScaledVector(knobDir, -0.26)), d: dirL(knobDir), curl: 0.35, spread: 0.15 };
+  const gripP = { w: loc(knobFront.clone().addScaledVector(knobDir, -0.165)), d: dirL(knobDir), curl: 0.72, spread: 0.05 };
+
+  let pose = rest;
+  if (t < 2.3) pose = rest;
+  else if (t < 3.5) pose = lerpPose(rest, glassP, easeInOutCubic(ramp(t, [2.3, 3.5])));
+  else if (t < 3.9) pose = glassP;
+  else if (t < 5.3) pose = lerpPose(glassP, approach, easeInOutCubic(ramp(t, [3.9, 5.3])));
+  else if (t < 6.7) pose = lerpPose(approach, gripP, easeInOutCubic(ramp(t, [5.3, 5.7])));
+  else if (t < 7.2) pose = lerpPose(gripP, approach, easeInOutCubic(ramp(t, [6.7, 7.2])));
+  else pose = lerpPose(approach, rest, easeInOutCubic(ramp(t, [7.2, 8.2])));
+
+  const wiggle = t > 3.3 && t < 4.1 ? Math.sin((t - 3.3) * 14) * 0.08 : 0;
+  const twist = 1.15 * sstep(ramp(t, [5.85, 6.5])) * (1 - sstep(ramp(t, [6.8, 7.2])));
+  robot.reach(pose.w);
+  robot.aim(pose.d, V(0, 1, 0), -twist);
+  robot.grip(pose.curl + wiggle, pose.spread);
+  powerKnob.rotation.y = POWER_KNOB_REST + 1.15 * sstep(ramp(t, [5.85, 6.5]));
+
+  // Camera: the reflection shot, then the pull back over her shoulder.
+  if (t < PRO_END) {
+    const k = ramp(t, [3.4, 5.7]);
+    const sway = 1 - k;
+    camera.position.set(
+      mix(C0.x, C1.x, easeOutCubic(k)) + Math.sin(t * 0.6) * 0.006 * sway,
+      mix(C0.y, C1.y, easeInOutSine(k)) + Math.sin(t * 0.47 + 1) * 0.004 * sway,
+      mix(C0.z, C1.z, easeInOutCubic(k)),
+    );
+    camera.lookAt(tmpTarget.lerpVectors(L0, L1, easeInOutCubic(k)));
+    camera.fov = mix(48, 35, easeInOutSine(k));
+    camera.updateProjectionMatrix();
+  } else if (camera.fov !== 35) { camera.fov = 35; camera.updateProjectionMatrix(); }
+}
+
+function master(t) {
+  const tb = t - PRO_END + T.led;
+  apply(tb);
+  prologue(t);
+  if (t < PRO_END) {
+    // Dark room: only her eyes and the moon.
+    key.intensity = 0; rim.intensity = 0; scene.environmentIntensity = 0;
+    bloom.strength = P.bloom * 0.6;
+    uniforms.uRefl.value = 1;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Loop, controls
+ * ------------------------------------------------------------------ */
+let t0 = performance.now(), tPaused = 0;
+function restart() { t0 = performance.now(); P.playing = true; }
+const gui = new GUI({ title: 'bentOS prologue' });
+gui.add(P, 'time', 0, TOTAL + 0.5, 0.01).listen().onChange((v) => { P.playing = false; tPaused = v; });
+gui.add(P, 'playing').listen().onChange((v) => { if (v) t0 = performance.now() - (P.time / P.speed) * 1000; });
+gui.add(P, 'speed', 0.25, 2, 0.05);
+gui.add(P, 'palette', ['category', 'mono', 'rgb']);
+gui.add(P, 'ppc', [4, 6, 8, 12, 16]).name('pixels / cell').onChange(() => { textSig = ''; });
+gui.add(P, 'maskGain', 1, 6, 0.1).name('mask gain');
+gui.add(P, 'bloom', 0, 2.5, 0.05);
+gui.add(P, 'dim').name('spotlight dim');
+gui.add(P, 'replay');
+
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') { e.preventDefault(); restart(); }
+  if (e.key === 'p') { P.playing = !P.playing; if (P.playing) t0 = performance.now() - (P.time / P.speed) * 1000; else tPaused = P.time; }
+  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { P.playing = false; tPaused = Math.max(0, P.time + (e.key === 'ArrowRight' ? 0.1 : -0.1)); }
+});
+window.addEventListener('resize', () => {
+  renderer.setSize(vpW(), vpH()); composer.setSize(vpW(), vpH());
+  camera.aspect = vpW() / vpH(); camera.updateProjectionMatrix();
+  reflector.getRenderTarget().setSize(...reflSize());
+});
+// ?t=5.2 opens paused at that moment (for screenshots).
+const qt = new URLSearchParams(location.search).get('t');
+if (qt !== null) { P.playing = false; tPaused = parseFloat(qt); }
+
+renderer.setAnimationLoop(() => {
+  if (P.playing) P.time = Math.min(((performance.now() - t0) / 1000) * P.speed, TOTAL + 0.5);
+  else P.time = tPaused;
+  master(P.time);
+  if (uniforms.uRefl.value > 0.001) renderReflection();
+  composer.render();
+});
+</script>
+</body>
+</html>

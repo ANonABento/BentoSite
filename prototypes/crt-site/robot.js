@@ -15,7 +15,7 @@ const Y = new THREE.Vector3(0, 1, 0);
 
 export function createRobot() {
   const mats = {
-    ceramic: new THREE.MeshPhysicalMaterial({ color: '#efe8dd', roughness: 0.32, clearcoat: 1, clearcoatRoughness: 0.12 }),
+    ceramic: new THREE.MeshPhysicalMaterial({ color: '#efe8dd', roughness: 0.38, clearcoat: 0.8, clearcoatRoughness: 0.3 }),
     black: new THREE.MeshPhysicalMaterial({ color: '#131012', roughness: 0.36, clearcoat: 0.8, clearcoatRoughness: 0.18 }),
     joint: new THREE.MeshStandardMaterial({ color: '#2d2724', roughness: 0.4, metalness: 0.7 }),
     fabric: new THREE.MeshStandardMaterial({ color: '#f3ede3', roughness: 0.78 }),
@@ -25,6 +25,7 @@ export function createRobot() {
     core: new THREE.MeshStandardMaterial({ color: '#000000', emissive: new THREE.Color('#ffd2a6'), emissiveIntensity: 0 }),
     ribbon: new THREE.MeshPhysicalMaterial({ color: '#e8823f', roughness: 0.45, clearcoat: 0.5 }),
     line: new THREE.MeshBasicMaterial({ color: '#8a7d74' }),
+    handGlow: new THREE.MeshStandardMaterial({ color: '#000000', emissive: new THREE.Color('#ff8a3d'), emissiveIntensity: 0 }),
     knuckle: new THREE.MeshStandardMaterial({ color: '#6d6460', roughness: 0.35, metalness: 0.6 }),
   };
 
@@ -150,7 +151,7 @@ export function createRobot() {
     eye.add(socket, lens, iris, core, lid);
     stick(eye, s * 0.074, -0.004, 0.006);
     const light = new THREE.PointLight('#ff8a3d', 0, 1.1, 2);
-    light.position.copy(eye.position).add(new THREE.Vector3(0, 0, 0.04));
+    light.position.copy(eye.position).add(new THREE.Vector3(s * 0.02, 0.03, 0.13));
     head.add(light);
     eyes.push({ group: eye, lid, light });
   }
@@ -245,7 +246,7 @@ export function createRobot() {
   const plate = new THREE.Mesh(new RoundedBoxGeometry(0.066, 0.006, 0.07, 2, 0.003), mats.joint);
   plate.position.set(0, 0.018, 0.06);
   hand.add(plate);
-  const glowLine = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.002, 0.004), mats.iris);
+  const glowLine = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.002, 0.004), mats.handGlow);
   glowLine.position.set(0, 0.022, 0.035);
   hand.add(glowLine);
 
@@ -333,10 +334,11 @@ export function createRobot() {
   function setEyes(glow, open) {
     for (const e of eyes) {
       e.lid.scale.y = Math.max(0.001, 1 - open);
-      e.light.intensity = glow * 0.045;
+      e.light.intensity = glow * 0.07;
     }
-    mats.iris.emissiveIntensity = glow * 3.2;
-    mats.core.emissiveIntensity = glow * 5;
+    mats.iris.emissiveIntensity = glow * 2.2;
+    mats.core.emissiveIntensity = glow * 3.4;
+    mats.handGlow.emissiveIntensity = glow * 0.9;
   }
 
   setEyes(0, 0);
