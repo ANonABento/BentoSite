@@ -459,7 +459,7 @@ export function DesktopCanvasView({
             >
               <span className="opacity-70">Highlights</span>
               <span aria-hidden className="opacity-40">·</span>
-              <span className="font-semibold">Show all {projectTotal} projects</span>
+              <span className="font-semibold">Show all {projectTotal}</span>
             </button>
           </motion.div>
         )}

@@ -38,20 +38,20 @@ interface ViewfinderProps {
   onClose: () => void;
 }
 
-const LINK_LABELS = { github: 'Source', docs: 'Write-up', liveDemo: 'Live' } as const;
+const LINK_LABELS = { github: 'Source', docs: 'Write-up', liveDemo: 'Live', site: 'Website' } as const;
 const EASE = [0.2, 0.8, 0.2, 1] as const;
 
 function categoryColor(category: string) {
   return `var(--cat-${category.toLowerCase().replace(/[^a-z0-9]+/g, '-')}, var(--color-ash))`;
 }
 
-/** Where the panel sits: centred with a margin, or the whole screen on a phone. */
-function panelRect(): ScreenRect {
+/** Where the panel sits: centred with a margin, or the whole screen on a phone. Without media it's just the write-up, narrower. */
+function panelRect(hasMedia: boolean): ScreenRect {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   if (vw < 768) return { x: 0, y: 0, width: vw, height: vh };
-  const width = Math.min(1280, vw - 64);
-  const height = Math.min(820, vh - 64);
+  const width = Math.min(hasMedia ? 1280 : 620, vw - 64);
+  const height = Math.min(hasMedia ? 820 : 680, vh - 64);
   return { x: (vw - width) / 2, y: (vh - height) / 2, width, height };
 }
 
@@ -60,7 +60,8 @@ export function Viewfinder({ project, origin, onClose }: ViewfinderProps) {
   const [tabKey, setTabKey] = useState(tabs[0]?.key);
   const [imageIndex, setImageIndex] = useState(0);
   const tab = tabs.find((t) => t.key === tabKey) ?? tabs[0];
-  const [target] = useState(panelRect);
+  const hasMedia = tabs.length > 0;
+  const [target] = useState(() => panelRect(hasMedia));
   const from = origin ?? { x: target.x + target.width * 0.1, y: target.y + target.height * 0.1, width: target.width * 0.8, height: target.height * 0.8 };
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -110,34 +111,38 @@ export function Viewfinder({ project, origin, onClose }: ViewfinderProps) {
       >
         {/* Laid out at the final size, so growing never reflows it. */}
         <motion.div
-          className="grid h-full gap-1.5 p-1.5 max-md:grid-rows-[minmax(0,45%)_minmax(0,1fr)] md:grid-cols-[minmax(0,1fr)_minmax(0,380px)]"
+          className={`grid h-full gap-1.5 p-1.5 ${
+            hasMedia ? 'max-md:grid-rows-[minmax(0,45%)_minmax(0,1fr)] md:grid-cols-[minmax(0,1fr)_minmax(0,380px)]' : ''
+          }`}
           style={{ width: target.width, height: target.height }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, transition: { delay: 0.12, duration: 0.25 } }}
           exit={{ opacity: 0, transition: { duration: 0.12 } }}
         >
           {/* Media */}
-          <section className="flex min-h-0 flex-col overflow-hidden rounded-[13px] bg-lacquer">
-            {tabs.length > 1 && (
-              <nav className="flex shrink-0 gap-1 p-2" aria-label="Media">
-                {tabs.map((t) => (
-                  <button
-                    key={t.key}
-                    onClick={() => setTabKey(t.key)}
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                      t.key === tab?.key ? 'bg-orange text-lacquer' : 'bg-cell-raised text-ash hover:text-rice'
-                    }`}
-                  >
-                    {t.label}
-                    {t.kind === 'image' && t.items.length > 1 ? <span className="ml-1 opacity-60">{t.items.length}</span> : null}
-                  </button>
-                ))}
-              </nav>
-            )}
-            <div className="min-h-0 flex-1">
-              {tab ? <TabViewer tab={tab} project={project} imageIndex={imageIndex} onImageIndex={setImageIndex} /> : <Fallback text="Nothing to show for this one yet." />}
-            </div>
-          </section>
+          {hasMedia && (
+            <section className="flex min-h-0 flex-col overflow-hidden rounded-[13px] bg-lacquer">
+              {tabs.length > 1 && (
+                <nav className="flex shrink-0 gap-1 p-2" aria-label="Media">
+                  {tabs.map((t) => (
+                    <button
+                      key={t.key}
+                      onClick={() => setTabKey(t.key)}
+                      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                        t.key === tab?.key ? 'bg-orange text-lacquer' : 'bg-cell-raised text-ash hover:text-rice'
+                      }`}
+                    >
+                      {t.label}
+                      {t.kind === 'image' && t.items.length > 1 ? <span className="ml-1 opacity-60">{t.items.length}</span> : null}
+                    </button>
+                  ))}
+                </nav>
+              )}
+              <div className="min-h-0 flex-1">
+                {tab ? <TabViewer tab={tab} project={project} imageIndex={imageIndex} onImageIndex={setImageIndex} /> : <Fallback text="Nothing to show for this one yet." />}
+              </div>
+            </section>
+          )}
 
           {/* Details */}
           <section className="flex min-h-0 flex-col overflow-hidden rounded-[13px] bg-cell">

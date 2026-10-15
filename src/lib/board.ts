@@ -4,7 +4,7 @@ import type { BoardLayout, InfoContent, IntroProfile, LayoutCard, ProjectCardDat
 import { readingOrder, sizeOf } from '@/components/BentoGrid';
 import type { ViewfinderItem, ViewfinderProject } from '@/components/Viewfinder/types';
 import portfolio from '@/content/portfolio.json';
-import { RESUME_URL, experience, formatDate, getFeatured, getProjects, profile, skills, type Project } from './content';
+import { RESUME_URL, experience, formatDate, getFeatured, getJobs, getProjects, profile, skills, type Project } from './content';
 
 export const LAYOUT_PATH = path.join(process.cwd(), 'src/content/layout.json');
 
@@ -28,7 +28,7 @@ export function projectCard(p: Project, placed?: LayoutCard): ProjectCardData {
     featured,
     award: p.award,
     awardShort: p.awardShort,
-    date: formatDate(p.dateCompleted),
+    date: p.period ?? formatDate(p.dateCompleted),
     size: placed ? sizeOf(placed) : '2x2',
     look: placed?.look,
   };
@@ -36,7 +36,7 @@ export function projectCard(p: Project, placed?: LayoutCard): ProjectCardData {
 
 /** Projects on the board, in reading order so the mobile list follows the layout. */
 export function boardProjects(layout: BoardLayout): ProjectCardData[] {
-  const byId = new Map(getProjects().map((p) => [p.id, p]));
+  const byId = new Map([...getProjects(), ...getJobs()].map((p) => [p.id, p]));
   return readingOrder(layout.cards).flatMap((placed) => {
     const p = byId.get(placed.id);
     return p ? [projectCard(p, placed)] : [];
@@ -57,6 +57,8 @@ export function introProfile(): IntroProfile {
     skills: [...skills.robotics, ...skills.ai].slice(0, 10),
     // The card has room for the recent roles; the full history is on the résumé.
     jobs: experience.slice(0, 4).map((e) => ({
+      // Jobs with details have a card of their own; the row opens it.
+      cardId: 'details' in e ? `job-${e.id}` : undefined,
       role: e.role,
       company: e.company,
       note: 'note' in e ? e.note : undefined,
@@ -87,7 +89,7 @@ export function viewfinderProject(p: Project): ViewfinderProject {
     description: p.description,
     category: p.category,
     status: p.status,
-    date: formatDate(p.dateCompleted),
+    date: p.period ?? formatDate(p.dateCompleted),
     context: p.context,
     award: p.award,
     technologies: p.technologies,
@@ -96,7 +98,7 @@ export function viewfinderProject(p: Project): ViewfinderProject {
   };
 }
 
-/** Every project's viewfinder data, by id. */
+/** Every project's (and job's) viewfinder data, by id. */
 export function viewfinderProjects(): Record<string, ViewfinderProject> {
-  return Object.fromEntries(getProjects().map((p) => [p.id, viewfinderProject(p)]));
+  return Object.fromEntries([...getProjects(), ...getJobs()].map((p) => [p.id, viewfinderProject(p)]));
 }

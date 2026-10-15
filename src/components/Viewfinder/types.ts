@@ -33,7 +33,7 @@ export interface ViewfinderProject {
   context?: string;
   award?: string;
   technologies: string[];
-  links: { github?: string; docs?: string; liveDemo?: string };
+  links: { github?: string; docs?: string; liveDemo?: string; site?: string };
   items: ViewfinderItem[];
 }
 

@@ -11,7 +11,7 @@ export type Project = {
   category: string;
   status: 'Completed' | 'In Progress';
   technologies: string[];
-  links: { github?: string; docs?: string; liveDemo?: string };
+  links: { github?: string; docs?: string; liveDemo?: string; site?: string };
   media: {
     featuredImage?: string;
     images?: string[];
@@ -26,6 +26,8 @@ export type Project = {
   awardShort?: string;
   /** "YYYY" or "YYYY-MM" */
   dateCompleted: string;
+  /** Shown instead of the date when set, e.g. a job's "Aug 2026 - Present". */
+  period?: string;
 };
 
 const PROJECTS_DIR = path.join(process.cwd(), 'src/content/projects');
@@ -69,6 +71,32 @@ export function formatDate(date: string): string {
   const [year, month] = date.split('-');
   if (!month) return year;
   return new Date(Number(year), Number(month) - 1).toLocaleString('en-US', { month: 'short', year: 'numeric' });
+}
+
+type Job = (typeof portfolio.experience)[number] & { details?: string; site?: string; images?: string[] };
+
+/** Each job (with details) as a board card: it opens in the viewfinder like a project. */
+export function getJobs(): Project[] {
+  return (portfolio.experience as Job[]).flatMap((e) => {
+    if (!e.details) return [];
+    const images = e.images ?? [];
+    return [
+      {
+        id: `job-${e.id}`,
+        name: e.company,
+        shortDescription: `${e.role}. ${e.summary}`,
+        description: e.details,
+        category: 'Experience',
+        context: `${e.role}, ${e.location.split(',')[0]}`,
+        status: 'Completed' as const,
+        technologies: e.technologies,
+        links: { site: e.site },
+        media: { featuredImage: images[0], images },
+        dateCompleted: e.period.slice(-4),
+        period: e.period,
+      },
+    ];
+  });
 }
 
 export const profile = portfolio.personal;
