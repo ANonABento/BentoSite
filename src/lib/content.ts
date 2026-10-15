@@ -105,8 +105,8 @@ export const skills = portfolio.skills;
 export const experience = portfolio.experience;
 export const education = portfolio.education;
 
-export const RESUME_URL =
-  'https://docs.google.com/document/d/140poL_mXjYyzeCwDNUE6Fs4U9zUKyypF3m4gpUiO1ZU/export?format=pdf';
+/** Served from the site so it opens in the browser; `npm run resume` refreshes it from the Google Doc. */
+export const RESUME_URL = '/Kevin-Jiang-Resume.pdf';
 
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||

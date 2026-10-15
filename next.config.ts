@@ -5,8 +5,12 @@ const nextConfig: NextConfig = {
   // Lets the dev server be previewed through a Cloudflare quick tunnel.
   allowedDevOrigins: ['*.trycloudflare.com'],
   // Projects open in the viewfinder over the board; old project links land there.
+  // /resume is the short link to put on profiles.
   async redirects() {
-    return [{ source: '/projects/:id', destination: '/?project=:id', permanent: true }];
+    return [
+      { source: '/projects/:id', destination: '/?project=:id', permanent: true },
+      { source: '/resume', destination: '/Kevin-Jiang-Resume.pdf', permanent: false },
+    ];
   },
 };
 
