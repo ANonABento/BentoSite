@@ -67,7 +67,7 @@ export function DesktopCardLayer({
           return (
             <div
               key={key}
-              className={`transition-opacity duration-500 ${faded ? 'opacity-15' : dark ? 'opacity-20 hover:opacity-100 hover:duration-200' : ''}`}
+              className={`transition-opacity duration-500 ${faded ? 'opacity-15' : dark ? 'opacity-40 hover:opacity-100 hover:duration-200' : ''}`}
               style={{ pointerEvents: faded ? 'none' : undefined }}
             >
               {renderCard(
