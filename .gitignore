@@ -53,3 +53,6 @@ null
 # Local debug screenshots and playwright-mcp logs (not part of the project)
 /*.png
 /.playwright-mcp/
+
+# Licensed / purchased models: never commit (public repo)
+prototypes/robot/vendor/
