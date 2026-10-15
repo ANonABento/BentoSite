@@ -136,6 +136,7 @@ export function ProjectsGridClient({ layout, projects, profile, info, details }:
         onCardSelect={handleCardSelect}
         breadcrumb="bentOS / Kevin Jiang"
         renderCard={renderCard}
+        spotlight
       />
       <TrayFill />
       <AnimatePresence>

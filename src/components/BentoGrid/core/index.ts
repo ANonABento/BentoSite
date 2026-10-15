@@ -6,7 +6,7 @@ export {
   type UseCardNavigationOptions,
   type UseCardNavigationReturn,
 } from './useCardNavigation';
-export { useCamera } from './useCamera';
+export { fitZoom, useCamera } from './useCamera';
 export {
   clamp,
   canvasToScreen,

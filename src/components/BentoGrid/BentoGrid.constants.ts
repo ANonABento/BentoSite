@@ -39,7 +39,7 @@ export function getCardDimensions(size: CardSize): { width: number; height: numb
 
 const CAMERA_VALUES = {
   default: { x: 0, y: 0, zoom: 1 },
-  minZoom: 0.4,
+  minZoom: 0.3,
   maxZoom: 2.0,
   zoomSensitivity: 0.001,
   panSpeed: 15,
@@ -58,6 +58,9 @@ const CAMERA_VALUES = {
   referenceHeight: 1040,
   minFitZoom: 0.7,
   maxFitZoom: 1.25,
+  // The visitor's zoom steps, as multiples of fitZoom (1 is the default).
+  zoomLevels: [0.6, 0.8, 1, 1.25, 1.5],
+  zoomGlideMs: 220,
 } as const;
 
 export const CAMERA = {
@@ -81,6 +84,8 @@ export const CAMERA = {
   referenceHeight: CAMERA_VALUES.referenceHeight,
   minFitZoom: CAMERA_VALUES.minFitZoom,
   maxFitZoom: CAMERA_VALUES.maxFitZoom,
+  zoomLevels: CAMERA_VALUES.zoomLevels,
+  zoomGlideMs: CAMERA_VALUES.zoomGlideMs,
   zoomSensitivity: CAMERA_VALUES.zoomSensitivity,
   panSpeed: CAMERA_VALUES.panSpeed,
   momentum: {

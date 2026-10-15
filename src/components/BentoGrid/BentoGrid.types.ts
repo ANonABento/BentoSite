@@ -209,7 +209,12 @@ export interface UseViewportReturn {
 export interface UseGridNavigationReturn {
   camera: Camera;
   pan: (dx: number, dy: number) => void;
-  zoom: (delta: number, center?: Position) => void;
+  /** Step the zoom in (+) or out (-) through CAMERA.zoomLevels, about the middle of the screen. */
+  zoom: (steps: number) => void;
+  /** The current zoom as a multiple of the window's fit zoom. */
+  zoomLevel: number;
+  canZoomIn: boolean;
+  canZoomOut: boolean;
   reset: () => void;
   setCamera: (camera: CameraUpdate) => void;
   bind: () => GridNavigationBindings;
