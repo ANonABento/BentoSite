@@ -39,12 +39,12 @@ function readExplored(): boolean {
 }
 
 /**
- * The cards lit while the board opens in its spotlight: the intro, contact
- * and featured projects in the home copy. Everything else starts dark.
+ * The cards lit while the board opens in its spotlight: the intro and
+ * contact in the home copy. Every project starts dark and lights up while
+ * the pointer is over it.
  */
 function inSpotlight(instance: string, card: CardData): boolean {
-  if (!instance.endsWith('@0,0')) return false;
-  return card.type === 'intro' || card.type === 'info' || (card.type === 'project' && Boolean(card.featured));
+  return instance.endsWith('@0,0') && (card.type === 'intro' || card.type === 'info');
 }
 
 /** How long the search card glides when it docks in another copy of the board, or its drawer opens or closes. */
@@ -284,7 +284,7 @@ export function DesktopCanvasView({
   );
 
   // Spotlight: the board opens with only the highlights lit, so a first look
-  // lands on who Kevin is and his best work. The pill at the bottom lights
+  // lands on who Kevin is. The pill at the bottom lights
   // the rest; so does wandering off the home group, or searching.
   const [lit, setLit] = useState(!spotlight);
   useLayoutEffect(() => {

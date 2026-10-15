@@ -28,7 +28,7 @@ export interface BentoGridProps extends GridConfig {
   className?: string;
   /** Custom card renderer (isFocused indicates keyboard focus for accessibility) */
   renderCard?: RenderCard;
-  /** Desktop: open with only the intro, contact and featured projects lit. */
+  /** Desktop: open with only the intro and contact lit; projects light up under the pointer. */
   spotlight?: boolean;
 }
 

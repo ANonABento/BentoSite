@@ -18,7 +18,7 @@ interface DesktopCardLayerProps {
   focusedCardId: string | null;
   /** Card ids the filter leaves out; they fade back rather than leave. */
   dimmed: Set<string>;
-  /** While set, cards it rejects (by instance id) are darkened but still open on click. */
+  /** While set, cards it rejects (by instance id) are darkened, light up under the pointer, and still open on click. */
   spotlit: ((instance: string, card: CardData) => boolean) | null;
   renderCard?: RenderCard;
   onCardClick: (card: CardData, layout: CardPosition) => void;
@@ -67,8 +67,8 @@ export function DesktopCardLayer({
           return (
             <div
               key={key}
-              className="transition-opacity duration-500"
-              style={{ opacity: faded ? 0.15 : dark ? 0.2 : 1, pointerEvents: faded ? 'none' : undefined }}
+              className={`transition-opacity duration-500 ${faded ? 'opacity-15' : dark ? 'opacity-20 hover:opacity-100 hover:duration-200' : ''}`}
+              style={{ pointerEvents: faded ? 'none' : undefined }}
             >
               {renderCard(
                 cardData,
