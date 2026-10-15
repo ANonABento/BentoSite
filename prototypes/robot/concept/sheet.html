@@ -52,6 +52,7 @@ defs.innerHTML = `
     <feGaussianBlur stdDeviation="6" result="b1"/><feGaussianBlur stdDeviation="22" result="b2" in="SourceGraphic"/>
     <feMerge><feMergeNode in="b2"/><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge>
   </filter>
+  <radialGradient id="chrome" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset=".25" stop-color="#c9ccd1"/><stop offset=".6" stop-color="#5d5f63"/><stop offset="1" stop-color="#232427"/></radialGradient>
   <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#d6cec1" stroke-width="1"/></pattern>
 `;
 
@@ -68,263 +69,300 @@ const S = (cls) => ({
   neonF: { fill: C.o, filter: 'url(#glow)' },
 }[cls]);
 const P = (parent, d, cls, extra = {}) => el('path', { d, ...S(cls), ...extra }, parent);
+function symShape(parent, d, cls, extra = {}) {
+  const sw = (S(cls)['stroke-width'] || 1) * 2;
+  P(g(parent, { transform: 'scale(-1,1)' }), d, cls, { ...extra, 'stroke-width': sw });
+  P(parent, d, cls, { ...extra, 'stroke-width': sw });
+  // then both fills, overlapping a hair across x=0, so neither outline nor antialiasing leaves a seam
+  P(g(parent, { transform: 'scale(-1,1) translate(-.5,0)' }), d, cls, { ...extra, stroke: 'none' });
+  P(g(parent, { transform: 'translate(-.5,0)' }), d, cls, { ...extra, stroke: 'none' });
+}
+// scalloped frill on an arc around (0, cy): n bumps per half
+function frillPath(cy, r0, r1, n, a0 = -90, span = 64) {
+  const pt = (a, r) => [Math.cos(a * Math.PI / 180) * r, cy + Math.sin(a * Math.PI / 180) * r];
+  const step = span / n; let [x, y] = pt(a0, r0); let d = `M${x} ${y}`;
+  [x, y] = pt(a0, r1); d += ` L${x} ${y}`;
+  for (let i = 0; i < n; i++) {
+    const [cx, cyy] = pt(a0 + (i + .5) * step, r1 + 7 - i * .8), [ex, ey] = pt(a0 + (i + 1) * step, r1 - i * .8);
+    d += ` Q${cx} ${cyy} ${ex} ${ey}`;
+  }
+  [x, y] = pt(a0 + span, r0); d += ` L${x} ${y}`;
+  for (let a = a0 + span; a >= a0; a -= 4) { [x, y] = pt(a, r0); d += ` L${x} ${y}`; }
+  return d + ' Z';
+}
+function frillLines(h, cy, r0, r1, n, a0 = -90, span = 64) {
+  const step = span / n;
+  for (let i = 1; i < n; i++) {
+    const a = (a0 + i * step) * Math.PI / 180;
+    P(h, `M${Math.cos(a) * (r0 + 1)} ${cy + Math.sin(a) * (r0 + 1)} L${Math.cos(a) * (r1 - 1 - i * .8)} ${cy + Math.sin(a) * (r1 - 1 - i * .8)}`, 'pl');
+  }
+}
+
+// Concept sheet v2 drawing parts: porcelain doll face, hime-cut glossy hair,
+// aperture-iris anime eyes. Loaded by sheet.html after the shared helpers.
 
 // ======================================================================
-// HEAD (front). Local units: crown y=0, chin y=94, centre x=0.
+// HEAD (front). Crown of hair y≈-4, chin y=96, centre x=0.
+// expr: open | blink | happy | focus | off | boot
 // ======================================================================
-function headFront(p, { lit = true } = {}) {
-  // tie-plate ribbons behind the head (visible past the bob)
-  sym(p, h => P(h, 'M34 30 L50 70 L46 98 L40 98 L42 72 L30 38 Z', 'k'));
-  // radiator crest (the maid frill as heatsink fins)
-  sym(p, h => {
-    for (let i = 0; i < 4; i++) {
-      const a = -90 + i * 17, r0 = 34, r1 = 50 - i * 1.5;
-      const rad = a * Math.PI / 180, x0 = Math.cos(rad) * r0, y0 = 30 + Math.sin(rad) * r0;
-      const x1 = Math.cos(rad) * r1, y1 = 30 + Math.sin(rad) * r1;
-      const n = 4.2, nx = -Math.sin(rad) * n, ny = Math.cos(rad) * n;
-      P(h, `M${x0 - nx} ${y0 - ny} L${x1 - nx * .8} ${y1 - ny * .8} Q${x1} ${y1 - 1.5} ${x1 + nx * .8} ${y1 + ny * .8} L${x0 + nx} ${y0 + ny} Z`, 'w');
+function eye(h, expr, lit) {
+  const cx = 14, cy = 58.5;
+  if (expr === 'blink') {
+    P(h, 'M3 58 Q14 63.5 25 56.5', '', { fill: 'none', stroke: C.k, 'stroke-width': 2.6, 'stroke-linecap': 'round' });
+    P(h, 'M6 59.6 Q14 63 22 58.6', '', { fill: 'none', stroke: C.o, 'stroke-width': .8, opacity: .7, filter: 'url(#glow)' });
+    P(h, 'M25 56.5 L29 54', '', { stroke: C.k, 'stroke-width': 1.6, 'stroke-linecap': 'round' });
+    return;
+  }
+  if (expr === 'happy') {
+    P(h, 'M4 61 Q14 49 24 60', '', { fill: 'none', stroke: C.o, 'stroke-width': 2.6, 'stroke-linecap': 'round', filter: 'url(#glow)' });
+    P(h, 'M4 61 Q14 49 24 60', '', { fill: 'none', stroke: '#ffe4c4', 'stroke-width': .8, 'stroke-linecap': 'round' });
+    return;
+  }
+  // socket (smoked glass)
+  P(h, 'M3 54 Q13 46 25 51.5 L24.4 62 Q14 70.5 5 64.5 Z', 'glass');
+  if (expr === 'off') {
+    el('circle', { cx, cy, r: 6.2, fill: '#24160f' }, h);
+  } else if (expr === 'boot') {
+    el('circle', { cx, cy, r: 6.2, fill: 'none', stroke: C.o, 'stroke-width': 1.2, filter: 'url(#glow)' }, h);
+    el('circle', { cx, cy, r: 1.3, fill: C.o, filter: 'url(#glow)' }, h);
+  } else {
+    if (lit) el('circle', { cx, cy, r: 11, fill: 'url(#eyeGlow)', opacity: .5 }, h);
+    el('circle', { cx, cy, r: 6.4, fill: lit ? C.o : '#7a3f1d', ...(lit ? { filter: 'url(#glow)' } : {}) }, h);
+    el('circle', { cx, cy, r: 6.4, fill: 'none', stroke: '#ffcf9e', 'stroke-width': .6, opacity: .8 }, h);
+    // camera aperture: six blades around a dark pupil
+    for (let i = 0; i < 6; i++) {
+      const a = i * Math.PI / 3, r0 = 2.5, r1 = 5.4;
+      P(h, `M${cx + Math.cos(a) * r0} ${cy + Math.sin(a) * r0} L${cx + Math.cos(a + .55) * r1} ${cy + Math.sin(a + .55) * r1}`, '', { stroke: '#a24c1c', 'stroke-width': .55 });
     }
-  });
-  // crest band
-  sym(p, h => P(h, 'M0 -3 Q22 -3 36 10 L32 16 Q20 4 0 4 Z', 'g'));
-  // bob-cut armour plates (lacquer), outer silhouette
-  sym(p, h => P(h, 'M0 4 Q30 4 40 26 Q46 46 44 74 L40 82 L30 78 L28 40 Q20 22 0 20 Z', 'k'));
-  // ceramic skull shell (visible as cheek/jaw guards)
-  sym(p, h => P(h, 'M0 20 Q24 22 29 40 L31 70 Q28 84 14 92 Q6 95 0 95 Z', 'w'));
-  // face shield (black glass)
-  sym(p, h => P(h, 'M0 31 L24 33 Q27 36 26 46 L23 66 Q18 80 0 87 Z', 'glass'));
-  // blunt "bangs" brow plate
-  sym(p, h => P(h, 'M0 18 Q26 18 33 30 L31 37 L22 35 L20 38 L11 35 L9 38 L0 36 Z', 'k'));
-  sym(p, h => P(h, 'M10 21 L10 34 M21 22 L21 34', 'plk'));
-  // ear module: actuator housing with ring light
+    el('circle', { cx, cy, r: 2.5, fill: '#1a0d07' }, h);
+    el('circle', { cx: 11.3, cy: 55.6, r: 1.7, fill: '#fff' }, h);
+    el('circle', { cx: 16.6, cy: 61.4, r: .8, fill: '#fff', opacity: .85 }, h);
+  }
+  if (expr === 'focus') P(h, 'M3 54 Q13 46 25 51.5 L24.7 57 Q14 54 3.3 58 Z', '', { fill: '#2b2523', stroke: '#000', 'stroke-width': .5 });
+  // upper lid plate (liner) with a small outer flick
+  P(h, expr === 'focus' ? 'M2.6 57.6 Q14 53 25.5 56.2 L25.8 54 Q14 50.6 2.2 55.6 Z' : 'M1.5 53.5 Q13 44.5 26 50.2 L26.6 47.8 Q13 41.8 .8 51.4 Z', 'k', { stroke: 'none' });
+  P(h, expr === 'focus' ? 'M25.5 55.4 L29.6 53 L26.6 56.8 Z' : 'M25.6 49.4 L30 46.4 L27.2 51 Z', 'k', { stroke: 'none' });
+  // lower lash ticks
+  P(h, 'M21 65.4 L22.6 67.2 M18 67.2 L19 69', '', { stroke: '#4a403b', 'stroke-width': .6 });
+}
+
+function headFront(p, { lit = true, expr = 'open', hair = true } = {}) {
+  // long back hair (behind everything), runs to mid-back
+  if (hair) symShape(p, 'M0 -4 C30 -4 47 16 47 46 L49 150 Q40 156 32 150 L30 104 Q16 98 0 100 Z', 'k');
+  P(p, 'M-7 88 H7 V116 H-7 Z', 'g');
+  for (let i = 0; i < 4; i++) P(p, `M-7 ${98 + i * 4.5} H7`, '', { stroke: '#1d1d1f', 'stroke-width': .8 });
+  // headdress: pleated ceramic frill on a band
+  symShape(p, frillPath(38, 36, 50, 4), 'w');
+  sym(p, h => frillLines(h, 38, 36, 50, 4));
+  symShape(p, 'M0 1 Q24 1 39 14 L37 19 Q22 7 0 7 Z', 'k');
+  // bento-grid pin at the headdress centre
+  P(p, 'M-4 -6 H4 V2 H-4 Z', '', { fill: C.k, stroke: '#000', 'stroke-width': .6 });
+  P(p, 'M.5 -5.5 H3.5 V-2.5 H.5 Z', 'neonF');
+  // ear bolt with ring light, peeking past the side locks
   sym(p, h => {
-    el('circle', { cx: 42, cy: 55, r: 9.5, ...S('g') }, h);
-    el('circle', { cx: 42, cy: 55, r: 5.5, fill: '#1a1a1c', stroke: '#000' }, h);
-    if (lit) el('circle', { cx: 42, cy: 55, r: 5.5, fill: 'none', stroke: C.o, 'stroke-width': 1.3, filter: 'url(#glow)' }, h);
-    P(h, 'M44 64 Q46 78 38 86', 'g', { fill: 'none', 'stroke-width': 2.4, stroke: '#2b2b2e' });
+    el('circle', { cx: 42, cy: 58, r: 5.6, fill: 'url(#chrome)', stroke: '#1d1d1f', 'stroke-width': .7 }, h);
+    el('circle', { cx: 42, cy: 58, r: 3.2, fill: 'none', stroke: C.o, 'stroke-width': 1, filter: lit ? 'url(#glow)' : '', opacity: lit ? 1 : .3 }, h);
   });
-  // cheek panel lines + jaw seam
-  sym(p, h => P(h, 'M28 52 L22 70 M0 90 Q10 88 17 82', 'pl'));
-  // eyes: canted slit lamps behind shutter blades
+  // porcelain face: wide cheeks, small pointed chin, no nose sculpt
+  symShape(p, 'M0 14 C21 14 33 30 33 52 C33 70 23 86 0 96 Z', 'w');
+  sym(p, h => P(h, 'M31 66 Q24 84 8 93', 'pl'));                         // jaw seam
+  sym(p, h => eye(h, expr, lit));
+  // cheek "blush": three LED dashes
   sym(p, h => {
-    if (lit) {
-      el('ellipse', { cx: 15, cy: 49, rx: 15, ry: 7, fill: 'url(#eyeGlow)', opacity: .65 }, h);
-      P(h, 'M5.5 51.5 L22.5 46 Q24.2 46.4 23.6 48.2 L7 53.6 Q5 53.6 5.5 51.5 Z', 'neonF');
-      P(h, 'M8 51.6 L20.5 47.6', '', { stroke: '#fff3e0', 'stroke-width': 1, fill: 'none' });
-    } else {
-      P(h, 'M5.5 51.5 L22.5 46 Q24.2 46.4 23.6 48.2 L7 53.6 Q5 53.6 5.5 51.5 Z', '', { fill: '#2a1a12' });
-    }
-    // upper shutter blade
-    P(h, 'M4 49 L23 43.2 L24.5 44.6 L5 50.6 Z', 'g', { 'stroke-width': .6 });
+    for (let i = 0; i < 3; i++) P(h, `M${18 + i * 3.4} 74.5 L${20 + i * 3.4} 71`, '', { stroke: C.o, 'stroke-width': 1.2, 'stroke-linecap': 'round', opacity: lit ? .9 : .25, ...(lit ? { filter: 'url(#glow)' } : {}) });
   });
-  // mouth grille: three short vents
-  for (let i = 0; i < 3; i++) P(p, `M-5 ${72 + i * 3} L5 ${72 + i * 3}`, '', { stroke: '#2e2826', 'stroke-width': 1.2 });
+  // tiny mouth seam
+  P(p, 'M-3 84 Q0 85.6 3 84', '', { fill: 'none', stroke: '#8b7f73', 'stroke-width': .9, 'stroke-linecap': 'round' });
+  if (!hair) return;
+  // hime-cut side locks: straight, cheek length, blunt
+  sym(p, h => {
+    P(h, 'M31 30 Q37 26 42 30 L43.5 90 L33.5 92 Q31.5 60 31 30 Z', 'k');
+    P(h, 'M37 34 L38.2 88', 'plk');
+  });
+  // blunt bangs with lock notches
+  symShape(p, 'M0 -2 C26 -2 41 14 41 34 L40 44 L32 41.5 L26 45 L19 42 L12 45.5 L6 42.5 L0 45 Z', 'k');
+  sym(p, h => {
+    P(h, 'M6 8 L6 42 M12 10 L12 45 M19 9 L19 42 M26 12 L26 44', 'plk');
+    // anime gloss band ("angel ring")
+    P(h, 'M3 16 Q20 14 34 24', '', { fill: 'none', stroke: '#8a8079', 'stroke-width': 2.2, 'stroke-linecap': 'round', opacity: .55 });
+  });
 }
 
 // ======================================================================
 // HEAD (profile, facing +x).
 // ======================================================================
 function headSide(p) {
-  // ribbon tie plates trailing back
-  P(p, 'M-30 28 L-62 54 L-58 60 L-26 36 Z', 'k');
-  P(p, 'M-30 30 L-54 74 L-48 76 L-25 38 Z', 'k');
-  // crest fins (seen edge-on, fanned)
-  for (let i = 0; i < 6; i++) {
-    const x = -22 + i * 9, h = 13 - Math.abs(i - 2.5) * 2;
-    P(p, `M${x} ${4 - (2.5 - Math.abs(i - 2.5)) * 1.2} l2 ${-h} l5 0 l1 ${h} Z`, 'w');
+  // long hair, falling straight down the back
+  P(p, 'M-40 22 Q-38 -6 -2 -6 Q22 -6 32 18 L8 30 L-14 40 L-22 150 Q-34 158 -46 150 L-44 70 Z', 'k');
+  P(p, 'M-30 20 L-34 146 M-20 14 L-26 120', 'plk');
+  P(p, 'M-34 6 Q-20 -2 -4 0', '', { fill: 'none', stroke: '#8a8079', 'stroke-width': 2.4, opacity: .55, 'stroke-linecap': 'round' });
+  // headdress frill seen from the side
+  P(p, frillPath(36, 36, 48, 5, -128, 76), 'w');
+  frillLines(p, 36, 36, 48, 5, -128, 76);
+  P(p, 'M-28 4 Q0 -8 22 4 L20 9 Q0 -2 -26 9 Z', 'k');
+  // porcelain face profile
+  P(p, 'M-12 20 Q12 12 26 26 Q32 38 32 50 L34.5 60 Q33.6 64 31 66 Q29.5 82 18 91 Q8 97 -2 94 L-12 70 Z', 'w');
+  P(p, 'M24 70 Q20 84 8 92', 'pl');
+  // eye sliver
+  P(p, 'M24 50.5 L30 52 L29.4 63 L24.5 64 Z', 'glass');
+  el('ellipse', { cx: 28.4, cy: 57.6, rx: 3.5, ry: 8, fill: 'url(#eyeGlow)', opacity: .6 }, p);
+  el('ellipse', { cx: 28.4, cy: 57.6, rx: 1.4, ry: 4.6, fill: C.o, filter: 'url(#glow)' }, p);
+  P(p, 'M23 50.6 L31.2 51.6 L30.4 49.4 L23 48.4 Z', 'k', { stroke: 'none' });
+  P(p, 'M24 75 L27 71.5 M27.4 76 L30.2 72.6', '', { stroke: C.o, 'stroke-width': 1.1, filter: 'url(#glow)', 'stroke-linecap': 'round' });
+  // bangs (side), side lock, ear bolt
+  P(p, 'M-12 2 Q18 -6 32 18 L34 42 L27 44 L22 28 Q8 22 -10 28 Z', 'k');
+  el('circle', { cx: 0, cy: 60, r: 7, fill: 'url(#chrome)', stroke: '#1d1d1f', 'stroke-width': .7 }, p);
+  el('circle', { cx: 0, cy: 60, r: 4, fill: 'none', stroke: C.o, 'stroke-width': 1.1, filter: 'url(#glow)' }, p);
+  P(p, 'M4 28 L16 29 L17.5 91 L6 93 Z', 'k');
+  P(p, 'M11 32 L12 88', 'plk');
+  // chrome neck
+  P(p, 'M-6 92 L8 90 L9 112 L-7 112 Z', 'g');
+}
+
+// chrome ball joint with a glowing seam ring
+function ball(h, x, y, r, lit = true) {
+  el('circle', { cx: x, cy: y, r, fill: 'url(#chrome)', stroke: '#1d1d1f', 'stroke-width': .8 }, h);
+  el('ellipse', { cx: x, cy: y, rx: r, ry: r * .32, fill: 'none', stroke: C.o, 'stroke-width': 1.1, opacity: lit ? 1 : .3, ...(lit ? { filter: 'url(#glow)' } : {}) }, h);
+}
+
+// ======================================================================
+// BODY (front). One head = 96 units; ~6.6 heads tall (anime figure, not chibi).
+// ======================================================================
+function legs(h, back = false) {
+  P(h, 'M4 292 L33 292 L31 352 L8 352 Z', 'w');                          // ceramic thigh (zettai ryouiki)
+  P(h, 'M8 350 L31 350 L28 440 L11 440 Z', 'k');                        // thigh-high
+  for (let i = 0; i < 4; i++) {                                         // ceramic frill band on the stocking top
+    const x0 = 8 + i * 5.8;
+    P(h, `M${x0} 350 Q${x0 + 2.9} ${358} ${x0 + 5.8} 350 Z`, 'w');
   }
-  P(p, 'M-28 8 Q2 -6 30 8 L28 14 Q2 1 -26 14 Z', 'g');
-  // skull shell
-  P(p, 'M-36 30 Q-34 6 0 6 Q30 6 36 30 L38 50 Q36 74 26 86 Q18 94 6 95 L-6 90 L-10 70 Z', 'w');
-  // bob plates (lacquer) wrapping back + side
-  P(p, 'M-40 26 Q-36 2 0 4 Q24 5 32 20 L20 24 Q4 18 -12 24 L-10 50 L4 76 L-6 84 L-34 80 Q-44 54 -40 26 Z', 'k');
-  P(p, 'M-24 18 L-28 72 M-12 26 L-14 70', 'plk');
-  // nape port: cable bundle into neck
-  P(p, 'M-26 80 Q-30 96 -20 110', '', { fill: 'none', stroke: '#2b2b2e', 'stroke-width': 3 });
-  P(p, 'M-20 82 Q-22 96 -14 110', '', { fill: 'none', stroke: '#3a3b3f', 'stroke-width': 2.2 });
-  // face shield in profile
-  P(p, 'M30 28 Q40 32 40 46 L36 70 Q30 84 18 90 L22 64 L24 36 Z', 'glass');
-  // brow plate overhang
-  P(p, 'M10 18 Q32 18 38 30 L36 36 L28 34 L22 26 Z', 'k');
-  // eye slit seen from side
-  el('ellipse', { cx: 37, cy: 48, rx: 4, ry: 8, fill: 'url(#eyeGlow)', opacity: .7 }, p);
-  P(p, 'M35.5 45 L39 44 L38.6 50.5 L35.2 51 Z', 'neonF');
-  // ear module
-  el('circle', { cx: 2, cy: 54, r: 11, ...S('g') }, p);
-  el('circle', { cx: 2, cy: 54, r: 6.5, fill: '#1a1a1c', stroke: '#000' }, p);
-  el('circle', { cx: 2, cy: 54, r: 6.5, fill: 'none', stroke: C.o, 'stroke-width': 1.4, filter: 'url(#glow)' }, p);
-  el('circle', { cx: 2, cy: 54, r: 2, fill: '#5d5f63' }, p);
-  P(p, 'M20 60 L28 76 M14 88 L24 82', 'pl');
+  P(h, 'M10 359 L28 359', 'neon');
+  ball(h, 19.5, 448, 9);                                                // knee
+  P(h, 'M11 456 L28.5 456 Q30 500 26 584 L14 584 Q10 500 11 456 Z', 'k');                   // shin
+  if (!back) P(h, 'M19.6 468 L19.6 574', 'plk');
+  ball(h, 20, 588, 5.2);                                                // ankle
+  // Mary-Jane shoe: rounded toe, strap, chunky heel
+  P(h, 'M11 592 L29 592 L31 628 Q30 640 21 640 L13 640 Q9 638 10 626 Z', 'k');
+  P(h, 'M11 606 L29.5 604 L29.8 609 L11.2 611 Z', 'w');
+  el('circle', { cx: 27, cy: 606.6, r: 1.4, fill: C.o, filter: 'url(#glow)' }, h);
+  P(h, 'M14 636 L14 646 L22 646 L22 640 Z', 'k');
 }
 
-// ======================================================================
-// BODY (front). Head occupies y 0..95 (one head = 95 units), ~7.2 heads tall.
-// ======================================================================
+function arm(h, back = false) {
+  ball(h, 49, 124, 8);                                                  // shoulder
+  P(h, 'M45 132 L56 131 L61 196 L51 198 Z', 'w');                      // upper arm
+  ball(h, 57, 204, 7);                                                  // elbow
+  P(h, 'M51 210 L64 209 L69 260 L56 262 Z', 'w');                      // forearm
+  P(h, 'M54 248 L69.5 246 L70.5 262 L55.5 264 Z', 'k');                 // black cuff
+  for (let i = 0; i < 3; i++) {                                         // ceramic frill cuff
+    const x0 = 54.5 + i * 5.6;
+    P(h, `M${x0} ${263 - i * .5} Q${x0 + 2.8} ${271 - i * .5} ${x0 + 5.6} ${262.4 - i * .5} Z`, 'w');
+  }
+  ball(h, 63, 272, 4.6);                                                // wrist
+  // slim gunmetal hand, relaxed
+  P(h, 'M57 276 L70 274 L72.5 296 L60.5 298 Z', 'g');
+  P(h, 'M59.5 280 L69.5 278.6 L71.2 293 L61.2 294.4 Z', 'w', { 'stroke-width': .6 });
+  for (let i = 0; i < 4; i++) {
+    const x = 61 + i * 3.1;
+    P(h, `M${x} 297 L${x + 1} 314 L${x + 3} 314 L${x + 2.6} 296.6`, 'g', { 'stroke-width': .6 });
+    el('circle', { cx: x + 1.4, cy: 298, r: 1.2, fill: '#2b2b2e' }, h);
+  }
+  P(h, 'M57.5 282 L53.6 296 L56 299 L60 287', 'g', { 'stroke-width': .6 });
+}
+
 function figureFront(p) {
-  // ---- legs ----
+  sym(p, h => legs(h));
+  // skirt: glossy A-line with ceramic scalloped petticoat
+  symShape(p, 'M0 208 L30 208 L64 292 Q34 302 0 302 Z', 'k');
   sym(p, h => {
-    P(h, 'M9 336 L33 336 L30 455 L13 455 Z', 'k');                       // thigh armour (lacquer stocking)
-    P(h, 'M9 336 L33 336 L33 348 L9 348 Z', 'w');                         // stocking band
-    P(h, 'M12 352 L30 352', 'neon');
-    el('circle', { cx: 21.5, cy: 466, r: 10, ...S('g') }, h);             // knee actuator
-    el('circle', { cx: 21.5, cy: 466, r: 3.5, fill: '#222' }, h);
-    P(h, 'M12 462 Q21 450 31 462 L30 474 L13 474 Z', 'w');                // knee cap
-    P(h, 'M12 478 L31 478 L28 606 L15 606 Z', 'w');                       // greave
-    P(h, 'M22 486 L22 596', 'pl');
-    P(h, 'M27 490 L25.5 590', 'neon');
-    P(h, 'M14 604 L30 604 L33 650 L36 684 L26 690 L12 690 L10 650 Z', 'k');  // boot
-    P(h, 'M12 676 L12 692 L18 692 L18 678 Z', 'g');                       // heel
-    P(h, 'M14 620 L31 620', 'plk');
-  });
-  // ---- skirt: lamellar plates ----
-  sym(p, h => {
-    P(h, 'M0 232 L36 232 L74 330 Q40 342 0 342 Z', 'k');
-    for (const [a, b] of [[12, 22], [24, 44], [33, 62]]) P(h, `M${a} 236 L${b} 338`, 'plk');
-    // ceramic petticoat scallops
+    P(h, 'M14 212 L26 298 M26 212 L46 296', 'plk');
+    P(h, 'M8 222 Q24 220 38 236', '', { fill: 'none', stroke: '#6b625c', 'stroke-width': 2, opacity: .5, 'stroke-linecap': 'round' });
     for (let i = 0; i < 5; i++) {
-      const x0 = i * 15, x1 = x0 + 15, y0 = 336 + i * .6;
-      P(h, `M${x0} ${y0 + 2} Q${(x0 + x1) / 2} ${y0 + 15} ${x1} ${y0} L${x1} ${y0 - 4} L${x0} ${y0 - 2} Z`, 'w');
+      const x0 = i * 13.4, y0 = 297 + i * .9;
+      P(h, `M${x0} ${y0 + 1} Q${x0 + 6.7} ${y0 + 12} ${x0 + 13.4} ${y0} L${x0 + 13.4} ${y0 - 4} L${x0} ${y0 - 3} Z`, 'w');
     }
   });
-  // ---- apron: hinged ceramic tassets ----
+  // apron skirt with scalloped hem
+  symShape(p, 'M0 212 L22 212 L28 270 L0 272 Z', 'w');
   sym(p, h => {
-    P(h, 'M0 236 L24 236 L26 270 L0 270 Z', 'w');
-    P(h, 'M0 272 L26.5 272 L28.5 304 L0 306 Z', 'w');
-    P(h, 'M0 308 L28.5 306 Q28 324 14 328 L0 330 Z', 'w');
-    el('circle', { cx: 21, cy: 241, r: 1.2, fill: '#6f655c' }, h);
-    el('circle', { cx: 21, cy: 265, r: 1.2, fill: '#6f655c' }, h);
-  });
-  // apron emblem: bento grid, one cell lit
-  const em = g(p);
-  P(em, 'M-8 248 H8 V262 H-8 Z', '', { fill: 'none', stroke: C.line, 'stroke-width': 1 });
-  P(em, 'M0 248 V262 M-8 255 H8', '', { fill: 'none', stroke: C.line, 'stroke-width': 1 });
-  P(em, 'M1 249 H7 V254 H1 Z', 'neonF');
-  // ---- waist: exposed spine actuator + belt ----
-  P(p, 'M-13 206 H13 V232 H-13 Z', 'g');
-  for (let i = 0; i < 4; i++) P(p, `M-13 ${210 + i * 6} H13`, '', { stroke: '#1d1d1f', 'stroke-width': 1 });
-  sym(p, h => {
-    P(h, 'M13 208 L30 204 L35 222 L14 226 Z', 'g');                       // oblique pistons
-    P(h, 'M16 214 L32 211', '', { stroke: '#9a9da2', 'stroke-width': 1.6 });
-    P(h, 'M0 226 L36 222 L37 234 L0 236 Z', 'w');                         // belt
-    P(h, 'M3 230 L34 228', 'neon');
-  });
-  // ---- arms (hanging, slight A) ----
-  sym(p, h => {
-    P(h, 'M52 140 L64 140 L70 214 L58 216 Z', 'k');                      // upper arm
-    P(h, 'M58 150 L62 208', 'plk');
-    el('circle', { cx: 64.5, cy: 222, r: 8.5, ...S('g') }, h);             // elbow hinge
-    el('circle', { cx: 64.5, cy: 222, r: 2.2, fill: C.o, filter: 'url(#glow)' }, h);
-    P(h, 'M57 230 L73 228 L80 294 L62 298 Z', 'w');                       // forearm cuff
-    P(h, 'M59 285 L80 282 L82 296 L61 300 Z', 'w');                       // cuff flare
-    P(h, 'M62 290 L80 287', 'neon');
-    P(h, 'M70 236 L74 280', 'pl');
-    P(h, 'M64 300 L78 298 L80 306 L66 308 Z', 'g');                       // wrist
-    // hand (relaxed, fingers down)
-    P(h, 'M63 308 L81 305 L85 330 L68 334 Z', 'g');
-    for (let i = 0; i < 4; i++) {
-      const x = 68 + i * 4.4;
-      P(h, `M${x} 333 L${x + 1.4} 352 L${x + 4.2} 352 L${x + 3.4} 332`, 'g', { 'stroke-width': .7 });
-      el('circle', { cx: x + 1.7, cy: 334, r: 1.6, fill: '#2b2b2e' }, h);
+    for (let i = 0; i < 3; i++) {
+      const x0 = i * 9.4, y0 = 271 - i * .6;
+      P(h, `M${x0} ${y0} Q${x0 + 4.7} ${y0 + 9} ${x0 + 9.4} ${y0 - .6} Z`, 'w');
     }
-    P(h, 'M63 314 L58 330 L61 334 L66 320', 'g', { 'stroke-width': .7 });  // thumb
+    P(h, 'M0 226 L22.5 225', 'pl');
   });
-  // ---- torso ----
-  sym(p, h => P(h, 'M0 118 L36 116 L48 128 L46 166 L36 186 L32 206 L0 206 Z', 'k'));
-  sym(p, h => P(h, 'M14 170 L30 166 M8 188 L30 186', 'plk'));
-  // apron bib + straps
+  // apron pocket emblem: bento grid, one cell lit
+  P(p, 'M-7 240 H7 V252 H-7 Z M0 240 V252 M-7 246 H7', '', { fill: 'none', stroke: C.line, 'stroke-width': .9 });
+  P(p, 'M1 241 H6 V245 H1 Z', 'neonF');
+  // waist sash
+  symShape(p, 'M0 198 L29 196 L30 210 L0 212 Z', 'w'); sym(p, h => P(h, 'M3 205 L27 203.6', 'neon'));
+  sym(p, h => arm(h));
+  // bodice
+  symShape(p, 'M0 112 L22 112 L40 120 L41 146 Q36 170 29 198 L0 198 Z', 'k');
+  sym(p, h => P(h, 'M10 150 Q24 146 36 140', '', { fill: 'none', stroke: '#6b625c', 'stroke-width': 2, opacity: .45, 'stroke-linecap': 'round' }));
+  // apron bib with ruffled top, ruffle "wings" over the shoulders
+  symShape(p, 'M0 140 L17 140 L16 198 L0 198 Z', 'w');
   sym(p, h => {
-    P(h, 'M0 142 L18 142 L17 206 L0 206 Z', 'w');
-    P(h, 'M14 142 L18 142 L38 120 L33 118 Z', 'w');
-    P(h, 'M0 152 L14 152 M0 196 L15 196', 'pl');
-  });
-  // ---- pauldrons: puff sleeves as ribbed shells with ceramic fan trim ----
-  sym(p, h => {
-    P(h, 'M44 122 Q64 114 72 134 Q74 150 62 156 L48 154 Q40 140 44 122 Z', 'k');
-    P(h, 'M50 120 Q56 136 54 154 M60 120 Q66 136 64 154', 'plk');
-    for (let i = 0; i < 4; i++) {
-      const x0 = 46 + i * 7;
-      P(h, `M${x0} ${153 + i} Q${x0 + 3.5} ${163 + i} ${x0 + 7} ${154 + i} Z`, 'w');
+    for (let i = 0; i < 2; i++) { const x0 = i * 8.5; P(h, `M${x0} 141 Q${x0 + 4.25} 133 ${x0 + 8.5} 141 Z`, 'w'); }
+    P(h, 'M13 141 L17 141 L33 118 L29 116.4 Z', 'w');
+    for (let i = 0; i < 4; i++) {                                       // shoulder ruffle wing
+      const t = i / 3, x = 31 - t * 15, y = 117 + t * 22;
+      P(h, `M${x} ${y} Q${x + 13 - t * 4} ${y - 3} ${x + 12 - t * 4} ${y + 7} Z`, 'w');
     }
-    P(h, 'M47 126 Q60 118 69 130', 'neon');
   });
-  // ---- neck + gorget collar ----
-  P(p, 'M-9 92 H9 V118 H-9 Z', 'g');
-  for (let i = 0; i < 5; i++) P(p, `M-9 ${96 + i * 4.5} H9`, '', { stroke: '#1d1d1f', 'stroke-width': .9 });
+  // puff sleeves: glossy black, stamped ribs, ceramic trim
   sym(p, h => {
-    P(h, 'M3 106 L20 104 L34 118 L30 126 L4 122 Z', 'w');                // collar wing
-    P(h, 'M6 121 L30 124', 'neon');
-    P(h, 'M10 108 L26 117', 'pl');
+    P(h, 'M36 116 Q56 106 62 126 Q63 140 54 144 L42 143 Q34 130 36 116 Z', 'k');
+    P(h, 'M44 113 Q50 128 48 143 M53 114 Q58 128 56 143', 'plk');
+    P(h, 'M41 141 L56 142.5 L55 147 L42 146 Z', 'w');
+    P(h, 'M42 119 Q51 112 58 120', '', { fill: 'none', stroke: '#6b625c', 'stroke-width': 2, opacity: .5, 'stroke-linecap': 'round' });
   });
-  // brooch: intake fan with lit core
-  el('circle', { cx: 0, cy: 128, r: 6, ...S('g') }, p);
-  el('circle', { cx: 0, cy: 128, r: 2.6, fill: C.o, filter: 'url(#glow)' }, p);
-  // ---- head ----
-  headFront(g(p, { transform: 'translate(0,0)' }));
+  // chrome neck + ceramic round collar + hard ribbon bow with lit gem
+  P(p, 'M-7 90 H7 V114 H-7 Z', 'g');
+  for (let i = 0; i < 4; i++) P(p, `M-7 ${96 + i * 4.5} H7`, '', { stroke: '#1d1d1f', 'stroke-width': .8 });
+  sym(p, h => P(h, 'M1 108 Q12 106 22 112 Q22 122 10 124 Q3 122 1 116 Z', 'w'));
+  sym(p, h => P(h, 'M2 118 L13 113 L14 124 L3 121 Z M3 121 L8 134 L11 133 L5 120 Z', 'k'));
+  el('circle', { cx: 0, cy: 119, r: 3, fill: C.o, filter: 'url(#glow)' }, p);
+  headFront(g(p));
 }
 
-// ======================================================================
-// BODY (back). Mostly silhouette + the over-the-shoulder read.
-// ======================================================================
 function figureBack(p) {
+  sym(p, h => legs(h, true));
+  symShape(p, 'M0 208 L30 208 L64 292 Q34 302 0 302 Z', 'k');
   sym(p, h => {
-    P(h, 'M9 336 L33 336 L30 455 L13 455 Z', 'k');
-    P(h, 'M9 336 L33 336 L33 348 L9 348 Z', 'w');
-    el('circle', { cx: 21.5, cy: 466, r: 10, ...S('g') }, h);
-    P(h, 'M12 470 L31 470 L28 606 L15 606 Z', 'k');                        // calf: lacquer
-    P(h, 'M14 476 L14 600', 'neon');
-    P(h, 'M14 604 L30 604 L33 650 L36 684 L26 690 L12 690 L10 650 Z', 'k');
-    P(h, 'M12 676 L12 692 L18 692 L18 678 Z', 'g');
-    P(h, 'M0 232 L36 232 L74 330 Q40 342 0 342 Z', 'k');
-    for (const [a, b] of [[0, 0], [12, 22], [24, 44], [33, 62]]) P(h, `M${a} 236 L${b} 338`, 'plk');
+    P(h, 'M14 212 L26 298 M26 212 L46 296', 'plk');
     for (let i = 0; i < 5; i++) {
-      const x0 = i * 15, x1 = x0 + 15, y0 = 336 + i * .6;
-      P(h, `M${x0} ${y0 + 2} Q${(x0 + x1) / 2} ${y0 + 15} ${x1} ${y0} L${x1} ${y0 - 4} L${x0} ${y0 - 2} Z`, 'w');
+      const x0 = i * 13.4, y0 = 297 + i * .9;
+      P(h, `M${x0} ${y0 + 1} Q${x0 + 6.7} ${y0 + 12} ${x0 + 13.4} ${y0} L${x0 + 13.4} ${y0 - 4} L${x0} ${y0 - 3} Z`, 'w');
     }
-    // arms
-    P(h, 'M52 140 L64 140 L70 214 L58 216 Z', 'k');
-    el('circle', { cx: 64.5, cy: 222, r: 8.5, ...S('g') }, h);
-    P(h, 'M57 230 L73 228 L80 294 L62 298 Z', 'w');
-    P(h, 'M59 285 L80 282 L82 296 L61 300 Z', 'w');
-    P(h, 'M64 300 L78 298 L80 306 L66 308 Z', 'g');
-    P(h, 'M63 308 L81 305 L85 330 L68 334 Z', 'g');
-    for (let i = 0; i < 4; i++) { const x = 68 + i * 4.4; P(h, `M${x} 333 L${x + 1.4} 352 L${x + 4.2} 352 L${x + 3.4} 332`, 'g', { 'stroke-width': .7 }); }
-    // back: lacquer shell with shoulder-blade vents
-    P(h, 'M0 116 L36 116 L48 128 L46 166 L36 186 L32 206 L0 206 Z', 'k');
-    for (let i = 0; i < 4; i++) P(h, `M${14 + i * 1} ${140 + i * 7} L${32 - i * 1} ${138 + i * 7}`, '', { stroke: C.o, 'stroke-width': 1.3, filter: 'url(#glow)' });
-    P(h, 'M44 122 Q64 114 72 134 Q74 150 62 156 L48 154 Q40 140 44 122 Z', 'k');
-    P(h, 'M50 120 Q56 136 54 154 M60 120 Q66 136 64 154', 'plk');
-    // apron ties: ceramic bow as two radiator wings
-    P(h, 'M4 220 Q24 200 40 214 Q36 226 22 228 Q14 226 4 226 Z', 'w');
-    P(h, 'M12 214 L14 226 M20 210 L22 227 M28 208 L30 226', 'pl');
-    P(h, 'M4 228 L14 266 L22 264 L8 228 Z', 'w');                        // tails
-    P(h, 'M0 226 L36 222 L37 234 L0 236 Z', 'w');
   });
-  // spine: exposed actuator column
-  P(p, 'M-6 118 H6 V232 H-6 Z', 'g');
-  for (let i = 0; i < 12; i++) P(p, `M-6 ${121 + i * 9} H6`, '', { stroke: '#1d1d1f', 'stroke-width': 1 });
-  P(p, 'M0 122 V228', '', { stroke: C.o, 'stroke-width': 1.2, filter: 'url(#glow)' });
-  el('circle', { cx: 0, cy: 222, r: 6, ...S('g') }, p);   // bow knot hub
-  el('circle', { cx: 0, cy: 222, r: 2.4, fill: C.o, filter: 'url(#glow)' }, p);
-  // neck
-  P(p, 'M-9 92 H9 V118 H-9 Z', 'g');
-  sym(p, h => P(h, 'M3 104 L22 102 L36 118 L4 120 Z', 'w'));
-  // back of head
-  const hd = g(p);
-  sym(hd, h => {
-    for (let i = 0; i < 4; i++) {
-      const a = -90 + i * 17, r0 = 34, r1 = 50 - i * 1.5, rad = a * Math.PI / 180;
-      const x0 = Math.cos(rad) * r0, y0 = 30 + Math.sin(rad) * r0, x1 = Math.cos(rad) * r1, y1 = 30 + Math.sin(rad) * r1;
-      const n = 4.2, nx = -Math.sin(rad) * n, ny = Math.cos(rad) * n;
-      P(h, `M${x0 - nx} ${y0 - ny} L${x1 - nx * .8} ${y1 - ny * .8} Q${x1} ${y1 - 1.5} ${x1 + nx * .8} ${y1 + ny * .8} L${x0 + nx} ${y0 + ny} Z`, 'w');
-    }
-    P(h, 'M0 -3 Q22 -3 36 10 L32 16 Q20 4 0 4 Z', 'g');
-    P(h, 'M0 4 Q30 4 40 26 Q46 46 44 74 L40 82 L0 86 Z', 'k');            // full bob from behind
-    P(h, 'M12 8 L14 84 M26 14 L28 82', 'plk');
-    el('circle', { cx: 42, cy: 55, r: 9.5, ...S('g') }, h);
-    P(h, 'M6 30 L30 66 L26 120 L18 120 L22 70 L2 38 Z', 'k');              // tie-plate ribbons hanging
-    P(h, 'M10 40 L24 64', 'plk');
+  symShape(p, 'M0 198 L29 196 L30 210 L0 212 Z', 'w');
+  sym(p, h => arm(h, true));
+  symShape(p, 'M0 112 L22 112 L40 120 L41 146 Q36 170 29 198 L0 198 Z', 'k');
+  sym(p, h => {
+    P(h, 'M13 117 L31 119 L4 196 L0 196 L0 186 Z', 'w');                   // crossed apron straps
+    P(h, 'M36 116 Q56 106 62 126 Q63 140 54 144 L42 143 Q34 130 36 116 Z', 'k');
+    P(h, 'M44 113 Q50 128 48 143 M53 114 Q58 128 56 143', 'plk');
+    P(h, 'M41 141 L56 142.5 L55 147 L42 146 Z', 'w');
+    // big ceramic apron bow
+    P(h, 'M3 200 Q20 180 36 190 Q38 206 24 212 Q12 212 3 208 Z', 'w');
+    P(h, 'M10 196 Q20 190 30 194 M11 204 Q20 206 30 202', 'pl');
+    P(h, 'M3 210 L14 252 L22 248 L8 210 Z', 'w');
   });
-  P(hd, 'M-8 82 Q0 90 8 82 L6 96 L-6 96 Z', 'g');                         // nape port
+  el('circle', { cx: 0, cy: 204, r: 5, fill: 'url(#chrome)', stroke: '#1d1d1f' }, p);
+  el('circle', { cx: 0, cy: 204, r: 2, fill: C.o, filter: 'url(#glow)' }, p);
+  P(p, 'M-7 90 H7 V114 H-7 Z', 'g');
+  // back of head: long straight hair over the shoulders and back
+  symShape(p, 'M0 -4 C30 -4 47 16 47 46 L49 168 Q36 176 22 170 L0 172 Z', 'k');
+  symShape(p, frillPath(38, 36, 50, 4), 'w');
+  symShape(p, 'M0 1 Q24 1 39 14 L37 19 Q22 7 0 7 Z', 'k');
+  sym(p, h => {
+    P(h, 'M10 6 L10 170 M22 10 L23 170 M34 20 L37 168', 'plk');
+    P(h, 'M4 14 Q22 12 38 26', '', { fill: 'none', stroke: '#8a8079', 'stroke-width': 2.2, opacity: .55, 'stroke-linecap': 'round' });
+    frillLines(h, 38, 36, 50, 4);
+    // headdress ribbon tails
+    P(h, 'M2 8 Q14 20 12 44 L6 46 Q8 24 0 14 Z', 'w');
+    el('circle', { cx: 42, cy: 58, r: 5.6, fill: 'url(#chrome)', stroke: '#1d1d1f', 'stroke-width': .7 }, h);
+  });
 }
 
 // ======================================================================
@@ -385,7 +423,7 @@ el('rect', { x: 0, y: 0, width: 2400, height: 1500, fill: 'url(#grid)' });
 
 // header
 txt(sheet, 48, 66, 'bentOS  SERVICE UNIT  B-01', { 'font-size': 38, 'font-weight': 700, 'letter-spacing': 6, fill: C.ink });
-txt(sheet, 50, 98, 'Concept sheet v1: hard-surface robot maid for the CRT prologue. Original design, not traced from any reference.', { 'font-size': 18, fill: '#5a5048' });
+txt(sheet, 50, 98, 'Concept sheet v2: porcelain-doll robot maid for the CRT prologue. Original design, not traced from any reference.', { 'font-size': 18, fill: '#5a5048' });
 txt(sheet, 2352, 66, 'K. JIANG / BENTOSITE / 2026-10-15', { 'font-size': 16, 'text-anchor': 'end', class: 'mono', fill: '#5a5048' });
 el('line', { x1: 48, y1: 118, x2: 2352, y2: 118, stroke: C.ink, 'stroke-width': 2 });
 
@@ -396,107 +434,118 @@ function panel(x, y, w, h, label, dark = false) {
 }
 
 // turnaround: front + back
-panel(48, 140, 1040, 1310, 'A  TURNAROUND  ·  FRONT / BACK  ·  7.2 HEADS');
-const SC = 1.72;
-figureFront(g(sheet, { transform: `translate(400,206) scale(${SC})` }));
-figureBack(g(sheet, { transform: `translate(770,206) scale(${SC})` }));
-// height ticks (one per head)
-for (let i = 0; i <= 7; i++) {
-  const y = 206 + i * 95 * SC;
+panel(48, 140, 1040, 1310, 'A  TURNAROUND  ·  FRONT / BACK  ·  6.7 HEADS');
+const SC = 1.8, TY = 232;
+figureFront(g(sheet, { transform: `translate(400,${TY}) scale(${SC})` }));
+figureBack(g(sheet, { transform: `translate(770,${TY}) scale(${SC})` }));
+for (let i = 0; i <= 6; i++) {
+  const y = TY + i * 96 * SC;
   el('line', { x1: 575, y1: y, x2: 595, y2: y, stroke: '#9c9083', 'stroke-width': 1 });
   txt(sheet, 601, y + 5, `${i}`, { 'font-size': 13, class: 'mono', fill: '#9c9083' });
 }
-
-// callouts on the front view
 function callout(x1, y1, x2, y2, label, sub, anchor = 'start') {
   if (anchor === 'end') { x2 = 230; }
   el('circle', { cx: x1, cy: y1, r: 3.5, fill: C.o }, sheet);
   el('polyline', { points: `${x1},${y1} ${x2},${y2} ${x2 + (anchor === 'start' ? 14 : -14)},${y2}`, fill: 'none', stroke: C.ink, 'stroke-width': 1 });
   const tx = anchor === 'end' ? 70 : x2 + 20;
-  if (anchor === 'end') anchor = 'start';
-  txt(sheet, tx, y2 + 5, label, { 'font-size': 15, 'font-weight': 700, 'text-anchor': anchor, fill: C.ink });
-  if (sub) txt(sheet, tx, y2 + 23, sub, { 'font-size': 13, 'text-anchor': anchor, fill: '#6a5f55' });
+  txt(sheet, tx, y2 + 5, label, { 'font-size': 15, 'font-weight': 700, fill: C.ink });
+  if (sub) txt(sheet, tx, y2 + 23, sub, { 'font-size': 13, fill: '#6a5f55' });
 }
-const fx = (u) => 400 + u * SC, fy = (v) => 206 + v * SC;
-callout(fx(-30), fy(10), 150, 200, 'Radiator crest', 'maid frill = heatsink fins', 'end');
-callout(fx(-16), fy(49), 150, 300, 'Slit-lamp eyes', 'behind shutter blades', 'end');
-callout(fx(-42), fy(55), 150, 390, 'Ear actuators', 'ring-lit status', 'end');
-callout(fx(-22), fy(116), 150, 470, 'Gorget collar', 'neon underline', 'end');
-callout(fx(-60), fy(136), 150, 560, 'Ribbed pauldrons', 'puff sleeve as armour', 'end');
-callout(fx(-64), fy(222), 150, 650, 'Exposed elbow', 'hinge + status pip', 'end');
-callout(fx(-22), fy(214), 150, 740, 'Waist actuators', 'spine + oblique pistons', 'end');
-callout(fx(-18), fy(290), 150, 830, 'Apron tassets', 'three hinged plates', 'end');
-callout(fx(-55), fy(300), 150, 920, 'Lamellar skirt', 'lacquer plates, ceramic hem', 'end');
-callout(fx(-22), fy(466), 150, 1050, 'Knee actuator', '', 'end');
-callout(fx(-27), fy(540), 150, 1150, 'Ceramic greaves', 'neon shin strip', 'end');
+const fx = (u) => 400 + u * SC, fy = (v) => TY + v * SC;
+callout(fx(-18), fy(-12), 0, 190, 'Pleated headdress', 'ceramic frill + bento pin', 'end');
+callout(fx(-24), fy(20), 0, 270, 'Hime cut', 'glossy hard-surface locks', 'end');
+callout(fx(-14), fy(58), 0, 350, 'Aperture eyes', 'emissive iris, lid plates', 'end');
+callout(fx(-22), fy(73), 0, 430, 'Blush LEDs', 'three dashes per cheek', 'end');
+callout(fx(-2), fy(122), 0, 510, 'Collar + bow', 'lit gem core', 'end');
+callout(fx(-50), fy(128), 0, 590, 'Puff sleeves', 'glossy shells, ceramic trim', 'end');
+callout(fx(-57), fy(204), 0, 670, 'Ball joints', 'chrome, glowing seam ring', 'end');
+callout(fx(-12), fy(248), 0, 750, 'Apron', 'scalloped ceramic plates', 'end');
+callout(fx(-48), fy(282), 0, 830, 'Skirt', 'glossy A-line, petticoat hem', 'end');
+callout(fx(-19), fy(330), 0, 930, 'Ceramic thigh', 'zettai ryouiki', 'end');
+callout(fx(-19), fy(356), 0, 1010, 'Thigh-highs', 'frill band, neon line', 'end');
+callout(fx(-20), fy(448), 0, 1110, 'Knee joint', '', 'end');
+callout(fx(-20), fy(610), 0, 1300, 'Mary-Janes', 'strap + lit button', 'end');
 const bx = (u) => 770 + u * SC;
-callout(bx(18), fy(48), 900, 260, 'Tie plates', 'headdress ribbons', 'start');
-callout(bx(22), fy(150), 900, 440, 'Shoulder vents', '', 'start');
-callout(bx(0), fy(170), 900, 520, 'Spine column', 'lit cable channel', 'start');
-callout(bx(28), fy(214), 900, 620, 'Radiator bow', 'apron tie as cooling wings', 'start');
+callout(bx(8), fy(30), 900, 250, 'Ribbon tails', 'headdress ties', 'start');
+callout(bx(40), fy(120), 900, 420, 'Long back hair', 'over-shoulder silhouette', 'start');
+callout(bx(24), fy(198), 900, 610, 'Apron bow', 'big ceramic bow', 'start');
+
+function clipRect(x, y, w, h) {
+  const id = 'c' + Math.random().toString(36).slice(2);
+  const cp = el('clipPath', { id }, defs);
+  el('rect', { x, y, width: w, height: h }, cp);
+  return `url(#${id})`;
+}
 
 // head close-ups
-panel(1112, 140, 600, 640, 'B  HEAD  ·  VISOR FACE');
-headFront(g(sheet, { transform: 'translate(1290,262) scale(3.5)' }));
-headSide(g(sheet, { transform: 'translate(1580,300) scale(2.7)' }));
-txt(sheet, 1128, 760, 'Shutter blades close over the slits to blink (setEyes open → blade travel).', { 'font-size': 14, fill: '#6a5f55' });
+panel(1112, 140, 600, 640, 'B  HEAD  ·  PORCELAIN DOLL FACE');
+{
+  const clip = g(sheet, { 'clip-path': clipRect(1113, 170, 598, 609) });
+  headFront(g(clip, { transform: 'translate(1280,262) scale(3.1)' }));
+  headSide(g(clip, { transform: 'translate(1585,262) scale(2.6)' }));
+}
+txt(sheet, 1128, 760, 'No nose sculpt; eyes are screens with a 6-blade aperture iris.', { 'font-size': 14, fill: '#6a5f55' });
 
 // dark: eyes-only test
 panel(1736, 140, 616, 640, 'C  DARK READ  ·  LIT BY HER OWN EYES', true);
 {
-  const d = g(sheet, { transform: 'translate(2044,300) scale(3.9)' });
-  // silhouette barely there: rim from the eye light only
-  const sil = g(d, { opacity: .16 });
-  headFront(sil, { lit: false });
-  el('ellipse', { cx: 0, cy: 50, rx: 60, ry: 40, fill: 'url(#eyeGlow)', opacity: .25 }, d);
+  const clip = g(sheet, { 'clip-path': clipRect(1737, 170, 614, 609) });
+  const d = g(clip, { transform: 'translate(2044,250) scale(3.9)' });
+  headFront(g(d, { opacity: .13 }), { lit: false });
+  el('ellipse', { cx: 0, cy: 62, rx: 50, ry: 30, fill: 'url(#eyeGlow)', opacity: .22 }, d);
   sym(d, h => {
-    el('ellipse', { cx: 15, cy: 49, rx: 22, ry: 10, fill: 'url(#eyeGlow)', opacity: .7 }, h);
-    P(h, 'M5.5 51.5 L22.5 46 Q24.2 46.4 23.6 48.2 L7 53.6 Q5 53.6 5.5 51.5 Z', '', { fill: C.o, filter: 'url(#bigGlow)' });
-    P(h, 'M8 51.6 L20.5 47.6', '', { stroke: '#fff3e0', 'stroke-width': 1.1, fill: 'none' });
-    el('circle', { cx: 42, cy: 55, r: 5.5, fill: 'none', stroke: C.o, 'stroke-width': 1, filter: 'url(#glow)', opacity: .8 }, h);
+    eye(h, 'open', true);
+    el('circle', { cx: 14, cy: 58.5, r: 4, fill: C.o, filter: 'url(#bigGlow)', opacity: .7 }, h);
+    for (let i = 0; i < 3; i++) P(h, `M${18 + i * 3.4} 74.5 L${20 + i * 3.4} 71`, '', { stroke: C.o, 'stroke-width': 1.2, 'stroke-linecap': 'round', filter: 'url(#glow)' });
+    el('circle', { cx: 42, cy: 58, r: 3.2, fill: 'none', stroke: C.o, 'stroke-width': 1, filter: 'url(#glow)', opacity: .8 }, h);
   });
-  txt(sheet, 1752, 760, 'Reflection shot: only eye slits + ear rings read; bangs plate cuts a hard brow line.', { 'font-size': 14, fill: '#8a7d70' });
+  txt(sheet, 1752, 760, 'Reflection shot: two irises, blush dashes, ear rings; the bangs cut the brow line.', { 'font-size': 14, fill: '#8a7d70' });
 }
 
+// expressions (eye states the rig drives)
+panel(1112, 804, 1240, 260, 'D  EXPRESSIONS  ·  setEyes(glow, open) + presets');
+['off', 'boot', 'open', 'focus', 'blink', 'happy'].forEach((expr, i) => {
+  const x = 1220 + i * 200;
+  const clip = g(sheet, { 'clip-path': clipRect(x - 90, 836, 180, 190) });
+  headFront(g(clip, { transform: `translate(${x},818) scale(2.05)` }), { expr, lit: expr !== 'off' });
+  txt(sheet, x, 1048, expr.toUpperCase(), { 'font-size': 13, 'text-anchor': 'middle', class: 'mono', 'letter-spacing': 2, fill: '#5a5048' });
+});
+
 // hand
-panel(1112, 804, 600, 646, 'D  HAND  ·  DEXTEROUS, CABLE-DRIVEN');
-handDetail(g(sheet, { transform: 'translate(1330,900) scale(2.05)' }));
+panel(1112, 1084, 600, 366, 'E  HAND  ·  DEXTEROUS, CABLE-DRIVEN');
+handDetail(g(sheet, { transform: 'translate(1280,1110) scale(1.28)' }));
 {
   const notes = [
     ['15 DOF', '4 fingers × 3 + thumb × 3'],
     ['Servo knuckles', 'exposed disks, MCP lit'],
     ['Bowden tendons', 'cables over the dorsal plate'],
-    ['Ceramic caps', 'on proximal + middle phalanges'],
-    ['Lacquer tips', 'grip pads'],
-    ['Rig', '3 bones/finger + thumb'],
+    ['Ceramic caps', 'proximal + middle phalanges'],
   ];
   notes.forEach(([a, b], i) => {
-    txt(sheet, 1520, 900 + i * 62, a, { 'font-size': 16, 'font-weight': 700, fill: C.ink });
-    txt(sheet, 1520, 920 + i * 62, b, { 'font-size': 13, fill: '#6a5f55' });
+    txt(sheet, 1460, 1150 + i * 62, a, { 'font-size': 16, 'font-weight': 700, fill: C.ink });
+    txt(sheet, 1460, 1170 + i * 62, b, { 'font-size': 13, fill: '#6a5f55' });
   });
 }
 
 // palette + spec
-panel(1736, 804, 616, 646, 'E  MATERIALS  ·  SPEC');
+panel(1736, 1084, 616, 366, 'F  MATERIALS  ·  SPEC');
 [
-  ['#0e0b0a', 'Lacquer black', 'bob plates, chest, skirt, boots'],
-  ['#f2ece2', 'Ceramic', 'shell, collar, apron, greaves'],
-  ['#e8823f', 'Neon (emissive)', 'eyes, strips, pips; separate mat'],
-  ['#5d5f63', 'Gunmetal', 'joints, actuators, hands'],
-  ['#050404', 'Smoked glass', 'face shield'],
+  ['#0e0b0a', 'Gloss black', 'hair, dress, stockings, shoes'],
+  ['#f2ece2', 'Porcelain', 'face, limbs, apron, frills'],
+  ['#e8823f', 'Neon (emissive)', 'irises, blush, rings; own mat'],
+  ['#9da1a7', 'Chrome', 'ball joints, neck, ear bolts'],
+  ['#5d5f63', 'Gunmetal', 'hands, finger servos'],
 ].forEach(([c, n, d], i) => {
-  const y = 850 + i * 74;
-  el('rect', { x: 1740, y, width: 56, height: 56, rx: 4, fill: c, stroke: '#00000033' }, sheet);
-  if (c === '#e8823f') el('rect', { x: 1740, y, width: 56, height: 56, rx: 4, fill: c, filter: 'url(#glow)', opacity: .6 }, sheet);
-  txt(sheet, 1812, y + 22, n, { 'font-size': 16, 'font-weight': 700, fill: C.ink });
-  txt(sheet, 1812, y + 42, `${c}  ·  ${d}`, { 'font-size': 13, fill: '#6a5f55', class: 'mono' });
+  const y = 1124 + i * 46;
+  el('rect', { x: 1756, y, width: 36, height: 36, rx: 4, fill: c === '#9da1a7' ? 'url(#chrome)' : c, stroke: '#00000033' }, sheet);
+  txt(sheet, 1806, y + 16, n, { 'font-size': 15, 'font-weight': 700, fill: C.ink });
+  txt(sheet, 1806, y + 33, `${c}  ·  ${d}`, { 'font-size': 12, fill: '#6a5f55', class: 'mono' });
 });
 [
-  'Toon/game finish: flat bevels, hard spec, panel lines baked.',
-  'No hair, cloth or face sculpt: every soft maid shape is armour.',
-  'Budget: ~40k tris, 4 materials, GLB ≤ 5 MB (meshopt + WebP).',
-  'Rig: neck, head, both arms, 15 finger bones; rigid parenting.',
-].forEach((s, i) => txt(sheet, 1740, 1250 + i * 26, s, { 'font-size': 14, fill: C.ink }));
+  'Toon/game finish: glossy, hard spec, panel lines baked.',
+  'Hair and frills are rigid sculpted shells (no cloth/hair sim).',
+  '~40k tris, 5 materials, GLB ≤ 5 MB.  Rig: head, neck, arms, 15 finger bones.',
+].forEach((s, i) => txt(sheet, 1756, 1370 + i * 22, s, { 'font-size': 13, fill: C.ink }));
 </script>
 </body>
 </html>
