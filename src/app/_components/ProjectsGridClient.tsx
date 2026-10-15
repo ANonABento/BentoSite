@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { Viewfinder } from '@/components/Viewfinder/Viewfinder';
-import { TrayFill } from './TrayFill';
+import { TrayFill, shouldBoot } from './TrayFill';
 import type { ViewfinderProject } from '@/components/Viewfinder/types';
 import { InfoCard, IntroCard, ProjectCard, type InfoContent, type IntroProfile } from '@/components/BentoGrid/cards';
 import {
@@ -83,6 +83,8 @@ export function ProjectsGridClient({ layout, projects, profile, info, details }:
   // Every card goes on the board once; the board repeats it in every direction.
   const cards = useMemo<CardData[]>(() => [INTRO, CONTACT, ...projects], [projects]);
   const renderCard = useMemo(() => makeRenderCard(profile, info), [profile, info]);
+  // Decided once, before the board mounts, so the camera can open zoomed out for it.
+  const [boot] = useState(shouldBoot);
 
   // Clicking a project opens it in the viewfinder over the board. The URL
   // follows (`/?project=<id>`), so the link can be shared and Back closes it.
@@ -137,8 +139,9 @@ export function ProjectsGridClient({ layout, projects, profile, info, details }:
         breadcrumb="bentOS / Kevin Jiang"
         renderCard={renderCard}
         spotlight
+        intro={boot}
       />
-      <TrayFill />
+      <TrayFill active={boot} />
       <AnimatePresence>
         {open && <Viewfinder key={open.id} project={details[open.id]} origin={open.origin} onClose={close} />}
       </AnimatePresence>

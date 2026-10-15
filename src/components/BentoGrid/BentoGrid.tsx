@@ -30,6 +30,8 @@ export interface BentoGridProps extends GridConfig {
   renderCard?: RenderCard;
   /** Desktop: open with only the intro and contact lit; projects light up under the pointer. */
   spotlight?: boolean;
+  /** Desktop: open zoomed out and glide in to the home group. */
+  intro?: boolean;
 }
 
 // =============================================================================
@@ -47,6 +49,7 @@ export function BentoGrid({
   breadcrumb,
   renderCard,
   spotlight,
+  intro,
 }: BentoGridProps) {
   const windowSize = useWindowSize();
   const isMobile = windowSize.width < MOBILE.BREAKPOINT;
@@ -89,6 +92,7 @@ export function BentoGrid({
       renderCard={renderCard}
       onBack={onBack}
       spotlight={spotlight}
+      intro={intro}
     />
   );
 }

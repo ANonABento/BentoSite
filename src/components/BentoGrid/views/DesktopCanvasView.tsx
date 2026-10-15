@@ -47,6 +47,9 @@ function inSpotlight(instance: string, card: CardData): boolean {
   return instance.endsWith('@0,0') && (card.type === 'intro' || card.type === 'info');
 }
 
+/** The intro's opening zoom (a multiple of the fit zoom), how long it holds there, and its glide in. */
+const INTRO = { zoom: 0.4, holdMs: 750, glideMs: 1100, hurryMs: 250 };
+
 /** How long the search card glides when it docks in another copy of the board, or its drawer opens or closes. */
 const DOCK_GLIDE_MS = 320;
 
@@ -78,6 +81,8 @@ interface DesktopCanvasViewProps {
   onBack?: () => void;
   /** Open with only the highlights lit (inSpotlight) until the visitor lights the rest. */
   spotlight?: boolean;
+  /** Open zoomed out while the cards fall in, then glide in to the home group. */
+  intro?: boolean;
 }
 
 export function DesktopCanvasView({
@@ -91,12 +96,30 @@ export function DesktopCanvasView({
   renderCard,
   onBack,
   spotlight = false,
+  intro = false,
 }: DesktopCanvasViewProps) {
   const windowSize = useWindowSize();
   const navigation = useCamera({
     enabled: true,
     windowSize,
+    introZoom: intro ? INTRO.zoom : undefined,
   });
+
+  // The intro: the board opens zoomed out so its scale shows while the cards
+  // fall in (and their images load), then the camera glides in to the home
+  // group. Any wheel, drag or key cuts it short.
+  const { settle } = navigation;
+  useEffect(() => {
+    if (!intro) return;
+    const timer = window.setTimeout(() => settle(INTRO.glideMs), INTRO.holdMs);
+    const hurry = () => settle(INTRO.hurryMs);
+    const events = ['wheel', 'pointerdown', 'keydown'] as const;
+    for (const e of events) window.addEventListener(e, hurry, { once: true, passive: true });
+    return () => {
+      window.clearTimeout(timer);
+      for (const e of events) window.removeEventListener(e, hurry);
+    };
+  }, [intro, settle]);
 
   const board = useTiledBoard({ cards, layout, camera: navigation.camera, windowSize });
 
