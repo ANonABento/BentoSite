@@ -27,7 +27,7 @@ A stand-in until the original B-01 is made. It's **"Maid Character" by 413 Games
 | `setEyes(glow, open)` | Iris emissive intensity, plus the `blink` morph. |
 | `headPivot` | A stand-in Object3D. Rotating it rotates the `Head` bone in the robot-local frame. |
 
-It also scales the model so shoulder-to-wrist is 0.97 and places the head centre at y=0.59 in the old robot's frame. That means the prologue constants (`ROBOT_HOME`, `C0`, `C1`, `L1`, pose targets) didn't need retuning.
+It also scales the model so shoulder-to-wrist is 0.97 and places the head centre at y=0.59 in the old robot's frame. That means the prologue (`ROBOT_HOME`, the `SHOT` camera keys and the pose targets in `prologue()`) works with any model fitted this way.
 
 `index.html?robot=shapes` and `robot-viewer.html?model=shapes` bring back the procedural robot.
 
