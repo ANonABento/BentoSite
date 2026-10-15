@@ -1,6 +1,6 @@
 {
   "id": "unity-game-dev",
-  "name": "C# Apps & Games",
+  "name": "Unity Game Jams",
   "shortDescription": "Unity game-jam games, including Entitled Goose Game (UW Game Jam Fall 2024) and Bandwidth (UW Winter 2025 jam).",
   "description": "Unity games made mostly at game jams, plus earlier C# experiments.\n\n- **Entitled Goose Game** (UW Game Jam Fall 2024, 48 hours, team of six): play a magical goose that combines four elements (rock, wet, wind, hot) into spells in a real-time fight. Kevin: programming and design. [Play](https://matthewz80.itch.io/entitled-goose-game)\n- **Bandwidth** (UW Winter 2025 Game Jam, 72 hours, team game): an action game about an IT new hire at \"Tasla\". [Play](https://matthewz80.itch.io/bandwidth)\n- **Happy Santa Go Time** (Bear Hacks 2022): a short horror experience made to learn Unity. [Play](https://anonabento.itch.io/happy-santa-go-time)\n- **PROJECT: Apartment**: an 11-day showcase demo. [Play](https://anonabento.itch.io/project-apartment)\n\nAcross these: C# gameplay logic in Unity for 2D and 3D games (physics, colliders, AI logic), finite state machines for animation and character behaviour, and Git for team collaboration. Separately, a C# app using Emgu OpenCV as the vision part of a larger alarm system.\n\nWon **Best Overall** at UWGDC Game Jam Fall 2024.",
   "category": "Games",

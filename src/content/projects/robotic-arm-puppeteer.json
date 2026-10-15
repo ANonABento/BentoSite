@@ -1,7 +1,7 @@
 {
   "id": "robotic-arm-puppeteer",
   "name": "Robotic Arm Puppeteer",
-  "shortDescription": "Teleoperation and calibration toolkit for a robot arm: wrist controller, multi-camera AprilTag tracking, and ROS 2 bridges to sims.",
+  "shortDescription": "Teleop toolkit for an 8-DOF research arm: a <150 g exoskeleton wrist controller, multi-camera AprilTag tracking (+20% pose accuracy) and ROS 2 bridges to RViz, MuJoCo and Isaac Sim.",
   "description": "A Python + ROS 2 control and calibration toolkit for the OpenArm platform, built at Reazon Human Interaction Lab in Tokyo to make puppeteering, simulation and data collection for sim training more intuitive, cheaper and more accurate. It reads wrist joint positions, calibrates motion ranges, and plugs into ROS 2 for simulation and control.\n\nHighlights:\n- Python + ROS 2 environment using the Dynamixel SDK to read and write encoders over serial.\n- Multi-camera AprilTag tracking using OpenCV ArUco, with covariance-based accuracy filtering.\n- An auto-calibration pipeline that writes reusable YAML configs for custom AprilTag bundle layouts.\n- Fused 6-DoF poses published as ROS 2 TF for downstream inverse kinematics and teleoperation, visualized in RViz2, MuJoCo, Isaac Sim and MeshCat.\n- Ergonomic controllers and modular AprilTag mounts with print-in-place joints, designed in Fusion 360.\n- Dynamixel bring-up via U2D2: unique IDs, voltage and current limits, daisy-chaining.\n- A local Flask + Three.js tool for real-time encoder visualization, interactive calibration and JSON storage.\n\nThe code lives in Reazon Research's private repos `kirigirisu` (puppeteering) and `atCAM` (multi-camera AprilTag perception).",
   "category": "Robotics",
   "context": "Reazon Human Interaction Lab",
