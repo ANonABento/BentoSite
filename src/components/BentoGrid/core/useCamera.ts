@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGesture } from '@use-gesture/react';
 import { clamp } from '@/lib/utils';
-import type { Camera, CameraBindings, Position, Size, UseCameraReturn, Velocity } from '../BentoGrid.types';
+import type { Camera, CameraBindings, Size, UseCameraReturn, Velocity } from '../BentoGrid.types';
 import { CAMERA, DEFAULT_CAMERA, INTERACTION } from '../BentoGrid.constants';
 import { isEditableTarget } from './keyboard';
 
@@ -13,6 +13,9 @@ interface UseCameraOptions {
   initialCamera?: Camera;
   onCameraChange?: (camera: Camera) => void;
 }
+
+/** How much ctrl+wheel (a trackpad pinch) builds up before the zoom takes a step. */
+const CAMERA_PINCH_STEP = 40;
 
 function normalizeWheelDelta(delta: number, deltaMode: number): number {
   if (deltaMode === WheelEvent.DOM_DELTA_LINE) {
@@ -125,18 +128,44 @@ export function useCamera({
     }));
   }, [setCamera]);
 
-  const zoom = useCallback((_delta: number, _center?: Position) => {
+  // Zoom steps through CAMERA.zoomLevels, as multiples of the window's fit
+  // zoom, and glides to each one. The camera's x/y is the canvas point at
+  // the middle of the screen, so zooming keeps that point still.
+  const defaultLevel = CAMERA.zoomLevels.indexOf(1);
+  const [levelIndex, setLevelIndex] = useState(defaultLevel);
+  const levelRef = useRef(defaultLevel);
+  const zoomGlideRef = useRef<number | null>(null);
+
+  const stopZoomGlide = useCallback(() => {
+    if (zoomGlideRef.current !== null) cancelAnimationFrame(zoomGlideRef.current);
+    zoomGlideRef.current = null;
+  }, []);
+
+  const zoom = useCallback((steps: number) => {
+    const index = clamp(levelRef.current + steps, 0, CAMERA.zoomLevels.length - 1);
+    if (index === levelRef.current) return;
+    levelRef.current = index;
+    setLevelIndex(index);
     stopMomentum();
-    setCamera((prev) => ({
-      ...prev,
-      zoom: baseZoom,
-    }));
-  }, [baseZoom, setCamera, stopMomentum]);
+    stopZoomGlide();
+
+    const from = cameraRef.current.zoom;
+    const to = baseZoom * CAMERA.zoomLevels[index];
+    const startedAt = performance.now();
+    zoomGlideRef.current = requestAnimationFrame(function step(now) {
+      const t = Math.min(1, (now - startedAt) / CAMERA.zoomGlideMs);
+      const eased = 1 - (1 - t) ** 3;
+      setCamera((prev) => ({ ...prev, zoom: from + (to - from) * eased }));
+      zoomGlideRef.current = t < 1 ? requestAnimationFrame(step) : null;
+    });
+  }, [baseZoom, setCamera, stopMomentum, stopZoomGlide]);
 
   // Follow window resizes so the board keeps its proportions.
   useEffect(() => {
-    setCamera((prev) => (prev.zoom === baseZoom ? prev : { ...prev, zoom: baseZoom }));
-  }, [baseZoom, setCamera]);
+    stopZoomGlide();
+    const target = baseZoom * CAMERA.zoomLevels[levelRef.current];
+    setCamera((prev) => (prev.zoom === target ? prev : { ...prev, zoom: target }));
+  }, [baseZoom, setCamera, stopZoomGlide]);
 
   const handleWheelPan = useCallback((dx: number, dy: number, deltaMode: number) => {
     stopMomentum();
@@ -152,10 +181,25 @@ export function useCamera({
 
   const reset = useCallback(() => {
     stopMomentum();
+    stopZoomGlide();
+    levelRef.current = defaultLevel;
+    setLevelIndex(defaultLevel);
     setCamera({ ...DEFAULT_CAMERA, zoom: baseZoom });
-  }, [baseZoom, setCamera, stopMomentum]);
+  }, [baseZoom, defaultLevel, setCamera, stopMomentum, stopZoomGlide]);
 
-  useEffect(() => () => stopMomentum(), [stopMomentum]);
+  useEffect(() => () => {
+    stopMomentum();
+    stopZoomGlide();
+  }, [stopMomentum, stopZoomGlide]);
+
+  // A trackpad pinch arrives as ctrl+wheel; it steps the zoom once enough of it has built up.
+  const pinchRef = useRef(0);
+  const handleWheelZoom = useCallback((dy: number) => {
+    pinchRef.current += dy;
+    if (Math.abs(pinchRef.current) < CAMERA_PINCH_STEP) return;
+    zoom(pinchRef.current < 0 ? 1 : -1);
+    pinchRef.current = 0;
+  }, [zoom]);
 
   const bindGesture = useGesture(
     {
@@ -214,7 +258,8 @@ export function useCamera({
         if (!enabled) return;
 
         event.preventDefault();
-        handleWheelPan(dx, dy, event.deltaMode);
+        if (event.ctrlKey) handleWheelZoom(normalizeWheelDelta(dy, event.deltaMode));
+        else handleWheelPan(dx, dy, event.deltaMode);
       },
     },
     {
@@ -291,6 +336,9 @@ export function useCamera({
         if (!held.has(key)) stopMomentum();
         held.add(key);
         start();
+      } else if ((key === '=' || key === '+' || key === '-' || key === '_') && !event.repeat) {
+        event.preventDefault();
+        zoom(key === '-' || key === '_' ? -1 : 1);
       } else if (key === 'r' && !event.repeat) {
         event.preventDefault();
         held.clear();
@@ -311,7 +359,7 @@ export function useCamera({
       window.removeEventListener('blur', releaseAll);
       if (frame !== null) cancelAnimationFrame(frame);
     };
-  }, [enabled, pan, reset, stopMomentum]);
+  }, [enabled, pan, reset, stopMomentum, zoom]);
 
   const bind = useCallback((): CameraBindings => ({
     ...bindGesture(),
@@ -336,6 +384,9 @@ export function useCamera({
     cameraRef,
     pan,
     zoom,
+    zoomLevel: CAMERA.zoomLevels[levelIndex],
+    canZoomIn: levelIndex < CAMERA.zoomLevels.length - 1,
+    canZoomOut: levelIndex > 0,
     setCamera,
     reset,
     stopMomentum,

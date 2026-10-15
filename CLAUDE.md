@@ -16,7 +16,8 @@ Content is plain JSON in `src/content/`, read at build time by `src/lib/content.
 - `src/lib/board.ts` builds the board's cards from content plus the layout, for both `/` and `/studio`. The camera opens with the home group (intro, search, contact) centred.
 - The search card's sticky and morphing states live in `cards/useSearchCardState`. While its slot is off screen it sticks to the edge. Every other copy of the tile shows an empty dashed dock in its place, and the first dock to come fully into view takes the search card, which glides there. Against a top or bottom edge the card folds down to its input row; against a side it shrinks to a drawer tab (showing the query and match count), and clicking it or pressing `/` slides the input bar out from that edge without moving the camera.
 - Filtering dims the cards it leaves out, in place, so the board keeps its shape. Pinned cards (intro, contact) always pass.
-- The camera's base zoom scales with the window (`fitZoom`, with references in `CAMERA`).
+- The camera's base zoom scales with the window (`fitZoom`, with references in `CAMERA`). The visitor steps zoom through `CAMERA.zoomLevels` (multiples of it) with the search card's −/+ buttons, the - and = keys, or a trackpad pinch; R resets it. Docked, the search card zooms with the board (content scaled); stuck to an edge it's back to default size.
+- Spotlight (`spotlight` prop, on for `/`): the board opens with only the intro, contact and featured projects in the home copy lit (`inSpotlight`). The "Show all" pill, panning away from home, or searching lights the rest, and it stays lit for the tab session (`bentOS.explored`). Featured comes from `featured` in portfolio.json.
 - The engine reads the CSS variables defined at the top of `src/app/globals.css`.
 
 ## Viewfinder (`src/components/Viewfinder/`)

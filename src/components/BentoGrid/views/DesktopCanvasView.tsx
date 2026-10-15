@@ -1,11 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { holdInsideEdges, searchCardShape, useSearchCardState } from '../cards';
 import {
   canvasToScreen,
   countContentCards,
   filterCards,
+  fitZoom,
   getCameraTransform,
   startsOnInteractiveControl,
   isEditableTarget,
@@ -15,7 +17,7 @@ import {
 } from '../core';
 import { SEARCH_DOCK_PREFIX, useTiledBoard } from '../core/useTiledBoard';
 import { SEARCH_CARD, SEARCH_CARD_ID } from '../BentoGrid.constants';
-import { CloseIcon, RefreshIcon, SearchIcon } from '@/components/ui/Icons';
+import { CloseIcon, RefreshIcon, SearchIcon, ZoomInIcon, ZoomOutIcon } from '@/components/ui/Icons';
 import type { CardData, CardPosition, CardSizeMode, Rect, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import type { BoardLayout } from '../layout/boardLayout';
 import { DesktopCardLayer } from './DesktopCardLayer';
@@ -23,6 +25,26 @@ import { DesktopCardLayer } from './DesktopCardLayer';
 /** Cards keyboard focus can land on: not the search card or the empty docks. */
 function navigable(layouts: Map<string, CardPosition>): Map<string, CardPosition> {
   return new Map([...layouts].filter(([id]) => id !== SEARCH_CARD_ID && !id.startsWith(SEARCH_DOCK_PREFIX)));
+}
+
+/** Set once the visitor has lit the board up, so it opens lit for the rest of the tab session. */
+const EXPLORED_KEY = 'bentOS.explored';
+
+function readExplored(): boolean {
+  try {
+    return sessionStorage.getItem(EXPLORED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The cards lit while the board opens in its spotlight: the intro, contact
+ * and featured projects in the home copy. Everything else starts dark.
+ */
+function inSpotlight(instance: string, card: CardData): boolean {
+  if (!instance.endsWith('@0,0')) return false;
+  return card.type === 'intro' || card.type === 'info' || (card.type === 'project' && Boolean(card.featured));
 }
 
 /** How long the search card glides when it docks in another copy of the board, or its drawer opens or closes. */
@@ -54,6 +76,8 @@ interface DesktopCanvasViewProps {
   onCardSelect?: (card: CardData, origin?: Rect) => void;
   renderCard?: RenderCard;
   onBack?: () => void;
+  /** Open with only the highlights lit (inSpotlight) until the visitor lights the rest. */
+  spotlight?: boolean;
 }
 
 export function DesktopCanvasView({
@@ -66,6 +90,7 @@ export function DesktopCanvasView({
   onCardSelect,
   renderCard,
   onBack,
+  spotlight = false,
 }: DesktopCanvasViewProps) {
   const windowSize = useWindowSize();
   const navigation = useCamera({
@@ -105,8 +130,14 @@ export function DesktopCanvasView({
   const [drawer, setDrawer] = useState(false);
   if (drawer && !stuckToSide) setDrawer(false);
   const drawerOpen = drawer && stuckToSide;
-  const fullW = SEARCH_CARD.EXPANDED_WIDTH * navigation.camera.zoom;
-  const fullH = SEARCH_CARD.EXPANDED_HEIGHT * navigation.camera.zoom;
+  // Docked, the card zooms with the board (its content scaled, not
+  // reflowed); stuck to an edge it's a control again, at default-zoom size.
+  const layoutW = SEARCH_CARD.EXPANDED_WIDTH * fitZoom(windowSize);
+  const layoutH = SEARCH_CARD.EXPANDED_HEIGHT * fitZoom(windowSize);
+  const zoomRatio = navigation.camera.zoom / fitZoom(windowSize);
+  const cardScale = zoomRatio + (1 - zoomRatio) * searchState.compression;
+  const fullW = layoutW * cardScale;
+  const fullH = layoutH * cardScale;
   const squished = searchCardShape(searchState.squeeze.x, searchState.squeeze.y, fullW, fullH);
   const held = holdInsideEdges(searchState.slotCenter, squished.width, squished.height, windowSize);
   const target: ScreenBox = drawerOpen
@@ -252,6 +283,26 @@ export function DesktopCanvasView({
     [cards, searchState.searchTerm, searchState.category],
   );
 
+  // Spotlight: the board opens with only the highlights lit, so a first look
+  // lands on who Kevin is and his best work. The pill at the bottom lights
+  // the rest; so does wandering off the home group, or searching.
+  const [lit, setLit] = useState(!spotlight);
+  useLayoutEffect(() => {
+    if (spotlight && readExplored()) setLit(true);
+  }, [spotlight]);
+  const lightUp = useCallback(() => {
+    setLit(true);
+    try {
+      sessionStorage.setItem(EXPLORED_KEY, '1');
+    } catch {}
+  }, []);
+  const wandered =
+    Math.abs(camera.x) * camera.zoom > windowSize.width / 2 || Math.abs(camera.y) * camera.zoom > windowSize.height / 2;
+  const searching = searchState.searchTerm !== '' || searchState.category !== null;
+  useEffect(() => {
+    if (!lit && (wandered || searching)) lightUp();
+  }, [lit, wandered, searching, lightUp]);
+
   // Tracks the timestamp of the last wheel event that reached the canvas
   // pan handler. If the cursor crosses an element that normally swallows
   // wheel (chip row, search input) WHILE a pan is in motion, that element
@@ -299,6 +350,7 @@ export function DesktopCanvasView({
             theme={theme}
             focusedCardId={focusedCardId}
             dimmed={board.dimmed}
+            spotlit={lit ? null : inSpotlight}
             renderCard={renderCard}
             onCardClick={handleCardClick}
           />
@@ -329,8 +381,14 @@ export function DesktopCanvasView({
           >
             {/* Laid out at full size and clipped, so folding never reflows it; the input row stays put on top. */}
             <div
-              className="absolute left-0 top-0"
-              style={{ width: fullW, height: fullH, opacity: contentOpacity, pointerEvents: contentOpacity > 0.5 ? undefined : 'none' }}
+              className="absolute left-0 top-0 origin-top-left"
+              style={{
+                width: layoutW,
+                height: layoutH,
+                transform: cardScale === 1 ? undefined : `scale(${cardScale})`,
+                opacity: contentOpacity,
+                pointerEvents: contentOpacity > 0.5 ? undefined : 'none',
+              }}
             >
               <FullSearchContent
                 searchTerm={searchState.searchTerm}
@@ -339,6 +397,10 @@ export function DesktopCanvasView({
                 onSearchChange={searchState.setSearchTerm}
                 onCategoryChange={searchState.setCategory}
                 onRecenter={resetView}
+                onZoom={navigation.zoom}
+                zoomLevel={navigation.zoomLevel}
+                canZoomIn={navigation.canZoomIn}
+                canZoomOut={navigation.canZoomOut}
                 totalCards={projectTotal}
                 filteredCards={projectMatches}
                 panAtRef={panAtRef}
@@ -358,6 +420,27 @@ export function DesktopCanvasView({
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {!lit && (
+          <motion.div
+            className="pointer-events-none absolute inset-x-0 bottom-6 z-20 flex justify-center"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0, transition: { delay: 0.6, duration: 0.3 } }}
+            exit={{ opacity: 0, y: 12, transition: { duration: 0.2 } }}
+          >
+            <button
+              onClick={lightUp}
+              className="pointer-events-auto flex items-center gap-2 rounded-full px-4 py-2 text-sm shadow-[0_10px_30px_rgb(0_0_0/0.45)] transition-transform hover:scale-[1.03]"
+              style={{ background: 'var(--board-dock-bg)', color: 'var(--board-dock-fg)' }}
+            >
+              <span className="opacity-70">Highlights</span>
+              <span aria-hidden className="opacity-40">·</span>
+              <span className="font-semibold">Show all {projectTotal} projects</span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -390,13 +473,17 @@ function SideTabContent({ onOpen, matches, query }: { onOpen: () => void; matche
  *  stutter. ~100ms covers a typical trackpad wheel inter-event gap. */
 const MID_PAN_BUBBLE_WINDOW_MS = 120;
 
-function FullSearchContent({ searchTerm, category, categories, onSearchChange, onCategoryChange, onRecenter, totalCards, filteredCards, panAtRef, inputRef, unfold }: {
+function FullSearchContent({ searchTerm, category, categories, onSearchChange, onCategoryChange, onRecenter, onZoom, zoomLevel, canZoomIn, canZoomOut, totalCards, filteredCards, panAtRef, inputRef, unfold }: {
   searchTerm: string;
   category: string | null;
   categories: string[];
   onSearchChange: (term: string) => void;
   onCategoryChange: (category: string | null) => void;
   onRecenter: () => void;
+  onZoom: (steps: number) => void;
+  zoomLevel: number;
+  canZoomIn: boolean;
+  canZoomOut: boolean;
   totalCards: number;
   filteredCards: number;
   panAtRef: React.MutableRefObject<number>;
@@ -481,6 +568,27 @@ function FullSearchContent({ searchTerm, category, categories, onSearchChange, o
 
       <div className="mt-auto flex items-center justify-between gap-2 text-[11px]" style={{ ...detail, opacity: detail.opacity * 0.7 }}>
         <span>Drag or WASD to explore</span>
+        <div className="ml-auto flex items-center">
+          <button
+            onClick={() => onZoom(-1)}
+            disabled={!canZoomOut}
+            className="rounded-md p-1 hover:bg-black/10 disabled:opacity-35 disabled:hover:bg-transparent"
+            aria-label="Zoom out"
+            title="Zoom out (-)"
+          >
+            <ZoomOutIcon className="h-3.5 w-3.5" />
+          </button>
+          <span className="w-9 text-center tabular-nums" aria-live="polite">{Math.round(zoomLevel * 100)}%</span>
+          <button
+            onClick={() => onZoom(1)}
+            disabled={!canZoomIn}
+            className="rounded-md p-1 hover:bg-black/10 disabled:opacity-35 disabled:hover:bg-transparent"
+            aria-label="Zoom in"
+            title="Zoom in (+)"
+          >
+            <ZoomInIcon className="h-3.5 w-3.5" />
+          </button>
+        </div>
         <button
           onClick={onRecenter}
           className="flex items-center gap-1.5 rounded-md px-1.5 py-0.5 hover:bg-black/10 hover:opacity-100 transition-colors"
