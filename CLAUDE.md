@@ -8,7 +8,7 @@ Next.js 16 + Tailwind 4. Routes:
 - `/studio`: dev-only board editor (404 in production). Drag and resize cards, pick, upload and frame images; ⌘S writes `src/content/layout.json` through `/api/studio`, uploads land in `public/projects/<id>/` through `/api/studio/upload`, and each project's viewfinder list is saved into its JSON through `/api/studio/project`.
 
 Content is plain JSON in `src/content/`, read at build time by `src/lib/content.ts`. The build fails if any project file contains `TODO(`.
-- Jobs are in `portfolio.json` `experience`. One with `details` (markdown, plus optional `site` and `images`) also becomes a board card, `job-<id>`, category Experience (`getJobs`), placed in layout.json like a project; it opens in the viewfinder, and so does its row on the intro card. Its media is edited in the JSON, not /studio.
+- Jobs are in `portfolio.json` `experience`. One with `details` (markdown, plus optional `site` and `images`) gets a viewfinder entry, `job-<id>` (`getJobs`), opened by its row on the intro card. Jobs aren't board cards. Their media is edited in the JSON, not /studio.
 - The résumé is `public/Kevin-Jiang-Resume.pdf` (short link `/resume`); `npm run resume` re-downloads it from the Google Doc.
 
 ## BentoGrid (`src/components/BentoGrid/`)

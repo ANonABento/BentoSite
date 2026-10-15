@@ -36,7 +36,7 @@ export function projectCard(p: Project, placed?: LayoutCard): ProjectCardData {
 
 /** Projects on the board, in reading order so the mobile list follows the layout. */
 export function boardProjects(layout: BoardLayout): ProjectCardData[] {
-  const byId = new Map([...getProjects(), ...getJobs()].map((p) => [p.id, p]));
+  const byId = new Map(getProjects().map((p) => [p.id, p]));
   return readingOrder(layout.cards).flatMap((placed) => {
     const p = byId.get(placed.id);
     return p ? [projectCard(p, placed)] : [];

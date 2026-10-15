@@ -120,7 +120,7 @@ export function ProjectsGridClient({ layout, projects, profile, info, details }:
     },
     [openProject],
   );
-  // The intro's job rows open their cards too. openProject only runs on click, never in render.
+  // The intro's job rows open the viewfinder too. openProject only runs on click, never in render.
   // eslint-disable-next-line react-hooks/refs
   const renderCard = useMemo(() => makeRenderCard(profile, info, openProject), [profile, info, openProject]);
 

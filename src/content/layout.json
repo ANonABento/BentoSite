@@ -243,34 +243,6 @@
       "row": 7,
       "w": 3,
       "h": 2
-    },
-    {
-      "id": "job-rlwrld",
-      "col": 5,
-      "row": 8,
-      "w": 3,
-      "h": 1
-    },
-    {
-      "id": "job-hamming",
-      "col": 8,
-      "row": 8,
-      "w": 2,
-      "h": 1
-    },
-    {
-      "id": "job-reazon",
-      "col": 10,
-      "row": 8,
-      "w": 2,
-      "h": 1
-    },
-    {
-      "id": "job-midnight-sun",
-      "col": 12,
-      "row": 8,
-      "w": 2,
-      "h": 1
     }
   ]
 }
