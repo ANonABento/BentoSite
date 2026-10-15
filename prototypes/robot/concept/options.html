@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>B-01 Options</title>
+<!-- Pick-one-per-row options for B-01. Render: Chrome --headless --screenshot --window-size=2400,1500 options.html -->
+<style>
+  html, body { margin: 0; background: #e4ddd1; }
+  body { width: 2400px; height: 1500px; overflow: hidden; font-family: "Helvetica Neue", Arial, sans-serif; }
+  .mono { font-family: "SF Mono", Menlo, monospace; }
+</style>
+</head>
+<body>
+<svg id="sheet" width="2400" height="1500" viewBox="0 0 2400 1500" xmlns="http://www.w3.org/2000/svg"></svg>
+<script src="parts.js"></script>
+<script>
+el('rect', { x: 0, y: 0, width: 2400, height: 1500, fill: 'url(#grid)' });
+txt(sheet, 48, 62, 'B-01  OPTIONS', { 'font-size': 36, 'font-weight': 700, 'letter-spacing': 6, fill: C.ink });
+txt(sheet, 50, 94, 'No mouth, no nose. Pick one per row (e.g. "E2 H3 M2 B2"), mix freely. Everything else stays as in sheet v2.', { 'font-size': 18, fill: '#5a5048' });
+el('line', { x1: 48, y1: 112, x2: 2352, y2: 112, stroke: C.ink, 'stroke-width': 2 });
+
+function clipRect(x, y, w, h) {
+  const id = 'c' + Math.random().toString(36).slice(2);
+  el('rect', { x, y, width: w, height: h }, el('clipPath', { id }, defs));
+  return `url(#${id})`;
+}
+function card(x, y, w, h, code, name, sub, draw) {
+  el('rect', { x, y, width: w, height: h, rx: 6, fill: '#ece6dc', stroke: '#b9ae9f', 'stroke-width': 1.5 });
+  draw(g(sheet, { 'clip-path': clipRect(x + 1, y + 1, w - 2, h - 62) }));
+  el('rect', { x: x + 14, y: y + h - 50, width: 46, height: 30, rx: 4, fill: C.ink });
+  txt(sheet, x + 37, y + h - 29, code, { 'font-size': 16, 'font-weight': 700, 'text-anchor': 'middle', fill: '#f2ece2', class: 'mono' });
+  txt(sheet, x + 72, y + h - 33, name, { 'font-size': 16, 'font-weight': 700, fill: C.ink });
+  txt(sheet, x + 72, y + h - 15, sub, { 'font-size': 12.5, fill: '#6a5f55' });
+}
+function rowLabel(y, s) { txt(sheet, 48, y, s, { 'font-size': 14, 'letter-spacing': 3, fill: '#7a6e62', class: 'mono' }); }
+
+// ---- eyes ----
+rowLabel(140, 'EYES  ·  all glow orange; lids/shutters drive blinks');
+[
+  ['E1', 'Aperture', 'camera-iris blades, round', 'aperture'],
+  ['E2', 'Almond', 'solid glow, slit pupil', 'almond'],
+  ['E3', 'Screen', 'capsule display, pixel pupil', 'pill'],
+  ['E4', 'Ring', 'hollow halo + dot', 'ring'],
+  ['E5', 'Tareme', 'soft droopy, gentle', 'tareme'],
+].forEach(([c, n, s, eyes], i) => {
+  const x = 48 + i * 465;
+  card(x, 152, 445, 360, c, n, s, (p) => headFront(g(p, { transform: `translate(${x + 222},${212}) scale(2.4)` }), { eyes, marks: 'clean' }));
+});
+
+// ---- hair ----
+rowLabel(546, 'HAIR  ·  glossy sculpted shells, faceted locks');
+[
+  ['H1', 'Hime cut', 'blunt bangs, long straight back', 'hime'],
+  ['H2', 'Bob', 'jaw-length, rounded', 'bob'],
+  ['H3', 'Odango', 'twin buns, chrome caps', 'odango'],
+  ['H4', 'Twin tails', 'chrome ties, ceramic bows', 'twintails'],
+].forEach(([c, n, s, hair], i) => {
+  const x = 48 + i * 581.5;
+  card(x, 558, 561, 360, c, n, s, (p) => headFront(g(p, { transform: `translate(${x + 280},${612}) scale(2.3)` }), { hair, marks: 'clean' }));
+});
+
+// ---- face marks ----
+rowLabel(952, 'FACE MARKS');
+[
+  ['M1', 'Clean', 'pure porcelain', 'clean'],
+  ['M2', 'Blush LEDs', 'three dashes per cheek', 'blush'],
+  ['M3', 'Doll seams', 'joint line + screw', 'seams'],
+  ['M4', 'Facet', 'soft centre ridge', 'facet'],
+].forEach(([c, n, s, marks], i) => {
+  const x = 48 + (i % 2) * 400, y = 964 + Math.floor(i / 2) * 252;
+  card(x, y, 384, 240, c, n, s, (p) => headFront(g(p, { transform: `translate(${x + 192},${y - 114}) scale(2.9)` }), { marks, hair: 'none' }));
+});
+
+// ---- body ----
+rowLabel(952, '');
+txt(sheet, 880, 952, 'BODY  ·  sleeves × legs', { 'font-size': 14, 'letter-spacing': 3, fill: '#7a6e62', class: 'mono' });
+[
+  ['B1', 'Puff + thigh-highs', 'sheet v2', { sleeve: 'puff', legs: 'thighhigh' }],
+  ['B2', 'Bell + thigh-highs', 'long flared sleeves', { sleeve: 'bell', legs: 'thighhigh' }],
+  ['B3', 'Puff + boots', 'ceramic legs, knee boots', { sleeve: 'puff', legs: 'boots' }],
+  ['B4', 'Bell + boots', 'flared sleeves, knee boots', { sleeve: 'bell', legs: 'boots' }],
+].forEach(([c, n, s, o], i) => {
+  const x = 880 + i * 370;
+  card(x, 964, 352, 488, c, n, s, (p) => figureFront(g(p, { transform: `translate(${x + 176},${990}) scale(.62)` }), o));
+});
+</script>
+</body>
+</html>
