@@ -59,19 +59,26 @@ reflection** until the reveal.
 
 1. **Wake (0 to 2.3 s):** eyes strike, power-on lock, the head lifts in two servo steps.
 2. **Glance down (2.35 to 3.2 s):** her eyes snap down, her head follows, and her hand comes up into the bottom of the frame.
-3. **Finger wiggle (3.3 to 4.2 s):** quick and human. Two passes, index to pinky and back, twice, in under a
-   second. They curl partway and the thumb stays still.
+3. **Finger wiggle (3.3 to 4.2 s):** quick and human. Two passes, thumb to pinky and back, twice, in under a
+   second. They curl partway.
 4. **Pointing stance (4.3 to 4.65 s):** index out, the rest fold one by one, the thumb tucks a little.
-5. **The long reach (4.7 to 8.0 s), with the camera still:** it eased back (3.0 to 4.6 s) to a wider frame of her
-   reflection that takes in the bottom of the glass, and now holds dead still. She stands 1.2 m back; her arm extends
-   to about 85% as she leans in. Her reflected hand travels forward and slowly sinks below the screen.
-6. **The camera backs away (8.0 to 11.0 s):** her finger arrives at the button and waits there. The camera starts
-   backing away from the TV, slowly and evenly, so the motion still reads as her reaching. It rises over her arm,
-   then goes out to her right and back, settling where her finger on the button and her reflection are both clear.
+5. **The long reach (4.7 to 8.0 s):** she stands 1.2 m back; her arm extends to about 85% as she leans in.
+   Her reflected hand travels forward and sinks below the glass.
+6. **Her finger waits on the button (8.0 to 11.15 s)** while the camera backs away.
 7. **The click (11.15 s):** once the camera has settled (anticipation, press, flash, kick, speed ramp). The LED goes
    orange, and the tube warms up for a second (`WARM`).
-8. **She steps aside (12.5 to 13.8 s)** as the screen powers on. The camera holds while the CRT loading sequence
-   plays (`P1 = P0`), then dives into the screen.
+8. **She steps aside (12.5 to 13.8 s)** as the screen powers on and the boot plays.
+
+**Camera: three smooth moves**, each from rest to rest, with no holds or kinks in between:
+1. **Robot to screen (0.2 to 8.2 s, `TO_SCREEN`):** close on her reflected face for the wake, then one long, slow-starting
+   move down to the glass's bottom edge, where her reflected finger and her real one meet at the button.
+2. **Screen away (8.2 to 11.0 s, `AWAY`):** back, up and out to her right, then round over her shoulder (the reveal). She
+   clicks once it settles at `P0`.
+3. **Back into the TV (`placeCamera`, `INTO`):** from power-on, one push that creeps while the boot text plays and
+   runs on into the dive, ending square on the glass.
+
+**Board zoom (like the site's boot):** the dive lands on the board zoomed out to `INTRO_ZOOM` (0.4) of its fit zoom.
+The pixels merge and denoise into cards across that wide view, then it glides in (`T.zoomIn`) as they resolve.
 
 ## Shading (anime / MToon-style)
 

@@ -69,7 +69,6 @@ const P = {
 const T = {
   led: 0.45,
   power: [0.75, 1.55],
-  hand: 1.2,               // set by the prologue: where its pull-back settles and the boot camera takes over from P0
   wordmark: [1.35, 1.9],
   lines: 1.85,             // first boot line starts; each takes `lineDur`
   lineDur: 0.34,
@@ -78,11 +77,13 @@ const T = {
   tint: [4.6, 5.8],
   merge: [5.55, 7.15],
   resolve: [6.95, 8.65],
+  zoomIn: [7.4, 8.7],      // the glide in from the zoomed-out board, as the cards resolve
   fxOff: [7.9, 9.0],
   end: 9.3,
 };
 
 const SPAN0 = 34;                // cells across the screen while it shows text
+const INTRO_ZOOM = 0.4;          // the board opens at this multiple of its fit zoom (the site's INTRO.zoom)
 
 /* ------------------------------------------------------------------ */
 const vpW = () => window.innerWidth, vpH = () => window.innerHeight;
@@ -732,30 +733,22 @@ function spanEnd() {
   return (vpW() / (STEP * fitZoom())) / (visW / SW);
 }
 
-// The boot starts where the prologue's pull-back settles, over her right shoulder, and pulls back to P1.
+// The boot starts where the prologue's pull-back settles, over her right shoulder (P0).
+// Move 3: from there, one push back into the TV. It starts as the screen powers on, creeps while the boot text
+// plays, and runs on into the dive, ending square on the glass.
 const P0 = new THREE.Vector3(1.0, 0.55, 2.35), L_END = new THREE.Vector3(0.28, -0.22, 0);
-const P1 = P0.clone();   // the boot holds where the prologue left the camera, then dives
+const INTO = [T.power[0], T.dive[1]];
 const tmpTarget = new THREE.Vector3();
 function placeCamera(t) {
-  const a = easeInOutSine(clamp01((t - T.hand) / (T.dive[0] - T.hand)));
-  const pos = new THREE.Vector3().lerpVectors(P0, P1, a);
-  // A slight handheld drift before the dive.
-  const drift = (1 - ramp(t, T.dive)) * sstep(ramp(t, [T.hand, T.hand + 0.8]));   // fades in so the hand-off from the prologue doesn't pop
-  pos.x += Math.sin(t * 0.7) * 0.025 * drift; pos.y += Math.sin(t * 0.53 + 1) * 0.015 * drift;
-  tmpTarget.lerpVectors(L_END, new THREE.Vector3(0, 0, 0), a);
-  const k = ramp(t, T.dive);
-  if (k > 0) {
-    const e = easeInOutCubic(k);
-    const zEnd = SCREEN_Z + fillDistance();
-    // Exponential approach reads as a constant-rate zoom into the glass.
-    const d0 = P1.length(), d1 = zEnd - SCREEN_Z;
-    const dist = Math.exp(mix(Math.log(d0), Math.log(d1), e));
-    const lateral = 1 - sstep(clamp01(k * 1.25));
-    const dir = new THREE.Vector3(P1.x * lateral, P1.y * lateral, Math.sqrt(Math.max(1e-6, P1.lengthSq() - (P1.x * lateral) ** 2 - (P1.y * lateral) ** 2))).normalize();
-    pos.copy(dir.multiplyScalar(dist)).add(new THREE.Vector3(0, 0, SCREEN_Z));
-    tmpTarget.set(0, 0, mix(0, SCREEN_Z, e));
-  }
-  camera.position.copy(pos);
+  const e = skew(0.75)(ramp(t, INTO));
+  // Exponential approach reads as a constant-rate zoom into the glass.
+  const Q = P0.clone().setZ(P0.z - SCREEN_Z);   // P0 relative to the glass
+  const d0 = Q.length(), d1 = fillDistance();
+  const dist = Math.exp(mix(Math.log(d0), Math.log(d1), e));
+  const lateral = 1 - sstep(e);
+  const dir = new THREE.Vector3(Q.x * lateral, Q.y * lateral, Math.sqrt(Math.max(1e-6, Q.lengthSq() - (Q.x * lateral) ** 2 - (Q.y * lateral) ** 2))).normalize();
+  camera.position.copy(dir.multiplyScalar(dist)).add(new THREE.Vector3(0, 0, SCREEN_Z));
+  tmpTarget.lerpVectors(L_END, new THREE.Vector3(0, 0, SCREEN_Z), sstep(e));
   camera.lookAt(tmpTarget);
 }
 
@@ -780,10 +773,13 @@ function apply(t) {
   u.uFx.value = 1 - fxOff;
   u.uMaskAmt.value = 1;
   const sEnd = spanEnd();
-  u.uMaxR.value = sEnd * 0.75;
-  // Content zoom: holds while text shows, then dives with the camera and on to the board's own zoom.
-  const z = easeInOutCubic(ramp(t, [T.dive[0] + 0.3, T.resolve[0] + 0.4]));
-  u.uSpan.value = Math.exp(mix(Math.log(SPAN0), Math.log(sEnd), z));
+  // Content zoom, like the site's own boot: the dive lands on the board zoomed well out (INTRO_ZOOM of the fit zoom),
+  // the pixels merge and denoise into cards across that wide view, and it glides in to the fit zoom as they resolve.
+  const sWide = sEnd / INTRO_ZOOM;
+  u.uMaxR.value = sWide * 0.55;
+  const zOut = easeInOutCubic(ramp(t, [T.dive[0] + 0.3, T.merge[0] + 0.6]));
+  const zIn = easeInOutCubic(ramp(t, T.zoomIn));
+  u.uSpan.value = Math.exp(mix(mix(Math.log(SPAN0), Math.log(sWide), zOut), Math.log(sEnd), zIn));
 
   placeCamera(t);
   setBulge(1 - sstep(ramp(t, [T.dive[0] + 0.6, T.dive[1]])));
@@ -823,7 +819,6 @@ const SLOW = [10.95, CLICK], SLOW_K = 0.6, SLOW_EXTRA = (SLOW[1] - SLOW[0]) * (1
 const story = (t) => (t < SLOW[0] ? t : t < SLOW[0] + (SLOW[1] - SLOW[0]) / SLOW_K ? SLOW[0] + (t - SLOW[0]) * SLOW_K : t - SLOW_EXTRA);
 const TOTAL = CLICK + WARM - T.led + T.end + SLOW_EXTRA;
 let ledForce = false;
-T.hand = PRO_END - CLICK - WARM + T.led;   // the boot camera takes over where the pull-back settles
 
 const ROBOT_HOME = new THREE.Vector3(0.1, -0.5, 1.2);     // a step back from the TV, so the reach is a long one
 const ROBOT_AWAY = new THREE.Vector3(-1.0, -0.5, 1.85);
@@ -886,19 +881,26 @@ const R_SHOW = V(-0.17, 0.1, 0.46), R_SHOW_DIR = V(0.1, 1, 0.3);   // in front o
 const FINGER_TIP = 0.3;                                   // wrist to index fingertip
 const POINT_DIR = V(0.2, -0.3, -1).normalize();          // world: the press goes in along this
 
-// Camera: on her reflection with a slow push, then one pull-back over her shoulder into the boot's P0.
-// Camera: close on her reflection for the wake; then it eases back to a wider frame that takes in the bottom of
-// the screen, and holds dead still for the whole reach (her reflected hand travels forward and sinks below the
-// glass). As her finger reaches the button it backs away from the TV, slowly, so the motion still reads as her
-// reaching, and settles where her hand on the button is clear. Only then does she click.
-const REFL = [{ p: V(0.1, 0.1, 0.27), l: V(0.1, 0.02, -1), fov: 42 }, { p: V(0.1, 0.08, 0.2), l: V(0.1, -0.03, -1), fov: 40 }];
-const WIDE = { t0: 3.0, t1: 4.6, p: V(0.14, -0.2, 0.5), l: V(0.12, -0.38, -1), fov: 48 };   // the glass's bottom edge sits low in frame
-// The camera follows her hand down toward the TV's chin, eases to a stop as her finger hovers, then reverses:
-// up and back over her shoulder, revealing the reflection. She clicks a moment after it turns back.
-const PULL = { t0: 8.0, t1: PRO_END, ease: easeInOutSine,
-  // out to her right first (clear of her hair), then up and back over her shoulder
-  // up first (clear of her reaching arm), then out to her right and back
-  rise: { p: V(0.55, 0.18, 0.62), l: V(0.25, -0.4, -0.3) }, side: { p: V(0.75, 0.42, 1.4), l: V(0.3, -0.3, 0.0) }, end: { p: P0.clone(), l: L_END.clone() } };
+// Camera: three moves, each from rest to rest (the third, the dive, is placeCamera's).
+// 1. Robot → screen: close on her reflected face for the wake, then one long move down to the glass's bottom edge,
+//    where her reflected hand sinks below the glass and her real finger lands on the button.
+// 2. Screen → away: back and up over her shoulder, revealing it was a reflection. She clicks once it settles.
+const shot = (p, l, fov) => ({ p, l, fov });
+const TO_SCREEN = { t0: 0.2, t1: 8.2, ease: skew(0.6), keys: [
+  shot(V(0.1, 0.1, 0.27), V(0.1, 0.02, -1), 42),
+  shot(V(0.12, -0.1, 0.42), V(0.18, -0.3, -1), 46),
+  shot(V(0.08, -0.2, 0.55), V(0.4, -0.58, -0.3), 46),   // left of her real arm, so it enters from the right edge
+] };
+const AWAY = { t0: 8.2, t1: PRO_END, ease: skew(0.45), keys: [
+  TO_SCREEN.keys.at(-1),
+  shot(V(1.15, 0.3, 0.9), V(0.4, -0.4, 0), 40),   // up and out to her right, clear of her arm and hair
+  shot(P0.clone(), L_END.clone(), 35),
+] };
+function move(m, t) {
+  const u = m.ease(clamp01((t - m.t0) / (m.t1 - m.t0)));
+  const curve = (pts) => new THREE.CatmullRomCurve3(pts, false, 'centripetal').getPoint(u);
+  return { p: curve(m.keys.map((s) => s.p)), l: curve(m.keys.map((s) => s.l)), fov: curve(m.keys.map((s) => V(s.fov, 0, 0))).x };
+}
 
 let ledPulse = 1;
 function prologue(t) {
@@ -953,16 +955,16 @@ function prologue(t) {
   robot.reach(wrist);
   robot.aim(dir, up.normalize(), 0.08 * Math.sin((t - 3.2) * 4) * bump((t - 3.2) / 1.5));
 
-  // Fingers: a quick human wiggle, two passes of index→pinky and back in under a second, partway (not into a fist),
-  // the thumb still;
+  // Fingers: a quick human wiggle, two passes of thumb→pinky and back in under a second, partway (not into a fist);
   // then the pointing stance: index out, the rest fold one by one, the thumb tucks a little.
   const WAVE = [3.3, 3.52, 3.74, 3.96];       // forward, back, forward, back (done by ~4.2)
+  // Digit j: 0 is the thumb, 1..4 index to pinky. The wave runs thumb→pinky, then back.
+  const wave = (j, amp) => (t < 4.35 ? WAVE.reduce((acc, t0, k) => acc + amp * bump((t - t0 - 0.03 * (k % 2 ? 4 - j : j)) / 0.15), 0) : 0);
   const per = [0, 1, 2, 3].map((i) => {
-    const wave = WAVE.reduce((acc, t0, k) => acc + 0.4 * bump((t - t0 - 0.035 * (k % 2 ? 3 - i : i)) / 0.15), 0);
     const base = track(t, 0.25, [[2.4, 3.2, 0.12], [4.3 + 0.05 * i, 4.6 + 0.05 * i, i === 0 ? 0.03 : 0.78, easeOutBack], [11.6, 12.15, 0.25]]);
-    return base + (t < 4.35 ? wave : 0);
+    return base + wave(i + 1, 0.4);
   });
-  const thumb = track(t, 0.25, [[2.4, 3.2, 0.2], [4.4, 4.65, 0.42], [11.6, 12.15, 0.25]]);
+  const thumb = track(t, 0.25, [[2.4, 3.2, 0.2], [4.4, 4.65, 0.42], [11.6, 12.15, 0.25]]) + wave(0, 0.35);
   const spread = track(t, 0, [[2.4, 3.2, 0.25], [4.3, 4.6, 0.02], [11.6, 12.15, 0]]);
   robot.grip(0.25, spread, thumb, per);
   powerButton.position.z = BUTTON_Z - 0.008 * clamp01(track(t, 0, [[11.05, CLICK, 1, easeInQuad], [11.25, 11.4, 0, easeOutBack]]));
@@ -984,22 +986,15 @@ function prologue(t) {
 
   // ---- camera ----
   robot.updateToon();
-  if (t >= PRO_END) { if (camera.fov !== 35) { camera.fov = 35; camera.updateProjectionMatrix(); } return; }
-  let p, l, fov;
-  const k0 = clamp01(t / WIDE.t0), w = easeInOutSine(ramp(t, [WIDE.t0, WIDE.t1]));
-  const holdP = REFL[0].p.clone().lerp(REFL[1].p, k0).lerp(WIDE.p, w);
-  const holdL = REFL[0].l.clone().lerp(REFL[1].l, k0).lerp(WIDE.l, w);
-  if (t < PULL.t0) {
-    p = holdP; l = holdL; fov = mix(mix(REFL[0].fov, REFL[1].fov, k0), WIDE.fov, w);
-  } else {
-    const u = PULL.ease(clamp01((t - PULL.t0) / (PULL.t1 - PULL.t0)));
-    p = new THREE.CatmullRomCurve3([WIDE.p, PULL.rise.p, PULL.side.p, PULL.end.p], false, 'centripetal').getPoint(u);
-    l = new THREE.CatmullRomCurve3([WIDE.l, PULL.rise.l, PULL.side.l, PULL.end.l], false, 'centripetal').getPoint(u);
-    fov = mix(WIDE.fov, 35, sstep(u));
-  }
-  // the click kicks the camera
+  // the click kicks the camera (after PRO_END the boot's placeCamera has already placed it)
   const kick = t > CLICK ? Math.exp(-(t - CLICK) / 0.06) * Math.cos((t - CLICK) * 90) * 0.003 : 0;
-  camera.position.copy(p).add(V(kick, kick * 0.6, 0));
+  if (t >= PRO_END) {
+    camera.position.add(V(kick, kick * 0.6, 0));
+    if (camera.fov !== 35) { camera.fov = 35; camera.updateProjectionMatrix(); }
+    return;
+  }
+  const { p, l, fov } = move(t < AWAY.t0 ? TO_SCREEN : AWAY, t);
+  camera.position.copy(p);
   camera.lookAt(l);
   camera.fov = fov;
   camera.updateProjectionMatrix();
