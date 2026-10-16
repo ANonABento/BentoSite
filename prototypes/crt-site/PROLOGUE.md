@@ -59,15 +59,17 @@ reflection** until the reveal.
 
 1. **Wake (0 to 2.3 s):** eyes strike, power-on lock, the head lifts in two servo steps.
 2. **Glance down (2.35 to 3.2 s):** her eyes snap down, her head follows, and her hand comes up into the bottom of the frame.
-3. **Finger test (3.3 to 5.5 s):** two passes of a wave, index to pinky and back, twice. They curl partway (not into
-   a fist), and the thumb stays still.
-4. **Pointing stance (5.45 to 5.85 s):** index out, the rest fold one by one, the thumb tucks a little.
-5. **Reach toward the TV (5.8 to 6.95 s):** her eyes, then her head, turn to the button. The hand drops toward the bottom
-   of the frame, and her body leans in.
-6. **Pull-back and click (6.35 to 8.0 s):** as the hand leaves the frame, the camera pulls back out to her right and
-   over her shoulder, revealing the reflection. Anticipation, then the press: click at 7.3 s (flash, kick, speed ramp).
+3. **Finger wiggle (3.3 to 4.2 s):** quick and human. Two passes, index to pinky and back, twice, in under a
+   second. They curl partway and the thumb stays still.
+4. **Pointing stance (4.3 to 4.65 s):** index out, the rest fold one by one, the thumb tucks a little.
+5. **The long reach (4.7 to 7.05 s), the slow part:** she stands a step back from the TV (1.2 m), so it's a real
+   reach. Her arm extends to about 85%, she leans well in and her weight shifts forward. In the glass her face grows
+   toward us as the hand sinks out of the bottom of the frame.
+6. **Pull-back and click (5.9 to 8.5 s), also slow:** as the hand leaves the frame, the camera pulls back, out to
+   her right and over her shoulder, revealing the reflection. Anticipation, then the press: click at 7.45 s
+   (flash, kick, speed ramp).
 7. **Screen on:** the power-on line, then the glow. The screen backlights her with a bright toon rim halo.
-8. **She steps aside (8.5 to 9.8 s)** and the boot plays, with no cut.
+8. **She steps aside (8.8 to 10.1 s)** and the boot plays, with no cut.
 
 ## Shading (anime / MToon-style)
 
