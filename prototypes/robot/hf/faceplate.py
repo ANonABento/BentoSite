@@ -10,7 +10,7 @@ args = sys.argv[sys.argv.index('--')+1:]; glb, out = args[:2]; EXPR = args[2] if
 ZB, ZM, ZT = 0.316, 0.368, 0.412     # chin tip, widest (cheeks) from here up, top (tucked under the bangs)
 WMAX, RX, DX = 0.056, 0.060, 0.040   # half width; cross-section ellipse radius and depth (sides wrap well behind the hair)
 THICK = 0.0022
-EX, EZ, SX = 0.0285, 0.3815, 0.021   # eye centres (right under the bangs) and half width; eye units are multiples of SX
+EX, EZ, SX = 0.026, 0.3812, 0.0198  # eye centres (right under the bangs) and half width; eye units are multiples of SX
 SD = 0.0015                          # socket depth
 def half_w(z):
     u = np.clip((ZM - z) / (ZM - ZB), 0, 1)                   # cheeks into a V-line jaw, small rounded chin
@@ -26,14 +26,18 @@ def surf(x, z):   # front surface y at (x, z), without sockets
     nose = 0.0032 * t ** 1.6 * (1 - under) ** 2 * np.exp(-(x / (0.0028 + 0.0022 * t)) ** 2)
     chin = 0.0012 * bump((z - 0.3265) / 0.0075) * np.exp(-(x / 0.011) ** 2)
     return y - nose - chin
-# eye socket outline (a outward from the nose, b up): a big, smooth, rounded almond, outer corner a touch higher;
-# the control polygon is rounded off with Chaikin corner cutting
+# eye socket outline (a outward from the nose, b up), traced from the general anime-girl eye: a gently arched,
+# fairly flat top lid and a deep round U below (no almond), rounded off with Chaikin corner cutting
 def chaikin(P, n):
     for _ in range(n):
         Q = np.roll(P, -1, 0); P = np.stack([0.75 * P + 0.25 * Q, 0.25 * P + 0.75 * Q], 1).reshape(-1, 2)
     return P
-EYE_POLY = chaikin(np.array([(-1.04, 0.02), (-0.88, 0.5), (-0.3, 0.76), (0.42, 0.8), (0.96, 0.62), (1.1, 0.3),
-                             (0.96, -0.14), (0.56, -0.56), (0.0, -0.68), (-0.56, -0.58), (-0.94, -0.3)]), 4)
+EYE_POLY = chaikin(np.array([(-0.98, 0.26), (-0.62, 0.58), (0.0, 0.7), (0.55, 0.66), (0.95, 0.48), (1.02, 0.25),
+                             (0.92, -0.2), (0.6, -0.56), (0.1, -0.74), (-0.4, -0.64), (-0.78, -0.32), (-0.96, 0.0)]), 3)
+# the thick upper lash band over the lid, thickest at the outer corner, plus two short spiky lashes there
+LASH = chaikin(np.array([(-1.0, 0.2), (-0.98, 0.34), (-0.64, 0.7), (0.0, 0.84), (0.6, 0.8), (1.0, 0.64), (1.0, 0.5),
+                         (0.92, 0.42), (0.55, 0.58), (0.0, 0.62), (-0.6, 0.5), (-0.92, 0.22)]), 2)
+SPIKES = [np.array([(0.9, 0.66), (1.26, 0.74), (1.02, 0.48)]), np.array([(0.98, 0.48), (1.22, 0.4), (1.0, 0.3)])]
 def poly_sd(P, a, b):   # signed distance to a closed polygon (negative inside)
     a = np.asarray(a, float); b = np.asarray(b, float); d = np.full(a.shape, np.inf); ins = np.zeros(a.shape, bool)
     for (x0, y0), (x1, y1) in zip(P, np.roll(P, -1, 0)):
@@ -213,15 +217,16 @@ gb_, ga_ = np.mgrid[0:N, 0:N]; A = (ga_ / (N - 1) * 2 - 1) * K; B = (1 - gb_ / (
 SDF = eye_sd(A, B); ins = SDF < 0
 img = np.zeros((N, N, 4)); emis = np.zeros((N, N, 4)); emis[..., 3] = 1
 img[ins] = [0.012, 0.012, 0.016, 1]
-WING = np.array([(0.8, 0.6), (1.24, 0.72), (1.02, 0.34)])                # short eyeliner flick off the outer corner
-wing = poly_sd(WING, A, B) < 0.01
-img[wing & ~ins] = [0.012, 0.012, 0.016, 1]
+gl = np.clip((0.55 - B) / 1.25, 0, 1) ** 1.3                                 # glass: dark under the lashes, lighter low down
+img[ins, :3] = (0.05 + 0.36 * gl[ins])[:, None] * np.array([1.0, 0.93, 0.9])
+wing = (poly_sd(LASH, A, B) < 0.005) | np.any([poly_sd(P_, A, B) < 0.005 for P_ in SPIKES], 0)
+img[wing] = [0.012, 0.012, 0.016, 1]
 glint = ins & (np.abs(B - 0.3 + 0.12 * A) < 0.035) & (A > -0.6) & (A < -0.15)   # thin reflection on the glass
-img[glint, :3] = 0.12
-u, v = A - 0.04, B - 0.02; r = np.hypot(u, v)
+img[glint, :3] = 0.3
+u, v = A - 0.02, B + 0.05; r = np.hypot(u, v)              # the glow sits a little low, like an iris under the lid
 hexd = np.maximum(np.abs(v), np.abs(u) * 0.866 + np.abs(v) * 0.5)
 shape = {
-  'dot':   hexd < 0.31,
+  'dot':   hexd < 0.34,
   'star':  (np.abs(u) ** 0.5 + np.abs(v) ** 0.5) < 0.74,
   'happy': (r < 0.38) & (v > -0.06),                                   # dome: a squinty smile
   'ring':  (hexd < 0.35) & (hexd > 0.22),
