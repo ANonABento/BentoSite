@@ -277,5 +277,7 @@ export async function loadRobot(url = new URL('./assets/robot.glb', import.meta.
   return {
     root, head: headBone, headPivot, hand: handB, mats: { iris }, reach, aim, grip, setEyes, shoulder, state, bones, morph: bodyMesh,
     left: { reach: armL.reach, aim: armL.aim, grip: armL.grip, hang: leftHang }, body, look, applyHead,
+    /** The head's frame (robot-local axes carried by the head): +z is where her face points. */
+    headFrame: () => carried(headBone),
   };
 }
