@@ -70,10 +70,11 @@ reflection** until the reveal.
 8. **She steps aside (12.5 to 13.8 s)** as the screen powers on and the boot plays.
 
 **Camera: three smooth moves**, each from rest to rest, with no holds or kinks in between:
-1. **Robot to screen (0.2 to 8.2 s, `TO_SCREEN`):** close on her reflected face for the wake, then one long, slow-starting
-   move down to the glass's bottom edge, where her reflected finger and her real one meet at the button.
-2. **Screen away (8.2 to 11.0 s, `AWAY`):** back, up and out to her right, then round over her shoulder (the reveal). She
-   clicks once it settles at `P0`.
+1. **Robot to screen (0.2 to 8.2 s, `TO_SCREEN`):** square to the glass the whole way, so it never turns and nothing gives
+   away the reflection. It slides down and across with her reflected hand, staying inside the glass (no bezel, no real
+   arm), until her hand sinks off the bottom of the frame toward the button.
+2. **Screen away (8.2 to 11.0 s, `AWAY`):** only now does it turn: back and out to her right, then round over her shoulder,
+   showing her with her finger on the button, ready to press. She clicks once it settles at `P0`.
 3. **Back into the TV (`placeCamera`, `INTO`):** from power-on, one push that creeps while the boot text plays and
    runs on into the dive, ending square on the glass.
 

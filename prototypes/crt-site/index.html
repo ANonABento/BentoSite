@@ -882,18 +882,22 @@ const FINGER_TIP = 0.3;                                   // wrist to index fing
 const POINT_DIR = V(0.2, -0.3, -1).normalize();          // world: the press goes in along this
 
 // Camera: three moves, each from rest to rest (the third, the dive, is placeCamera's).
-// 1. Robot → screen: close on her reflected face for the wake, then one long move down to the glass's bottom edge,
-//    where her reflected hand sinks below the glass and her real finger lands on the button.
-// 2. Screen → away: back and up over her shoulder, revealing it was a reflection. She clicks once it settles.
+// 1. Robot → screen: square to the glass the whole way (it never turns, so nothing gives away that it's a reflection).
+//    It slides down and across with her reflected hand, staying inside the glass, until her hand sinks off the
+//    bottom of the frame toward the button.
+// 2. Screen → away: only now does it turn, pulling back and out to her right, then round over her shoulder to show
+//    her with her finger on the button, ready to press. She clicks once it settles.
 const shot = (p, l, fov) => ({ p, l, fov });
+const SQUARE = (x, y, z, fov) => shot(V(x, y, z), V(x, y, z - 1), fov);   // looking straight into the glass
 const TO_SCREEN = { t0: 0.2, t1: 8.2, ease: skew(0.6), keys: [
-  shot(V(0.1, 0.1, 0.27), V(0.1, 0.02, -1), 42),
-  shot(V(0.12, -0.1, 0.42), V(0.18, -0.3, -1), 46),
-  shot(V(0.08, -0.2, 0.55), V(0.4, -0.58, -0.3), 46),   // left of her real arm, so it enters from the right edge
+  SQUARE(0.1, 0.1, 0.27, 42),
+  SQUARE(0.16, -0.06, 0.25, 41),
+  SQUARE(0.28, -0.22, 0.22, 40),
 ] };
 const AWAY = { t0: 8.2, t1: PRO_END, ease: skew(0.45), keys: [
   TO_SCREEN.keys.at(-1),
-  shot(V(1.15, 0.3, 0.9), V(0.4, -0.4, 0), 40),   // up and out to her right, clear of her arm and hair
+  shot(V(0.95, 0.0, 0.75), V(0.45, -0.45, 0), 40),   // back and out to her right, clear of her arm
+  shot(V(1.15, 0.35, 1.5), V(0.35, -0.3, 0), 37),    // round over her shoulder
   shot(P0.clone(), L_END.clone(), 35),
 ] };
 function move(m, t) {
