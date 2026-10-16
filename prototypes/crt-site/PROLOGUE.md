@@ -1,5 +1,9 @@
 # Prologue script (v3)
 
+> She is a **robot maid**. She doesn't breathe; she powers up, runs servos, locks into poses.
+> The model is a temporary placeholder, so this script only describes motion and staging that will
+> carry over to the final model. Material, hair and proportion tuning waits for that model.
+
 The script for the intro, written before any keys are set. Each shot has a **macro** line (what the
 audience should read) and **micro** keys (who moves, when, by how much, on which curve).
 Times are prologue seconds (`t`). The boot timeline (`tb`) starts at the knob click.
@@ -30,11 +34,22 @@ in 3D. The rules we take from it:
 | **Anticipation** | Every big move starts with a small counter-move, 80 to 150 ms long (shoulder dips before the reach, wrist counter-turns before the twist). |
 | **Lead and follow** | The eyes lead, then head, chest, shoulder, elbow, wrist and fingers, each 60 to 120 ms after the one before. Nothing starts on the same frame. |
 | **Arcs** | The hand travels on a curve (a bezier through a raised midpoint), never in a straight lerp. |
-| **Moving holds** | She is never frozen: breathing (chest about 3 mm at 0.25 Hz), slow weight sway, and a blink every 2 to 3 s. Hair and skirt springs keep settling after each move. |
+| **Servo holds** | She is never fully frozen, but she doesn't breathe. While holding a pose, she makes tiny stepped micro-corrections (0.3 to 0.6° on the head or wrist, every 1 to 2 s, each a 60 ms snap). Hair and skirt springs come with the final model. |
+| **Mechanical, not stiff** | Robot movement means precise and decisive moves that lock into place: a fast move, a tiny overshoot, then a hard stop. Never limp and never floaty. Organic beats (breath, sigh, hand to heart) are out. |
 | **Strong key poses** | Each shot lands on one clear silhouette that holds for at least 0.3 s, so the eye can read it. |
 | **Cut on action** | The camera either holds still with a slow drift or makes one decisive move. Change angle with a hard cut in the middle of a motion, never with a wander. One continuous move is allowed: the reveal. |
 | **Impact frame** | At the click: a 2-frame flash or inversion, a small camera kick, and a short speed ramp. |
 | **Light motivates** | The red standby LED is what she notices, so it pulses to draw the eye before she does. |
+
+## The original plan, kept
+
+| Original beat | Where it is now |
+|---|---|
+| Her eyes glow in the dark | Shot 1 |
+| Her hand reaches out | Shot 2 (seen in the reflection) |
+| The camera pulls back: it was her reflection on the CRT glass | Shot 3 |
+| She turns the knob | Shots 4 and 5 |
+| The boot plays, and the camera dives into the glass | From the click, unchanged |
 
 ## Story in one line
 
@@ -49,7 +64,7 @@ motivated action: no finger-play showcase and no glass touch.
 
 ### Shot 1: WAKE (0.0 to 2.3 s), reflection close-up
 
-**Macro:** total dark, then two orange eyes strike behind her bangs. She lifts her head and comes online.
+**Macro:** total dark, then two orange eyes strike behind her bangs. She powers up and lifts her head.
 
 **Camera:** locked on the glass, framing her face in the reflection, slightly left of centre (her eyes on
 the upper third). FOV 46. A 2% push-in across the whole shot on linear time, so it never stops.
@@ -57,17 +72,17 @@ the upper third). FOV 46. A 2% push-in across the whole shot on linear time, so 
 
 | t | Part | Action | Curve |
 |---|---|---|---|
-| 0.0 | body | Dormant pose: head bowed 10°, shoulders down 1 cm, breathing slowly (0.18 Hz) | — |
+| 0.0 | body | Powered down: head bowed 12°, spine slumped 4° forward, arms slack. Completely still (no idle). | — |
 | 0.0 to 0.6 | LED | Red standby glow, slow pulse (1.4 s period) | sine |
 | 0.60 to 0.95 | eyes | Ignition flicker (existing `FLICKER` keys) | step |
-| 0.95 to 1.25 | lids | Open, with a 5% over-widen that settles back by 1.4 | ease-out-back |
-| 1.15 to 1.75 | head | Lift from 10° bowed to 0°, overshoot to −1.5° (chin up), settle | ease-out-back |
-| 1.25 to 1.85 | chest | Rises 1.2 cm and straightens 3° (the "breath in" of booting) | ease-out, 100 ms after head |
-| 1.30 to 1.90 | shoulders | Lift back to rest | ease-out, 150 ms after head |
-| 1.4 to 2.3 | hair, skirt | Springs settle from the head lift | spring |
-| 2.05 | lids | Blink (0.16 s), first sign of life | — |
+| 0.95 to 1.20 | lids | Open, with a 5% over-widen that settles back by 1.35 | ease-out-back |
+| 1.10 to 1.30 | spine | **Power-on lock**: slump to upright in one quick snap, with a small overshoot back | ease-out-back |
+| 1.30 to 1.55 | head | Lift, step 1: 12° to 5° | ease-out, hard stop |
+| 1.70 to 1.95 | head | Lift, step 2: 5° to 0°, overshoot to −1° (chin up), settle | ease-out-back |
+| 2.10 | lids | One shutter blink (0.14 s), like a camera calibrating | — |
+| 2.0 on | servo idle | Starts | stepped |
 
-**End pose:** upright, eyes level at the lens. Moving hold.
+**End pose:** upright, eyes level at the lens. Servo hold.
 
 ### Shot 2: NOTICE (2.3 to 3.7 s), same shot, no cut
 
@@ -122,7 +137,7 @@ Locked, with a slow 1.5% push.
 | 5.45 to 5.80 | fingers | Close one after another: index, middle, ring, then pinky, 50 ms apart, each overshooting by 0.05 curl | ease-out-back |
 | 5.70 to 5.85 | thumb | Opposes last and pinches | ease-out |
 | 5.85 to 5.95 | hand | **Contact settle**: pushes 3 mm in, the fingers compress slightly, then rebound 1 mm | spring |
-| 5.95 to 6.40 | everything | **Hold**, the breath before the turn. The LED keeps pulsing. Her chest still breathes. | moving hold |
+| 5.95 to 6.40 | everything | **Hold**, the beat before the turn. The LED keeps pulsing, and one servo micro-correction runs in the wrist. | servo hold |
 
 ### Shot 5: CLICK (6.4 to 7.2 s), same insert
 
@@ -140,23 +155,23 @@ Locked, with a slow 1.5% push.
 
 ### Shot 6: LIGHT (7.2 to 8.6 s), cut to her face, lit by the screen
 
-**Macro:** the screen comes on and its light washes over her face. She straightens up and looks at it. Then we go in.
+**Macro:** the screen comes on and its light washes over her face. She straightens up, looks at it, and settles into a maid's standby pose. Then we go in.
 
 **Camera:** hard **cut**, frontal and slightly low, from just beside the screen's left edge looking back at
 her (a dark background behind her). Medium close-up, FOV 38. Hold, then hand off to the boot.
 **Light:** the screen's `RectAreaLight` is now her key: cold-white phosphor ramping up, her eyes still orange.
-Keep the exposure under the hair blow-out (the known issue at 8.0 to 8.4 s).
+Hair and material tuning waits for the final model.
 
 | t | Part | Action | Curve |
 |---|---|---|---|
 | 7.20 to 7.50 | R hand | Fingers release in reverse order (pinky first, 40 ms apart) | ease-out |
-| 7.35 to 8.00 | R arm | Hand returns on an arc to her chest, about 10 cm below the collar, and holds there (a "hand to heart" beat) | ease-out |
-| 7.30 to 7.90 | L arm | Pushes off the desk, the weight comes back | ease-out |
+| 7.30 to 7.90 | L arm | Pushes off the desk, and her weight comes back | ease-out |
+| 7.35 to 8.10 | both arms | Both hands return on arcs to a maid's standby pose: hands together in front of the waist | ease-out, left hand 80 ms behind the right |
 | 7.35 to 8.10 | spine, hips | Straighten back to upright with a small overshoot back | ease-out-back, 80 ms after the push-off |
 | 7.30 to 7.45 | eyes | Snap up to the screen | ease-out-quint |
 | 7.40 to 7.90 | head | Lifts to the screen, slight wonder tilt | ease-out, 100 ms after the eyes |
-| 7.6 | face | Lids widen 10% (`happy` morph at 0.2, if it reads) | ease-out |
-| 8.0 to 8.6 | everything | Moving hold, the screen light flickering on her face as the boot text types | — |
+| 7.6 | eyes | Glow pulses brighter (×1.3) for 0.3 s, as if syncing with the screen | bump |
+| 8.0 to 8.6 | everything | Servo hold, with the screen light flickering on her face as the boot text types | — |
 | 8.6 | camera | Hand off to the boot: a whip-pan (or a match push) from her face onto the screen, then the existing dive | — |
 
 ## What's next (boot, unchanged)
@@ -168,11 +183,11 @@ shot 6, not the knob close-up.
 ## Implementation notes (for the refilm)
 
 - **New rig controls needed** in `robot-glb.js` (all of the bones exist in `robot.glb`):
-  - `body({ hips, lean, roll, twist, breathe })`: hips offset, plus spine and chest pitch, roll and yaw, split across the spine chain.
+  - `body({ hips, lean, roll, twist })`: hips offset, plus spine and chest pitch, roll and yaw, split across the spine chain.
   - `look(dir)`: the `LeftEye` / `RightEye` bones, so the eyes can lead the head.
   - `reachLeft(target)` and `gripLeft(...)`: an IK solve for the left arm, for the desk brace.
   - `shoulder(dip, roll)`: for the anticipation.
-  - Springs on the `HairJoint-*` and `J_Sec_*Skirt*` chains: a simple damped spring per joint, driven by the parent's angular velocity. They must be scrub-safe, so they're simulated forward from t=0 at a fixed step when scrubbing.
+  - Later, with the final model: springs on the hair and skirt chains (`HairJoint-*` and `J_Sec_*Skirt*` here). They're model-specific, so they wait.
 - **Curves**: add `easeOutBack`, `easeOutQuint` and a damped `spring(t, freq, damping)`.
   Replace `lerpPose` with `arcPose(a, b, lift, k)`, which runs the wrist along a quadratic bezier whose midpoint is lifted.
 - **Per-part offsets**: make the key tables data (`[t0, t1, from, to, curve]` per channel) so timing can be tuned
