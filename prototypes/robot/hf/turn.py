@@ -19,3 +19,13 @@ for name, ang in [('front', 0), ('q', 45), ('side', 90), ('back', 180)]:
     cam.location = c + mathutils.Vector((math.sin(a) * d, -math.cos(a) * d, 0))
     cam.rotation_euler = (c - cam.location).to_track_quat('-Z', 'Y').to_euler()
     sc.render.filepath = f'{out}-{name}.png'; bpy.ops.render.render(write_still=True)
+
+# face close-ups: top 14% of the figure
+cam.data.ortho_scale = h * 0.16
+hc = mathutils.Vector((c.x, c.y, hi.z - h * 0.085))
+for name, ang in [('face', 0), ('faceq', 35)]:
+    a = math.radians(ang); d = h * 3
+    cam.location = hc + mathutils.Vector((math.sin(a) * d, -math.cos(a) * d, 0))
+    cam.rotation_euler = (hc - cam.location).to_track_quat('-Z', 'Y').to_euler()
+    sc.render.resolution_x = sc.render.resolution_y = 700
+    sc.render.filepath = f'{out}-{name}.png'; bpy.ops.render.render(write_still=True)
