@@ -52,10 +52,10 @@ export async function loadRobot(url = new URL('./assets/robot.glb', import.meta.
   root.updateMatrixWorld(true);
 
   // ---------- materials ----------
-  let iris = null, body = null;
+  let iris = null, bodyMesh = null;
   model.traverse((o) => {
     if (!o.isMesh) return;
-    if (o.morphTargetDictionary && 'blink' in o.morphTargetDictionary) body = o;
+    if (o.morphTargetDictionary && 'blink' in o.morphTargetDictionary) bodyMesh = o;
     for (const m of [o.material].flat()) {
       if (/iris/i.test(m.name)) { iris = m; m.emissive = new THREE.Color('#ff8a3d'); m.toneMapped = true; }
       // whites stay below clipping under the screen light; gloss on hair and shoes only
@@ -87,134 +87,184 @@ export async function loadRobot(url = new URL('./assets/robot.glb', import.meta.
   }
   const toRoot = (b) => root.worldToLocal(wp(b));
 
-  // ---------- right arm: two-bone IK ----------
-  const upper = B('RightArm'), fore = B('RightForeArm'), handB = B('RightHand');
-  [upper, fore, handB].forEach(remember);
-  const S0 = toRoot(upper), E0 = toRoot(fore), W0 = toRoot(handB);
-  const LA = S0.distanceTo(E0), LB = E0.distanceTo(W0);
-  const restDir = E0.clone().sub(S0).normalize();
-  const restHinge = new THREE.Vector3(0, 1, 0);   // T-pose, palm down: the elbow flexes about +y
-  const restFrame = (u, n) => {
-    const w = new THREE.Vector3().crossVectors(u, n).normalize();
-    return new THREE.Matrix4().makeBasis(u, n.clone().sub(u.clone().multiplyScalar(n.dot(u))).normalize(), w);
-  };
-  const qRestArm = new THREE.Quaternion().setFromRotationMatrix(restFrame(restDir, restHinge));
-  const state = { elbow: new THREE.Vector3(), wrist: new THREE.Vector3() };
+  // ---------- arms: two-bone IK, hand aim, fingers (one rig per side) ----------
+  // T-pose, palm down: the right elbow flexes about +y, the left about -y.
+  function makeArm(side, restHinge, pole) {
+    const upper = B(`${side}Arm`), fore = B(`${side}ForeArm`), handB = B(`${side}Hand`);
+    [upper, fore, handB].forEach(remember);
+    const S0 = toRoot(upper), E0 = toRoot(fore), W0 = toRoot(handB);
+    const LA = S0.distanceTo(E0), LB = E0.distanceTo(W0);
+    const restDir = E0.clone().sub(S0).normalize();
+    const restFrame = (u, n) => {
+      const w = new THREE.Vector3().crossVectors(u, n).normalize();
+      return new THREE.Matrix4().makeBasis(u, n.clone().sub(u.clone().multiplyScalar(n.dot(u))).normalize(), w);
+    };
+    const qRestArm = new THREE.Quaternion().setFromRotationMatrix(restFrame(restDir, restHinge));
+    const state = { elbow: new THREE.Vector3(), wrist: new THREE.Vector3() };
 
-  /** Solve the right arm so the wrist reaches `target` (robot-local). */
-  function reach(target) {
-    const S = toRoot(upper);
-    const toT = new THREE.Vector3().subVectors(target, S);
-    const d = Math.min(toT.length(), LA + LB - 1e-3);
-    const dir = toT.normalize();
-    const cosA = (LA * LA + d * d - LB * LB) / (2 * LA * d);
-    const sinA = Math.sqrt(Math.max(0, 1 - cosA * cosA));
-    const perp = POLE.clone().sub(dir.clone().multiplyScalar(POLE.dot(dir))).normalize();
-    const E = S.clone().addScaledVector(dir, LA * cosA).addScaledVector(perp, LA * sinA);
-    const W = S.clone().addScaledVector(dir, d);
-    const u = E.clone().sub(S).normalize(), v = W.clone().sub(E).normalize();
-    let n = new THREE.Vector3().crossVectors(u, v);
-    if (n.lengthSq() < 1e-8) n = perp.clone().cross(u);
-    n.normalize();
-    // upper arm: map the rest (direction, hinge) frame onto the solved one
-    const qArm = new THREE.Quaternion().setFromRotationMatrix(restFrame(u, n)).multiply(qRestArm.clone().invert());
-    const R = rootQ();
-    const qArmW = R.clone().multiply(qArm).multiply(R.clone().invert());
-    setWorldQ(upper, qArmW.clone().multiply(restWorld(upper)));
-    // forearm: same, then bend about the hinge
-    const bend = Math.acos(THREE.MathUtils.clamp(u.dot(v), -1, 1));
-    const nW = n.clone().applyQuaternion(R);
-    setWorldQ(fore, new THREE.Quaternion().setFromAxisAngle(nW, bend).multiply(qArmW).multiply(restWorld(fore)));
-    state.elbow.copy(E); state.wrist.copy(W);
-    return W;
+    /** Solve the arm so the wrist reaches `target` (robot-local). */
+    function reach(target) {
+      const S = toRoot(upper);
+      const toT = new THREE.Vector3().subVectors(target, S);
+      const d = Math.min(toT.length(), LA + LB - 1e-3);
+      const dir = toT.normalize();
+      const cosA = (LA * LA + d * d - LB * LB) / (2 * LA * d);
+      const sinA = Math.sqrt(Math.max(0, 1 - cosA * cosA));
+      const perp = pole.clone().sub(dir.clone().multiplyScalar(pole.dot(dir))).normalize();
+      const E = S.clone().addScaledVector(dir, LA * cosA).addScaledVector(perp, LA * sinA);
+      const W = S.clone().addScaledVector(dir, d);
+      const u = E.clone().sub(S).normalize(), v = W.clone().sub(E).normalize();
+      let n = new THREE.Vector3().crossVectors(u, v);
+      if (n.lengthSq() < 1e-8) n = perp.clone().cross(u);
+      n.normalize();
+      // upper arm: map the rest (direction, hinge) frame onto the solved one
+      const qArm = new THREE.Quaternion().setFromRotationMatrix(restFrame(u, n)).multiply(qRestArm.clone().invert());
+      const R = rootQ();
+      const qArmW = R.clone().multiply(qArm).multiply(R.clone().invert());
+      setWorldQ(upper, qArmW.clone().multiply(restWorld(upper)));
+      // forearm: same, then bend about the hinge
+      const bend = Math.acos(THREE.MathUtils.clamp(u.dot(v), -1, 1));
+      const nW = n.clone().applyQuaternion(R);
+      setWorldQ(fore, new THREE.Quaternion().setFromAxisAngle(nW, bend).multiply(qArmW).multiply(restWorld(fore)));
+      state.elbow.copy(E); state.wrist.copy(W);
+      return W;
+    }
+
+    const fingerNames = ['Index', 'Middle', 'Ring', 'Pinky'];
+    const fingerBones = fingerNames.map((f) => [1, 2, 3].map((i) => B(`${side}Hand${f}${i}`)));
+    const thumbBones = [1, 2, 3].map((i) => B(`${side}HandThumb${i}`));
+    [...fingerBones.flat(), ...thumbBones].forEach(remember);
+    const f0 = toRoot(B(`${side}HandMiddle1`)).sub(W0).normalize();               // rest finger direction
+    const across = toRoot(B(`${side}HandIndex1`)).sub(toRoot(B(`${side}HandPinky1`))).normalize();
+    const b0 = new THREE.Vector3().crossVectors(f0, across).multiplyScalar(side === 'Right' ? 1 : -1).normalize();  // rest back-of-hand (up)
+    const qRestHand = new THREE.Quaternion().setFromRotationMatrix(
+      new THREE.Matrix4().makeBasis(new THREE.Vector3().crossVectors(b0, f0), b0, f0));
+
+    /** Point the hand: fingers along `dir`, back of the hand toward `up`, then twist about `dir`. */
+    function aim(dir, up = new THREE.Vector3(0, 1, 0), twist = 0) {
+      const z = dir.clone().normalize();
+      const x = new THREE.Vector3().crossVectors(up, z).normalize();
+      const y = new THREE.Vector3().crossVectors(z, x);
+      const qT = new THREE.Quaternion().setFromRotationMatrix(_m.makeBasis(x, y, z))
+        .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), twist));
+      const qDelta = qT.multiply(qRestHand.clone().invert());                     // root space
+      const R = rootQ();
+      setWorldQ(handB, R.clone().multiply(qDelta).multiply(R.invert()).multiply(restWorld(handB)));
+      updateFingers();
+    }
+
+    const flexAxisRoot = new THREE.Vector3().crossVectors(f0, b0.clone().negate()).normalize();  // curls toward the palm
+    const thumbDir = toRoot(thumbBones[1]).sub(toRoot(thumbBones[0])).normalize();
+    const thumbAxisRoot = new THREE.Vector3().crossVectors(thumbDir, b0.clone().negate()).normalize();
+    // Axes in each bone's own rest frame (constant, so they follow the hand wherever it goes).
+    const localAxis = (b, axisRoot) => axisRoot.clone().applyQuaternion(rest.get(b).inRoot.clone().invert()).normalize();
+    const fingerRig = fingerBones.map((chain, fi) => chain.map((b) => ({
+      b, flex: localAxis(b, flexAxisRoot), splay: localAxis(b, b0), sign: [1, 0.3, -0.4, -1][fi] * (side === 'Right' ? 1 : -1),
+    })));
+    const thumbRig = thumbBones.map((b) => ({ b, flex: localAxis(b, thumbAxisRoot) }));
+    let gripState = { curl: 0.2, spread: 0, thumb: 0.2, per: null };
+    function updateFingers() {
+      const { curl, spread, thumb, per } = gripState;
+      fingerRig.forEach((chain, fi) => chain.forEach((j, i) => {
+        const c = per ? per[fi] : curl;
+        const q = rest.get(j.b).local.clone()
+          .multiply(_q.setFromAxisAngle(j.flex, c * (i === 0 ? 1.15 : 1.35)));
+        if (i === 0) q.multiply(new THREE.Quaternion().setFromAxisAngle(j.splay, -j.sign * spread * 0.22));
+        j.b.quaternion.copy(q);
+      }));
+      thumbRig.forEach((j, i) => {
+        j.b.quaternion.copy(rest.get(j.b).local).multiply(_q.setFromAxisAngle(j.flex, thumb * (i === 0 ? 0.5 : 0.9)));
+      });
+    }
+    /** curl 0 = flat, 1 = fist; spread 0..1; thumb curl separately; `per` = [index, middle, ring, pinky] curls override `curl`. */
+    function grip(curl, spread = 0, thumbCurl = curl, per = null) {
+      gripState = { curl, spread, thumb: thumbCurl, per };
+      updateFingers();
+    }
+    return { reach, aim, grip, state, hand: handB, shoulder: S0 };
   }
 
-  // ---------- hand orientation ----------
-  const fingerNames = ['Index', 'Middle', 'Ring', 'Pinky'];
-  const fingerBones = fingerNames.map((f) => [1, 2, 3].map((i) => B(`RightHand${f}${i}`)));
-  const thumbBones = [1, 2, 3].map((i) => B(`RightHandThumb${i}`));
-  [...fingerBones.flat(), ...thumbBones].forEach(remember);
-  const f0 = toRoot(B('RightHandMiddle1')).sub(W0).normalize();               // rest finger direction
-  const side = toRoot(B('RightHandIndex1')).sub(toRoot(B('RightHandPinky1'))).normalize();
-  const b0 = new THREE.Vector3().crossVectors(f0, side).normalize();          // rest back-of-hand
-  const qRestHand = new THREE.Quaternion().setFromRotationMatrix(
-    new THREE.Matrix4().makeBasis(new THREE.Vector3().crossVectors(b0, f0), b0, f0));
-
-  /** Point the hand: fingers along `dir`, back of the hand toward `up`, then twist about `dir`. */
-  function aim(dir, up = new THREE.Vector3(0, 1, 0), twist = 0) {
-    const z = dir.clone().normalize();
-    const x = new THREE.Vector3().crossVectors(up, z).normalize();
-    const y = new THREE.Vector3().crossVectors(z, x);
-    const qT = new THREE.Quaternion().setFromRotationMatrix(_m.makeBasis(x, y, z))
-      .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), twist));
-    const qDelta = qT.multiply(qRestHand.clone().invert());                     // root space
+  // ---------- spine and hips ----------
+  const hips = B('Hips'), spineChain = [B('Spine'), B('Spine1'), B('Spine2')], neck = B('Neck');
+  [hips, ...spineChain, neck].forEach(remember);
+  const hipsLocal0 = hips.position.clone();
+  const hipsRoot0 = toRoot(hips);
+  const SPLIT = [0.3, 0.35, 0.35];
+  const _e = new THREE.Euler(0, 0, 0, 'YXZ');
+  /**
+   * Whole-body pose, robot-local: `hips` offset (m), then `lean` (forward, rad), `roll` (toward her right, rad)
+   * and `twist` (toward her right, rad) spread over the spine. Call before the arms and head each frame.
+   */
+  function body({ hips: off = null, lean = 0, roll = 0, twist = 0 } = {}) {
+    hips.position.copy(hipsLocal0);
+    if (off) {
+      hips.updateMatrixWorld(true);
+      const w = root.localToWorld(hipsRoot0.clone().add(off));
+      hips.position.copy(hips.parent.worldToLocal(w));
+    }
+    hips.updateMatrixWorld(true);
+    spineChain.forEach((b) => b.quaternion.copy(rest.get(b).local));
     const R = rootQ();
-    setWorldQ(handB, R.clone().multiply(qDelta).multiply(R.invert()).multiply(restWorld(handB)));
-    updateFingers();
-  }
-
-  // ---------- fingers ----------
-  const flexAxisRoot = new THREE.Vector3().crossVectors(f0, b0.clone().negate()).normalize();  // curls toward the palm
-  const thumbDir = toRoot(thumbBones[1]).sub(toRoot(thumbBones[0])).normalize();
-  const thumbAxisRoot = new THREE.Vector3().crossVectors(thumbDir, b0.clone().negate()).normalize();
-  // Axes in each bone's own rest frame (constant, so they follow the hand wherever it goes).
-  const localAxis = (b, axisRoot) => axisRoot.clone().applyQuaternion(rest.get(b).inRoot.clone().invert()).normalize();
-  const fingerRig = fingerBones.map((chain, fi) => chain.map((b) => ({
-    b, flex: localAxis(b, flexAxisRoot), splay: localAxis(b, b0), sign: [1, 0.3, -0.4, -1][fi],
-  })));
-  const thumbRig = thumbBones.map((b) => ({ b, flex: localAxis(b, thumbAxisRoot) }));
-  let gripState = { curl: 0.2, spread: 0, thumb: 0.2, per: null };
-  function updateFingers() {
-    const { curl, spread, thumb, per } = gripState;
-    fingerRig.forEach((chain, fi) => chain.forEach((j, i) => {
-      const c = per ? per[fi] : curl;
-      const q = rest.get(j.b).local.clone()
-        .multiply(_q.setFromAxisAngle(j.flex, c * (i === 0 ? 1.15 : 1.35)));
-      if (i === 0) q.multiply(new THREE.Quaternion().setFromAxisAngle(j.splay, -j.sign * spread * 0.22));
-      j.b.quaternion.copy(q);
-    }));
-    thumbRig.forEach((j, i) => {
-      j.b.quaternion.copy(rest.get(j.b).local).multiply(_q.setFromAxisAngle(j.flex, thumb * (i === 0 ? 0.5 : 0.9)));
+    spineChain.forEach((b, i) => {
+      b.updateMatrixWorld(true);
+      // her right is -x, so roll and twist toward it are negative rotations about z and y
+      const q = new THREE.Quaternion().setFromEuler(_e.set(lean * SPLIT[i], -twist * SPLIT[i], -roll * SPLIT[i]));
+      setWorldQ(b, R.clone().multiply(q).multiply(R.clone().invert()).multiply(b.getWorldQuaternion(new THREE.Quaternion())));
     });
-  }
-  /** curl 0 = flat, 1 = fist; spread 0..1; thumb curl separately; `per` = [index, middle, ring, pinky] curls override `curl`. */
-  function grip(curl, spread = 0, thumbCurl = curl, per = null) {
-    gripState = { curl, spread, thumb: thumbCurl, per };
-    updateFingers();
+    root.updateMatrixWorld(true);
   }
 
-  // ---------- left arm hangs at her side ----------
+  // The frame a bone's parent carries, aligned with the root at rest (equals rootQ() when nothing above it moved).
+  const carried = (b) => b.getWorldQuaternion(new THREE.Quaternion()).multiply(rest.get(b).inRoot.clone().invert());
+
+  const armR = makeArm('Right', new THREE.Vector3(0, 1, 0), POLE);
+  const armL = makeArm('Left', new THREE.Vector3(0, -1, 0), new THREE.Vector3(0.7, -1, -0.15));
+  const { reach, aim, grip, state, hand: handB } = armR;
+
+  // ---------- left arm hangs at her side (its IK target when idle) ----------
+  let leftHang;
   {
     const la = B('LeftArm'), lf = B('LeftForeArm');
     const ls = toRoot(la), le = toRoot(lf);
     const dRest = le.clone().sub(ls).normalize();
     const qDown = new THREE.Quaternion().setFromUnitVectors(dRest, new THREE.Vector3(0.18, -1, 0.04).normalize());
     setWorldQ(la, rootQ().multiply(qDown).multiply(rootQ().invert()).multiply(la.getWorldQuaternion(new THREE.Quaternion())));
+    leftHang = toRoot(B('LeftHand'));
   }
 
   // ---------- head ----------
   // headPivot is a stand-in Object3D: the prologue sets its rotation (robot-local Euler)
-  // and every change is applied to the head bone, pivoting at the top of the neck.
+  // and every change is applied to the head bone, pivoting at the top of the neck, on top of whatever the spine does.
   remember(headBone);
   const headPivot = new THREE.Object3D();
   const pivotChanged = headPivot.rotation._onChangeCallback;
-  headPivot.rotation._onChange(() => {
-    pivotChanged();
-    const R = rootQ();
+  function applyHead() {
+    const C = carried(neck);
     const q = new THREE.Quaternion().setFromEuler(headPivot.rotation);
-    setWorldQ(headBone, R.clone().multiply(q).multiply(R.clone().invert()).multiply(restWorld(headBone)));
-  });
+    setWorldQ(headBone, C.clone().multiply(q).multiply(rest.get(headBone).inRoot));
+  }
+  headPivot.rotation._onChange(() => { pivotChanged(); applyHead(); });
+
+  // ---------- eye look ----------
+  const eyes = [B('LeftEye'), B('RightEye')];
+  eyes.forEach(remember);
+  /** Eyes: `down` and `right` (her right) in rad, relative to the head. Call after the head. */
+  function look(down = 0, right = 0) {
+    const C = carried(headBone);
+    const q = new THREE.Quaternion().setFromEuler(_e.set(down, -right, 0));
+    eyes.forEach((b) => setWorldQ(b, C.clone().multiply(q).multiply(rest.get(b).inRoot)));
+  }
 
   // ---------- eyes ----------
-  const morph = body ? body.morphTargetDictionary : {};
+  const morph = bodyMesh ? bodyMesh.morphTargetDictionary : {};
   /** Eye glow 0..1 and lid opening 0..1. */
   function setEyes(glow, open) {
     if (iris) {
       iris.emissiveIntensity = glow * 2.4;
       iris.color.copy(irisBase).multiplyScalar(0.25 + 0.75 * glow);
     }
-    if (body) {
-      body.morphTargetInfluences[morph.blink] = THREE.MathUtils.clamp(1 - open, 0, 1);
+    if (bodyMesh) {
+      bodyMesh.morphTargetInfluences[morph.blink] = THREE.MathUtils.clamp(1 - open, 0, 1);
     }
   }
 
@@ -223,6 +273,9 @@ export async function loadRobot(url = new URL('./assets/robot.glb', import.meta.
   reach(new THREE.Vector3(-0.3, -0.72, 0.12));
   aim(new THREE.Vector3(0, -1, 0.2), new THREE.Vector3(0, 0, -1));
 
-  const shoulder = S0;
-  return { root, head: headBone, headPivot, hand: handB, mats: { iris }, reach, aim, grip, setEyes, shoulder, state, bones, morph: body };
+  const shoulder = armR.shoulder;
+  return {
+    root, head: headBone, headPivot, hand: handB, mats: { iris }, reach, aim, grip, setEyes, shoulder, state, bones, morph: bodyMesh,
+    left: { reach: armL.reach, aim: armL.aim, grip: armL.grip, hang: leftHang }, body, look, applyHead,
+  };
 }

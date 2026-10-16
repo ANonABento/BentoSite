@@ -105,8 +105,9 @@ the upper third). FOV 46. A 2% push-in across the whole shot on linear time, so 
 
 **Macro:** the camera pulls out and around. It was a reflection: she's standing at a dead CRT, reaching for its knob.
 
-**Camera:** one move. Truck right and dolly back along the glass to a 3/4 two-shot from her front-right.
-Her real self is on the left, the monitor fills the right, and her reflection is still visible on the glass.
+**Camera:** one move. Off the glass, out to the right and back, ending as a 3/4 from behind her right shoulder:
+her hair and profile in the foreground, her glowing reflection on the glass, and her arm going down to the red LED and knob.
+(Filmed: a front-right two-shot couldn't show the reflection and the knob in one frame.)
 It starts slow (it begins under her reach), then the bulk of the move, then a long settle by 5.3: ease-in-out
 weighted 35/65. FOV 46 to 38. The path is a single bezier with no pass-through keys.
 
@@ -127,8 +128,9 @@ A clear silhouette.
 
 **Macro:** a careful, precise grip. The robot is dexterous. (This replaces the finger-play showcase.)
 
-**Camera:** hard **cut on action** as the fingers start to close. Low 3/4 macro on the chin of the monitor:
-the knob on the right third, the red LED pulsing to its right, and her hand entering from top-left. FOV 30.
+**Camera:** hard **cut on action** as the fingers start to close. A side-on macro of the monitor's chin
+(her hand is about 3× the knob's diameter, so from the front it hides the knob): the hand wraps the knob in profile,
+with the red LED pulsing on the right. FOV 32.
 Locked, with a slow 1.5% push.
 
 | t | Part | Action | Curve |
@@ -146,14 +148,17 @@ Locked, with a slow 1.5% push.
 | t | Part | Action | Curve |
 |---|---|---|---|
 | 6.40 to 6.55 | wrist | **Anticipation**: counter-turns −6° | ease-in |
-| 6.55 to 6.75 | wrist and knob | Twists 70° | ease-in, fast; time slows to 0.6× across these 0.2 s (speed ramp) |
+| 6.55 to 6.75 | wrist and knob | Twists 45° | ease-in, fast; time slows to 0.6× across these 0.2 s (speed ramp) |
 | 6.75 | knob | **Detent click.** The knob overshoots 5° then settles back over 0.12 s. | ease-out-back |
 | 6.75 | LED | Red snaps to orange on the click frame | step |
 | 6.75 to 6.78 | post | **Impact frame**: a 2-frame flash (inverted or blown out). The camera kicks 3 mm and decays over 0.2 s. | step, then damped |
 | 6.75 | boot | `tb = T.led`: the screen begins its power-on | — |
 | 6.78 to 7.2 | screen | The power-on glow spills into the insert from the top of frame | follows `T.power` |
 
-### Shot 6: LIGHT (7.2 to 8.6 s), cut to her face, lit by the screen
+### Shot 6: LIGHT (7.55 to 8.6 s), cut to her face, lit by the screen
+
+(Filmed: the insert runs on to 7.55 so the release plays in it, and the cut lands on her rising. The straighten-up
+beats below run about 0.1 to 0.2 s later than written.)
 
 **Macro:** the screen comes on and its light washes over her face. She straightens up, looks at it, and settles into a maid's standby pose. Then we go in.
 
@@ -174,11 +179,12 @@ Hair and material tuning waits for the final model.
 | 8.0 to 8.6 | everything | Servo hold, with the screen light flickering on her face as the boot text types | — |
 | 8.6 | camera | Hand off to the boot: a whip-pan (or a match push) from her face onto the screen, then the existing dive | — |
 
-## What's next (boot, unchanged)
+## What's next (boot)
 
-From the click, the boot runs as it does now: wordmark, boot lines, snow, dive, merge, resolve.
-The only change is the camera hand-off. `P0` / `L_END` (the start of the boot camera) become the end of
-shot 6, not the knob close-up.
+From the click, the boot runs as before (wordmark, boot lines, snow, dive, merge, resolve), with two changes:
+- The beats from the wordmark onward start 0.8 s later, so the wordmark lands after the cut instead of during the face shot.
+- At 8.6 a hard cut goes to a wide from behind her right side (`P0`). She steps aside to her left, presenting
+  the screen, then the boot's pull-back and dive run from there. The room lights wait until she's out of frame.
 
 ## Implementation notes (for the refilm)
 
