@@ -51,18 +51,50 @@ export async function loadRobot(url = new URL('./assets/robot.glb', import.meta.
   model.position.set(-shoulderMid.x, HEAD_Y - headC.y, -shoulderMid.z);
   root.updateMatrixWorld(true);
 
-  // ---------- materials ----------
-  let iris = null, bodyMesh = null;
+  // ---------- materials: one anime (MToon-style) toon shader for everything ----------
+  // The VRoid export mixes unlit materials (hair, clothes, eye whites: full brightness in any light) with lit
+  // PBR ones (skin, face: black in the dark), which looks wrong. Every part gets the same toon model instead:
+  //   lit / shade colour step (a 3-tone ramp), a shade floor tinted by the material's own colour (never black),
+  //   a fresnel rim light, and on the face, normals bent toward a sphere so it shades softly (the anime face trick).
+  const toon = {
+    uAmb: { value: 0.04 },                                 // shade floor: how much of its own colour shows unlit (linear; small)
+    uRimColor: { value: new THREE.Color('#9fb4e0') },
+    uRim: { value: 0.14 }, uRimPow: { value: 5.0 },
+    uHeadLocal: { value: new THREE.Vector3() },            // head centre in the face mesh's space (for sphere normals)
+  };
+  const ramp = new THREE.DataTexture(new Uint8Array([90, 90, 90, 255, 180, 180, 180, 255, 255, 255, 255, 255]), 3, 1, THREE.RGBAFormat);
+  ramp.minFilter = ramp.magFilter = THREE.NearestFilter; ramp.needsUpdate = true;
+  function toonOf(m, { face = false, tint = 1 } = {}) {
+    const t = new THREE.MeshToonMaterial({
+      name: m.name, map: m.map, color: m.color.clone().multiplyScalar(tint), gradientMap: ramp,
+      transparent: m.transparent, opacity: m.opacity, alphaTest: m.alphaTest, side: m.side, depthWrite: m.depthWrite,
+    });
+    t.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, toon);
+      sh.uniforms.uFaceSphere = { value: face ? 0.75 : 0 };
+      sh.vertexShader = 'uniform vec3 uHeadLocal;\nuniform float uFaceSphere;\n' + sh.vertexShader.replace('#include <skinning_vertex>', `#include <skinning_vertex>
+        if (uFaceSphere > 0.0) vNormal = normalize(normalMatrix * mix(objectNormal, normalize(transformed - uHeadLocal), uFaceSphere));`);
+      sh.fragmentShader = 'uniform float uAmb, uRim, uRimPow, uFaceSphere;\nuniform vec3 uRimColor;\n' + sh.fragmentShader.replace('#include <opaque_fragment>', `
+        outgoingLight += diffuseColor.rgb * uAmb;
+        outgoingLight += uRimColor * uRim * (1.0 - uFaceSphere) * pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), uRimPow);
+        #include <opaque_fragment>`);
+    };
+    return t;
+  }
+  let iris = null, bodyMesh = null, faceMesh = null;
   model.traverse((o) => {
     if (!o.isMesh) return;
+    // The export dropped normals on the parts that were unlit (clothes, hair, eye whites); lit shading needs them.
+    if (!o.geometry.attributes.normal) o.geometry.computeVertexNormals();
     if (o.morphTargetDictionary && 'blink' in o.morphTargetDictionary) bodyMesh = o;
-    for (const m of [o.material].flat()) {
-      if (/iris/i.test(m.name)) { iris = m; m.emissive = new THREE.Color('#ff8a3d'); m.toneMapped = true; }
-      // whites stay below clipping under the screen light; gloss on hair and shoes only
-      if (/cloth/i.test(m.name)) { m.color.multiplyScalar(0.62); m.roughness = 0.6; }
-      if (/skin|face/i.test(m.name)) { m.color.multiplyScalar(0.8); m.roughness = 0.5; }
-      if (/hair/i.test(m.name)) { m.roughness = 0.42; }   // less mirror-like: point lights read as sheen, not hot spots
-    }
+    const mats = [o.material].flat().map((m) => {
+      if (/iris/i.test(m.name)) { iris = m; m.emissive = new THREE.Color('#ff8a3d'); m.toneMapped = true; return m; }
+      const face = /face/i.test(m.name);
+      if (face) faceMesh = o;
+      // whites stay below clipping under the screen light
+      return toonOf(m, { face, tint: /cloth/i.test(m.name) ? 0.7 : /hair/i.test(m.name) ? 0.82 : /EYE/.test(m.name) ? 0.8 : 1 });
+    });
+    o.material = Array.isArray(o.material) ? mats : mats[0];
   });
   const irisBase = iris ? iris.color.clone() : null;
 
@@ -268,6 +300,13 @@ export async function loadRobot(url = new URL('./assets/robot.glb', import.meta.
     }
   }
 
+  /** Call once per frame after posing: keeps the face's sphere normals centred on her head. */
+  function updateToon() {
+    if (!faceMesh) return;
+    const e = wp(B('LeftEye')).lerp(wp(B('RightEye')), 0.5);
+    toon.uHeadLocal.value.copy(faceMesh.worldToLocal(e.lerp(wp(headBone), 0.7)));
+  }
+
   setEyes(0, 0);
   grip(0.2);
   reach(new THREE.Vector3(-0.3, -0.72, 0.12));
@@ -279,5 +318,6 @@ export async function loadRobot(url = new URL('./assets/robot.glb', import.meta.
     left: { reach: armL.reach, aim: armL.aim, grip: armL.grip, hang: leftHang }, body, look, applyHead,
     /** The head's frame (robot-local axes carried by the head): +z is where her face points. */
     headFrame: () => carried(headBone),
+    toon, updateToon,
   };
 }
