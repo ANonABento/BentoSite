@@ -2,7 +2,7 @@
 import bpy, sys, numpy as np, mathutils, math
 glb, out, png = sys.argv[sys.argv.index('--')+1:]
 bpy.ops.wm.read_factory_settings(use_empty=True); bpy.ops.import_scene.gltf(filepath=glb)
-o = [x for x in bpy.context.scene.objects if x.type == 'MESH'][0]; m = o.data.materials[0]; nt = m.node_tree
+o = max([x for x in bpy.context.scene.objects if x.type == 'MESH'], key=lambda x: len(x.data.vertices)); m = o.data.materials[0]; nt = m.node_tree
 tex = [n for n in nt.nodes if n.type == 'TEX_IMAGE' and 'base' in n.image.name.lower()][0]
 W, H = tex.image.size; p = np.array(tex.image.pixels[:]).reshape(H, W, 4)
 r, g, b = p[..., 0], p[..., 1], p[..., 2]
