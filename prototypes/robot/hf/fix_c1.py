@@ -1,8 +1,8 @@
 # Armoured c1 face cleanup: a smooth porcelain-white faceplate (nose flattened, texture repainted, glossy) and clean,
 # cute screen-eye decals (separate emissive meshes EyeL / EyeR). Usage: blender -b -P fix_c1.py -- in.glb out.glb
 import bpy, bmesh, sys, numpy as np, mathutils
-glb, out = sys.argv[sys.argv.index('--')+1:][:2]
-EYE = mathutils.Vector((0.024, -0.06, 0.388)); EW, EH = 0.025, 0.028
+args = sys.argv[sys.argv.index('--')+1:]; glb, out = args[:2]; EXPR = args[2] if len(args) > 2 else 'dot'
+EYE = mathutils.Vector((0.023, -0.06, 0.386)); EW = EH = 0.018   # small lenses, lots of blank faceplate
 WHITE = np.array([0.95, 0.945, 0.94])
 bpy.ops.wm.read_factory_settings(use_empty=True); bpy.ops.import_scene.gltf(filepath=glb)
 o = [x for x in bpy.context.scene.objects if x.type == 'MESH'][0]; me = o.data
@@ -61,23 +61,22 @@ bp[paint, :3] = WHITE; rp[paint, 1] = 0.22; rp[paint, 2] = 0.0   # glTF: G = rou
 base.pixels = bp.ravel().tolist(); base.pack(); rough.pixels = rp.ravel().tolist(); rough.pack()
 print('painted px', int(paint.sum()))
 
-# 3. screen eyes: a glowing oval with a darker rim, a soft gradient, a pupil glint and two big highlights
-N = 256; yy, xx = np.mgrid[0:N, 0:N] / (N - 1); u, v = xx - 0.5, 0.5 - yy
+# 3. eyes: a small dark glass lens set in the faceplate, with one simple glowing icon (the expression) and a glint
+N = 256; yy, xx = np.mgrid[0:N, 0:N] / (N - 1); u, v = xx - 0.5, 0.5 - yy; r = np.hypot(u, v)
 img = np.zeros((N, N, 4)); emis = np.zeros((N, N, 4)); emis[..., 3] = 1
-r = np.sqrt((u / 0.46) ** 2 + (v / 0.47) ** 2)
-eye = r < 1
-g = np.clip((0.45 - v) / 0.9, 0, 1)[..., None]
-c = np.array([0.95, 0.38, 0.05]) * (1 - g) + np.array([1.0, 0.78, 0.35]) * g
-rim = eye & (r > 0.86)
-pupil = (u / 0.13) ** 2 + ((v + 0.02) / 0.19) ** 2 < 1
-hl1 = ((u + 0.13) / 0.12) ** 2 + ((v - 0.17) / 0.14) ** 2 < 1
-hl2 = ((u - 0.15) / 0.05) ** 2 + ((v + 0.2) / 0.05) ** 2 < 1
-lid = (r < 1.08) & (r > 0.93) & (v > 0.12)            # a thin dark upper lid line: reads as an eye, not a lamp
-img[eye, :3] = c[eye]; img[eye, 3] = 1
-img[rim, :3] *= 0.6; img[pupil, :3] = img[pupil, :3] * 0.45
-img[hl1 | hl2] = [1, 1, 1, 1]
-img[lid] = [0.06, 0.05, 0.06, 1]
-emis[eye, :3] = img[eye, :3]; emis[lid, :3] = 0
+lens = r < 0.48; rim = lens & (r > 0.43)
+img[lens] = [0.035, 0.03, 0.035, 1]; img[rim, :3] = [0.55, 0.53, 0.52]          # dark glass, thin metal rim
+ORANGE = np.array([1.0, 0.55, 0.15])
+icon = {
+  'dot':   r < 0.16,
+  'ring':  (r < 0.2) & (r > 0.12),
+  'blink': (np.abs(v) < 0.035) & (np.abs(u) < 0.2),
+  'happy': (np.abs(np.hypot(u, v + 0.12) - 0.2) < 0.035) & (v > -0.02),        # ^ shape
+  'x':     ((np.abs(u - v) < 0.05) | (np.abs(u + v) < 0.05)) & (np.abs(u) < 0.16) & (np.abs(v) < 0.16),
+}[EXPR]
+img[icon, :3] = ORANGE; emis[icon, :3] = ORANGE
+glint = np.hypot(u + 0.2, v - 0.22) < 0.06
+img[glint, :3] = [0.9, 0.9, 0.92]
 def mk(name, a):
     im = bpy.data.images.new(name, N, N, alpha=True); im.pixels = a[::-1].ravel().tolist(); im.pack(); return im
 m = bpy.data.materials.new('Eyes'); m.use_nodes = True
@@ -87,7 +86,7 @@ n2 = m.node_tree; bs = n2.nodes['Principled BSDF']
 tc = n2.nodes.new('ShaderNodeTexImage'); tc.image = mk('eye_color', img)
 te = n2.nodes.new('ShaderNodeTexImage'); te.image = mk('eye_emit', emis)
 n2.links.new(tc.outputs['Color'], bs.inputs['Base Color']); n2.links.new(tc.outputs['Alpha'], bs.inputs['Alpha'])
-n2.links.new(te.outputs['Color'], bs.inputs['Emission Color']); bs.inputs['Emission Strength'].default_value = 1.5
+n2.links.new(te.outputs['Color'], bs.inputs['Emission Color']); bs.inputs['Emission Strength'].default_value = 3.0
 bs.inputs['Roughness'].default_value = 0.2
 for side in (1, -1):
     bpy.ops.mesh.primitive_grid_add(x_subdivisions=14, y_subdivisions=14, size=1)
