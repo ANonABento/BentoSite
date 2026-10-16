@@ -20,12 +20,12 @@ def surf(x, z):   # front surface y at (x, z), without sockets
     u = np.clip((ZM - z) / (ZM - ZB), 0, 1); a = np.clip((z - 0.392) / 0.02, 0, 1)
     y0 = -0.0655 + 0.015 * u ** 2 + 0.010 * a ** 2
     y = y0 + DX * (1 - np.sqrt(np.clip(1 - (x / RX) ** 2, 0, 1)))
-    # a small anime nose: a soft ridge from between the eyes, growing to a rounded tip, then tucking back under
-    t = np.clip((0.373 - z) / (0.373 - 0.3535), 0, 1)                # 0 at the bridge .. 1 at the tip
-    under = np.clip((0.3535 - z) / 0.0035, 0, 1)                     # quick tuck under the tip
-    nose = 0.0032 * t ** 1.6 * (1 - under) ** 2 * np.exp(-(x / (0.0028 + 0.0022 * t)) ** 2)
-    chin = 0.0012 * bump((z - 0.3265) / 0.0075) * np.exp(-(x / 0.011) ** 2)
-    return y - nose - chin
+    # the nose is just a broad, low swell the whole mask rises into and fades back out of (no tip, no tuck, so no
+    # shadow line that could read as a mouth)
+    up = np.clip((0.376 - z) / (0.376 - 0.356), 0, 1); dn = np.clip((z - 0.334) / (0.356 - 0.334), 0, 1)
+    prof = np.where(z > 0.356, up * up * (3 - 2 * up), dn * dn * (3 - 2 * dn))
+    nose = 0.0019 * prof * np.exp(-(x / (0.0065 + 0.004 * prof)) ** 2)
+    return y - nose
 # eye socket outline (a outward from the nose, b up), traced from the general anime-girl eye: a gently arched,
 # fairly flat top lid and a deep round U below (no almond), rounded off with Chaikin corner cutting
 def chaikin(P, n):
