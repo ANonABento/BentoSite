@@ -7,20 +7,33 @@ import bpy, bmesh, sys, numpy as np, mathutils
 args = sys.argv[sys.argv.index('--')+1:]; glb, out = args[:2]; EXPR = args[2] if len(args) > 2 else 'dot'
 
 # plate shape, in the model's metres (glTF import: Z up, face looks down -Y)
-ZB, ZM, ZT = 0.317, 0.362, 0.412     # chin tip, widest from here up, top (tucked under the bangs)
+ZB, ZM, ZT = 0.316, 0.368, 0.412     # chin tip, widest (cheeks) from here up, top (tucked under the bangs)
 WMAX, RX, DX = 0.056, 0.060, 0.040   # half width; cross-section ellipse radius and depth (sides wrap well behind the hair)
 THICK = 0.0022
-EX, EZ, SX = 0.0275, 0.3832, 0.0192  # eye centres (right under the bangs) and half width; eye units are multiples of SX
+EX, EZ, SX = 0.0285, 0.3815, 0.021   # eye centres (right under the bangs) and half width; eye units are multiples of SX
 SD = 0.0015                          # socket depth
 def half_w(z):
-    u = np.clip((ZM - z) / (ZM - ZB), 0, 1); return WMAX * (1 - u ** 1.7) ** 0.7
+    u = np.clip((ZM - z) / (ZM - ZB), 0, 1)                   # cheeks into a V-line jaw, small rounded chin
+    return WMAX * (0.42 * (1 - u) ** 1.05 + 0.58 * np.sqrt(np.clip(1 - u * u, 0, 1)) ** 1.15)
+def bump(t): t = np.clip(t, -1, 1); return (1 - t * t) ** 2       # smooth 0..1..0 over t in [-1, 1]
 def surf(x, z):   # front surface y at (x, z), without sockets
     u = np.clip((ZM - z) / (ZM - ZB), 0, 1); a = np.clip((z - 0.392) / 0.02, 0, 1)
     y0 = -0.0655 + 0.015 * u ** 2 + 0.010 * a ** 2
-    return y0 + DX * (1 - np.sqrt(np.clip(1 - (x / RX) ** 2, 0, 1)))
-# cat-eye socket outline (a outward from the nose, b up): sharp inner corner, flattish top lid, outer corner tilted up
-EYE_POLY = np.array([(-1.0, -0.02), (-0.78, 0.36), (-0.22, 0.53), (0.42, 0.56), (0.86, 0.48), (1.0, 0.32),
-                     (0.92, 0.0), (0.6, -0.36), (0.1, -0.5), (-0.44, -0.45), (-0.8, -0.26)])
+    y = y0 + DX * (1 - np.sqrt(np.clip(1 - (x / RX) ** 2, 0, 1)))
+    # a small anime nose: a soft ridge from between the eyes, growing to a rounded tip, then tucking back under
+    t = np.clip((0.373 - z) / (0.373 - 0.3535), 0, 1)                # 0 at the bridge .. 1 at the tip
+    under = np.clip((0.3535 - z) / 0.0035, 0, 1)                     # quick tuck under the tip
+    nose = 0.0032 * t ** 1.6 * (1 - under) ** 2 * np.exp(-(x / (0.0028 + 0.0022 * t)) ** 2)
+    chin = 0.0012 * bump((z - 0.3265) / 0.0075) * np.exp(-(x / 0.011) ** 2)
+    return y - nose - chin
+# eye socket outline (a outward from the nose, b up): a big, smooth, rounded almond, outer corner a touch higher;
+# the control polygon is rounded off with Chaikin corner cutting
+def chaikin(P, n):
+    for _ in range(n):
+        Q = np.roll(P, -1, 0); P = np.stack([0.75 * P + 0.25 * Q, 0.25 * P + 0.75 * Q], 1).reshape(-1, 2)
+    return P
+EYE_POLY = chaikin(np.array([(-1.04, 0.02), (-0.88, 0.5), (-0.3, 0.76), (0.42, 0.8), (0.96, 0.62), (1.1, 0.3),
+                             (0.96, -0.14), (0.56, -0.56), (0.0, -0.68), (-0.56, -0.58), (-0.94, -0.3)]), 4)
 def poly_sd(P, a, b):   # signed distance to a closed polygon (negative inside)
     a = np.asarray(a, float); b = np.asarray(b, float); d = np.full(a.shape, np.inf); ins = np.zeros(a.shape, bool)
     for (x0, y0), (x1, y1) in zip(P, np.roll(P, -1, 0)):
@@ -28,7 +41,7 @@ def poly_sd(P, a, b):   # signed distance to a closed polygon (negative inside)
         d = np.minimum(d, np.hypot(a - x0 - t * ex, b - y0 - t * ey))
         ins ^= ((y0 > b) != (y1 > b)) & (a < (x1 - x0) * (b - y0) / (y1 - y0 + 1e-12) + x0)
     return np.where(ins, -d, d)
-def eye_sd(a, b): return poly_sd(EYE_POLY, a, b) - 0.05      # slightly grown, so the corners round off
+def eye_sd(a, b): return poly_sd(EYE_POLY, a, b)
 def socket(x, z):
     t = np.clip(-eye_sd((np.abs(x) - EX) / SX, (z - EZ) / SX) / 0.1, 0, 1)
     return SD * t * t * (3 - 2 * t)
@@ -200,11 +213,11 @@ gb_, ga_ = np.mgrid[0:N, 0:N]; A = (ga_ / (N - 1) * 2 - 1) * K; B = (1 - gb_ / (
 SDF = eye_sd(A, B); ins = SDF < 0
 img = np.zeros((N, N, 4)); emis = np.zeros((N, N, 4)); emis[..., 3] = 1
 img[ins] = [0.012, 0.012, 0.016, 1]
-WING = np.array([(0.84, 0.5), (1.3, 0.64), (1.0, 0.26)])                # short eyeliner flick off the outer corner
+WING = np.array([(0.8, 0.6), (1.24, 0.72), (1.02, 0.34)])                # short eyeliner flick off the outer corner
 wing = poly_sd(WING, A, B) < 0.01
 img[wing & ~ins] = [0.012, 0.012, 0.016, 1]
 glint = ins & (np.abs(B - 0.3 + 0.12 * A) < 0.035) & (A > -0.6) & (A < -0.15)   # thin reflection on the glass
-img[glint, :3] = 0.35
+img[glint, :3] = 0.12
 u, v = A - 0.04, B - 0.02; r = np.hypot(u, v)
 hexd = np.maximum(np.abs(v), np.abs(u) * 0.866 + np.abs(v) * 0.5)
 shape = {
