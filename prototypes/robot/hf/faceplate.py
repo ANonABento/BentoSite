@@ -8,8 +8,8 @@ args = sys.argv[sys.argv.index('--')+1:]; glb, out = args[:2]; EXPR = args[2] if
 # plate shape, in the model's metres (glTF import: Z up, face looks down -Y)
 ZB, ZM, ZT = 0.317, 0.362, 0.412     # chin tip, widest from here up, top (tucked under the bangs)
 WMAX, RX, DX = 0.061, 0.069, 0.034   # half width; cross-section ellipse radius and depth (edges wrap back under the hair)
-EX, EZ = 0.0235, 0.381               # eye centres
-SX, SZ, SD = 0.0105, 0.0082, 0.0016  # socket half size and depth
+EX, EZ = 0.0295, 0.3745              # eye centres: wide apart, just under the bangs
+SX, SZ, SD = 0.0195, 0.019, 0.0018   # big round sockets, about a third of the face width each (cute first, like BBSeven)
 THICK = 0.0022
 def half_w(z):
     u = np.clip((ZM - z) / (ZM - ZB), 0, 1); return WMAX * (1 - u ** 1.7) ** 0.7
@@ -105,18 +105,18 @@ print('plate verts', len(plate.data.vertices))
 # 4. eyes: dark glass lens in each socket, one glowing icon (the expression) and a glint
 N = 256; yy, xx = np.mgrid[0:N, 0:N] / (N - 1); u, v = xx - 0.5, 0.5 - yy; r = np.hypot(u, v)
 img = np.zeros((N, N, 4)); emis = np.zeros((N, N, 4)); emis[..., 3] = 1
-lens = r < 0.5
-img[lens] = [0.03, 0.028, 0.032, 1]
-ORANGE = np.array([1.0, 0.55, 0.15])
+lens = r < 0.5; rim = (r > 0.405) & (r < 0.435)
+img[lens] = [0.02, 0.02, 0.022, 1]; img[rim, :3] = [0.9, 0.9, 0.9]          # black glass, thin light ring inside
+WHITE_ICON = np.array([0.97, 0.97, 1.0])
 icon = {
-  'dot':   r < 0.17,
-  'ring':  (r < 0.22) & (r > 0.13),
-  'blink': (np.abs(v) < 0.04) & (np.abs(u) < 0.24),
-  'happy': (np.abs(np.hypot(u, v + 0.14) - 0.22) < 0.04) & (v > -0.02),
-  'x':     ((np.abs(u - v) < 0.055) | (np.abs(u + v) < 0.055)) & (np.abs(u) < 0.17) & (np.abs(v) < 0.17),
+  'dot':   r < 0.25,
+  'ring':  (r < 0.27) & (r > 0.16),
+  'blink': (np.abs(v) < 0.05) & (np.abs(u) < 0.26),
+  'happy': (np.abs(np.hypot(u, v + 0.16) - 0.25) < 0.055) & (v > -0.03),
+  'x':     ((np.abs(u - v) < 0.07) | (np.abs(u + v) < 0.07)) & (np.abs(u) < 0.2) & (np.abs(v) < 0.2),
+  'star':  (np.abs(u) ** 0.5 + np.abs(v) ** 0.5) < 0.52,
 }[EXPR]
-img[icon, :3] = ORANGE; emis[icon, :3] = ORANGE
-img[np.hypot(u + 0.22, v - 0.2) < 0.055, :3] = [0.85, 0.85, 0.88]
+img[icon, :3] = WHITE_ICON; emis[icon, :3] = WHITE_ICON; emis[rim, :3] = WHITE_ICON * 0.4
 def mk(name, a):
     im = bpy.data.images.new(name, N, N, alpha=True); im.pixels = a[::-1].ravel().tolist(); im.pack(); return im
 m = bpy.data.materials.new('Eyes'); m.use_nodes = True
@@ -126,7 +126,7 @@ n2 = m.node_tree; bs = n2.nodes['Principled BSDF']
 tc = n2.nodes.new('ShaderNodeTexImage'); tc.image = mk('eye_color', img)
 te = n2.nodes.new('ShaderNodeTexImage'); te.image = mk('eye_emit', emis)
 n2.links.new(tc.outputs['Color'], bs.inputs['Base Color']); n2.links.new(tc.outputs['Alpha'], bs.inputs['Alpha'])
-n2.links.new(te.outputs['Color'], bs.inputs['Emission Color']); bs.inputs['Emission Strength'].default_value = 3.0
+n2.links.new(te.outputs['Color'], bs.inputs['Emission Color']); bs.inputs['Emission Strength'].default_value = 2.0
 bs.inputs['Roughness'].default_value = 0.08
 LX, LZ = SX * 0.86, SZ * 0.86
 for side in (1, -1):
