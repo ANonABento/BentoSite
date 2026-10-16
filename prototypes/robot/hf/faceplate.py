@@ -2,19 +2,19 @@
 # with a visible edge, slightly pointed chin, Z3-style eyes: black glass cat-eye sockets with one glowing orange shape).
 # The old face is pushed back behind the plate and painted dark as the head's under-frame; the hair and the frill
 # headband are cleaned to flat black and white (TRELLIS leaves blotches of each in the other).
-# Usage: blender -b -P faceplate.py -- k4c1-s610.glb out.glb [dot|star|happy|ring|blink]  (the frill headband is rebuilt too)
+# Usage: blender -b -P faceplate.py -- k4c1-s610.glb out.glb [ring|dot|star|happy|blink]  (the frill headband is rebuilt too)
 import bpy, bmesh, sys, numpy as np, mathutils
-args = sys.argv[sys.argv.index('--')+1:]; glb, out = args[:2]; EXPR = args[2] if len(args) > 2 else 'dot'
+args = sys.argv[sys.argv.index('--')+1:]; glb, out = args[:2]; EXPR = args[2] if len(args) > 2 else 'ring'
 
 # plate shape, in the model's metres (glTF import: Z up, face looks down -Y)
 ZB, ZM, ZT = 0.316, 0.368, 0.412     # chin tip, widest (cheeks) from here up, top (tucked under the bangs)
 WMAX, RX, DX = 0.056, 0.060, 0.040   # half width; cross-section ellipse radius and depth (sides wrap well behind the hair)
 THICK = 0.0022
-EX, EZ, SX = 0.026, 0.3812, 0.0198  # eye centres (right under the bangs) and half width; eye units are multiples of SX
+EX, EZ, SX = 0.027, 0.3808, 0.021   # eye centres (right under the bangs) and half width; eye units are multiples of SX
 SD = 0.0015                          # socket depth
 def half_w(z):
     u = np.clip((ZM - z) / (ZM - ZB), 0, 1)                   # cheeks into a V-line jaw, small rounded chin
-    return WMAX * (0.42 * (1 - u) ** 1.05 + 0.58 * np.sqrt(np.clip(1 - u * u, 0, 1)) ** 1.15)
+    return WMAX * (0.3 * (1 - u) ** 1.05 + 0.7 * np.sqrt(np.clip(1 - u * u, 0, 1)) ** 1.25)
 def bump(t): t = np.clip(t, -1, 1); return (1 - t * t) ** 2       # smooth 0..1..0 over t in [-1, 1]
 def surf(x, z):   # front surface y at (x, z), without sockets
     u = np.clip((ZM - z) / (ZM - ZB), 0, 1); a = np.clip((z - 0.392) / 0.02, 0, 1)
@@ -32,12 +32,16 @@ def chaikin(P, n):
     for _ in range(n):
         Q = np.roll(P, -1, 0); P = np.stack([0.75 * P + 0.25 * Q, 0.25 * P + 0.75 * Q], 1).reshape(-1, 2)
     return P
-EYE_POLY = chaikin(np.array([(-0.98, 0.26), (-0.62, 0.58), (0.0, 0.7), (0.55, 0.66), (0.95, 0.48), (1.02, 0.25),
-                             (0.92, -0.2), (0.6, -0.56), (0.1, -0.74), (-0.4, -0.64), (-0.78, -0.32), (-0.96, 0.0)]), 3)
-# the thick upper lash band over the lid, thickest at the outer corner, plus two short spiky lashes there
-LASH = chaikin(np.array([(-1.0, 0.2), (-0.98, 0.34), (-0.64, 0.7), (0.0, 0.84), (0.6, 0.8), (1.0, 0.64), (1.0, 0.5),
-                         (0.92, 0.42), (0.55, 0.58), (0.0, 0.62), (-0.6, 0.5), (-0.92, 0.22)]), 2)
-SPIKES = [np.array([(0.9, 0.66), (1.26, 0.74), (1.02, 0.48)]), np.array([(0.98, 0.48), (1.22, 0.4), (1.0, 0.3)])]
+EYE_POLY = chaikin(np.array([(-1.0, 0.1), (-0.8, 0.5), (-0.3, 0.72), (0.3, 0.75), (0.8, 0.56), (1.0, 0.2),
+                             (0.95, -0.2), (0.65, -0.58), (0.0, -0.74), (-0.6, -0.6), (-0.92, -0.25)]), 3)
+# lashes, after the picked 2D concepts (f5 s377 / s1597): a thick upper lash line, three spiky lashes at the outer
+# corner and two small ones on top, and a thin lower lash at the outer corner
+LASH = chaikin(np.array([(-1.04, 0.06), (-1.0, 0.34), (-0.82, 0.68), (-0.3, 0.92), (0.3, 0.96), (0.86, 0.8), (1.08, 0.42),
+                         (0.98, 0.16), (0.8, 0.44), (0.3, 0.6), (-0.3, 0.56), (-0.78, 0.38), (-0.95, 0.06)]), 2)
+SPIKES = [np.array(t) for t in (
+    [(0.84, 0.8), (1.28, 0.98), (1.0, 0.6)], [(0.98, 0.58), (1.32, 0.6), (1.04, 0.4)], [(1.02, 0.36), (1.28, 0.24), (1.0, 0.18)],
+    [(0.3, 0.92), (0.5, 1.06), (0.5, 0.88)], [(-0.2, 0.9), (-0.06, 1.04), (0.0, 0.9)],
+    [(0.3, -0.66), (0.95, -0.18), (0.92, -0.28), (0.3, -0.72)], [(0.7, -0.44), (0.98, -0.5), (0.76, -0.38)])]
 def poly_sd(P, a, b):   # signed distance to a closed polygon (negative inside)
     a = np.asarray(a, float); b = np.asarray(b, float); d = np.full(a.shape, np.inf); ins = np.zeros(a.shape, bool)
     for (x0, y0), (x1, y1) in zip(P, np.roll(P, -1, 0)):
@@ -216,20 +220,21 @@ K, N = 1.4, 512
 gb_, ga_ = np.mgrid[0:N, 0:N]; A = (ga_ / (N - 1) * 2 - 1) * K; B = (1 - gb_ / (N - 1) * 2) * K   # row 0 = top
 SDF = eye_sd(A, B); ins = SDF < 0
 img = np.zeros((N, N, 4)); emis = np.zeros((N, N, 4)); emis[..., 3] = 1
-img[ins] = [0.012, 0.012, 0.016, 1]
-gl = np.clip((0.55 - B) / 1.25, 0, 1) ** 1.3                                 # glass: dark under the lashes, lighter low down
-img[ins, :3] = (0.05 + 0.36 * gl[ins])[:, None] * np.array([1.0, 0.93, 0.9])
+img[ins] = [0.95, 0.95, 0.96, 1]                                             # white glass, mostly hidden by the iris
+img[ins & (B > 0.35), :3] = [0.72, 0.72, 0.76]                                 # lid shadow on it
+iris = ins & (np.hypot(A, B + 0.02) < 0.7)                                      # huge round black glass iris
+gl = np.clip((0.6 - B) / 1.3, 0, 1)
+img[iris, :3] = (0.02 + 0.07 * gl[iris])[:, None]
 wing = (poly_sd(LASH, A, B) < 0.005) | np.any([poly_sd(P_, A, B) < 0.005 for P_ in SPIKES], 0)
-img[wing] = [0.012, 0.012, 0.016, 1]
-glint = ins & (np.abs(B - 0.3 + 0.12 * A) < 0.035) & (A > -0.6) & (A < -0.15)   # thin reflection on the glass
-img[glint, :3] = 0.3
-u, v = A - 0.02, B + 0.05; r = np.hypot(u, v)              # the glow sits a little low, like an iris under the lid
+img[wing] = [0.01, 0.01, 0.012, 1]
+hl = ins & ~wing & (np.hypot((A + 0.24) / 0.14, (B - 0.3) / 0.11) < 1)       # white highlight
+u, v = A, B + 0.02; r = np.hypot(u, v)
 hexd = np.maximum(np.abs(v), np.abs(u) * 0.866 + np.abs(v) * 0.5)
 shape = {
-  'dot':   hexd < 0.34,
-  'star':  (np.abs(u) ** 0.5 + np.abs(v) ** 0.5) < 0.74,
-  'happy': (r < 0.38) & (v > -0.06),                                   # dome: a squinty smile
-  'ring':  (hexd < 0.35) & (hexd > 0.22),
+  'ring':  (r < 0.44) & (r > 0.35),
+  'dot':   hexd < 0.3,
+  'star':  (np.abs(u) ** 0.5 + np.abs(v) ** 0.5) < 0.72,
+  'happy': (r < 0.4) & (r > 0.3) & (v > 0.0),                                  # an arch: a smile
   'blink': (np.abs(v + 0.05 * (u / 0.5) ** 2) < 0.055) & (np.abs(u) < 0.5),
 }[EXPR]
 def blur(m, s_):   # separable box blur x3 ~ gaussian
@@ -239,12 +244,12 @@ def blur(m, s_):   # separable box blur x3 ~ gaussian
             c = np.cumsum(np.pad(m, [(k + 1, k) if i == ax else (0, 0) for i in range(2)]), axis=ax)
             m = (np.take(c, range(2 * k + 1, c.shape[ax]), axis=ax) - np.take(c, range(0, c.shape[ax] - 2 * k - 1), axis=ax)) / (2 * k + 1)
     return m
-halo = np.clip(blur(shape, 14) * 1.8, 0, 1) * ins
-core = blur(shape, 2) > 0.5
+halo = np.clip(blur(shape, 10) * 1.6, 0, 1) * iris
+core = (blur(shape, 2) > 0.5) & iris & ~hl
 ORANGE = np.array([1.0, 0.45, 0.08]); HOT = np.array([1.0, 0.68, 0.36])
-img[ins, :3] += (halo[ins, None] * 0.75) * ORANGE
-img[core, :3] = HOT; img[core, 3] = 1
-emis[..., :3] = halo[..., None] * 0.7 * ORANGE; emis[core, :3] = HOT
+img[iris, :3] += (halo[iris, None] * 0.6) * ORANGE
+img[core, :3] = HOT; img[core, 3] = 1; img[hl, :3] = 1
+emis[..., :3] = halo[..., None] * 0.7 * ORANGE; emis[core, :3] = HOT; emis[hl, :3] = 0.5
 img[..., :3] = np.clip(img[..., :3], 0, 1)
 def mk(name, a):
     im = bpy.data.images.new(name, N, N, alpha=True); im.pixels = a[::-1].ravel().tolist(); im.pack(); return im
