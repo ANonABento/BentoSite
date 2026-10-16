@@ -1,4 +1,4 @@
-# Prologue script (v3)
+# Prologue script (v4)
 
 > She is a **robot maid**. She doesn't breathe; she powers up, runs servos, locks into poses.
 > The model is a temporary placeholder, so this script only describes motion and staging that will
@@ -41,28 +41,31 @@ in 3D. The rules we take from it:
 | **Impact frame** | At the click: a 2-frame flash or inversion, a small camera kick, and a short speed ramp. |
 | **Light motivates** | The red standby LED is what she notices, so it pulses to draw the eye before she does. |
 
-## The original plan, kept
 
-| Original beat | Where it is now |
-|---|---|
-| Her eyes glow in the dark | Shot 1 |
-| Her hand reaches out | Shot 2 (seen in the reflection) |
-| The camera pulls back: it was her reflection on the CRT glass | Shot 3 |
-| She turns the knob | Shots 4 and 5 |
-| The boot plays, and the camera dives into the glass | From the click, unchanged |
+## Kevin's vision (the brief)
+
+From the 2026-10-15 braindump, plus a note from later that day:
+
+> starts with robot head waking up -> cute humanoid maid robot with japanese vibes opening glowing eyes in the dark
+> -> dexterous hand reaching out towards screen -> next screen zooms out from the tv showing that the first screen
+> was actually the reflection from the tv screen -> robot hand turns a knob or pushes a button -> tv starts powering on
+> -> leads to the intro animation
+
+> the hand reaching out to show the dexterity is longer on screen and the transition to reveal of it being
+> reflection is cooler, hand should be reaching toward bottom of the screen
+
+v4 flow (agreed after v3): keep the wake-up and the look down at her hand. Then cut to her point of view: her
+hand, its dexterity, and the reach that **presses** the TV's power button. The camera pulls back out of her view
+and over her shoulder, revealing that the first shot was the TV's reflection.
 
 ## Story in one line
 
-A dormant robot maid wakes in the dark, sees her own reflection in a dead CRT, notices its red standby
-light, leans in and turns it on. The screen's glow hits her face and the camera goes into the screen.
+A robot maid powers up in the dark, looks down at her hand, tests it, reaches for the dead CRT and presses its
+power button. Pulling back, we see the face we opened on was her reflection in its glass. Then the screen comes on.
 
-The misdirect stays: we open on the reflection and don't know it's glass until the camera pulls out.
-The fix is that **the reach we see in the reflection is the reach for the knob**. It's one continuous,
-motivated action: no finger-play showcase and no glass touch.
+## Shot list (3 shots, 1 cut, one continuous move into the boot)
 
-## Shot list
-
-### Shot 1: WAKE (0.0 to 2.3 s), reflection close-up
+### Shot 1: WAKE (0.0 to 2.95 s), reflection close-up
 
 **Macro:** total dark, then two orange eyes strike behind her bangs. She powers up and lifts her head.
 
@@ -82,129 +85,58 @@ the upper third). FOV 46. A 2% push-in across the whole shot on linear time, so 
 | 2.10 | lids | One shutter blink (0.14 s), like a camera calibrating | — |
 | 2.0 on | servo idle | Starts | stepped |
 
-**End pose:** upright, eyes level at the lens. Servo hold.
+| 2.35 to 2.50 | eyes | Snap down to her hand | ease-out-quint |
+| 2.45 to 2.90 | head | Follows the eyes down, with a small curious tilt | ease-out, 100 ms after the eyes |
+| 2.40 to 3.00 | R arm | Her hand rises into the bottom of the frame, palm up | ease-out, on an arc |
 
-### Shot 2: NOTICE (2.3 to 3.7 s), same shot, no cut
+**Cut on the look (2.95 s):** she looks down at her hand, and we see what she sees.
 
-**Macro:** something below catches her eye. She looks down, tilts her head with curiosity, and starts to reach.
+### Shot 2: HAND (2.95 to about 5.6 s), her point of view
 
-| t | Part | Action | Curve |
-|---|---|---|---|
-| 2.3 | LED | One brighter pulse (×1.8), the hook | sine bump, 0.4 s |
-| 2.40 to 2.60 | eyes | Snap down and to her right towards the LED (eye bones, about 18° down, 12° right) | ease-out-quint, fast |
-| 2.52 to 3.00 | head | Follows the eyes: 12° down, 8° turn, 7° curious tilt | ease-out, 120 ms after the eyes |
-| 2.65 to 3.10 | chest | Turns 5° towards the knob, weight starts shifting to her right foot | ease-in-out, slow |
-| 3.00 to 3.15 | R shoulder | **Anticipation**: dips 1 cm and rolls back slightly | ease-in |
-| 3.15 to 3.70 | R arm | Reach begins: the elbow lifts and leads, the wrist trails, the hand rises into the bottom of the frame | elbow ease-out; wrist on an arc, 80 ms behind |
-| 3.15 to 3.70 | R hand | Relaxed open C (curl 0.25, spread 0.3), palm down and angled at the knob. **No pointing finger.** | — |
-| 3.4 | camera | The reveal move begins (see shot 3) | — |
+**Macro:** her own hand, seen through her eyes. She flexes it like she's checking its servos, then reaches for the
+bottom of the TV and extends one finger toward the power button. The dexterity is the star of the shot.
 
-**Read:** in the reflection it looks as if she's reaching out of the glass towards us.
-
-### Shot 3: REVEAL (3.4 to 5.3 s), one continuous move
-
-**Macro:** the camera pulls out and around. It was a reflection: she's standing at a dead CRT, reaching for its knob.
-
-**Camera:** one move. Off the glass, out to the right and back, ending as a 3/4 from behind her right shoulder:
-her hair and profile in the foreground, her glowing reflection on the glass, and her arm going down to the red LED and knob.
-(Filmed: a front-right two-shot couldn't show the reflection and the knob in one frame.)
-It starts slow (it begins under her reach), then the bulk of the move, then a long settle by 5.3: ease-in-out
-weighted 35/65. FOV 46 to 38. The path is a single bezier with no pass-through keys.
+**Camera:** at her eyes, just in front of the face (her bangs may frame the top edge), following her head, so her
+servo micro-corrections become the camera's "handheld". Wide lens (FOV about 55). The glass ahead is dark and holds a
+dim reflection: keep it dim so shot 1's surprise isn't spoiled.
 
 | t | Part | Action | Curve |
 |---|---|---|---|
-| 3.4 to 4.6 | hips | Weight shifts right: hips move 6 cm right, her right knee softens 3 cm | ease-in-out |
-| 3.5 to 4.8 | spine | Leans in and down to the right: pitch 9° forward, roll 5° | ease-out, 100 ms after hips |
-| 3.6 to 4.6 | L arm | The left hand comes up and braces on the desk edge, fingers spread (her weight, so the lean is believable) | arc, lands at 4.6 with a 2-frame compress |
-| 3.7 to 5.0 | R arm | The reach continues on an arc down to a pre-grip point 6 cm in front of the knob. The elbow stays bent about 25° and never locks straight. | ease-out; the wrist arrives 100 ms after the elbow settles |
-| 4.2 to 5.0 | R hand | Opens wider on approach (spread 0.3 to 0.45, curl down to 0.15), then the fingertips start to close | ease-out |
-| 3.8 to 5.3 | head and eyes | Locked on the knob, which makes the target obvious. The head follows the body down. | follow |
-| 4.6 to 5.3 | hair, skirt | Swing from the lean and settle | spring |
+| 2.95 to 3.30 | R hand | Finishes rising into the centre of the frame, palm toward her | ease-out |
+| 3.35 to 4.00 | fingers | Ripple, index to pinky, each overshooting slightly | ease-out-back, 120 ms apart |
+| 4.00 to 4.50 | fingers | Ripple back, pinky to index | same |
+| 4.55 to 4.95 | thumb, index | Precision pinch, then they open | ease-out |
+| 3.30 to 5.00 | wrist | Slow roll to show the palm, then the back | ease-in-out |
+| 5.00 to 5.20 | eyes, head | Snap to the button (the camera pans first: her eyes lead) | ease-out-quint |
+| 5.10 to 6.10 | R arm | Reaches down and right toward the button, on an arc, leaning in a little | ease-out |
+| 5.40 to 5.80 | fingers | Index extends; middle, ring and pinky fold one by one (50 ms apart); thumb tucks | ease-out-back |
 
-**End pose (5.2):** leaning in with her left hand on the desk, the right hand hovering at the knob, eyes on it.
-A clear silhouette.
+### Shot 3: PRESS + REVEAL (5.6 to 7.2 s), one continuous move
 
-### Shot 4: GRIP (5.3 to 6.4 s), cut to an insert close-up of the knob
-
-**Macro:** a careful, precise grip. The robot is dexterous. (This replaces the finger-play showcase.)
-
-**Camera:** hard **cut on action** as the fingers start to close. A side-on macro of the monitor's chin
-(her hand is about 3× the knob's diameter, so from the front it hides the knob): the hand wraps the knob in profile,
-with the red LED pulsing on the right. FOV 32.
-Locked, with a slow 1.5% push.
+**Macro:** the camera pulls up and back out of her view, over her head and behind her right shoulder. Her head
+and shoulder rise into the bottom of the frame, and the dark glass beyond holds her glowing-eyed reflection: the face we
+opened on. Her finger presses the power button and the screen wakes.
 
 | t | Part | Action | Curve |
 |---|---|---|---|
-| 5.30 to 5.55 | R hand | Last 6 cm of travel. The hand decelerates into the knob, with the wrist leading. | ease-out-quint |
-| 5.45 to 5.80 | fingers | Close one after another: index, middle, ring, then pinky, 50 ms apart, each overshooting by 0.05 curl | ease-out-back |
-| 5.70 to 5.85 | thumb | Opposes last and pinches | ease-out |
-| 5.85 to 5.95 | hand | **Contact settle**: pushes 3 mm in, the fingers compress slightly, then rebound 1 mm | spring |
-| 5.95 to 6.40 | everything | **Hold**, the beat before the turn. The LED keeps pulsing, and one servo micro-correction runs in the wrist. | servo hold |
-
-### Shot 5: CLICK (6.4 to 7.2 s), same insert
-
-**Macro:** she turns it. The click.
-
-| t | Part | Action | Curve |
-|---|---|---|---|
-| 6.40 to 6.55 | wrist | **Anticipation**: counter-turns −6° | ease-in |
-| 6.55 to 6.75 | wrist and knob | Twists 45° | ease-in, fast; time slows to 0.6× across these 0.2 s (speed ramp) |
-| 6.75 | knob | **Detent click.** The knob overshoots 5° then settles back over 0.12 s. | ease-out-back |
-| 6.75 | LED | Red snaps to orange on the click frame | step |
-| 6.75 to 6.78 | post | **Impact frame**: a 2-frame flash (inverted or blown out). The camera kicks 3 mm and decays over 0.2 s. | step, then damped |
-| 6.75 | boot | `tb = T.led`: the screen begins its power-on | — |
-| 6.78 to 7.2 | screen | The power-on glow spills into the insert from the top of frame | follows `T.power` |
-
-### Shot 6: LIGHT (7.55 to 8.6 s), cut to her face, lit by the screen
-
-(Filmed: the insert runs on to 7.55 so the release plays in it, and the cut lands on her rising. The straighten-up
-beats below run about 0.1 to 0.2 s later than written.)
-
-**Macro:** the screen comes on and its light washes over her face. She straightens up, looks at it, and settles into a maid's standby pose. Then we go in.
-
-**Camera:** hard **cut**, frontal and slightly low, from just beside the screen's left edge looking back at
-her (a dark background behind her). Medium close-up, FOV 38. Hold, then hand off to the boot.
-**Light:** the screen's `RectAreaLight` is now her key: cold-white phosphor ramping up, her eyes still orange.
-Hair and material tuning waits for the final model.
-
-| t | Part | Action | Curve |
-|---|---|---|---|
-| 7.20 to 7.50 | R hand | Fingers release in reverse order (pinky first, 40 ms apart) | ease-out |
-| 7.30 to 7.90 | L arm | Pushes off the desk, and her weight comes back | ease-out |
-| 7.35 to 8.10 | both arms | Both hands return on arcs to a maid's standby pose: hands together in front of the waist | ease-out, left hand 80 ms behind the right |
-| 7.35 to 8.10 | spine, hips | Straighten back to upright with a small overshoot back | ease-out-back, 80 ms after the push-off |
-| 7.30 to 7.45 | eyes | Snap up to the screen | ease-out-quint |
-| 7.40 to 7.90 | head | Lifts to the screen, slight wonder tilt | ease-out, 100 ms after the eyes |
-| 7.6 | eyes | Glow pulses brighter (×1.3) for 0.3 s, as if syncing with the screen | bump |
-| 8.0 to 8.6 | everything | Servo hold, with the screen light flickering on her face as the boot text types | — |
-| 8.6 | camera | Hand off to the boot: a whip-pan (or a match push) from her face onto the screen, then the existing dive | — |
+| 5.60 to 7.20 | camera | Up over her head, then back over her right shoulder. Slow start, long settle. | skewed ease-in-out |
+| 6.10 to 6.25 | R hand | **Anticipation**: the fingertip pulls back 1 cm | ease-in |
+| 6.25 to 6.45 | R hand | **Press**: the button travels 8 mm | ease-in, at 0.6× (speed ramp) |
+| 6.45 | everything | **Click**: the LED snaps from red to orange, a 2-frame inverted flash, a camera kick. The boot starts (`tb = T.led`). | step |
+| 6.55 to 6.70 | button | Springs back | ease-out-back |
+| 6.80 to 7.60 | R arm | Hand withdraws to her side | ease-out, on an arc |
+| 6.9 to 7.6 | head | Lifts to watch the screen | ease-out |
+| 6.45 to 7.4 | screen | Power-on glow. Her reflection dissolves into the boot screen as the glow takes over. | follows `T.power` |
 
 ## What's next (boot)
 
-From the click, the boot runs as before (wordmark, boot lines, snow, dive, merge, resolve), with two changes:
-- The beats from the wordmark onward start 0.8 s later, so the wordmark lands after the cut instead of during the face shot.
-- At 8.6 a hard cut goes to a wide from behind her right side (`P0`). She steps aside to her left, presenting
-  the screen, then the boot's pull-back and dive run from there. The room lights wait until she's out of frame.
+No cut. The boot camera (`P0`) starts from where the pull-back settles, then pulls back and dives as before. She steps
+aside to her left before the dive, so she doesn't block it. The boot beats keep their original timing.
 
-## Implementation notes (for the refilm)
+## Implementation notes
 
-- **New rig controls needed** in `robot-glb.js` (all of the bones exist in `robot.glb`):
-  - `body({ hips, lean, roll, twist })`: hips offset, plus spine and chest pitch, roll and yaw, split across the spine chain.
-  - `look(dir)`: the `LeftEye` / `RightEye` bones, so the eyes can lead the head.
-  - `reachLeft(target)` and `gripLeft(...)`: an IK solve for the left arm, for the desk brace.
-  - `shoulder(dip, roll)`: for the anticipation.
-  - Later, with the final model: springs on the hair and skirt chains (`HairJoint-*` and `J_Sec_*Skirt*` here). They're model-specific, so they wait.
-- **Curves**: add `easeOutBack`, `easeOutQuint` and a damped `spring(t, freq, damping)`.
-  Replace `lerpPose` with `arcPose(a, b, lift, k)`, which runs the wrist along a quadratic bezier whose midpoint is lifted.
-- **Per-part offsets**: make the key tables data (`[t0, t1, from, to, curve]` per channel) so timing can be tuned
-  in lil-gui and each joint gets its own offset.
-- **Camera**: `SHOT` becomes a list of cuts. Each shot has its own start and end keys plus a curve; cuts are instant.
-  The reveal is the only multi-key move.
-- **Staging**: move `ROBOT_HOME` about 0.25 m right (closer to the knob), so the reach works with a lean and doesn't need a locked straight arm.
-  Re-frame shot 1 to suit.
-- **Speed ramp**: `master(t)` remaps time through a time-warp curve (0.6× from 6.55 to 6.75), so scrubbing still works.
-
-## Total
-
-The prologue goes from 9.0 s to about **8.6 s**, then the boot. There are 6 shots and 3 cuts
-(after shot 3, shot 5 and at the end of shot 6), with one signature continuous move (the reveal).
+- The power knob becomes a push-button power switch (old CRTs had both). The volume knob stays.
+- Her point of view: the camera sits just in front of her eyes (between the `LeftEye` and `RightEye` bones), so nothing
+  needs hiding. The pull-back rises over her head rather than through it.
+- Rig controls (already in `robot-glb.js`): `body`, `look`, `left.reach`, and a neck-relative head.
+- Later, with the final model: hair and skirt springs, hair material.
