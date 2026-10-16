@@ -62,14 +62,18 @@ reflection** until the reveal.
 3. **Finger wiggle (3.3 to 4.2 s):** quick and human. Two passes, index to pinky and back, twice, in under a
    second. They curl partway and the thumb stays still.
 4. **Pointing stance (4.3 to 4.65 s):** index out, the rest fold one by one, the thumb tucks a little.
-5. **The long reach (4.7 to 7.05 s), the slow part:** she stands a step back from the TV (1.2 m), so it's a real
-   reach. Her arm extends to about 85%, she leans well in and her weight shifts forward. In the glass her face grows
-   toward us as the hand sinks out of the bottom of the frame.
-6. **Pull-back and click (5.9 to 8.5 s), also slow:** as the hand leaves the frame, the camera pulls back, out to
-   her right and over her shoulder, revealing the reflection. Anticipation, then the press: click at 7.45 s
-   (flash, kick, speed ramp).
-7. **Screen on:** the power-on line, then the glow. The screen backlights her with a bright toon rim halo.
-8. **She steps aside (8.8 to 10.1 s)** and the boot plays, with no cut.
+5. **The long reach (4.7 to 8.0 s), the slow part:** she stands a step back from the TV (1.2 m), so it's a real
+   reach. Her arm extends to about 85%, she leans well in and her weight shifts forward.
+6. **The camera (one move, two directions):**
+   - **Follow (4.9 to 7.6 s):** a slow drift down and right with her hand. The glass stays in view, and her reflected
+     hand sinks toward the button.
+   - **The turn (7.6 s):** it eases to a stop as her finger hovers over the button.
+   - **Pull back (7.6 to 10.2 s):** it heads backwards, out to her right and over her shoulder.
+   - **The click (8.35 s):** about 0.75 s after the camera turns back (anticipation, press, flash, kick, speed ramp).
+     The LED goes orange at once, but the screen warms up for a second (`WARM`) like a real CRT, so the reflection
+     reveal plays out before the power-on glow wipes it.
+7. **Screen on (about 9.6 s):** the power-on line, then the glow. The screen backlights her with a bright toon rim halo.
+8. **She steps aside (10.4 to 11.7 s)** and the boot plays, with no cut.
 
 ## Shading (anime / MToon-style)
 

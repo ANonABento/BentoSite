@@ -69,7 +69,7 @@ const P = {
 const T = {
   led: 0.45,
   power: [0.75, 1.55],
-  hand: 1.2,               // the prologue's pull-back settles: the boot camera takes over from P0
+  hand: 1.2,               // set by the prologue: where its pull-back settles and the boot camera takes over from P0
   wordmark: [1.35, 1.9],
   lines: 1.85,             // first boot line starts; each takes `lineDur`
   lineDur: 0.34,
@@ -795,7 +795,7 @@ function apply(t) {
   rim.intensity = 30 * roomIn * roomOut;
   scene.environmentIntensity = 0.35 * roomIn;
   // Standby: a dim red LED that lights the knobs in the dark; on the click it goes orange.
-  const on = t > T.led ? 1 : 0;
+  const on = t > T.led || ledForce ? 1 : 0;
   ledMat.emissive.set(on ? COLORS.orange : '#ff3a1a');
   ledLight.color.set(on ? COLORS.orange : '#ff3a1a');
   ledMat.emissiveIntensity = on ? 3 + Math.sin(t * 3) * 0.2 : 0.9 + 0.25 * Math.sin(t * 2.2);
@@ -815,12 +815,15 @@ function apply(t) {
  * she steps aside, the boot plays.
  * Story time s; the boot runs on tb, which reaches T.led as the button clicks (s = CLICK).
  * ------------------------------------------------------------------ */
-const CLICK = 7.45;
-const PRO_END = 8.5;
+const CLICK = 8.35;
+const WARM = 1.0;        // CRT warm-up: the LED lights on the click, the screen a second later
+const PRO_END = 10.2;
 // Speed ramp: story time runs at 0.6× through the press.
-const SLOW = [7.25, CLICK], SLOW_K = 0.6, SLOW_EXTRA = (SLOW[1] - SLOW[0]) * (1 / SLOW_K - 1);
+const SLOW = [8.15, CLICK], SLOW_K = 0.6, SLOW_EXTRA = (SLOW[1] - SLOW[0]) * (1 / SLOW_K - 1);
 const story = (t) => (t < SLOW[0] ? t : t < SLOW[0] + (SLOW[1] - SLOW[0]) / SLOW_K ? SLOW[0] + (t - SLOW[0]) * SLOW_K : t - SLOW_EXTRA);
-const TOTAL = CLICK - T.led + T.end + SLOW_EXTRA;
+const TOTAL = CLICK + WARM - T.led + T.end + SLOW_EXTRA;
+let ledForce = false;
+T.hand = PRO_END - CLICK - WARM + T.led;   // the boot camera takes over where the pull-back settles
 
 const ROBOT_HOME = new THREE.Vector3(0.1, -0.5, 1.2);     // a step back from the TV, so the reach is a long one
 const ROBOT_AWAY = new THREE.Vector3(-1.0, -0.5, 1.85);
@@ -885,15 +888,18 @@ const POINT_DIR = V(0.2, -0.3, -1).normalize();          // world: the press goe
 
 // Camera: on her reflection with a slow push, then one pull-back over her shoulder into the boot's P0.
 const REFL = [{ p: V(0.1, 0.1, 0.27), l: V(0.1, 0.02, -1), fov: 42 }, { p: V(0.1, 0.08, 0.2), l: V(0.1, -0.03, -1), fov: 40 }];
-const PULL = { t0: 5.9, t1: PRO_END, ease: skew(0.45),   // the slow part: a long, unhurried reveal
+// The camera follows her hand down toward the TV's chin, eases to a stop as her finger hovers, then reverses:
+// up and back over her shoulder, revealing the reflection. She clicks a moment after it turns back.
+const FOLLOW = { t0: 4.9, t1: 7.6, p: V(0.28, -0.12, 0.26), l: V(0.36, -0.42, -0.8), fov: 42 };
+const PULL = { t0: 7.6, t1: PRO_END, ease: skew(0.45),
   // out to her right first (clear of her hair), then up and back over her shoulder
-  side: { p: V(0.62, 0.2, 0.45), l: V(0.45, -0.5, 0.05) }, end: { p: P0.clone(), l: L_END.clone() } };
+  side: { p: V(0.8, 0.02, 0.75), l: V(0.38, -0.38, 0.2) }, end: { p: P0.clone(), l: L_END.clone() } };
 
 let ledPulse = 1;
 function prologue(t) {
   const r = robot.root;
   // Where she stands: at the desk, then she steps aside to the left before the dive.
-  const away = easeInOutCubic(ramp(t, [8.8, 10.1]));
+  const away = easeInOutCubic(ramp(t, [10.4, 11.7]));
   r.position.lerpVectors(ROBOT_HOME, ROBOT_AWAY, away);
   r.position.y += Math.sin(Math.PI * away) * 0.025;
   r.rotation.set(0, Math.PI - 0.62 * away, 0);
@@ -904,41 +910,41 @@ function prologue(t) {
 
   // ---- body: powered-down slump, the power-on lock, a lean into the press, back upright ----
   // The long reach: she leans well in and shifts her weight forward.
-  const lean = track(t, 0.07, [[1.1, 1.3, 0, easeOutBack], [4.8, 6.9, 0.26, easeInOutSine], [7.8, 8.6, 0, easeOutBack]]);
-  const roll = track(t, 0, [[4.8, 6.9, 0.08, easeInOutSine], [7.8, 8.6, 0, easeOutBack]]);
-  const twist = track(t, 0, [[4.7, 6.6, 0.12, easeInOutSine], [7.8, 8.6, 0, easeOutBack]]);
-  const hips = trackV(t, V(0, 0, 0), [[4.8, 6.9, V(-0.02, -0.01, 0.07), easeInOutSine], [7.8, 8.6, V(0, 0, 0)]]);
+  const lean = track(t, 0.07, [[1.1, 1.3, 0, easeOutBack], [4.8, 7.9, 0.26, easeInOutSine], [8.65, 9.5, 0, easeOutBack]]);
+  const roll = track(t, 0, [[4.8, 7.9, 0.08, easeInOutSine], [8.65, 9.5, 0, easeOutBack]]);
+  const twist = track(t, 0, [[4.7, 7.6, 0.12, easeInOutSine], [8.65, 9.5, 0, easeOutBack]]);
+  const hips = trackV(t, V(0, 0, 0), [[4.8, 7.9, V(-0.02, -0.01, 0.07), easeInOutSine], [8.65, 9.5, V(0, 0, 0)]]);
   robot.body({ hips, lean, roll, twist });
 
   // ---- head: bowed, lifts in two servo steps, down at her hand, to the button, up at the screen ----
   const idle = sstep(ramp(t, [2.0, 2.3]));
-  const hx = track(t, 0.21, [[1.3, 1.55, 0.09], [1.7, 1.95, -0.017, easeOutBack], [2.45, 2.9, 0.24], [4.6, 4.95, 0.3], [7.8, 8.4, -0.03]]);
-  const hy = track(t, 0, [[2.45, 2.9, -0.05], [4.6, 4.95, -0.28], [7.8, 8.4, 0], [9.3, 10.3, 0.25, easeInOutCubic]]);
-  const hz = track(t, 0, [[2.45, 2.9, 0.1], [4.6, 4.95, 0.03], [7.8, 8.4, 0]]);
+  const hx = track(t, 0.21, [[1.3, 1.55, 0.09], [1.7, 1.95, -0.017, easeOutBack], [2.45, 2.9, 0.24], [4.6, 4.95, 0.3], [8.65, 9.3, -0.03]]);
+  const hy = track(t, 0, [[2.45, 2.9, -0.05], [4.6, 4.95, -0.28], [8.65, 9.3, 0], [10.9, 11.9, 0.25, easeInOutCubic]]);
+  const hz = track(t, 0, [[2.45, 2.9, 0.1], [4.6, 4.95, 0.03], [8.65, 9.3, 0]]);
   robot.headPivot.rotation.set(hx + idle * servo(t, 1, 0.009), hy + idle * servo(t, 2, 0.007), hz + idle * servo(t, 3, 0.008));
 
   // ---- eyes: they lead every look ----
-  const down = track(t, 0, [[2.35, 2.5, 0.3, easeOutQuint], [3.0, 3.6, 0.18], [4.5, 4.65, 0.3, easeOutQuint], [7.7, 7.85, -0.05, easeOutQuint], [8.4, 8.8, 0]]);
-  const right = track(t, 0, [[2.35, 2.5, 0.06, easeOutQuint], [4.5, 4.65, 0.25, easeOutQuint], [7.7, 7.85, 0, easeOutQuint]]);
+  const down = track(t, 0, [[2.35, 2.5, 0.3, easeOutQuint], [3.0, 3.6, 0.18], [4.5, 4.65, 0.3, easeOutQuint], [8.55, 8.7, -0.05, easeOutQuint], [9.3, 9.7, 0]]);
+  const right = track(t, 0, [[2.35, 2.5, 0.06, easeOutQuint], [4.5, 4.65, 0.25, easeOutQuint], [8.55, 8.7, 0, easeOutQuint]]);
   robot.look(down, right);
-  const blink = Math.max(bump((t - 2.1) / 0.14), bump((t - 5.6) / 0.14), bump((t - 9.6) / 0.14));
+  const blink = Math.max(bump((t - 2.1) / 0.14), bump((t - 6.2) / 0.14), bump((t - 10.6) / 0.14));
   robot.setEyes(eyeGlow(t), sstep(ramp(t, [0.95, 1.2])) * (1 - blink));
 
   // ---- right arm: rises, shows itself, reaches for the button, presses, withdraws ----
   const button = powerButton.getWorldPosition(new THREE.Vector3()).add(V(0, 0, 0.015));   // its face
   const TIP_FIX = V(0.05, 0, -0.02);   // the curled hand puts the fingertip off the wrist's pointing line
   const tipAt = (gap) => loc(button.clone().add(TIP_FIX).addScaledVector(POINT_DIR, -(FINGER_TIP + gap)));
-  const press = track(t, 0.02, [[7.05, 7.25, 0.03, easeInQuad], [7.25, CLICK, -0.006, easeInQuad], [7.55, 7.7, 0.01, easeOutBack]]);
+  const press = track(t, 0.02, [[8.0, 8.15, 0.03, easeInQuad], [8.15, CLICK, -0.006, easeInQuad], [8.45, 8.6, 0.01, easeOutBack]]);
   const sway = V(0.01 * Math.sin(t * 1.7), 0.008 * Math.sin(t * 2.3 + 1), 0);
   const wrist = trackV(t, R_REST, [
     [2.4, 3.2, R_SHOW, easeOutCubic, V(0, 0.06, 0.1)],              // the hand comes up as she glances down
-    [4.7, 7.05, tipAt(0.02), easeInOutSine, V(0, 0.08, 0.05)],       // the long, slow reach for the TV
-    [7.8, 8.6, R_REST, easeOutCubic, V(0, 0.06, 0.06)],
+    [4.7, 8.0, tipAt(0.02), easeInOutSine, V(0, 0.08, 0.05)],        // the long, slow reach for the TV
+    [8.65, 9.5, R_REST, easeOutCubic, V(0, 0.06, 0.06)],
   ]);
   if (t > 3.2 && t < 4.7) wrist.add(sway.multiplyScalar(bump((t - 3.2) / 1.5)));
-  if (t > 7.05 && t < 7.8) wrist.copy(tipAt(press));
-  const dir = trackV(t, R_REST_DIR, [[2.4, 3.2, R_SHOW_DIR], [4.7, 6.4, dirL(POINT_DIR), easeInOutCubic], [7.8, 8.5, R_REST_DIR]]);
-  const up = trackV(t, V(0, 0, 1), [[2.4, 3.2, V(0, 0, 1)], [4.7, 6.4, V(0, 1, 0)], [7.8, 8.5, V(0, 0, 1)]]);
+  if (t > 8.0 && t < 8.65) wrist.copy(tipAt(press));
+  const dir = trackV(t, R_REST_DIR, [[2.4, 3.2, R_SHOW_DIR], [4.7, 7.2, dirL(POINT_DIR), easeInOutCubic], [8.65, 9.4, R_REST_DIR]]);
+  const up = trackV(t, V(0, 0, 1), [[2.4, 3.2, V(0, 0, 1)], [4.7, 7.2, V(0, 1, 0)], [8.65, 9.4, V(0, 0, 1)]]);
   robot.reach(wrist);
   robot.aim(dir, up.normalize(), 0.08 * Math.sin((t - 3.2) * 4) * bump((t - 3.2) / 1.5));
 
@@ -948,25 +954,25 @@ function prologue(t) {
   const WAVE = [3.3, 3.52, 3.74, 3.96];       // forward, back, forward, back (done by ~4.2)
   const per = [0, 1, 2, 3].map((i) => {
     const wave = WAVE.reduce((acc, t0, k) => acc + 0.4 * bump((t - t0 - 0.035 * (k % 2 ? 3 - i : i)) / 0.15), 0);
-    const base = track(t, 0.25, [[2.4, 3.2, 0.12], [4.3 + 0.05 * i, 4.6 + 0.05 * i, i === 0 ? 0.03 : 0.78, easeOutBack], [7.8, 8.3, 0.25]]);
+    const base = track(t, 0.25, [[2.4, 3.2, 0.12], [4.3 + 0.05 * i, 4.6 + 0.05 * i, i === 0 ? 0.03 : 0.78, easeOutBack], [8.65, 9.2, 0.25]]);
     return base + (t < 4.35 ? wave : 0);
   });
-  const thumb = track(t, 0.25, [[2.4, 3.2, 0.2], [4.4, 4.65, 0.42], [7.8, 8.3, 0.25]]);
-  const spread = track(t, 0, [[2.4, 3.2, 0.25], [4.3, 4.6, 0.02], [7.8, 8.3, 0]]);
+  const thumb = track(t, 0.25, [[2.4, 3.2, 0.2], [4.4, 4.65, 0.42], [8.65, 9.2, 0.25]]);
+  const spread = track(t, 0, [[2.4, 3.2, 0.25], [4.3, 4.6, 0.02], [8.65, 9.2, 0]]);
   robot.grip(0.25, spread, thumb, per);
-  powerButton.position.z = BUTTON_Z - 0.008 * clamp01(track(t, 0, [[7.35, CLICK, 1, easeInQuad], [7.55, 7.7, 0, easeOutBack]]));
+  powerButton.position.z = BUTTON_Z - 0.008 * clamp01(track(t, 0, [[8.25, CLICK, 1, easeInQuad], [8.45, 8.6, 0, easeOutBack]]));
 
   // Left arm hangs.
   robot.left.reach(robot.left.hang);
 
   // ---- light ----
   // A cool fill on her hand from the glass side while she tests it.
-  handFill.intensity = 0.22 * sstep(ramp(t, [2.6, 3.2])) * (1 - sstep(ramp(t, [5.6, 6.2])));
-  proRim.intensity = 1.4 * sstep(ramp(t, [6.3, 6.9])) * (1 - sstep(ramp(t, [8.1, 8.7])));
+  handFill.intensity = 0.22 * sstep(ramp(t, [2.6, 3.2])) * (1 - sstep(ramp(t, [6.4, 7.0])));
+  proRim.intensity = 1.4 * sstep(ramp(t, [7.2, 7.8])) * (1 - sstep(ramp(t, [9.6, 10.2])));
   // The standby LED pulses slowly; it brightens as she reaches for it.
   ledPulse = (0.85 + 0.25 * Math.sin(t * (2 * Math.PI / 1.4))) * (1 + 0.6 * sstep(ramp(t, [4.5, 5.1])));
   // Toon shading: a dim floor and a cool moonlit rim in the dark; once the screen is on she's lit by it.
-  const lit = sstep(ramp(t, [CLICK + 0.3, CLICK + 1.2]));
+  const lit = sstep(ramp(t, [CLICK + WARM + 0.3, CLICK + WARM + 1.2]));
   robot.toon.uAmb.value = mix(0.035, 0.08, lit);
   robot.toon.uRim.value = mix(0.25, 0.9, lit);   // the screen behind the glass makes a bright halo on her silhouette
   robot.toon.uRimColor.value.set(lit > 0.5 ? '#e8eefc' : '#9fb4e0');
@@ -975,15 +981,17 @@ function prologue(t) {
   robot.updateToon();
   if (t >= PRO_END) { if (camera.fov !== 35) { camera.fov = 35; camera.updateProjectionMatrix(); } return; }
   let p, l, fov;
-  const k0 = clamp01(t / PULL.t0);
+  const k0 = clamp01(t / FOLLOW.t0);
   const reflP = REFL[0].p.clone().lerp(REFL[1].p, k0), reflL = REFL[0].l.clone().lerp(REFL[1].l, k0);
+  const f = easeInOutSine(ramp(t, [FOLLOW.t0, FOLLOW.t1]));
+  const folP = reflP.clone().lerp(FOLLOW.p, f), folL = reflL.clone().lerp(FOLLOW.l, f);
   if (t < PULL.t0) {
-    p = reflP; l = reflL; fov = mix(REFL[0].fov, REFL[1].fov, k0);
+    p = folP; l = folL; fov = mix(t < FOLLOW.t0 ? mix(REFL[0].fov, REFL[1].fov, k0) : REFL[1].fov, FOLLOW.fov, f);
   } else {
     const u = PULL.ease(clamp01((t - PULL.t0) / (PULL.t1 - PULL.t0)));
-    p = new THREE.CatmullRomCurve3([reflP, PULL.side.p, PULL.end.p], false, 'centripetal').getPoint(u);
-    l = new THREE.CatmullRomCurve3([reflL, PULL.side.l, PULL.end.l], false, 'centripetal').getPoint(u);
-    fov = mix(REFL[1].fov, 35, sstep(u));
+    p = new THREE.CatmullRomCurve3([FOLLOW.p, PULL.side.p, PULL.end.p], false, 'centripetal').getPoint(u);
+    l = new THREE.CatmullRomCurve3([FOLLOW.l, PULL.side.l, PULL.end.l], false, 'centripetal').getPoint(u);
+    fov = mix(FOLLOW.fov, 35, sstep(u));
   }
   // the click kicks the camera
   const kick = t > CLICK ? Math.exp(-(t - CLICK) / 0.06) * Math.cos((t - CLICK) * 90) * 0.003 : 0;
@@ -996,9 +1004,11 @@ function prologue(t) {
 const flash = document.getElementById('flash');
 function master(time) {
   const t = story(time);
-  const tb = t - CLICK + T.led;
+  const tb = t - CLICK - WARM + T.led;
+  ledForce = t > CLICK;
   apply(tb);
   prologue(t);
+  if (t < CLICK + WARM) uniforms.uRefl.value = 1;   // the glass stays a mirror until the tube warms up
   if (t < CLICK) {
     // Standby: only her eyes, the moon and the red LED. Her reflection is dim while we're in her eyes.
     ledMat.emissiveIntensity *= ledPulse; ledLight.intensity *= ledPulse;
@@ -1009,7 +1019,7 @@ function master(time) {
     bloom.strength = Math.max(bloom.strength * 0.7, P.bloom * 0.6);
   }
   // Room light waits until she has stepped out of the boot's shot (it blows out her hair).
-  if (t < 10.1) { const k = sstep(ramp(t, [9.1, 10.1])); key.intensity *= k; rim.intensity *= k; }
+  if (t < 11.7) { const k = sstep(ramp(t, [10.7, 11.7])); key.intensity *= k; rim.intensity *= k; }
   // Impact frame: two inverted frames on the click.
   flash.style.opacity = t >= CLICK && t < CLICK + 0.035 ? 1 : 0;
 }
