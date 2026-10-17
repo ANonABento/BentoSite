@@ -57,3 +57,4 @@ null
 # Licensed / purchased models: never commit (public repo)
 prototypes/robot/vendor/
 prototypes/robot/build/
+prototypes/crt-site/assets/robot-c1.glb

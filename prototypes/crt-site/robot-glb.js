@@ -6,7 +6,9 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
  * The maid robot from a rigged GLB (assets/robot.glb), behind the same interface
  * as robot.js: { root, head, headPivot, hand, reach, aim, grip, setEyes }.
  *
- * Placeholder model: VRoid's CC0 AvatarSample D Darkness, restyled by
+ * Default model: the armoured maid, assets/robot-c1.glb (local TRELLIS body and head, skeleton fitted and skinned
+ * by prototypes/robot/hf/build_robot.py; no morphs, so blinks fall back to the iris dimming).
+ * Placeholder model (?robot=vroid): VRoid's CC0 AvatarSample D Darkness, restyled by
  * prototypes/robot/blender/vroid_model.py (bones renamed to Mixamo names,
  * morphs: blink, happy, irisOff; emissive iris material). Any GLB with the
  * same bone names and morphs drops in.
@@ -71,7 +73,8 @@ export async function loadRobot(url = new URL('./assets/robot.glb', import.meta.
     });
     t.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, toon);
-      sh.uniforms.uFaceSphere = { value: face ? 0.75 : 0 };
+      // the armoured maid's mask ('Face') has no nose to keep: fully spherical, so leftover bumps can't step the ramp
+      sh.uniforms.uFaceSphere = { value: face ? (m.name === 'Face' ? 1 : 0.75) : 0 };
       sh.vertexShader = 'uniform vec3 uHeadLocal;\nuniform float uFaceSphere;\n' + sh.vertexShader.replace('#include <skinning_vertex>', `#include <skinning_vertex>
         if (uFaceSphere > 0.0) vNormal = normalize(normalMatrix * mix(objectNormal, normalize(transformed - uHeadLocal), uFaceSphere));`);
       sh.fragmentShader = 'uniform float uAmb, uRim, uRimPow, uFaceSphere;\nuniform vec3 uRimColor;\n' + sh.fragmentShader.replace('#include <opaque_fragment>', `
