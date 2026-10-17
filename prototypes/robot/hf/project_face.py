@@ -31,14 +31,67 @@ def blur(m, k):
         c = np.cumsum(np.pad(m, [(k + 1, k) if i == ax else (0, 0) for i in range(3)], mode='edge'), axis=ax)
         m = (np.take(c, range(2 * k + 1, c.shape[ax]), axis=ax) - np.take(c, range(0, c.shape[ax] - 2 * k - 1), axis=ax)) / (2 * k + 1)
     return m
-if len(args) >= 11:
-    bx0, by0, bx1, by1 = [int(float(a) * W) for a in args[7:11]]
+BOXES = [[int(float(a) * W) for a in args[i:i + 4]] for i in range(7, len(args) - 3, 4)]
+for bx0, by0, bx1, by1 in BOXES:   # blur out baked features we don't want (mouth line, nose shading)
     patch = px[by0:by1, bx0:bx1, :3]; sm = patch
     for _ in range(3): sm = blur(sm, 18)
     yy, xx = np.mgrid[0:by1 - by0, 0:bx1 - bx0]
     w_ = np.clip(np.minimum.reduce([xx, yy, (bx1 - bx0) - xx, (by1 - by0) - yy]) / 25.0, 0, 1)[..., None]   # feathered
     px[by0:by1, bx0:bx1, :3] = patch * (1 - w_) + sm * w_
-    img.pixels = px[::-1].ravel().tolist()
+if BOXES: img.pixels = px[::-1].ravel().tolist()
+
+# geometry: weld TRELLIS's seam-split vertices, then gently smooth just the nose and mouth (so the nose is a faint
+# swell and the sculpted mouth groove goes), and drop the imported custom normals that show the seams as creases
+bm0 = bmesh.new(); bm0.from_mesh(me); bmesh.ops.remove_doubles(bm0, verts=bm0.verts, dist=1e-5); bm0.to_mesh(me); bm0.free()
+co = np.array([v_.co[:] for v_ in me.vertices])
+vu, vv = to_img(co[:, 0], co[:, 2]); vu, vv = vu / W, vv / H
+vn = np.array([v_.normal[:] for v_ in me.vertices])
+front = co[:, 1] < np.percentile(co[:, 1], 30)
+zone = front & (vn[:, 1] < -0.3) & (np.abs(vu - 0.49) < 0.075) & (vv > 0.585) & (vv < 0.86)
+EYES = [(0.335, 0.55), (0.655, 0.555)]                          # eye centres in the concept, 0..1
+for ex_, ey_ in EYES:                                           # the torn lash shards around each eye
+    rr_ = np.hypot((vu - ex_) / 0.13, (vv - ey_) / 0.1)
+    zone |= front & (rr_ > 0.55) & (rr_ < 1.35)
+nose = front & (np.abs(vu - 0.485) < 0.045) & (vv > 0.59) & (vv < 0.69)
+ev = np.array([e.vertices[:] for e in me.edges]); deg = np.maximum(np.bincount(ev.ravel(), minlength=len(co)), 1)[:, None]
+ring = np.zeros(len(co)); ring[zone] = 1.0
+for _ in range(4):   # soft falloff a few rings outward
+    nb = np.zeros(len(co)); np.add.at(nb, ev[:, 0], ring[ev[:, 1]]); np.add.at(nb, ev[:, 1], ring[ev[:, 0]])
+    ring = np.maximum(ring, np.where(front & (vn[:, 1] < -0.3), nb / deg[:, 0] * 0.8, 0))
+for it in range(80):
+    nb = np.zeros_like(co); np.add.at(nb, ev[:, 0], co[ev[:, 1]]); np.add.at(nb, ev[:, 1], co[ev[:, 0]])
+    lam = 0.5 if it % 2 == 0 else -0.53
+    co += (lam * ring)[:, None] * (nb / deg - co)
+for it in range(300):                                           # the nose nub: much more, until it is a faint swell
+    nb = np.zeros_like(co); np.add.at(nb, ev[:, 0], co[ev[:, 1]]); np.add.at(nb, ev[:, 1], co[ev[:, 0]])
+    lam = 0.5 if it % 2 == 0 else -0.53
+    co[nose] += lam * (nb[nose] / deg[nose] - co[nose])
+ring = np.maximum(ring, nose.astype(float))
+# the nose itself is a broad bump, which smoothing keeps by design: fit the surrounding face (an annulus around the
+# nose tip) with a quadratic and pull the nose onto it, leaving only a faint swell
+NX, NZ = 0.0, z1 - ((0.64 * H) - iy0) / s                         # nose tip, from the concept
+rr2 = np.hypot(co[:, 0] - NX, co[:, 2] - NZ); fr = co[:, 1] < np.percentile(co[:, 1], 30)
+ann = fr & (rr2 > 0.055) & (rr2 < 0.085)
+Xq = lambda x_, z_: np.stack([np.ones_like(x_), x_, z_, x_ * x_, x_ * z_, z_ * z_], 1)
+cq, *_ = np.linalg.lstsq(Xq(co[ann, 0], co[ann, 2]), co[ann, 1], rcond=None)
+inn = fr & (rr2 < 0.07)
+t_ = np.clip((0.07 - rr2[inn]) / 0.02, 0, 1); w2 = t_ * t_ * (3 - 2 * t_)
+fit_y = Xq(co[inn, 0], co[inn, 2]) @ cq - 0.006 * np.exp(-(rr2[inn] / 0.03) ** 2)   # the faint swell that stays
+co[inn, 1] = co[inn, 1] + (fit_y - co[inn, 1]) * w2
+ring[inn] = 1.0
+relax = fr & (rr2 < 0.08)                                       # relax the flattened patch's crumpled triangles
+for it in range(60):
+    nb = np.zeros_like(co); np.add.at(nb, ev[:, 0], co[ev[:, 1]]); np.add.at(nb, ev[:, 1], co[ev[:, 0]])
+    lam = 0.5 if it % 2 == 0 else -0.53
+    co[relax] += lam * (nb[relax] / deg[relax] - co[relax])
+ring[relax] = 1.0
+print('nose flattened', int(inn.sum()), 'at z', round(NZ, 3))
+for i in np.where(ring > 0)[0]: me.vertices[i].co = co[i]
+bpy.context.view_layer.objects.active = o; o.select_set(True)
+try: bpy.ops.mesh.customdata_custom_splitnormals_clear()
+except Exception as ex_: print('normals', ex_)
+for p_ in me.polygons: p_.use_smooth = True
+me.update(); print('smoothed verts', int((ring > 0).sum()))
 
 # which faces: front-facing, the first thing a ray from the front hits, and inside the face region
 n = len(me.polygons)
@@ -53,12 +106,20 @@ for y_ in range(H):                                             # foreground pix
 fgE = sil.copy()
 for _ in range(8): fgE &= np.roll(fgE, 1, 0) & np.roll(fgE, -1, 0) & np.roll(fgE, 1, 1) & np.roll(fgE, -1, 1)
 cand &= fgE[np.clip(v, 0, H - 1).astype(int), np.clip(u, 0, W - 1).astype(int)]   # never project the backdrop
+zone_p = np.zeros(len(cen), bool)                                # nose and eye surrounds: any face not facing away
+pu_, pv_ = u / W, v / H
+zone_p |= (np.abs(pu_ - 0.485) < 0.05) & (pv_ > 0.58) & (pv_ < 0.72)
+for ex_, ey_ in EYES: zone_p |= np.hypot((pu_ - ex_) / 0.15, (pv_ - ey_) / 0.12) < 1
+cand |= zone_p & (nrm[:, 1] < 0.35) & (cen[:, 1] < np.percentile(co[:, 1], 30))
 tree = BVHTree.FromPolygons([tuple(c) for c in co], [p.vertices[:] for p in me.polygons])
 ymin = co[:, 1].min() - 1
 sel = []
+nose_p = (np.abs(pu_ - 0.485) < 0.07) & (pv_ > 0.57) & (pv_ < 0.75) & (cen[:, 1] < np.percentile(co[:, 1], 30))
+for i in np.where(nose_p)[0]: sel.append(i)                       # nothing sits in front of the nose: take them all
+cand &= ~nose_p
 for i in np.where(cand)[0]:
     hit = tree.ray_cast(mathutils.Vector((cen[i, 0], ymin, cen[i, 2])), mathutils.Vector((0, 1, 0)))
-    if hit[2] == i or (hit[0] is not None and abs(hit[0][1] - cen[i, 1]) < 1e-3): sel.append(i)
+    if hit[2] == i or (hit[0] is not None and abs(hit[0][1] - cen[i, 1]) < (6e-3 if zone_p[i] else 1e-3)): sel.append(i)
 print('projected faces', len(sel), 'of', int(cand.sum()))
 
 # second material: the concept image, plus its orange glow as emission
