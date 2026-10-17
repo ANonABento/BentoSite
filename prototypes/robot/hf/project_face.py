@@ -111,6 +111,18 @@ pu_, pv_ = u / W, v / H
 zone_p |= (np.abs(pu_ - 0.485) < 0.05) & (pv_ > 0.58) & (pv_ < 0.72)
 for ex_, ey_ in EYES: zone_p |= np.hypot((pu_ - ex_) / 0.15, (pv_ - ey_) / 0.12) < 1
 cand |= zone_p & (nrm[:, 1] < 0.35) & (cen[:, 1] < np.percentile(co[:, 1], 30))
+# never project onto hair: TRELLIS's own colour of each polygon (dark = hair) unless it's in an eye
+ntA = me.materials[0].node_tree
+baseA = [n_ for n_ in ntA.nodes if n_.type == 'TEX_IMAGE' and 'base' in n_.image.name.lower()][0].image
+AW, AH = baseA.size; bpA = np.array(baseA.pixels[:]).reshape(AH, AW, 4)
+uvA = np.zeros(len(me.loops) * 2); me.uv_layers.active.data.foreach_get('uv', uvA); uvA = uvA.reshape(-1, 2)
+lcol = bpA[(np.clip(uvA[:, 1], 0, 1) * (AH - 1)).astype(int), (np.clip(uvA[:, 0], 0, 1) * (AW - 1)).astype(int), :3].mean(1)
+lstart = np.zeros(len(me.polygons), int); me.polygons.foreach_get('loop_start', lstart)
+ltot = np.zeros(len(me.polygons), int); me.polygons.foreach_get('loop_total', ltot)
+plum = np.add.reduceat(lcol, lstart) / ltot
+in_eye_p = np.zeros(len(cen), bool)
+for ex_, ey_ in EYES: in_eye_p |= np.hypot((pu_ - ex_) / 0.15, (pv_ - ey_) / 0.12) < 1
+cand &= (plum > 0.4) | in_eye_p
 tree = BVHTree.FromPolygons([tuple(c) for c in co], [p.vertices[:] for p in me.polygons])
 ymin = co[:, 1].min() - 1
 sel = []
@@ -123,6 +135,15 @@ for i in np.where(cand)[0]:
 print('projected faces', len(sel), 'of', int(cand.sum()))
 
 # second material: the concept image, plus its orange glow as emission
+# clean colour, face: flatten the concept's baked skin shading to one porcelain white (3D lighting does the shading);
+# the eyes (inside their ellipses) and anything coloured stay as they are
+pyy, pxx = np.mgrid[0:H, 0:W] / np.array([H, W])[:, None, None]
+eyez = np.zeros((H, W), bool)
+for ex_, ey_ in EYES: eyez |= ((pxx - ex_) / 0.15) ** 2 + ((pyy - ey_) / 0.12) ** 2 < 1
+lum_ = px[..., :3].mean(-1); sat_ = px[..., :3].max(-1) - px[..., :3].min(-1)
+skin_ = (lum_ > 0.55) & (sat_ < 0.15) & ~eyez
+px[skin_, :3] = [0.93, 0.925, 0.92]
+img.pixels = px[::-1].ravel().tolist()
 emis = np.zeros_like(px); emis[..., 3] = 1
 r, g, b = px[..., 0], px[..., 1], px[..., 2]
 glow = (r > 0.55) & (r - b > 0.35) & (g > 0.18)                # the orange rings and their halo
@@ -141,4 +162,35 @@ for i in sel:
     for li in p.loop_indices:
         c = me.vertices[me.loops[li].vertex_index].co; uu, vv = to_img(c.x, c.z)
         uvl[li].uv = (uu / (W - 1), 1 - vv / (H - 1))
+# clean colour, everything else: snap TRELLIS's texture to glossy black (hair) or clean white (frill, collar), with a
+# small majority filter so speckles and grey seams go; strongly coloured texels (the apron straps) are left alone
+nt0 = me.materials[0].node_tree
+base0 = [n_ for n_ in nt0.nodes if n_.type == 'TEX_IMAGE' and 'base' in n_.image.name.lower()][0].image
+BW, BH = base0.size; bp0 = np.array(base0.pixels[:]).reshape(BH, BW, 4)
+l0 = bp0[..., :3].mean(-1); s0 = bp0[..., :3].max(-1) - bp0[..., :3].min(-1)
+white = blur((l0 > 0.42).astype(float)[..., None], 3)[..., 0] > 0.5
+keep = s0 > 0.2
+bp0[white & ~keep, :3] = [0.92, 0.915, 0.91]; bp0[~white & ~keep, :3] = [0.025, 0.025, 0.03]
+# the bang tips: in the band just above the eyes, anything that is still TRELLIS texture (not the projected face) is
+# hair, so paint those triangles black (they carried slivers of skin colour)
+uvd0 = me.uv_layers.active.data
+band = [p_ for p_ in me.polygons if p_.material_index == 0 and 0.2 < pu_[p_.index] < 0.8 and 0.36 < pv_[p_.index] < 0.52
+        and cen[p_.index, 1] < np.percentile(co[:, 1], 30)]
+bm_ = np.zeros((BH, BW), bool)
+for p_ in band:
+    uv_ = np.array([uvd0[li].uv[:] for li in p_.loop_indices]) * [BW - 1, BH - 1]
+    for t in range(1, len(uv_) - 1):
+        A_, B_, C_ = uv_[0], uv_[t], uv_[t + 1]
+        x0_, x1_ = int(max(min(A_[0], B_[0], C_[0]) - 1, 0)), int(min(max(A_[0], B_[0], C_[0]) + 2, BW))
+        y0_, y1_ = int(max(min(A_[1], B_[1], C_[1]) - 1, 0)), int(min(max(A_[1], B_[1], C_[1]) + 2, BH))
+        if x1_ <= x0_ or y1_ <= y0_: continue
+        gx, gy = np.meshgrid(np.arange(x0_, x1_), np.arange(y0_, y1_))
+        d_ = (B_[1] - C_[1]) * (A_[0] - C_[0]) + (C_[0] - B_[0]) * (A_[1] - C_[1])
+        if abs(d_) < 1e-9: continue
+        l1 = ((B_[1] - C_[1]) * (gx - C_[0]) + (C_[0] - B_[0]) * (gy - C_[1])) / d_
+        l2 = ((C_[1] - A_[1]) * (gx - C_[0]) + (A_[0] - C_[0]) * (gy - C_[1])) / d_
+        bm_[y0_:y1_, x0_:x1_] |= (l1 >= -0.1) & (l2 >= -0.1) & (1 - l1 - l2 >= -0.1)
+bp0[bm_, :3] = [0.025, 0.025, 0.03]
+print('bang tip polys', len(band))
+base0.pixels = bp0.ravel().tolist(); base0.pack()
 bpy.ops.export_scene.gltf(filepath=out, export_format='GLB'); print('saved', out)
