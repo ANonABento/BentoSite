@@ -6,7 +6,8 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
  * The maid robot from a rigged GLB (assets/robot.glb), behind the same interface
  * as robot.js: { root, head, headPivot, hand, reach, aim, grip, setEyes }.
  *
- * Default model: the armoured maid, assets/robot-c1.glb (local TRELLIS body and head, skeleton fitted and skinned
+ * Default model: the robot maid unit, assets/robot-t3.glb (prototypes/robot/hf/clean_t3.py + build_t3.py; ?robot=c1
+ * for the earlier armoured maid, assets/robot-c1.glb: local TRELLIS body and head, skeleton fitted and skinned
  * by prototypes/robot/hf/build_robot.py; no morphs, so blinks fall back to the iris dimming).
  * Placeholder model (?robot=vroid): VRoid's CC0 AvatarSample D Darkness, restyled by
  * prototypes/robot/blender/vroid_model.py (bones renamed to Mixamo names,
