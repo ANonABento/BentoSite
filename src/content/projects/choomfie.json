@@ -21,7 +21,21 @@
     "github": "https://github.com/ANonABento/choomfie"
   },
   "media": {
-    "featuredImage": "/projects/choomfie/hero.png"
+    "featuredImage": "/projects/choomfie/card.webp",
+    "images": [
+      "/projects/choomfie/card.webp",
+      "/projects/choomfie/terminal.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/choomfie/card.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/choomfie/terminal.webp"
+      }
+    ]
   },
   "dateCompleted": "2026"
 }

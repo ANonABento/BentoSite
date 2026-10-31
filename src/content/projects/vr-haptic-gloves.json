@@ -15,7 +15,36 @@
   ],
   "links": {},
   "media": {
-    "featuredImage": "/projects/vr-haptic-gloves/hero.jpg"
+    "featuredImage": "/projects/vr-haptic-gloves/collage.webp",
+    "images": [
+      "/projects/vr-haptic-gloves/collage.webp",
+      "/projects/vr-haptic-gloves/glove.webp",
+      "/projects/vr-haptic-gloves/cad.webp",
+      "/projects/vr-haptic-gloves/vr-test.webp",
+      "/projects/vr-haptic-gloves/hero.jpg"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/vr-haptic-gloves/collage.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/vr-haptic-gloves/glove.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/vr-haptic-gloves/cad.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/vr-haptic-gloves/vr-test.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/vr-haptic-gloves/hero.jpg"
+      }
+    ]
   },
   "dateCompleted": "2024-10"
 }

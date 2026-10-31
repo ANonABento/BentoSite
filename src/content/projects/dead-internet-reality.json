@@ -17,7 +17,21 @@
   ],
   "links": {},
   "media": {
-    "featuredImage": "/projects/dead-internet-reality/hero.png"
+    "featuredImage": "/projects/dead-internet-reality/card.webp",
+    "images": [
+      "/projects/dead-internet-reality/card.webp",
+      "/projects/dead-internet-reality/terminal.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/dead-internet-reality/card.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/dead-internet-reality/terminal.webp"
+      }
+    ]
   },
   "dateCompleted": "2026"
 }

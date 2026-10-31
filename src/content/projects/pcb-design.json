@@ -15,7 +15,41 @@
   ],
   "links": {},
   "media": {
-    "featuredImage": "/projects/pcb-design/hero.jpg"
+    "featuredImage": "/projects/pcb-design/boards.webp",
+    "images": [
+      "/projects/pcb-design/boards.webp",
+      "/projects/pcb-design/imu-board.webp",
+      "/projects/pcb-design/routed.webp",
+      "/projects/pcb-design/printed.webp",
+      "/projects/pcb-design/schematic.webp",
+      "/projects/pcb-design/hero.jpg"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/pcb-design/boards.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/pcb-design/imu-board.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/pcb-design/routed.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/pcb-design/printed.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/pcb-design/schematic.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/pcb-design/hero.jpg"
+      }
+    ]
   },
   "dateCompleted": "2025-04"
 }

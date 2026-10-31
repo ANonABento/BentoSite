@@ -1,0 +1,66 @@
+{
+  "id": "waldo",
+  "name": "WALDO",
+  "shortDescription": "Voice-controlled pan/tilt flashlight turret: person detection and keyword spotting run as ExecuTorch models on the two NPUs of one Alif E8 board. No PC, no cloud.",
+  "description": "WALDO patrols a room, spots people with its camera, points its flashlight at them and keeps following, and you steer it by voice. Everything runs on a single Alif Ensemble E8 DevKit.\n\nHighlights:\n- Sees: YOLOv8n (28 room classes, 320 × 320) running entirely on the Ethos-U85 NPU.\n- Hears: a fine-tuned MicroNet-M keyword spotter (10 command words) running entirely on the Ethos-U55 NPU.\n- Two brains, one chip: always-on audio on the M55-HE core, vision and control on the M55-HP core, talking through a shared mailbox in SRAM.\n- One state machine (PARKED → SENTRY → TRACK → HOLD) with a Kalman-style tracker; the servos run on hardware timer PWM at 50 Hz with no CPU cost.\n- An ESP32-S3 camera head streams colour JPEG over UART at about 28 fps.\n- CI runs both models on Arm's Corstone FVP simulators on every push.\n- The turret is parametric OpenSCAD: board box, fork and head, with flashlight and laser sleeves.\n\nA team build for the Arm × Meta ExecuTorch hackathon (October 2026).",
+  "category": "Robotics",
+  "context": "Arm ExecuTorch Hackathon",
+  "status": "Completed",
+  "technologies": [
+    "ExecuTorch",
+    "YOLOv8",
+    "Alif Ensemble E8",
+    "Ethos-U NPU",
+    "Cortex-M55",
+    "C",
+    "ESP32-S3",
+    "OpenSCAD"
+  ],
+  "links": {
+    "github": "https://github.com/WALDO-Hacks/WALDO-executorch"
+  },
+  "media": {
+    "featuredImage": "/projects/waldo/hero.webp",
+    "images": [
+      "/projects/waldo/hero.webp",
+      "/projects/waldo/unit-iso.webp",
+      "/projects/waldo/unit-laser.webp",
+      "/projects/waldo/unit-section.webp",
+      "/projects/waldo/unit-front.webp",
+      "/projects/waldo/unit-side.webp",
+      "/projects/waldo/unit-park.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/waldo/hero.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/waldo/unit-iso.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/waldo/unit-laser.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/waldo/unit-section.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/waldo/unit-front.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/waldo/unit-side.webp"
+      },
+      {
+        "kind": "model",
+        "src": "/projects/waldo/turret.glb",
+        "label": "Turret"
+      }
+    ]
+  },
+  "dateCompleted": "2026-10"
+}

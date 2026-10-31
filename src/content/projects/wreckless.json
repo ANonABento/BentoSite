@@ -1,0 +1,44 @@
+{
+  "id": "wreckless",
+  "name": "WreckLess",
+  "shortDescription": "Always-on security agent swarm on one Dell GB10: it reads a new advisory, exploits your code, patches it and proves the fix, with every model running locally.",
+  "description": "A critical advisory lands for a dependency you use: are you exposed, can you prove it, what's the fix, and does it hold? WreckLess answers all four on a box under your desk, in about a minute, and nothing ships until a human approves.\n\nHighlights:\n- Six agents, one job each: Scout finds where the bug lives in your code, Ralph writes a real exploit and fires it in a locked sandbox, Verifier re-runs it on fresh copies, Felix patches the root cause, Conductor ships the fix, and Porter answers questions in Slack.\n- No agent grades its own work: the Verifier is plain code, not a model.\n- 47–80 s from advisory to validated patch, and 5 / 5 on live replays of a real 2024 CVE (LangChain's VectorSQLDatabaseChain `eval()`).\n- 100% local inference: three models (Qwen3-Coder) on vLLM, loopback only, inside an OpenShell sandbox with no outbound network. Zero bytes of your code go to a cloud model.\n- Approval comes through a Slack card over an outbound-only airlock and is bound to the exact commit before a draft PR opens.\n\nBuilt with Dae Jang at the Dell × NVIDIA AI Hackathon in San Francisco.",
+  "category": "AI",
+  "context": "Dell × NVIDIA AI Hackathon",
+  "status": "Completed",
+  "technologies": [
+    "Python",
+    "vLLM",
+    "Qwen3-Coder",
+    "NVIDIA GB10",
+    "Multi-agent",
+    "Sandboxing",
+    "Slack API"
+  ],
+  "links": {
+    "github": "https://github.com/djang-c/WreckLess-Cyber-Security"
+  },
+  "media": {
+    "featuredImage": "/projects/wreckless/mascots.webp",
+    "images": [
+      "/projects/wreckless/banner.webp",
+      "/projects/wreckless/mascots.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/wreckless/banner.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/wreckless/mascots.webp"
+      },
+      {
+        "kind": "embed",
+        "src": "https://drive.google.com/file/d/1KMhThLVdrVpf-7rpTI65tPrrdOK7BGvP/preview",
+        "label": "Demo video"
+      }
+    ]
+  },
+  "dateCompleted": "2026-10"
+}
