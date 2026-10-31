@@ -691,14 +691,14 @@ function renderReflection() {
 /* ------------------------------------------------------------------ *
  * The robot, and a cold moonlight so silhouettes read in the dark
  * ------------------------------------------------------------------ */
-// The robot maid unit (assets/robot-t3.glb, built by prototypes/robot/hf/clean_t3.py + build_t3.py; gitignored while
-// it's 5 MB) falls back to the VRoid placeholder when missing. ?robot=c1 loads the earlier armoured maid, ?robot=vroid
-// forces the placeholder, ?robot=shapes the procedural robot, ?robot=<file>.glb any model in assets/.
+// The robot maid (assets/robot-maid.glb: CC0 VRoid sample E restyled with robot hardware by
+// prototypes/robot/blender/vroid_maid.py). ?robot=t3 / c1 load the earlier generated maids (gitignored), ?robot=vroid
+// the first placeholder, ?robot=shapes the procedural robot, ?robot=<file>.glb any model in assets/.
 const robotParam = new URLSearchParams(location.search).get('robot');
 const robotGlb = (f) => loadRobot(new URL(`./assets/${f}`, import.meta.url).href).catch((e) => { console.warn(f, e); return loadRobot(); });
 const robot = robotParam === 'shapes' ? createRobot()
   : robotParam === 'vroid' ? await loadRobot()
-  : await robotGlb(robotParam?.endsWith('.glb') ? robotParam : robotParam === 'c1' ? 'robot-c1.glb' : 'robot-t3.glb');
+  : await robotGlb(robotParam?.endsWith('.glb') ? robotParam : robotParam === 'c1' ? 'robot-c1.glb' : robotParam === 't3' ? 'robot-t3.glb' : 'robot-maid.glb');
 scene.add(robot.root);
 window.dbg = { robot, scene, camera, reflector, THREE };
 // Moonlight from her left (a window off-screen): a side key, so the toon ramp puts a light/shade edge across her face.

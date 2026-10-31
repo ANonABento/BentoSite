@@ -146,10 +146,10 @@ def radius_at(verts, p, axis, span=0.02):
     return float(np.percentile(radial, 92)) if len(radial) else 0.03
 
 
-def frill_bm(c, rx, rz, y, width, n=90, pleats=34, amp=0.008):
+def frill_bm(c, rx, rz, y, width, n=90, pleats=30, amp=0.005):
     bm, grid = bmesh.new(), []
     for j in range(n + 1):
-        a = math.radians(8 + 164 * j / n); ca, sa = math.cos(a), math.sin(a)
+        a = math.radians(24 + 132 * j / n); ca, sa = math.cos(a), math.sin(a)
         base = Vector((c.x + rx * ca, y, c.z + rz * sa))
         out = Vector((ca * 0.85, 0.45, sa * 0.85)).normalized()          # tilts forward (+Y)
         w = math.sin(pleats * a)
@@ -167,7 +167,7 @@ def frill_bm(c, rx, rz, y, width, n=90, pleats=34, amp=0.008):
 def band_bm(c, rx, rz, y, n=60):
     bm, prev = bmesh.new(), None
     for j in range(n + 1):
-        a = math.radians(6 + 168 * j / n); ca, sa = math.cos(a), math.sin(a)
+        a = math.radians(20 + 140 * j / n); ca, sa = math.cos(a), math.sin(a)
         base = Vector((c.x + rx * ca, y, c.z + rz * sa)); out = Vector((ca, 0, sa))
         cur = (bm.verts.new(base - out * 0.002), bm.verts.new(base + out * 0.012))
         if prev: bm.faces.new((prev[0], cur[0], cur[1], prev[1]))
@@ -211,9 +211,9 @@ def add_hardware():
                                      sphere(tip + ax * 0.02, 0.006, 8)), gun, arm, 'Head')
 
     # headdress: frill on a black band across the crown, a little forward of centre
-    y = head_c.y + 0.025                                  # VRoid faces +Y
-    rx, rz = hx * 0.96, float(hmax[2] - eye_z) * 0.93
-    attach('headdress_frill', frill_bm(Vector((0, 0, eye_z)), rx, rz, y, 0.04), white, arm, 'Head')
+    y = head_c.y + 0.04                                   # VRoid faces +Y
+    rx, rz = hx * 0.9, float(hmax[2] - eye_z) * 0.86
+    attach('headdress_frill', frill_bm(Vector((0, 0, eye_z)), rx, rz, y, 0.034), white, arm, 'Head')
     attach('headdress_band', band_bm(Vector((0, 0, eye_z)), rx * 1.01, rz * 1.01, y + 0.004), black, arm, 'Head')
 
     # neck: two gunmetal rings
@@ -227,7 +227,7 @@ def add_hardware():
               ('LeftHand', 'LeftHandMiddle1'), ('RightLeg', 'RightFoot'), ('LeftLeg', 'LeftFoot')]
     for child, nxt in joints:
         p = W(child); ax = W(nxt) - p
-        r = radius_at(bv, p, ax) + 0.003
+        r = min(radius_at(bv, p, ax) + 0.003, {'Fore': 0.042, 'Hand': 0.03}.get(next((k for k in ('Fore', 'Hand') if k in child), ''), 0.06))
         attach(f'joint_{child}', ring(p, ax, r, 0.018, 28), gun, arm, child)
         attach(f'joint_line_{child}', ring(p, ax, r + 0.0015, 0.003, 28), glow, arm, child)
         if 'Leg' in child:                                # ball-joint caps either side of the knee
@@ -236,9 +236,50 @@ def add_hardware():
                 attach(f'knee_cap_{child}_{s}', sphere(p + side * s * (r + 0.004), (0.006, 0.02, 0.02), 16), gun, arm, child)
 
 
+def robot_hands():
+    """Swap both skin hands for segmented robot hands: the skin faces weighted to the hand and finger bones
+    go, and ceramic finger segments, gunmetal knuckles and a palm plate ride the same bones."""
+    arm = next(o for o in bpy.data.objects if o.type == 'ARMATURE')
+    body = bpy.data.objects['Body']
+    W = lambda b: arm.matrix_world @ arm.data.bones[b].head_local
+    ceramic, gun = bpy.data.materials['B01_hw_ceramic'], bpy.data.materials['B01_hw_gun']
+    me = body.data
+    for S in ('Right', 'Left'):
+        names = {f'{S}Hand'} | {f'{S}Hand{f}{i}' for f in ('Thumb', 'Index', 'Middle', 'Ring', 'Pinky') for i in (1, 2, 3)}
+        gi = {g.index for g in body.vertex_groups if g.name in names}
+        hand_v = {v.index for v in me.vertices if sum(g.weight for g in v.groups if g.group in gi) > 0.5}
+        bm = bmesh.new(); bm.from_mesh(me)
+        bmesh.ops.delete(bm, geom=[f for f in bm.faces if all(v.index in hand_v for v in f.verts)], context='FACES')
+        bm.to_mesh(me); bm.free()
+        # fingers: a ceramic segment per bone, a gunmetal ball at each joint
+        for f, r in (('Thumb', 0.0085), ('Index', 0.0075), ('Middle', 0.0078), ('Ring', 0.0072), ('Pinky', 0.0062)):
+            pts = [W(f'{S}Hand{f}{i}') for i in (1, 2, 3)]
+            pts.append(pts[2] + (pts[2] - pts[1]) * 0.85)
+            for i in range(3):
+                bone = f'{S}Hand{f}{i + 1}'
+                a, b_ = pts[i], pts[i + 1]; d = b_ - a
+                rr = r * (1 - 0.1 * i)
+                attach(f'{bone}_seg', ring(a + d * 0.5, d, rr, d.length * 0.82, 12, rr * 0.92), ceramic, arm, bone)
+                attach(f'{bone}_ball', sphere(a, rr * 1.12, 10), gun, arm, bone)
+        # palm plate from the wrist to the knuckles, and a dark panel on the back of the hand
+        w0, m1, i1, p1 = W(f'{S}Hand'), W(f'{S}HandMiddle1'), W(f'{S}HandIndex1'), W(f'{S}HandPinky1')
+        fwd = (m1 - w0); acr = (i1 - p1); up = fwd.cross(acr).normalized()
+        if S == 'Left': up = -up
+        basis = Matrix((acr.normalized(), up, fwd.normalized())).transposed().to_4x4()
+        c = (w0 + m1) / 2
+        def plate(off, sx, sy, sz):
+            b = bmesh.new()
+            bmesh.ops.create_cube(b, size=1, matrix=Matrix.Translation(c + up * off) @ basis @ Matrix.Diagonal((sx, sy, sz, 1)))
+            bmesh.ops.bevel(b, geom=b.edges[:], offset=0.003, segments=2, affect='EDGES')
+            return b
+        attach(f'{S}_palm', plate(0, acr.length + 0.02, 0.024, fwd.length * 0.95), ceramic, arm, f'{S}Hand')
+        attach(f'{S}_palm_panel', plate(0.012, acr.length * 0.75, 0.004, fwd.length * 0.6), gun, arm, f'{S}Hand')
+
+
 def before_export():
     restyle_textures()
     add_hardware()
+    robot_hands()
 
 
 if __name__ == '__main__':

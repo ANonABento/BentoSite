@@ -1,6 +1,22 @@
 # Robot maid (B-01)
 
-## Current: placeholder model
+## Current: CC0 VRoid sample E, restyled
+`crt-site/assets/robot-maid.glb` (about 620 KB) is VRoid's CC0 AvatarSample E run through `blender/vroid_maid.py`:
+- `vroid_model.py`'s conversion: bones renamed to Mixamo names, porcelain skin, emissive orange iris, no mouth;
+- the hair recoloured black and the outfit black, white and orange;
+- rigid robot hardware, each part parented to one bone: ear units with antennae, a frill headdress, neck rings,
+  elbow, wrist and knee joints, and segmented robot hands (the skin hands are removed).
+
+Rebuild:
+```
+unzip vendor/vroid/avatarsample_e.zip -d vendor/explore/e_src
+/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -P blender/vroid_maid.py -- \
+  vendor/explore/e_src/AvatarSample_E.vrm ../crt-site/assets/x-vroid-e.glb
+cd ../crt-site && npx @gltf-transform/cli optimize assets/x-vroid-e.glb assets/robot-maid.glb \
+  --compress meshopt --texture-compress webp --texture-size 1024
+```
+
+## Earlier: placeholder model
 **VRoid AvatarSample D Darkness**, a CC0 VRoid sample (https://opengameart.org/content/vroid-studio-cc0-models). Its VRoid Hub licence allows modification, redistribution and commercial use, with no credit needed.
 
 `blender/vroid_model.py` turns the VRM into `crt-site/assets/robot.glb`. It:

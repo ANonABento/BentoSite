@@ -86,6 +86,7 @@ export async function loadRobot(url = new URL('./assets/robot.glb', import.meta.
     return t;
   }
   let iris = null, bodyMesh = null, faceMesh = null;
+  const glows = [];
   model.traverse((o) => {
     if (!o.isMesh) return;
     // The export dropped normals on the parts that were unlit (clothes, hair, eye whites); lit shading needs them.
@@ -93,6 +94,8 @@ export async function loadRobot(url = new URL('./assets/robot.glb', import.meta.
     if (o.morphTargetDictionary && 'blink' in o.morphTargetDictionary) bodyMesh = o;
     const mats = [o.material].flat().map((m) => {
       if (/iris/i.test(m.name)) { iris = m; m.emissive = new THREE.Color('#ff8a3d'); m.toneMapped = true; return m; }
+      // the hardware's neon (ear rings, joint lines) stays unlit so it glows in the dark and blooms
+      if (/hw_glow/i.test(m.name)) { const g = new THREE.MeshBasicMaterial({ name: m.name, color: '#ff8a3d' }); glows.push(g); return g; }
       const face = /face/i.test(m.name);
       if (face) faceMesh = o;
       // whites stay below clipping under the screen light
@@ -295,6 +298,7 @@ export async function loadRobot(url = new URL('./assets/robot.glb', import.meta.
   const morph = bodyMesh ? bodyMesh.morphTargetDictionary : {};
   /** Eye glow 0..1 and lid opening 0..1. */
   function setEyes(glow, open) {
+    glows.forEach((g) => g.color.set('#ff8a3d').multiplyScalar(0.15 + 0.85 * glow));
     if (iris) {
       iris.emissiveIntensity = glow * 2.4;
       iris.color.copy(irisBase).multiplyScalar(0.25 + 0.75 * glow);
