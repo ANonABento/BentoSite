@@ -167,30 +167,49 @@ def radius_at(verts, p, axis, span=0.02):
     return float(np.percentile(radial, 92)) if len(radial) else 0.03
 
 
-def frill_bm(c, rx, rz, y, width, n=90, pleats=30, amp=0.005):
+def hair_profile(hv, c, y, span=0.012):
+    """Outer radius of the hair, in the XZ slice at depth y, as a function of the angle (degrees) around c."""
+    near = hv[np.abs(hv[:, 1] - y) < span]
+    d = near[:, [0, 2]] - np.array([c.x, c.z])
+    ang = np.degrees(np.arctan2(d[:, 1], d[:, 0])); rad = np.linalg.norm(d, axis=1)
+    bins = np.zeros(181)
+    for k in range(181):
+        m = np.abs(ang - k) < 3
+        bins[k] = rad[m].max() if m.any() else 0
+    bins = np.convolve(np.pad(bins, 4, mode='edge'), np.ones(9) / 9, 'valid')   # smooth the strands out
+    return lambda a: float(np.interp(a, np.arange(181), bins))
+
+
+def frill_bm(c, prof, y, width, a0=36, a1=144, n=140, pleats=46, amp=0.006):
+    """Lace frill standing on the band: pleated, scalloped along its top edge, and tapering to nothing at the ends so
+    they tuck into the hair instead of sticking out like wings."""
     bm, grid = bmesh.new(), []
     for j in range(n + 1):
-        a = math.radians(24 + 132 * j / n); ca, sa = math.cos(a), math.sin(a)
-        base = Vector((c.x + rx * ca, y, c.z + rz * sa))
-        out = Vector((ca * 0.85, 0.45, sa * 0.85)).normalized()          # tilts forward (+Y)
+        u = j / n
+        a = math.radians(a0 + (a1 - a0) * u); ca, sa = math.cos(a), math.sin(a)
+        base = Vector((c.x + prof(math.degrees(a)) * ca, y, c.z + prof(math.degrees(a)) * sa))
+        out = Vector((ca * 0.55, 0.3, sa)).normalized()                  # mostly up, a little forward (+Y)
+        taper = math.sin(math.pi * u) ** 0.6
+        scallop = 0.82 + 0.18 * abs(math.sin(pleats * 0.5 * a))
         w = math.sin(pleats * a)
         row = []
-        for t in (0, 0.33, 0.66, 1):
-            row.append(bm.verts.new(base + out * width * t + Vector((ca * 0.4, 1, sa * 0.4)) * amp * w * t))
+        for t in (0, 0.25, 0.5, 0.75, 1):
+            h = width * taper * t * (scallop if t == 1 else 1)
+            row.append(bm.verts.new(base + out * h + Vector((0, 1, 0)) * amp * w * t))
         grid.append(row)
     for j in range(n):
-        for i in range(3):
+        for i in range(4):
             bm.faces.new((grid[j][i], grid[j + 1][i], grid[j + 1][i + 1], grid[j][i + 1]))
-    bmesh.ops.solidify(bm, geom=bm.faces[:], thickness=0.003)
+    bmesh.ops.solidify(bm, geom=bm.faces[:], thickness=0.0025)
     return bm
 
 
-def band_bm(c, rx, rz, y, n=60):
+def band_bm(c, prof, y, a0=34, a1=146, n=80):
     bm, prev = bmesh.new(), None
     for j in range(n + 1):
-        a = math.radians(20 + 140 * j / n); ca, sa = math.cos(a), math.sin(a)
-        base = Vector((c.x + rx * ca, y, c.z + rz * sa)); out = Vector((ca, 0, sa))
-        cur = (bm.verts.new(base - out * 0.002), bm.verts.new(base + out * 0.012))
+        a = math.radians(a0 + (a1 - a0) * j / n); ca, sa = math.cos(a), math.sin(a)
+        r = prof(math.degrees(a)); base = Vector((c.x + r * ca, y, c.z + r * sa)); out = Vector((ca, 0, sa))
+        cur = (bm.verts.new(base - out * 0.002), bm.verts.new(base + out * 0.009))
         if prev: bm.faces.new((prev[0], cur[0], cur[1], prev[1]))
         prev = cur
     bmesh.ops.solidify(bm, geom=bm.faces[:], thickness=0.006)
@@ -232,10 +251,10 @@ def add_hardware():
                                      sphere(tip + ax * 0.02, 0.006, 8)), gun, arm, 'Head')
 
     # headdress: frill on a black band across the crown, a little forward of centre
-    y = head_c.y + 0.04                                   # VRoid faces +Y
-    rx, rz = hx * 0.9, float(hmax[2] - eye_z) * 0.86
-    attach('headdress_frill', frill_bm(Vector((0, 0, eye_z)), rx, rz, y, 0.034), white, arm, 'Head')
-    attach('headdress_band', band_bm(Vector((0, 0, eye_z)), rx * 1.01, rz * 1.01, y + 0.004), black, arm, 'Head')
+    y = head_c.y + 0.03                                   # VRoid faces +Y
+    c = Vector((0, 0, eye_z)); prof = hair_profile(hv, c, y)
+    attach('headdress_frill', frill_bm(c, lambda a: prof(a) + 0.003, y, 0.044), white, arm, 'Head')
+    attach('headdress_band', band_bm(c, lambda a: prof(a) + 0.001, y - 0.008), black, arm, 'Head')
 
     # neck: two gunmetal rings
     n0, n1 = W('Neck'), W('Head'); ax = n1 - n0
@@ -248,7 +267,7 @@ def add_hardware():
               ('LeftHand', 'LeftHandMiddle1'), ('RightLeg', 'RightFoot'), ('LeftLeg', 'LeftFoot')]
     for child, nxt in joints:
         p = W(child); ax = W(nxt) - p
-        r = min(radius_at(bv, p, ax) + 0.003, {'Fore': 0.042, 'Hand': 0.03}.get(next((k for k in ('Fore', 'Hand') if k in child), ''), 0.06))
+        r = min(radius_at(bv, p, ax) + 0.003, {'Fore': 0.042, 'Hand': 0.024}.get(next((k for k in ('Fore', 'Hand') if k in child), ''), 0.06))
         attach(f'joint_{child}', ring(p, ax, r, 0.018, 28), gun, arm, child)
         attach(f'joint_line_{child}', ring(p, ax, r + 0.0015, 0.003, 28), glow, arm, child)
         if 'Leg' in child:                                # ball-joint caps either side of the knee
@@ -280,8 +299,11 @@ def robot_hands():
                 bone = f'{S}Hand{f}{i + 1}'
                 a, b_ = pts[i], pts[i + 1]; d = b_ - a
                 rr = r * (1 - 0.1 * i)
-                attach(f'{bone}_seg', ring(a + d * 0.5, d, rr, d.length * 0.82, 12, rr * 0.92), ceramic, arm, bone)
-                attach(f'{bone}_ball', sphere(a, rr * 1.12, 10), gun, arm, bone)
+                seg = ring(a + d * 0.5, d, rr, d.length * 0.8, 20, rr * 0.92)
+                if i == 2:                                # rounded fingertip
+                    seg = merge(seg, sphere(a + d * 0.9, rr * 0.92, 16))
+                attach(f'{bone}_seg', seg, ceramic, arm, bone)
+                attach(f'{bone}_ball', sphere(a, rr * 0.98, 16), gun, arm, bone)
         # palm plate from the wrist to the knuckles, and a dark panel on the back of the hand
         w0, m1, i1, p1 = W(f'{S}Hand'), W(f'{S}HandMiddle1'), W(f'{S}HandIndex1'), W(f'{S}HandPinky1')
         fwd = (m1 - w0); acr = (i1 - p1); up = fwd.cross(acr).normalized()
@@ -291,10 +313,18 @@ def robot_hands():
         def plate(off, sx, sy, sz):
             b = bmesh.new()
             bmesh.ops.create_cube(b, size=1, matrix=Matrix.Translation(c + up * off) @ basis @ Matrix.Diagonal((sx, sy, sz, 1)))
-            bmesh.ops.bevel(b, geom=b.edges[:], offset=0.003, segments=2, affect='EDGES')
+            bmesh.ops.bevel(b, geom=b.edges[:], offset=min(sy * 0.45, 0.008), segments=3, affect='EDGES')
             return b
         attach(f'{S}_palm', plate(0, acr.length + 0.02, 0.024, fwd.length * 0.95), ceramic, arm, f'{S}Hand')
         attach(f'{S}_palm_panel', plate(0.012, acr.length * 0.75, 0.004, fwd.length * 0.6), gun, arm, f'{S}Hand')
+        # thumb pad: a ceramic mound from the heel of the palm to the thumb's first joint, so the thumb isn't floating
+        t1 = W(f'{S}HandThumb1'); heel = c - fwd * 0.25 + acr * 0.25 * (1 if S == 'Right' else 1)
+        mid = (t1 + heel) / 2; span = (t1 - heel)
+        pad = bmesh.new()
+        bmesh.ops.create_uvsphere(pad, u_segments=20, v_segments=12, radius=1,
+                                  matrix=Matrix.Translation(mid) @ Vector((0, 0, 1)).rotation_difference(span.normalized()).to_matrix().to_4x4()
+                                  @ Matrix.Diagonal((0.013, 0.011, span.length * 0.62, 1)))
+        attach(f'{S}_thumb_pad', pad, ceramic, arm, f'{S}Hand')
 
 
 def before_export():

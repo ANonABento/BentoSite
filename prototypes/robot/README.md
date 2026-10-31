@@ -1,11 +1,12 @@
 # Robot maid (B-01)
 
 ## Current: CC0 VRoid sample E, restyled
-`crt-site/assets/robot-maid.glb` (about 620 KB) is VRoid's CC0 AvatarSample E run through `blender/vroid_maid.py`:
+`crt-site/assets/robot-maid.glb` (about 700 KB) is VRoid's CC0 AvatarSample E run through `blender/vroid_maid.py`:
 - `vroid_model.py`'s conversion: bones renamed to Mixamo names, porcelain skin, emissive orange iris, no mouth;
 - the hair recoloured black and the outfit black, white and orange;
-- rigid robot hardware, each part parented to one bone: ear units with antennae, a frill headdress, neck rings,
-  elbow, wrist and knee joints, and segmented robot hands (the skin hands are removed).
+- rigid robot hardware, each part parented to one bone: ear units with antennae, a lace frill headdress (built along
+  the hair's measured outline so it sits on her head), neck rings, elbow, wrist and knee joints, and segmented robot
+  hands with rounded fingertips and a thumb pad (the skin hands are removed).
 
 Rebuild:
 ```

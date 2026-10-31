@@ -275,7 +275,7 @@ function drawText(t) {
     g.beginPath(); g.rect(0, 0, W, H * 0.12 + size * 1.2 * wm); g.clip();
     g.font = `700 ${size}px ${FONT.display}`; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
     g.fillStyle = COLORS.phosphor;
-    g.globalAlpha = 0.35 + 0.65 * wm;
+    g.globalAlpha = (0.35 + 0.65 * wm) * 0.72;   // under the bloom threshold's worst, so the letters stay legible
     g.fillText('bentOS', W / 2, H * 0.12 + size);
     g.restore();
   }
@@ -791,7 +791,7 @@ function apply(t) {
   screenLight.intensity = (2.2 + 3 * (1 - sstep(ramp(t, [T.power[0] + 0.2, T.power[1] + 0.3])))) * screenOn * roomOut;
 
   uniforms.uRefl.value = (1 - 0.88 * sstep(ramp(t, [T.power[0], T.power[1] + 0.4]))) * (1 - sstep(ramp(t, [T.dive[0], T.dive[0] + 0.8])));
-  bloom.strength = P.bloom * (1 + 0.5 * (1 - sstep(ramp(t, [T.power[0] + 0.25, T.power[1] + 0.4]))) * screenOn) * (1 - 0.55 * sstep(ramp(t, T.dive))) * (1 - fxOff);
+  bloom.strength = P.bloom * (1 + 0.25 * (1 - sstep(ramp(t, [T.power[0] + 0.25, T.power[1] + 0.4]))) * screenOn) * (1 - 0.55 * sstep(ramp(t, T.dive))) * (1 - fxOff);
 }
 
 /* ------------------------------------------------------------------ *
@@ -870,12 +870,12 @@ const skew = (p) => (x) => (x < p ? (x * x) / p : 1 - ((1 - x) * (1 - x)) / (1 -
 const R_REST = V(-0.3, -0.72, 0.12), REST_DIR = V(0, -1, 0.25);
 const UP = { R: V(-0.16, 0.26, 0.44), L: V(0.16, 0.26, 0.44) };          // both hands up in front of her, in the reflection
 const UP_DIR = { R: V(0.1, 1, 0.3), L: V(-0.1, 1, 0.3) };
-const TIDY_DIR = { R: V(0.35, 1, -0.15), L: V(-0.35, 1, -0.15) };          // fingers up and in, at the headdress tips
+const TIDY_DIR = { R: V(0.4, 1, -0.4), L: V(-0.4, 1, -0.4) };            // fingers up, in and back: the hands at her temples, in front of the hair
 const TIDY_UP = { R: V(-1, 0.1, 0.3), L: V(1, 0.1, 0.3) };
 const PINCH_REACH = 0.27;                                  // wrist to the pinch between thumb and index
-const ASKEW = { roll: 0.3, yaw: 0.14 };                    // how crooked the headdress starts
+const ASKEW = { roll: 0.17, yaw: 0.1 };                    // how crooked the headdress starts
 const POCKET = V(-0.17, -0.4, 0.3), POCKET_DIR = V(0.05, -1, 0.2);         // fingers into the apron pocket
-const SHOW = V(-0.13, 0.24, 0.44), SHOW_DIR = V(0.15, 0.8, 1);            // the cloth held up in front of her, in the reflection
+const SHOW = V(-0.16, 0.46, 0.34), SHOW_DIR = V(0.2, 0.3, 1);   // the cloth held up by her face, hanging from her fingers
 const CLASP = { R: V(-0.06, -0.5, 0.26), L: V(0.06, -0.5, 0.26) };         // hands folded in front for the bow
 const CLASP_DIR = { R: V(0.8, -0.6, 0.3), L: V(-0.8, -0.6, 0.3) };
 const FINGER_TIP = 0.3;                                   // wrist to index fingertip
@@ -920,28 +920,60 @@ function move(m, t) {
   return { p: curve(m.keys.map((s) => s.p)), l: curve(m.keys.map((s) => s.l)), fov: curve(m.keys.map((s) => V(s.fov, 0, 0))).x };
 }
 
-// ---- the handkerchief: white with an orange hem; it blends between bunched in her fingers and flat on the glass ----
-const CLOTH = 0.22;
-const clothGeo = new THREE.PlaneGeometry(CLOTH, CLOTH, 12, 12);
+// ---- the handkerchief: white lawn with a lace edge and an orange stitched hem; it blends between gathered in her
+// fingers and spread on the glass ----
+const CLOTH = 0.2;
+const clothGeo = new THREE.PlaneGeometry(CLOTH, CLOTH, 24, 24);
 const clothFlat = Float32Array.from(clothGeo.attributes.position.array);
 const clothBunch = clothFlat.slice();
-for (let i = 0; i < clothBunch.length; i += 3) {
-  const x = clothFlat[i] / CLOTH, y = clothFlat[i + 1] / CLOTH;    // -0.5..0.5; held by the top (+y) corner
-  const g = 0.5 - y;                                                 // 0 at the fingers, 1 at the far edge
-  clothBunch[i] = x * CLOTH * (0.25 + 0.35 * g) + 0.012 * Math.sin(y * 19);
-  clothBunch[i + 1] = (y - 0.5) * CLOTH * 0.85;                      // hangs below the grip
-  clothBunch[i + 2] = 0.02 * Math.sin(x * 21 + y * 6) * g;
+for (let i = 0; i < clothFlat.length; i += 3) {
+  const x = clothFlat[i] / CLOTH, y = clothFlat[i + 1] / CLOTH;    // -0.5..0.5
+  // spread: never quite flat, a few soft creases from being folded in a pocket
+  // and the corners, out past her palm, lift off the glass toward her hand
+  clothFlat[i + 2] = 0.004 * Math.sin(x * 9 + y * 4) + 0.003 * Math.sin(y * 13 - x * 5) - 0.09 * Math.max(0, Math.abs(x) + Math.abs(y) - 0.55) ** 1.5;
+  // gathered: pinched at the top centre, hanging in soft folds that open out toward the bottom
+  const g = 0.5 - y;                                                  // 0 at the fingers, 1 at the far edge
+  const open = 0.12 + 0.5 * Math.pow(g, 0.8);
+  clothBunch[i] = x * CLOTH * open;
+  clothBunch[i + 1] = -g * CLOTH * 0.8;
+  clothBunch[i + 2] = 0.014 * Math.sin(x * Math.PI * 4) * g + 0.02 * g * g;
 }
 const clothTex = (() => {
-  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const S = 256, c = document.createElement('canvas'); c.width = c.height = S;
   const g = c.getContext('2d');
-  g.fillStyle = '#f4efe8'; g.fillRect(0, 0, 128, 128);
-  g.strokeStyle = COLORS.orange; g.lineWidth = 6; g.strokeRect(7, 7, 114, 114);
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; return tex;
+  // lace: a scalloped edge with little eyelets; outside it transparent (alphaTest cuts it)
+  const inset = 14, n = 18, step = (S - 2 * inset) / n;
+  g.fillStyle = '#faf7f2';
+  g.beginPath();
+  g.rect(inset, inset, S - 2 * inset, S - 2 * inset);
+  g.fill();
+  for (let k = 0; k < n; k++) for (const [cx, cy] of [
+    [inset + step * (k + 0.5), inset], [inset + step * (k + 0.5), S - inset], [inset, inset + step * (k + 0.5)], [S - inset, inset + step * (k + 0.5)]]) {
+    g.beginPath(); g.arc(cx, cy, step * 0.55, 0, Math.PI * 2); g.fill();
+  }
+  // eyelets punched through the lace band
+  g.globalCompositeOperation = 'destination-out';
+  for (let k = 0; k < n; k++) for (const [cx, cy] of [
+    [inset + step * (k + 0.5), inset + 2], [inset + step * (k + 0.5), S - inset - 2], [inset + 2, inset + step * (k + 0.5)], [S - inset - 2, inset + step * (k + 0.5)]]) {
+    g.beginPath(); g.arc(cx, cy, 2.6, 0, Math.PI * 2); g.fill();
+  }
+  g.globalCompositeOperation = 'source-over';
+  // a faint weave
+  g.globalAlpha = 0.03; g.fillStyle = '#000';
+  for (let k = inset + 8; k < S - inset - 8; k += 3) { g.fillRect(k, inset + 8, 1, S - 2 * inset - 16); g.fillRect(inset + 8, k, S - 2 * inset - 16, 1); }
+  g.globalAlpha = 1;
+  // the orange hem: a dashed running stitch, and a small embroidered flower in one corner
+  g.strokeStyle = COLORS.orange; g.lineWidth = 2.5; g.setLineDash([7, 5]);
+  g.strokeRect(inset + 14, inset + 14, S - 2 * inset - 28, S - 2 * inset - 28);
+  g.setLineDash([]); g.fillStyle = COLORS.orange;
+  const fx = S - inset - 42, fy = S - inset - 42;
+  for (let k = 0; k < 5; k++) { const a = (k / 5) * Math.PI * 2; g.beginPath(); g.ellipse(fx + Math.cos(a) * 8, fy + Math.sin(a) * 8, 6, 4, a, 0, Math.PI * 2); g.fill(); }
+  g.fillStyle = '#f4efe8'; g.beginPath(); g.arc(fx, fy, 3.5, 0, Math.PI * 2); g.fill();
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4; return tex;
 })();
 // a faint self-lit floor (like her toon shading) so it reads as white cloth in the dark, not a black hole
 const cloth = new THREE.Mesh(clothGeo, new THREE.MeshStandardMaterial({ map: clothTex, roughness: 0.95, side: THREE.DoubleSide,
-  emissive: '#ffffff', emissiveMap: clothTex, emissiveIntensity: 0.07 }));
+  emissive: '#ffffff', emissiveMap: clothTex, emissiveIntensity: 0.07, alphaTest: 0.5 }));
 cloth.visible = false;
 scene.add(cloth);
 const _cx = new THREE.Vector3(), _cy = new THREE.Vector3(), _cz = new THREE.Vector3(), _cm = new THREE.Matrix4();
@@ -956,7 +988,7 @@ function placeCloth(wristW, dirW, upW, flat) {
   _cz.copy(upW).multiplyScalar(-1);                                    // its face: off the palm
   _cx.crossVectors(_cy, _cz).normalize(); _cz.crossVectors(_cx, _cy);
   cloth.quaternion.setFromRotationMatrix(_cm.makeBasis(_cx, _cy, _cz));
-  cloth.position.copy(wristW).addScaledVector(dirW, mix(0.3, 0.2, flat)).addScaledVector(upW, -mix(0.02, 0.035, flat));
+  cloth.position.copy(wristW).addScaledVector(dirW, mix(0.29, 0.21, flat)).addScaledVector(upW, -mix(0.02, 0.05, flat));
 }
 
 let ledPulse = 1;
@@ -1005,7 +1037,7 @@ function prologue(t) {
 
   // ---- eyes: they lead every look; cold until the last swipe clears them, then warm and a happy blink ----
   const down = track(t, 0, [[2.05, 2.15, 0.28, easeOutQuint], [3.5, 3.6, -0.04, easeOutQuint], [5.15, 5.25, 0.32, easeOutQuint],
-    [5.6, 5.7, 0.04, easeOutQuint], [8.55, 8.65, 0.3, easeOutQuint], [C + 0.15, C + 0.3, 0, easeOutQuint]]);
+    [5.6, 5.7, 0.04, easeOutQuint], [8.55, 8.65, 0.18, easeOutQuint], [C + 0.15, C + 0.3, 0, easeOutQuint]]);
   const right = track(t, 0, [[2.05, 2.15, 0.05, easeOutQuint], [3.5, 3.6, 0, easeOutQuint], [5.15, 5.25, 0.15, easeOutQuint],
     [5.6, 5.7, 0, easeOutQuint], [8.55, 8.65, 0.22, easeOutQuint], [C + 0.15, C + 0.3, 0, easeOutQuint]]);
   robot.look(down, right);
@@ -1020,7 +1052,9 @@ function prologue(t) {
     iris.userData.map ??= iris.emissiveMap;
     const map = warm > 0.5 ? iris.userData.map : null;
     if (iris.emissiveMap !== map) { iris.emissiveMap = map; iris.needsUpdate = true; }
-    iris.emissive.set('#a9c8ff').lerp(new THREE.Color('#ff8a3d'), warm);
+    // warm: a pale peach tint over the texture, so its own orange, yellow and highlights show rather than a flat red
+    iris.emissive.set('#a9c8ff').lerp(new THREE.Color('#ffd9b8'), warm);
+    iris.emissiveIntensity *= mix(1, 0.8, warm);
     robot.mats.iris.color.lerp(new THREE.Color('#7f8ea8'), 0.75 * (1 - warm)).multiplyScalar(mix(0.25, 1, warm));   // the orange texture mostly off
   }
   if (robot.morph && 'happy' in robot.morph.morphTargetDictionary) {
@@ -1034,7 +1068,7 @@ function prologue(t) {
   const press = track(t, 0.02, [[C - 0.35, C - 0.2, 0.03, easeInQuad], [C - 0.2, C, -0.006, easeInQuad],
     [C + 0.1, C + 0.25, 0.01, easeOutBack]]);
   // the headdress: the wrist sits back from the tip along the pinching fingers
-  const pinchAt = (tip, side) => tip.clone().addScaledVector(TIDY_DIR[side].clone().normalize(), -PINCH_REACH);
+  const pinchAt = (tip, side) => tip.clone().add(V(0, 0, 0.04)).addScaledVector(TIDY_DIR[side].clone().normalize(), -PINCH_REACH);
   // the wipe: the palm on the glass (world), fingers up, the back of the hand toward her
   const palmOnGlass = (p) => loc(V(p.x, p.y - 0.1, GLASS_Z + 0.02));
   const wipeDirL = dirL(V(-0.05, 1, 0.15)), wipeUpL = dirL(V(0, 0, 1));
@@ -1080,10 +1114,11 @@ function prologue(t) {
   // other three. Clasp: a soft fold.
   const wave = (j, amp) => WIGGLE.reduce((acc, t0, k) => acc + amp * bump((t - t0 - 0.03 * (k % 2 ? 4 - j : j)) / 0.15), 0);
   const pinch = track(t, 0, [[4.05, 4.25, 1, easeOutBack], [4.85, 4.95, 0]]);
-  const hold = track(t, 0, [[5.5, 5.68, 1, easeOutBack], [6.35, 6.75, 0.15], [8.5, 8.8, 1], [C + 0.45, C + 0.6, 0]]);
+  const hold = track(t, 0, [[5.5, 5.68, 1, easeOutBack], [6.35, 6.75, 0], [8.5, 8.8, 1], [C + 0.45, C + 0.6, 0]]);
   const point = track(t, 0, [[9.0, 9.4, 1, easeOutBack], [C + 0.15, C + 0.4, 0]]);
   const fold = track(t, 0, [[C + 0.6, C + 0.85, 1], [ASIDE[0], ASIDE[0] + 0.4, 0]]);
   const open = track(t, 0, [[2.1, 2.6, 1], [3.6, 3.8, 0]]);   // fingers spread to look at them
+  const flatHand = track(t, 0, [[6.35, 6.75, 1], [8.5, 8.8, 0]]);   // on the cloth: the thumb tucked in beside the fingers
   const fingers = (side) => {
     const h = side === 'R' ? hold : 0, k = side === 'R' ? point : 0;
     const per = [0, 1, 2, 3].map((i) => {
@@ -1091,7 +1126,7 @@ function prologue(t) {
       if (k) c = mix(c, i === 0 ? 0.02 : 0.95, k);
       return c;
     });
-    return { per, thumb: 0.25 - open * 0.05 + pinch * 0.55 + h * 0.4 + fold * 0.2 - k * 0.1 + wave(0, 0.35), spread: 0.25 * open + 0.1 * (1 - pinch) * (1 - open) };
+    return { per, thumb: 0.25 - open * 0.05 + pinch * 0.55 + h * 0.4 + (side === 'R' ? flatHand * 0.45 : 0) + fold * 0.2 - k * 0.1 + wave(0, 0.35), spread: 0.25 * open + 0.1 * (1 - pinch) * (1 - open) };
   };
   const fr = fingers('R'), fl = fingers('L');
   robot.grip(0.25, fr.spread, fr.thumb, fr.per);

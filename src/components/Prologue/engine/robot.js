@@ -292,21 +292,24 @@ export async function loadRobot(url) {
     headdress.quaternion.copy(headBone.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(rootQ()));
     headdress.updateMatrixWorld(true);
     parts.forEach((o) => headdress.attach(o));
-    // the frill's tips: its vertices furthest to her right and to her left
+    // where her hands take it: the frill's outer edge on either side, a third of the way up from her ears (furthest
+    // out along that direction), like gripping a headband at the temples; the very ends are tucked into the hair
     const frill = parts.map((o) => o.getObjectByProperty('isMesh', true) ?? o).find((o) => o.isMesh && /frill/.test(o.name + o.parent?.name));
     if (frill) {
       const pos = frill.geometry.attributes.position, v = new THREE.Vector3();
-      let lo = null, hi = null;
+      let lo = null, hi = null, loD = -Infinity, hiD = -Infinity;
       for (let i = 0; i < pos.count; i++) {
         const r = root.worldToLocal(frill.localToWorld(v.fromBufferAttribute(pos, i)));
-        if (!lo || r.x < lo.x) lo = r.clone();
-        if (!hi || r.x > hi.x) hi = r.clone();
+        const dl = -r.x * 0.85 + r.y * 0.53, dh = r.x * 0.85 + r.y * 0.53;
+        if (dl > loD) { loD = dl; lo = r.clone(); }
+        if (dh > hiD) { hiD = dh; hi = r.clone(); }
       }
       for (const p of [lo, hi]) tips.push(headdress.worldToLocal(root.localToWorld(p.clone())));
     }
   }
-  /** The headdress tips in her frame: [her right, her left]. */
-  const headdressEnds = () => tips.map((p) => root.worldToLocal(headdress.localToWorld(p.clone())));
+  /** The headdress tips in her frame: [her right (-x), her left (+x)]. Sorted here, since which vertex search found
+   *  which side depends on how the model was turned when it loaded. */
+  const headdressEnds = () => tips.map((p) => root.worldToLocal(headdress.localToWorld(p.clone()))).sort((a, b) => a.x - b.x);
 
   // ---------- eye look ----------
   const eyes = [B('LeftEye'), B('RightEye')];

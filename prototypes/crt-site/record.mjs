@@ -1,5 +1,5 @@
 // Re-record public/prologue/prologue.mp4 (the phones' prologue) from the prototype page, frame by frame.
-//   python3 -m http.server 4173            (from the repo root)
+//   python3 prototypes/crt-site/serve.py   (from the repo root)
 //   npm i --no-save puppeteer-core && node prototypes/crt-site/record.mjs
 // Needs Google Chrome and ffmpeg. Stops where the site hands off to the board.
 import puppeteer from 'puppeteer-core';

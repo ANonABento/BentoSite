@@ -26,7 +26,7 @@ Content is plain JSON in `src/content/`, read at build time by `src/lib/content.
 ## Prologue (`src/components/Prologue/`)
 - A visit that gets the boot gets the prologue first, over the page: a robot maid wakes in a dark CRT's reflection, tidies her headdress, wipes the glass and switches the TV on, and the camera dives into the screen. At the dive it hands off: the board mounts and boots underneath while the prologue fades. Skip, Esc or Enter hand off at once, and any failure (no WebGL, a missing file, nothing on screen in 10 s) goes straight to the board. `?noprologue` turns it off.
 - Desktop runs the live scene (`engine/prologue.js`, plain JS typed by `.d.ts`, three.js); phones play `public/prologue/prologue.mp4`, a recording of it. Sound is opt-in (`engine/sfx.js`, synthesised).
-- The script is `prototypes/crt-site/PROLOGUE.md`. `prototypes/crt-site/index.html` runs the same engine with a tuning GUI and scrubbing (`?t=`); serve the repo root (`python3 -m http.server 4173`).
+- The script is `prototypes/crt-site/PROLOGUE.md`. `prototypes/crt-site/index.html` runs the same engine with a tuning GUI and scrubbing (`?t=`); serve the repo root with `python3 prototypes/crt-site/serve.py` (port 4173, caching off so edits show on reload).
 - The model is `public/prologue/robot-maid.glb`, rebuilt by `prototypes/robot/blender/vroid_maid.py` (see `prototypes/robot/README.md`). Re-record the phone video after changing the scene.
 
 ## Viewfinder (`src/components/Viewfinder/`)
