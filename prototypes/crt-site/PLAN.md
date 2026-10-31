@@ -19,3 +19,17 @@ committed locally and **not pushed** (a push can trigger a Vercel preview).
 6. **Checks:** `npm run lint && npm run type-check && npm run build`, desktop and mobile screenshots.
 
 Afterwards: project polish (thumbnails, GIFs, sizing, new projects from Kevin's links and local files).
+
+## Status (2026-10-31, overnight): everything up to deployment is done on `crt-site`, not pushed
+
+Review checklist:
+- [ ] `npm run dev`, open `/` in a fresh tab: the prologue plays, then the board boots. Skip, Esc and Enter
+  skip it; `?noprologue` turns it off; same-tab reloads and `/?project=<id>` deep links don't play it.
+- [ ] Phone (or DevTools device mode): the letterboxed recording plays, then the board.
+- [ ] Sound: the SOUND button (bottom left) works; the effects are synthesised and untested by ear.
+- [ ] Length: about 15 s to the board (8.5 s to the click, then the boot text and dive). If it's too long, the
+  boot text after the click is the easiest place to cut.
+- [ ] The model and choreography: tune in `prototypes/crt-site/index.html` (GUI, `?t=` scrubbing), then re-record the
+  phone video with `record.mjs`.
+- [ ] The new projects (WALDO, WreckLess) and the reworked heroes: check the wording and claims.
+- [ ] Next.js reports a known security vulnerability in 16.4.0: upgrade before deploying.
