@@ -3,18 +3,12 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
 /*
- * The maid robot from a rigged GLB (assets/robot.glb), behind the same interface
- * as robot.js: { root, head, headPivot, hand, reach, aim, grip, setEyes }.
+ * The robot maid from a rigged GLB: public/prologue/robot-maid.glb, CC0 VRoid sample E restyled with robot hardware
+ * by prototypes/robot/blender/vroid_maid.py (bones renamed to Mixamo names; morphs blink, happy, irisOff; an emissive
+ * iris; hardware parts parented to bones, the neon ones named hw_glow). Any GLB with the same bones and morphs drops in.
+ * Interface: { root, head, headPivot, hand, reach, aim, grip, setEyes, left, body, look, ... }.
  *
- * Default model: the robot maid unit, assets/robot-t3.glb (prototypes/robot/hf/clean_t3.py + build_t3.py; ?robot=c1
- * for the earlier armoured maid, assets/robot-c1.glb: local TRELLIS body and head, skeleton fitted and skinned
- * by prototypes/robot/hf/build_robot.py; no morphs, so blinks fall back to the iris dimming).
- * Placeholder model (?robot=vroid): VRoid's CC0 AvatarSample D Darkness, restyled by
- * prototypes/robot/blender/vroid_model.py (bones renamed to Mixamo names,
- * morphs: blink, happy, irisOff; emissive iris material). Any GLB with the
- * same bone names and morphs drops in.
- *
- * Local frame (same as robot.js): +z is her forward, +y up, origin at the chest,
+ * Local frame: +z is her forward, +y up, origin at the chest,
  * head centre at y≈0.59, right arm (her right is -x) ≈0.97 long to the wrist.
  */
 
@@ -24,7 +18,7 @@ const POLE = new THREE.Vector3(-0.7, -1, -0.15);
 
 const _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
 
-export async function loadRobot(url = new URL('./assets/robot.glb', import.meta.url).href) {
+export async function loadRobot(url) {
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   const gltf = await loader.loadAsync(url);
   const model = gltf.scene;

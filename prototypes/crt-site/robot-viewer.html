@@ -18,7 +18,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { createRobot } from './robot.js';
-import { loadRobot } from './robot-glb.js';
+import { loadRobot } from '../../src/components/Prologue/engine/robot.js';
 
 const q = new URLSearchParams(location.search);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -53,7 +53,7 @@ scene.add(key);
 // ?model=shapes shows the old procedural robot, ?model=<file>.glb any model in assets/
 const robot = q.get('model') === 'shapes' ? createRobot()
   : q.get('model')?.endsWith('.glb') ? await loadRobot(new URL(`./assets/${q.get('model')}`, import.meta.url).href)
-  : await loadRobot();
+  : await loadRobot('/public/prologue/robot-maid.glb');
 scene.add(robot.root);
 robot.setEyes(1, 1);
 robot.grip(+(q.get('curl') ?? 0.3), +(q.get('spread') ?? 0.5));
