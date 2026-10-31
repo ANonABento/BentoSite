@@ -12,6 +12,8 @@
   canvas.stage { display: block; width: 100vw; height: 100vh; }
   #hint { position: fixed; left: 16px; bottom: 14px; font: 13px/1.4 'VT323', monospace; color: #a39a90; letter-spacing: 0.04em; pointer-events: none; }
   #flash { position: fixed; inset: 0; background: #fff; mix-blend-mode: difference; opacity: 0; pointer-events: none; z-index: 5; }
+  #sound { position: fixed; left: 14px; bottom: 30px; z-index: 6; font: 15px VT323, monospace; letter-spacing: 0.06em; color: #e8823f;
+    background: rgba(10, 8, 7, 0.6); border: 1px solid rgba(232, 130, 63, 0.4); border-radius: 4px; padding: 4px 9px; cursor: pointer; }
 </style>
 <script type="importmap">
 { "imports": {
@@ -22,6 +24,7 @@
 </head>
 <body>
 <div id="flash"></div>
+<button id="sound" type="button">SOUND: OFF</button>
 <div id="hint">SPACE replay · P pause · ← → scrub</div>
 <script type="module">
 import * as THREE from 'three';
@@ -36,6 +39,7 @@ import GUI from 'three/addons/libs/lil-gui.module.min.js';
 import { Reflector } from 'three/addons/objects/Reflector.js';
 import { createRobot } from './robot.js';
 import { loadRobot } from './robot-glb.js';
+import { createSfx } from './sfx.js';
 
 /* ------------------------------------------------------------------ *
  * Board facts, mirrored from the site (BentoGrid.constants, globals.css)
@@ -1116,9 +1120,22 @@ function prologue(t) {
   camera.updateProjectionMatrix();
 }
 
+// Sound cues, in story time (sfx.js; off until the visitor turns it on).
+const POWER_ON = CLICK + WARM - T.led + T.power[0];
+const CUES = [[0.6, 'wake'], [1.3, 'servo'], [1.7, 'servo'], [2.2, 'servo'], [3.12, 'lock'], [3.4, 'servo'], [4.0, 'servo'],
+  [4.8, 'servo'], [5.6, 'squeak'], [6.35, 'squeak'], [7.2, 'servo'], [CLICK, 'click'], [POWER_ON, 'degauss'], [9.95, 'servo'], [10.95, 'servo']];
+const sfx = createSfx();
+const soundBtn = document.getElementById('sound');
+const showSound = () => { soundBtn.textContent = `SOUND: ${sfx.on ? 'ON' : 'OFF'}`; };
+soundBtn.addEventListener('click', () => { sfx.setOn(!sfx.on); showSound(); });
+showSound();
+let prevStory = 0;
+
 const flash = document.getElementById('flash');
 function master(time) {
   const t = story(time);
+  sfx.cue(prevStory, t, CUES);
+  prevStory = t;
   const tb = t - CLICK - WARM + T.led;
   ledForce = t > CLICK;
   apply(tb);
