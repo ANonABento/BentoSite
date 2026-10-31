@@ -23,6 +23,12 @@ Content is plain JSON in `src/content/`, read at build time by `src/lib/content.
 - Boot (`_components/TrayFill`, once per tab session, not for deep links or reduced motion): the cards drop in, rippling from the centre. On desktop the board opens zoomed out for it (`intro` prop → `useCamera`'s `introZoom`) and `settle` glides in to the home group; any wheel, drag or key hurries it. While it runs the board is frozen at the opening view and cards the landing view won't show are plain stand-ins (`DesktopCardLayer` `live`), swapped for real cards once it lands; the card layer is memoised so camera moves don't re-render cards.
 - The engine reads the CSS variables defined at the top of `src/app/globals.css`.
 
+## Prologue (`src/components/Prologue/`)
+- A visit that gets the boot gets the prologue first, over the page: a robot maid wakes in a dark CRT's reflection, tidies her headdress, wipes the glass and switches the TV on, and the camera dives into the screen. At the dive it hands off: the board mounts and boots underneath while the prologue fades. Skip, Esc or Enter hand off at once, and any failure (no WebGL, a missing file, nothing on screen in 10 s) goes straight to the board. `?noprologue` turns it off.
+- Desktop runs the live scene (`engine/prologue.js`, plain JS typed by `.d.ts`, three.js); phones play `public/prologue/prologue.mp4`, a recording of it. Sound is opt-in (`engine/sfx.js`, synthesised).
+- The script is `prototypes/crt-site/PROLOGUE.md`. `prototypes/crt-site/index.html` runs the same engine with a tuning GUI and scrubbing (`?t=`); serve the repo root (`python3 -m http.server 4173`).
+- The model is `public/prologue/robot-maid.glb`, rebuilt by `prototypes/robot/blender/vroid_maid.py` (see `prototypes/robot/README.md`). Re-record the phone video after changing the scene.
+
 ## Viewfinder (`src/components/Viewfinder/`)
 - A project's media, in tabs: all its images in one gallery, then a tab per video (YouTube, Vimeo, file), embed (any page in a frame, e.g. a live demo), 3D model (.stl/.glb) and PDF.
 - The list is `media.viewfinder` in the project's JSON, edited in `/studio`. Without it, the project shows its images, then its live demo (`viewfinderItems` in `src/lib/board.ts`).
