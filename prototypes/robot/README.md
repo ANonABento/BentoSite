@@ -13,7 +13,7 @@ unzip vendor/vroid/avatarsample_e.zip -d vendor/explore/e_src
 /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -P blender/vroid_maid.py -- \
   vendor/explore/e_src/AvatarSample_E.vrm ../crt-site/assets/x-vroid-e.glb
 cd ../crt-site && npx @gltf-transform/cli optimize assets/x-vroid-e.glb assets/robot-maid.glb \
-  --compress meshopt --texture-compress webp --texture-size 1024
+  --compress meshopt --texture-compress webp --texture-size 1024 --join false
 ```
 
 ## Earlier: placeholder model

@@ -83,7 +83,6 @@ export function Prologue({ mode, board, projectCount, onHandoff, onDone }: Prolo
             mono: family('--font-vt323', 'VT323'),
             sans: family('--font-instrument', 'sans-serif'),
           },
-          handoffAt: 5.85,
           onHandoff: () => leave.current(),
         }),
       )

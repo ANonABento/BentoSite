@@ -278,6 +278,36 @@ export async function loadRobot(url) {
   }
   headPivot.rotation._onChange(() => { pivotChanged(); applyHead(); });
 
+  // ---------- headdress ----------
+  // The frill and its band hang off a pivot at the head's centre whose axes are the robot frame at rest, so it can
+  // sit askew (rotation.z rolls it toward her right, .y turns it) and be put right; ends() gives its two tips.
+  const headdress = new THREE.Object3D();
+  const tips = [];
+  {
+    const parts = [];
+    model.traverse((o) => { if (/^headdress/.test(o.name)) parts.push(o); });
+    const eyesMid = wp(B('LeftEye')).lerp(wp(B('RightEye')), 0.5);
+    headBone.add(headdress);
+    headdress.position.copy(headBone.worldToLocal(eyesMid.lerp(wp(headBone), 0.6)));
+    headdress.quaternion.copy(headBone.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(rootQ()));
+    headdress.updateMatrixWorld(true);
+    parts.forEach((o) => headdress.attach(o));
+    // the frill's tips: its vertices furthest to her right and to her left
+    const frill = parts.map((o) => o.getObjectByProperty('isMesh', true) ?? o).find((o) => o.isMesh && /frill/.test(o.name + o.parent?.name));
+    if (frill) {
+      const pos = frill.geometry.attributes.position, v = new THREE.Vector3();
+      let lo = null, hi = null;
+      for (let i = 0; i < pos.count; i++) {
+        const r = root.worldToLocal(frill.localToWorld(v.fromBufferAttribute(pos, i)));
+        if (!lo || r.x < lo.x) lo = r.clone();
+        if (!hi || r.x > hi.x) hi = r.clone();
+      }
+      for (const p of [lo, hi]) tips.push(headdress.worldToLocal(root.localToWorld(p.clone())));
+    }
+  }
+  /** The headdress tips in her frame: [her right, her left]. */
+  const headdressEnds = () => tips.map((p) => root.worldToLocal(headdress.localToWorld(p.clone())));
+
   // ---------- eye look ----------
   const eyes = [B('LeftEye'), B('RightEye')];
   eyes.forEach(remember);
@@ -317,7 +347,7 @@ export async function loadRobot(url) {
   const shoulder = armR.shoulder;
   return {
     root, head: headBone, headPivot, hand: handB, mats: { iris }, reach, aim, grip, setEyes, shoulder, state, bones, morph: bodyMesh,
-    left: { reach: armL.reach, aim: armL.aim, grip: armL.grip, hang: leftHang }, body, look, applyHead,
+    left: { reach: armL.reach, aim: armL.aim, grip: armL.grip, hang: leftHang }, body, look, applyHead, headdress, headdressEnds,
     /** The head's frame (robot-local axes carried by the head): +z is where her face points. */
     headFrame: () => carried(headBone),
     toon, updateToon,
