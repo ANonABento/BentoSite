@@ -1219,7 +1219,7 @@ if (opts.probe) setTimeout(() => {
 // startAt opens paused at that moment (for screenshots).
 if (opts.startAt != null) { P.playing = false; tPaused = opts.startAt; }
 // debug: window.prologueSeek(t) pauses at story-clock time t (frame-by-frame recording); returns the length.
-if (opts.debug) Object.assign(window, { prologueSeek: (t) => { P.playing = false; tPaused = t; return TOTAL; }, prologueTimes: { CLICK, WARM, TOTAL, SLOW_EXTRA, story: (t) => story(t) } });
+if (opts.debug) Object.assign(window, { prologueSeek: (t) => { P.playing = false; tPaused = t; return TOTAL; }, prologueTimes: { CLICK, WARM, TOTAL, SLOW_EXTRA, HANDOFF, story: (t) => story(t) } });
 
 renderer.setAnimationLoop(() => {
   if (P.playing) P.time = Math.min(((performance.now() - t0) / 1000) * P.speed, TOTAL + 0.5);

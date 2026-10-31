@@ -19,7 +19,7 @@ await page.waitForFunction(() => window.prologueSeek, { timeout: 120000 });
 await page.addStyleTag({ content: '.lil-gui, #hint, .prologue-sound { display: none !important; }' });
 const { end } = await page.evaluate(() => {
   const T = window.prologueTimes;
-  let t = 0; while (T.story(t) < T.CLICK + T.WARM - 0.45 + 5.85) t += 0.01;
+  let t = 0; while (T.story(t) < T.HANDOFF) t += 0.01;
   return { end: t + 0.1 };
 });
 const n = Math.ceil(end * FPS);
