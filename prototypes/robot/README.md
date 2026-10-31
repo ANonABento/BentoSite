@@ -16,6 +16,11 @@ cd ../crt-site && npx @gltf-transform/cli optimize assets/x-vroid-e.glb assets/r
   --compress meshopt --texture-compress webp --texture-size 1024 --join false
 ```
 
+### Other bases
+`MAID_CLOTH=generic` makes `vroid_maid.py` recolour any outfit: its main colour goes black, other colours orange,
+light neutrals white. `renders/bases.png` compares the CC0 samples D, Sendagaya Shino, F, G, D Darkness and Sakurada
+Fumiriya restyled this way against E (2026-10-31; E stays for now).
+
 ## Earlier: placeholder model
 **VRoid AvatarSample D Darkness**, a CC0 VRoid sample (https://opengameart.org/content/vroid-studio-cc0-models). Its VRoid Hub licence allows modification, redistribution and commercial use, with no credit needed.
 

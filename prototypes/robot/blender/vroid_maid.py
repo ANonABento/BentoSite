@@ -40,6 +40,25 @@ def cloth(px):
     return np.concatenate([np.clip(out, 0, 1), a], -1)
 
 
+def cloth_generic(px):
+    """Any outfit: its main colour (the commonest saturated hue) -> lacquer black, other saturated colours -> orange
+    accents, light neutrals -> white, dark neutrals -> black. For bases other than sample E (MAID_CLOTH=generic)."""
+    rgb, a = px[..., :3], px[..., 3:]
+    h, s, v = tm.rgb_to_hsv(rgb)
+    lum = (rgb @ np.array([0.2126, 0.7152, 0.0722]))[..., None]
+    sat = (s > 0.22) & (v > 0.12) & (a[..., 0] > 0.5)
+    hist = np.bincount((h[sat] * 12).astype(int) % 12, minlength=12) if sat.any() else np.zeros(12)
+    main = int(hist.argmax())
+    hb = (h * 12).astype(int) % 12
+    is_main = sat & ((hb == main) | (hb == (main + 1) % 12) | (hb == (main - 1) % 12))
+    accent = sat & ~is_main
+    out = np.where(lum > 0.55, np.clip(lum * 1.08, 0, 1) * np.array([0.97, 0.96, 0.95]),
+                   (0.03 + 0.12 * lum ** 1.2) * np.array([1, 0.94, 0.92]))
+    out = np.where(is_main[..., None], (0.035 + 0.13 * v[..., None] ** 1.5) * np.array([1, 0.92, 0.9]), out)
+    out = np.where(accent[..., None], tm.hsv_to_rgb(np.full_like(h, ORANGE_HUE), np.full_like(h, 0.78), 0.45 + 0.5 * v), out)
+    return np.concatenate([np.clip(out, 0, 1), a], -1)
+
+
 def shoes(px):
     """Brown boots -> white ceramic with black straps."""
     rgb, a = px[..., :3], px[..., 3:]
@@ -51,6 +70,8 @@ def shoes(px):
 
 
 def repaint(img, fn, name):
+    if max(img.size) > 2048:                  # some samples ship 4K textures; the site uses 1K anyway
+        img.scale(*(max(1, d * 2048 // max(img.size)) for d in img.size))
     W, H = img.size
     px = np.empty(W * H * 4, dtype=np.float32)
     img.pixels.foreach_get(px)
@@ -75,7 +96,7 @@ def restyle_textures():
             elif m.name.startswith('B01_cloth') and 'Shoes' in m.name:
                 tex.image = repaint(tex.image, shoes, 'M_' + m.name)
             elif m.name.startswith('B01_cloth'):
-                tex.image = repaint(tex.image, cloth, 'M_' + m.name)
+                tex.image = repaint(tex.image, cloth_generic if os.environ.get('MAID_CLOTH') == 'generic' else cloth, 'M_' + m.name)
 
 
 # ---------------------------------------------------------------- hardware
