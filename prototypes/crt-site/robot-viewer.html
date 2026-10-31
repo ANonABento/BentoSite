@@ -50,8 +50,10 @@ const key = new THREE.DirectionalLight('#fff1e0', q.has('dark') ? 0 : 2);
 key.position.set(-2, 3, 3);
 scene.add(key);
 
-// ?model=shapes shows the old procedural robot
-const robot = q.get('model') === 'shapes' ? createRobot() : await loadRobot();
+// ?model=shapes shows the old procedural robot, ?model=<file>.glb any model in assets/
+const robot = q.get('model') === 'shapes' ? createRobot()
+  : q.get('model')?.endsWith('.glb') ? await loadRobot(new URL(`./assets/${q.get('model')}`, import.meta.url).href)
+  : await loadRobot();
 scene.add(robot.root);
 robot.setEyes(1, 1);
 robot.grip(+(q.get('curl') ?? 0.3), +(q.get('spread') ?? 0.5));

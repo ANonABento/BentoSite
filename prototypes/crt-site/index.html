@@ -693,12 +693,12 @@ function renderReflection() {
  * ------------------------------------------------------------------ */
 // The robot maid unit (assets/robot-t3.glb, built by prototypes/robot/hf/clean_t3.py + build_t3.py; gitignored while
 // it's 5 MB) falls back to the VRoid placeholder when missing. ?robot=c1 loads the earlier armoured maid, ?robot=vroid
-// forces the placeholder, ?robot=shapes the procedural robot.
+// forces the placeholder, ?robot=shapes the procedural robot, ?robot=<file>.glb any model in assets/.
 const robotParam = new URLSearchParams(location.search).get('robot');
 const robotGlb = (f) => loadRobot(new URL(`./assets/${f}`, import.meta.url).href).catch((e) => { console.warn(f, e); return loadRobot(); });
 const robot = robotParam === 'shapes' ? createRobot()
   : robotParam === 'vroid' ? await loadRobot()
-  : await robotGlb(robotParam === 'c1' ? 'robot-c1.glb' : 'robot-t3.glb');
+  : await robotGlb(robotParam?.endsWith('.glb') ? robotParam : robotParam === 'c1' ? 'robot-c1.glb' : 'robot-t3.glb');
 scene.add(robot.root);
 window.dbg = { robot, scene, camera, reflector, THREE };
 // Moonlight from her left (a window off-screen): a side key, so the toon ramp puts a light/shade edge across her face.

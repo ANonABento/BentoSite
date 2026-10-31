@@ -70,7 +70,7 @@ def eye_keys(face):
     return keep
 
 
-def main():
+def main(before_export=None):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     tmp = OUT + '.src.glb'
     shutil.copy(SRC, tmp)
@@ -131,9 +131,12 @@ def main():
             elif role.startswith('keep_'):
                 m.name = f'B01_{role[5:]}_{m.name}'          # 'hair' / 'cloth' tags for the loader
 
+    if before_export:
+        before_export()
     bpy.ops.export_scene.gltf(filepath=OUT, export_format='GLB', export_skins=True, export_morph=True,
                               export_morph_normal=False, export_animations=False, export_yup=True)
     print('WROTE', OUT, os.path.getsize(OUT))
 
 
-main()
+if __name__ == '__main__':
+    main()
