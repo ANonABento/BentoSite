@@ -1,3 +1,35 @@
+# Prologue script (v6 draft; v5 below)
+
+## v6: tidy-up, wipe, power on (agreed 2026-10-31)
+
+About 11 to 12 s. The style rules below still hold. The tone goes **moody → cute**: cold and mechanical
+until the wipe, warm and charming after. The camera points at the glass, so until her real hand enters
+we see only her reflection. Her hand is the reveal.
+
+| t (s) | Beat | Tone |
+|---|---|---|
+| 0.0–1.5 | Dark glass, the red standby LED pulses. Her eyes ignite, cold and dim, in the reflection. | moody |
+| 1.5–2.0 | The head lifts in servo steps and her eyes focus on her own reflection. | moody |
+| 2.0–3.6 | **Tidy-up:** both hands pinch the headdress straight, and it locks into place. This is the dexterity beat, shown in the reflection. Precise and mechanical. | moody |
+| 3.6–4.0 | Her head tilts toward the glass: she's noticed it needs a wipe (it doesn't have to look dirty). | moody |
+| 4.0–4.8 | Her reflected hand dips to the apron pocket and comes back with a handkerchief. | moody |
+| 4.8–5.6 | She reaches, and **her real hand enters the frame** in front of the reflection. It's the first thing we see that isn't reflected. The camera starts pulling back. | reveal |
+| 5.6–7.2 | **Wipe:** one arc across the glass while the camera keeps pulling back. The cloth passes over her reflected face, and when it clears, **the flip** has happened: her eyes are warm orange and she does a happy blink. | flip → cute |
+| 7.2–8.2 | Over the shoulder: she's polishing a dead CRT. She finishes, and her hand, still holding the cloth, goes to the power button. | cute |
+| 8.2–8.7 | **Click**, with the cloth in hand: anticipation, press, impact frame, LED turns orange. | |
+| 8.7–10.2 | The tube warms up and lights her. She tucks the handkerchief into the pocket and gives a small maid bow in the glow. | cute |
+| 10.2–12 | Push into the screen and dive into the boot (as in v5). | |
+
+**Sound** is opt-in (a sound-on toggle). Effects: servo whirrs, the headdress click, a cloth squeak on the
+wipe, the button click, the CRT whine and the degauss thunk.
+
+**Model:** the one-piece generated anime maid is retired. The new direction is picked from a 3D
+style × face matrix (`prototypes/robot/renders/matrix.png`). Styles: PS1, PS2 low-poly, cel-shaded
+hard-surface. Faces: doll faceplate, screen visor, anime, mostly mech. Whichever wins, she's built in
+segmented rigid parts parented to bones, with no skinning.
+
+---
+
 # Prologue script (v5)
 
 > She is a **robot maid**. She doesn't breathe; she powers up, runs servos, locks into poses.
