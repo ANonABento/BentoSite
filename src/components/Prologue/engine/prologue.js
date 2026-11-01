@@ -31,32 +31,33 @@ const made = [];
  * (theatre-state.json). Story times in s, positions in her frame unless noted. Most apply live through setTuning();
  * the click time, the pull-back length and the glass shot are read once (the wipe is laid out from them). */
 const TUNE = {
-  timing: { click: 11.4, pullBack: 2.6 },                 // the button press; the camera's pull-back that ends just before it
-  camera: { glass: [-0.05, 0.2, 0.44], fov: 46,           // the locked shot on the glass (world)
-    via1: [0.55, 0.24, 0.47], via2: [0.98, 0.36, 1.25] }, // the pull-back's path, out along the glass and round her right
+  timing: { click: 11.4 },                                 // the button press
+  // The scripted camera: the locked shot on the glass (world), and the pull-back that ends just before the click, out
+  // along the glass and round her right. Not on the timeline: its keyframed Camera (seeded from this) plays instead.
+  camera: { glass: [-0.05, 0.2, 0.44], fov: 46, pullBack: 2.6, via1: [0.55, 0.24, 0.47], via2: [0.98, 0.36, 1.25] },
   poses: { handsUp: [-0.16, 0.26, 0.44], showCloth: [-0.16, 0.46, 0.34], pocket: [-0.17, -0.4, 0.3], bow: [-0.06, -0.5, 0.26] },
   headdress: { roll: 0.17, yaw: 0.1 },                     // how crooked it starts
   eyes: { cold: '#ff7a3a', warm: '#ffe2c4', coldGlow: 0.45, warmGlow: 0.75 },
   light: { darkGlass: 1, ambient: 0.035, rim: 0.25, bloom: 0.9 },
 };
 
-/* The timeline (timeline.js, Theatre.js). Settings objects mirror TUNE; the rest are read every frame:
+/* The timeline (timeline.js, Theatre.js). Settings objects mirror TUNE (but camera); the rest are read every frame:
  *   Retime   hold: seconds the scene runs behind the timeline from here on (keyframe it up to add a pause)
- *   Camera   nudge/turn on top of the scripted camera; takeover blends to its own position/target/fov
+ *   Camera   the shot (position, target, fov), keyframed up to the dive, where the boot's camera takes over;
+ *            takeover 0 gives the scripted camera back
  *   Her      offsets on top of her scripted motion: hands, head, lean, twist; eye glow, warmth, happy, blink
  *   Lights   multipliers: room, screen, bloom, the reflection, her fill and rim light */
 const TL = await createTimeline(opts.theatreState);
-const SETTINGS = { timing: 'Settings / timing', camera: 'Settings / camera path', poses: 'Settings / poses',
+const SETTINGS = { timing: 'Settings / timing', poses: 'Settings / poses',
   headdress: 'Settings / headdress', eyes: 'Settings / eyes', light: 'Settings / light' };
-const READ_ONCE = new Set(['timing', 'camera.glass']);
+const READ_ONCE = new Set(['timing']);
 for (const [group, key] of Object.entries(SETTINGS)) {
   TL.define(key, TUNE[group]);
   Object.assign(TUNE[group], TL.read(key));
 }
 TL.define('Retime', { hold: 0 }, { hold: { range: [0, 10] } });
-TL.define('Camera', { nudge: [0, 0, 0], turn: [0, 0, 0], takeover: 0, position: TUNE.camera.glass,
-  target: [TUNE.camera.glass[0], TUNE.camera.glass[1], TUNE.camera.glass[2] - 1], fov: TUNE.camera.fov },
-{ turn: { step: 0.002 }, takeover: { range: [0, 1] }, fov: { range: [15, 90], step: 0.1 } });
+TL.define('Camera', { position: TUNE.camera.glass, target: [TUNE.camera.glass[0], TUNE.camera.glass[1], TUNE.camera.glass[2] - 1],
+  fov: TUNE.camera.fov, takeover: 1 }, { takeover: { range: [0, 1] }, fov: { range: [15, 90], step: 0.1 } });
 TL.define('Her', { rightHand: [0, 0, 0], leftHand: [0, 0, 0], head: [0, 0, 0], lean: 0, twist: 0,
   eyeGlow: 1, warmth: 0, happy: 0, blink: 0 },
 { head: { step: 0.002 }, eyeGlow: { range: [0, 3] }, warmth: { range: [-1, 1] }, happy: { range: [0, 1] }, blink: { range: [0, 1] } });
@@ -951,7 +952,7 @@ const WIGGLE = [2.75, 2.97, 3.19, 3.41];                   // forward, back, for
 //    behind her shoulder, settling on her finger at the button. Even speed along its path (no surges between keys),
 //    eased at both ends, and the view turns by one slerp from the glass to the button. She clicks once it settles.
 const GLASS = { p: WIPE_CAM.clone(), l: WIPE_CAM.clone().add(V(0, 0, -1)), fov: TUNE.camera.fov };
-const AWAY = { t0: PRO_END - TUNE.timing.pullBack, t1: PRO_END, path: new THREE.CatmullRomCurve3([
+const AWAY = { t0: PRO_END - TUNE.camera.pullBack, t1: PRO_END, path: new THREE.CatmullRomCurve3([
   GLASS.p,
   V(...TUNE.camera.via1), // first sideways along the glass, clear of her head as she leans in (head ≈ (0.09, 0.1, 0.85))
   V(...TUNE.camera.via2), // then back past her right side
@@ -1255,21 +1256,24 @@ function master(time) {
   screenLight.intensity *= L.screen; bloom.strength *= L.bloom; uniforms.uRefl.value *= L.reflection;
 }
 
-/** The timeline's camera on top of whatever the script placed: a nudge and a turn, then a blend (takeover) to its
- *  own keyframed position, target and fov. */
+/** The timeline's camera over the scripted one (by takeover), up to the dive: from PRO_END it hands back over half a
+ *  second, so the boot's camera (which starts where the scripted pull-back ends) takes it into the screen. */
 const _camQ = new THREE.Quaternion(), _camM = new THREE.Matrix4();
 function timelineCamera() {
   const c = TL.read('Camera');
-  camera.position.add(V(...c.nudge));
-  camera.rotateX(c.turn[0]); camera.rotateY(c.turn[1]); camera.rotateZ(c.turn[2]);
-  if (c.takeover > 0) {
-    const p = V(...c.position);
-    _camQ.setFromRotationMatrix(_camM.lookAt(p, V(...c.target), camera.up));
-    camera.position.lerp(p, c.takeover);
-    camera.quaternion.slerp(_camQ, c.takeover);
-    camera.fov = mix(camera.fov, c.fov, c.takeover);
-  }
+  const k = c.takeover * (1 - sstep(ramp(story(P.time), [PRO_END, PRO_END + 0.5])));
+  if (k <= 0) return;
+  const p = V(...c.position);
+  _camQ.setFromRotationMatrix(_camM.lookAt(p, V(...c.target), camera.up));
+  camera.position.lerp(p, k);
+  camera.quaternion.slerp(_camQ, k);
+  camera.fov = mix(camera.fov, c.fov, k);
   camera.updateProjectionMatrix();
+}
+/** The scripted camera at story time t, as a position, a target 1 m ahead and a fov (to seed the Camera's keys). */
+function scriptCamera(t) {
+  const { p, q, fov } = move(t);
+  return { position: p.toArray(), target: p.clone().add(V(0, 0, -1).applyQuaternion(q)).toArray(), fov };
 }
 
 /* ------------------------------------------------------------------ *
@@ -1360,8 +1364,11 @@ if (opts.probe) setTimeout(() => {
 // startAt opens paused at that moment (for screenshots).
 if (opts.startAt != null) seekTo(opts.startAt);
 // debug: window.prologueSeek(t) pauses at story-clock time t (frame-by-frame recording); returns the length.
-if (opts.debug) Object.assign(window, { prologueSeek: (t) => { seekTo(t); return TOTAL; }, prologueTimes: { CLICK, WARM, TOTAL, SLOW_EXTRA, HANDOFF, story: (t) => story(t), positionAt, BEATS },
-  prologueNow: () => (studioClock ? seq.position : P.time), prologueScene: () => ({ time: P.time, story: story(P.time) }) });
+if (opts.debug) Object.assign(window, { prologueSeek: (t) => { seekTo(t); return TOTAL; }, prologueTimes: { CLICK, WARM, TOTAL, SLOW_EXTRA, HANDOFF, story: (t) => story(t), positionAt, BEATS,
+  pullBack: [AWAY.t0, PRO_END], scriptCamera },
+  prologueNow: () => (studioClock ? seq.position : P.time),
+  prologuePlay: () => togglePlay(), prologuePlaying: () => (studioClock ? seqPlaying : P.playing),
+  prologueCamera: () => ({ position: camera.position.toArray(), fov: camera.fov }), prologueScene: () => ({ time: P.time, story: story(P.time) }) });
 
 renderer.setAnimationLoop(() => {
   let pos;
@@ -1388,9 +1395,7 @@ for (const [group, key] of Object.entries(SETTINGS)) {
 /** Apply edited values live (see TUNE). The click time and the glass shot need a restart to take effect. */
 function setTuning(partial) {
   mergeDeep(TUNE, partial);
-  const { camera: c, poses: p } = TUNE;
-  GLASS.p.set(...c.glass); GLASS.l.copy(GLASS.p).add(V(0, 0, -1)); GLASS.fov = c.fov;
-  AWAY.path.points[1].set(...c.via1); AWAY.path.points[2].set(...c.via2); AWAY.path.updateArcLengths();
+  const { poses: p } = TUNE;
   UP.R.set(...p.handsUp); UP.L.copy(mirrorX(p.handsUp));
   SHOW.set(...p.showCloth); POCKET.set(...p.pocket);
   CLASP.R.set(...p.bow); CLASP.L.copy(mirrorX(p.bow));

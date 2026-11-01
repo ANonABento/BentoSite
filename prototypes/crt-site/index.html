@@ -11,18 +11,22 @@
   html, body { margin: 0; height: 100%; background: #0a0807; overflow: hidden; }
   canvas.stage { display: block; width: 100%; height: 100%; }
   #stage { position: fixed; inset: 0; }
-  body.studio #stage { bottom: 38vh; }   /* the scene sits above the studio's timeline */
+  /* the scene, then the control bar, then the studio's timeline across the bottom (38vh) */
+  body.studio #stage { bottom: calc(38vh + 34px); }
   body.studio #hint { display: none; }
-  #readout { position: fixed; top: 34px; left: 50%; transform: translateX(-50%); z-index: 6; pointer-events: none;
-    font: 15px/1.3 VT323, monospace; letter-spacing: 0.05em; color: #f2ece2; background: rgba(10, 8, 7, 0.7);
-    border: 1px solid rgba(232, 130, 63, 0.35); border-radius: 4px; padding: 3px 10px; white-space: nowrap; }
-  #readout b { color: #e8823f; font-weight: normal; }
-  #readout i { color: #a39a90; font-style: normal; }
+  #bar { position: fixed; left: 0; right: 0; bottom: 38vh; height: 34px; z-index: 6; display: flex; align-items: center; gap: 8px;
+    padding: 0 10px; box-sizing: border-box; background: #14100e; border-top: 1px solid #2a2421;
+    font: 16px/1 VT323, monospace; letter-spacing: 0.05em; color: #f2ece2; }
+  #bar button, #bar select { font: inherit; color: #f2ece2; background: #221c19; border: 1px solid #3a312c; border-radius: 4px;
+    height: 24px; padding: 0 9px; cursor: pointer; }
+  #bar button:hover, #bar select:hover { border-color: #e8823f; }
+  #bar .play { width: 64px; color: #0a0807; background: #e8823f; border-color: #e8823f; }
+  #bar .time { color: #e8823f; min-width: 64px; }
+  #bar i { color: #a39a90; font-style: normal; }
+  #bar .grow { flex: 1; }
   #hint { position: fixed; left: 16px; bottom: 14px; font: 13px/1.4 'VT323', monospace; color: #a39a90; letter-spacing: 0.04em; pointer-events: none; }
   .prologue-flash { position: fixed; inset: 0; background: #fff; mix-blend-mode: difference; opacity: 0; pointer-events: none; z-index: 5; }
   .lil-gui.root { position: fixed; top: 8px !important; right: auto !important; left: 50%; transform: translateX(-50%); }   /* the studio takes the sides and the bottom */
-  .tuning-save { position: fixed; right: 14px; bottom: 14px; z-index: 6; font: 15px VT323, monospace; letter-spacing: 0.06em; color: #0a0807;
-    background: #e8823f; border: 0; border-radius: 4px; padding: 6px 12px; cursor: pointer; }
   .prologue-sound { position: absolute; left: 14px; bottom: 14px; z-index: 6; font: 15px VT323, monospace; letter-spacing: 0.06em; color: #e8823f;
     background: rgba(10, 8, 7, 0.6); border: 1px solid rgba(232, 130, 63, 0.4); border-radius: 4px; padding: 4px 9px; cursor: pointer; }
 </style>
@@ -43,13 +47,14 @@
 // project to src/components/Prologue/theatre-state.json through serve.py; the site plays that file.
 //   ?t=5.2 opens paused there · ?probe writes bone positions into the page · ?robot=<file>.glb loads assets/<file>
 //   ?handoff stops where the site takes over instead of playing the in-TV board · ?nostudio: no studio, wall clock
-import studio from 'https://esm.sh/@theatre/studio@0.7.2?deps=@theatre/core@0.7.2';
 import { startPrologue } from '../../src/components/Prologue/engine/prologue.js';
 import { PROJECT_ID } from '../../src/components/Prologue/engine/timeline.js';
 const q = new URLSearchParams(location.search);
 const robot = q.get('robot');
 const withStudio = !q.has('nostudio');
 // the saved file is the only state (no browser copy to conflict with it); leaving with unsaved edits asks first
+// (imported only when used: an imported studio that's never initialised keeps the project from ever loading)
+const studio = withStudio ? (await import('https://esm.sh/@theatre/studio@0.7.2?deps=@theatre/core@0.7.2')).default : null;
 if (withStudio) { studio.initialize({ usePersistentStorage: false }); document.body.classList.add('studio'); }
 const theatreState = await fetch('/src/components/Prologue/theatre-state.json').then((r) => r.json());
 let controls = null, restartTimer = 0;
@@ -74,25 +79,54 @@ const start = async (startAt) => {
 await start(q.has('t') ? parseFloat(q.get('t')) : null);
 
 if (withStudio) {
-  // open with "Her" selected, so her values (right) and the timeline (bottom) show straight away
-  studio.setSelection([controls.timeline.objects.Her]);
-  // the readout: where the playhead is, the scene time when holds shift it, and which beat that is
-  const readout = Object.assign(document.createElement('div'), { id: 'readout' });
-  document.body.append(readout);
+  // open with the Camera selected: its values on the right, its keyframes (the whole shot) on the timeline
+  studio.setSelection([controls.timeline.objects.Camera]);
+  // the timeline across the full width of the bottom (Theatre has no public API for panel placement)
+  try {
+    window.__TheatreJS_StudioBundle._studio.transaction(({ stateEditors }) => stateEditors.studio.historic.panelPositions.setPanelPosition({
+      panelId: 'sequenceEditor',
+      position: { edges: { left: { from: 'screenLeft', distance: 0 }, right: { from: 'screenRight', distance: 0 },
+        top: { from: 'screenBottom', distance: 0.38 }, bottom: { from: 'screenBottom', distance: 0 } } },
+    }));
+  } catch (e) { console.warn('timeline placement', e); }
+
+  // the control bar between the scene and the timeline: restart, play, jump to a beat, where the playhead is, SAVE
+  const T = window.prologueTimes;
+  const bar = Object.assign(document.createElement('div'), { id: 'bar' });
+  const button = (text, title, onclick, cls = '') => Object.assign(document.createElement('button'), { textContent: text, title, onclick, className: cls });
+  const seek = (pos) => { window.prologueSeek(pos); };
+  const rewind = button('⏮', 'Back to the start', () => seek(0));
+  const play = button('▶ PLAY', 'Play / pause (Space)', () => { window.prologuePlay(); play.blur(); }, 'play');
+  const beats = document.createElement('select');
+  beats.title = 'Jump the playhead to a story beat';
+  beats.append(new Option('jump to beat…', ''), ...T.BEATS.map(([t, name]) => new Option(`${t.toFixed(2)}  ${name}`, String(t))));
+  beats.onchange = () => { if (beats.value) seek(T.positionAt(+beats.value)); beats.value = ''; beats.blur(); };
+  const time = Object.assign(document.createElement('span'), { className: 'time' });
+  const beat = document.createElement('span');
+  const keys = Object.assign(document.createElement('i'), { textContent: 'SPACE play · ← → 0.1 s' });
+  const grow = Object.assign(document.createElement('span'), { className: 'grow' });
+  const save = button('SAVE', 'Write the keyframes and settings to src/components/Prologue/theatre-state.json', null, 'play');
+  bar.append(rewind, play, beats, time, beat, grow, keys, save);
+  document.body.append(bar);
   let last = '';
   (function tick() {
-    const pos = window.prologueNow(), scene = window.prologueScene(), beats = window.prologueTimes.BEATS;
-    const beat = beats.filter(([t]) => t <= scene.story + 1e-3).at(-1)?.[1] ?? '';
+    const pos = window.prologueNow(), scene = window.prologueScene();
+    const name = T.BEATS.filter(([t]) => t <= scene.story + 1e-3).at(-1)?.[1] ?? '';
     const held = pos - scene.time > 0.005;   // Retime holds put the scene behind the playhead
-    const text = `<b>${pos.toFixed(2)} s</b>${held ? ` <i>(scene ${scene.time.toFixed(2)})</i>` : ''} · ${beat} <i>· SPACE play · ← → step · SAVE writes the file</i>`;
-    if (text !== last) readout.innerHTML = last = text;
+    const playing = window.prologuePlaying();
+    const text = `${pos.toFixed(2)}|${held ? scene.time.toFixed(2) : ''}|${name}|${playing}`;
+    if (text !== last) {
+      last = text;
+      time.textContent = `${pos.toFixed(2)} s`;
+      beat.innerHTML = `${name}${held ? ` <i>(scene ${scene.time.toFixed(2)} s)</i>` : ''}`;
+      play.textContent = playing ? '❚❚ PAUSE' : '▶ PLAY';
+    }
     requestAnimationFrame(tick);
   })();
+
   const snapshot = () => JSON.stringify(studio.createContentOfSaveFile(PROJECT_ID).sheetsById);
   let saved = snapshot();
   addEventListener('beforeunload', (e) => { if (snapshot() !== saved) e.preventDefault(); });
-  const save = Object.assign(document.createElement('button'), { className: 'tuning-save', textContent: 'SAVE' });
-  save.title = 'Write the studio\'s keyframes and settings to src/components/Prologue/theatre-state.json';
   save.onclick = async () => {
     const r = await fetch('/__save-theatre', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(studio.createContentOfSaveFile(PROJECT_ID)) });
@@ -100,7 +134,6 @@ if (withStudio) {
     save.textContent = r.ok ? 'SAVED ✓' : `SAVE FAILED (${r.status})`;
     setTimeout(() => { save.textContent = 'SAVE'; }, 1800);
   };
-  document.body.append(save);
 }
 </script>
 </body>
