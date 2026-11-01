@@ -40,7 +40,8 @@ import { PROJECT_ID } from '../../src/components/Prologue/engine/timeline.js';
 const q = new URLSearchParams(location.search);
 const robot = q.get('robot');
 const withStudio = !q.has('nostudio');
-if (withStudio) studio.initialize();
+// the saved file is the only state (no browser copy to conflict with it); leaving with unsaved edits asks first
+if (withStudio) studio.initialize({ usePersistentStorage: false });
 const theatreState = await fetch('/src/components/Prologue/theatre-state.json').then((r) => r.json());
 let controls = null, restartTimer = 0;
 const start = async (startAt) => {
@@ -64,11 +65,17 @@ const start = async (startAt) => {
 await start(q.has('t') ? parseFloat(q.get('t')) : null);
 
 if (withStudio) {
+  // open with "Her" selected, so her values (right) and the timeline (bottom) show straight away
+  studio.setSelection([controls.timeline.objects.Her]);
+  const snapshot = () => JSON.stringify(studio.createContentOfSaveFile(PROJECT_ID).sheetsById);
+  let saved = snapshot();
+  addEventListener('beforeunload', (e) => { if (snapshot() !== saved) e.preventDefault(); });
   const save = Object.assign(document.createElement('button'), { className: 'tuning-save', textContent: 'SAVE' });
   save.title = 'Write the studio\'s keyframes and settings to src/components/Prologue/theatre-state.json';
   save.onclick = async () => {
     const r = await fetch('/__save-theatre', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(studio.createContentOfSaveFile(PROJECT_ID)) });
+    if (r.ok) saved = snapshot();
     save.textContent = r.ok ? 'SAVED ✓' : `SAVE FAILED (${r.status})`;
     setTimeout(() => { save.textContent = 'SAVE'; }, 1800);
   };

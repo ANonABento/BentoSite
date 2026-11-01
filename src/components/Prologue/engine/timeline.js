@@ -39,6 +39,7 @@ export async function createTimeline(state) {
   return {
     sheet,
     project,
+    objects,
     /** Declare an object: `defaults` maps prop names to plain defaults; `options[prop]` gives { range, step }. */
     define(key, defaults, options = {}) {
       const props = Object.fromEntries(Object.entries(defaults).map(([k, v]) => [k, prop(v, options[k])]));

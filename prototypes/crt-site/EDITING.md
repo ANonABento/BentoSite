@@ -6,12 +6,14 @@
    - top right: its values (drag a number sideways, double-click to type, pick colours);
    - bottom: the timeline, once something is sequenced. Its playhead is the scene's clock: drag it to scrub;
      Space plays and pauses, ← → step 0.1 s.
-3. To animate a value, right-click its name → **Sequence**. Then move the playhead and change the value: each change
-   at a new time adds a keyframe. Drag keyframes to retime them; click between two to edit the curve (ease); right-click
-   for more. Right-click the timeline's top bar → **Place marker** to note a beat.
-4. **SAVE** (bottom right) writes `src/components/Prologue/theatre-state.json`. The site plays exactly that file.
-   Edits are also kept in the browser between reloads; if the studio shows *Has Conflicts*, it's asking whether the
-   browser's edits or the saved file should win.
+3. The page opens with **Her** selected and the timeline showing. The main values (Retime, Camera, Her, Lights) are
+   already on it, each with one keyframe at 0:00. To animate one: drag the playhead to a moment, change the value,
+   and a keyframe appears there. Drag keyframes to retime them; click the line between two to edit the ease curve;
+   right-click a keyframe to delete it. To put a value that isn't on the timeline yet (the Settings ones) on it,
+   right-click its **name** in the right-hand panel → **Sequence**. Right-click the timeline's top bar →
+   **Place marker** to note a beat.
+4. **SAVE** (bottom right) writes `src/components/Prologue/theatre-state.json`. The site plays exactly that file. The
+   page keeps no other copy: unsaved edits are lost on reload, so the browser asks before you leave with any.
 5. After saving, re-record the phone video: `node prototypes/crt-site/record.mjs` (needs the server running).
 
 ## The objects
