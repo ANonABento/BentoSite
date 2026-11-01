@@ -50,7 +50,7 @@ function inSpotlight(instance: string, card: CardData): boolean {
 }
 
 /** The intro's opening zoom (a multiple of the fit zoom), how long it holds there, and its glide in. */
-const INTRO = { zoom: 0.4, holdMs: 750, glideMs: 1100, hurryMs: 250 };
+const INTRO = { zoom: 0.4, holdMs: 750, glideMs: 1100, continueMs: 1700, hurryMs: 250 };
 
 /** How long the search card glides when it docks in another copy of the board, or its drawer opens or closes. */
 const DOCK_GLIDE_MS = 320;
@@ -83,8 +83,9 @@ interface DesktopCanvasViewProps {
   onBack?: () => void;
   /** Open with only the highlights lit (inSpotlight) until the visitor lights the rest. */
   spotlight?: boolean;
-  /** Open zoomed out while the cards fall in, then glide in to the home group. */
-  intro?: boolean;
+  /** Open zoomed out while the cards fall in, then glide in to the home group. 'continue': no hold, and the glide
+   *  starts at speed and eases out, carrying on the prologue's zoom into the screen. */
+  intro?: boolean | 'continue';
 }
 
 export function DesktopCanvasView({
@@ -116,17 +117,19 @@ export function DesktopCanvasView({
   // (nothing mounts or unmounts mid-glide), and only the cards that can be on
   // screen when it lands are real; the rest are cheap stand-ins that become
   // real once it's over and they're out of sight.
-  const [booting, setBooting] = useState(intro);
+  const [booting, setBooting] = useState(Boolean(intro));
   const [introCamera] = useState(navigation.camera);
   const { settle } = navigation;
   useEffect(() => {
     if (!intro) return;
     let landed = 0;
-    const glide = (ms: number) => {
-      if (!settle(ms)) return;
+    const glide = (ms: number, easeOut?: boolean) => {
+      if (!settle(ms, easeOut)) return;
       landed = window.setTimeout(() => setBooting(false), ms + 100);
     };
-    const timer = window.setTimeout(() => glide(INTRO.glideMs), INTRO.holdMs);
+    const timer = intro === 'continue'
+      ? window.setTimeout(() => glide(INTRO.continueMs, true), 0)
+      : window.setTimeout(() => glide(INTRO.glideMs), INTRO.holdMs);
     const hurry = () => glide(INTRO.hurryMs);
     const events = ['wheel', 'pointerdown', 'keydown'] as const;
     for (const e of events) window.addEventListener(e, hurry, { once: true, passive: true });

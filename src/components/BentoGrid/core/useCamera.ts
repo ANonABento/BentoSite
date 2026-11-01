@@ -174,12 +174,13 @@ export function useCamera({
   }, [baseZoom, glideZoom, stopMomentum]);
 
   // Ends the intro: glides from the zoomed-out opening to the visitor's zoom
-  // level. False if the intro had already ended.
-  const settle = useCallback((ms: number) => {
+  // level (ease in-out, or ease out when it carries on a zoom already moving).
+  // False if the intro had already ended.
+  const settle = useCallback((ms: number, easeOut = false) => {
     if (!introRef.current) return false;
     introRef.current = false;
     glideZoom(baseZoom * CAMERA.zoomLevels[levelRef.current], ms, (t) =>
-      t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2,
+      easeOut ? 1 - (1 - t) ** 3 : t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2,
     );
     return true;
   }, [baseZoom, glideZoom]);

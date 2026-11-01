@@ -62,14 +62,16 @@ const T = {
   wordmark: [0.95, 1.35],
   lines: 1.3,              // first boot line starts; each takes `lineDur`
   lineDur: 0.22,
-  snow: [2.0, 2.4],
-  dive: [2.05, 3.45],
-  tint: [2.5, 3.3],
-  merge: [3.2, 4.4],
-  resolve: [4.3, 5.6],
-  zoomIn: [4.6, 5.7],      // the glide in from the zoomed-out board, as the cards resolve
-  fxOff: [5.0, 5.9],
-  end: 6.1,
+  // a beat on the finished boot screen, then one zoom: the dive into the glass runs straight on into the board,
+  // the pixels snapping into cards on the way and landing on the home view without a pause
+  snow: [2.6, 2.95],
+  dive: [2.65, 3.9],
+  tint: [3.0, 3.75],
+  merge: [3.6, 4.1],
+  resolve: [3.95, 4.6],
+  zoomIn: [3.75, 5.6],     // from the handoff on, easing out into the fit zoom
+  fxOff: [4.8, 5.6],
+  end: 5.9,
 };
 
 const SPAN0 = 34;                // cells across the screen while it shows text
@@ -621,6 +623,9 @@ const screenMat = new THREE.ShaderMaterial({
       if (uRefl > 0.001) {
         vec4 rc = uReflMat * vec4(vWorld, 1.0);
         vec3 refl = texture(tReflect, rc.xy / rc.w).rgb;
+        // dark glass: crushed shadows (on brightness only, so her colours keep their hue), so she comes out of the
+        // black and her eyes and whites pop
+        refl *= pow(dot(refl, vec3(0.2126, 0.7152, 0.0722)) + 1e-4, 0.7) * 1.9;
         float grain = 0.85 + 0.15 * phosphor(fp, aa, 0.06, 0.0).r * maskVis;
         col += refl * uRefl * 0.75 * grain;
       }
@@ -684,7 +689,7 @@ function renderReflection() {
 // the first placeholder, ?robot=shapes the procedural robot, ?robot=<file>.glb any model in assets/.
 const robot = await loadRobot(opts.robotUrl);
 scene.add(robot.root);
-if (opts.debug) window.dbg = { robot, scene, camera, reflector, THREE };
+if (opts.debug) window.dbg = { robot, scene, camera, reflector, THREE, uniforms };
 // Moonlight from her left (a window off-screen): a side key, so the toon ramp puts a light/shade edge across her face.
 const moon = new THREE.DirectionalLight('#c4cce6', 0.24);
 moon.position.set(-2.6, 1.6, 0.3);
@@ -763,17 +768,20 @@ function apply(t) {
   u.uFx.value = 1 - fxOff;
   u.uMaskAmt.value = 1;
   const sEnd = spanEnd();
-  // Content zoom, like the site's own boot: the dive lands on the board zoomed well out (INTRO_ZOOM of the fit zoom),
-  // the pixels merge and denoise into cards across that wide view, and it glides in to the fit zoom as they resolve.
+  // Content zoom, like the site's own boot: it reaches the board zoomed well out (INTRO_ZOOM of the fit zoom) at the
+  // handoff, where the site's board takes over at that zoom and glides on in; here the pixels merge into cards and it
+  // glides in to the fit zoom as they resolve.
   const sWide = sEnd / INTRO_ZOOM;
   u.uMaxR.value = sWide * 0.55;
-  const zOut = easeInOutCubic(ramp(t, [T.dive[0] + 0.3, T.merge[0] + 0.6]));
-  const zIn = easeInOutCubic(ramp(t, T.zoomIn));
+  // speeding up into the handoff, then easing out from it at about the same rate: one continuous zoom
+  const zOut = easeInQuad(ramp(t, [T.dive[0] + 0.3, T.zoomIn[0]]));
+  const zIn = easeOutCubic(ramp(t, T.zoomIn));
   u.uSpan.value = Math.exp(mix(mix(Math.log(SPAN0), Math.log(sWide), zOut), Math.log(sEnd), zIn));
 
   placeCamera(t);
   setBulge(1 - sstep(ramp(t, [T.dive[0] + 0.6, T.dive[1]])));
-  glassMat.opacity = 1 - sstep(ramp(t, [T.dive[0] + 0.5, T.dive[1] - 0.2]));
+  // the glass's sheen goes as the static starts: close up, the room's ceiling light glints in it as a white blob
+  glassMat.opacity = 1 - sstep(ramp(t, [T.snow[0] - 0.3, T.dive[0] + 0.1]));
 
   // Room lights: up a touch at the start, out as we enter the screen.
   const roomIn = sstep(ramp(t, [T.led, T.led + 1.4])), roomOut = 1 - sstep(ramp(t, [T.dive[0], T.dive[1] - 0.3]));
@@ -802,9 +810,9 @@ function apply(t) {
  * as she reaches down to click the TV on. She tucks the cloth away, bows in the screen's glow and steps aside.
  * Story time s; the boot runs on tb, which reaches T.led as the button clicks (s = CLICK).
  * ------------------------------------------------------------------ */
-const CLICK = 10.6;
+const CLICK = 11.4;
 const WARM = 0.6;        // CRT warm-up: the LED lights on the click, the screen a moment later
-const PRO_END = 10.35;   // the prologue's camera has settled over her shoulder; the boot's camera takes over
+const PRO_END = 11.15;   // the prologue's camera has settled over her shoulder; the boot's camera takes over
 const ASIDE = [CLICK + 1.3, CLICK + 2.1];   // she steps out of the boot camera's way
 // Speed ramp: story time runs at 0.6× through the press.
 const SLOW = [CLICK - 0.2, CLICK], SLOW_K = 0.6, SLOW_EXTRA = (SLOW[1] - SLOW[0]) * (1 / SLOW_K - 1);
@@ -896,28 +904,26 @@ const WIPE_LIFT = [null, V(0, 0.03, 0), V(0, 0.03, 0), V(0, -0.03, 0), V(0, 0.02
 const FLIP = 8.17;                                         // the last swipe crosses her reflected eyes
 const WIGGLE = [2.75, 2.97, 3.19, 3.41];                   // forward, back, forward, back
 
-// Camera: three moves, each from rest to rest (the third, the dive, is placeCamera's).
-// 1. On the glass, square to it (nothing gives away that it's a reflection), a slow drift through the wake, the
-//    hands, the headdress and the wipe; her real hand enters this shot.
-// 2. Once the wipe is done, as she reaches down for the button, it pulls back and out to her right and round over
-//    her shoulder, settling on her finger at the button. She clicks once it settles.
-const shot = (p, l, fov) => ({ p, l, fov });
-const SQUARE = (x, y, z, fov) => shot(V(x, y, z), V(x, y, z - 1), fov);   // looking straight into the glass
-const TO_SCREEN = { t0: 0.2, t1: 8.55, ease: skew(0.5), keys: [
-  SQUARE(0.1, 0.12, 0.28, 42),
-  SQUARE(0.08, 0.11, 0.29, 43),
-  SQUARE(WIPE_CAM.x, WIPE_CAM.y, WIPE_CAM.z, 46),   // up and to her left: her arm crosses the lower corner, not the lens
-] };
-const AWAY = { t0: 8.55, t1: PRO_END, ease: skew(0.4), keys: [
-  TO_SCREEN.keys.at(-1),
-  shot(V(0.6, 0.1, 0.75), V(0.12, -0.1, 0), 41),     // back and out: her clean reflection, her hand going down
-  shot(V(1.05, 0.38, 1.35), V(0.25, -0.15, 0), 38),  // round over her shoulder
-  shot(P0.clone(), L_END.clone(), 35),
-] };
-function move(m, t) {
-  const u = m.ease(clamp01((t - m.t0) / (m.t1 - m.t0)));
-  const curve = (pts) => new THREE.CatmullRomCurve3(pts, false, 'centripetal').getPoint(u);
-  return { p: curve(m.keys.map((s) => s.p)), l: curve(m.keys.map((s) => s.l)), fov: curve(m.keys.map((s) => V(s.fov, 0, 0))).x };
+// Camera: three moves (the third, the dive, is placeCamera's).
+// 1. Locked on the glass, square to it (nothing gives away that it's a reflection): all the motion is hers, through
+//    the wake, the hands, the headdress and the wipe; her real hand entering this still frame is the reveal.
+// 2. Once the wipe is done, as she reaches down for the button, one slow pull-back out to her right and round
+//    behind her shoulder, settling on her finger at the button. Even speed along its path (no surges between keys),
+//    eased at both ends, and the view turns by one slerp from the glass to the button. She clicks once it settles.
+const GLASS = { p: WIPE_CAM.clone(), l: WIPE_CAM.clone().add(V(0, 0, -1)), fov: 46 };
+const AWAY = { t0: 8.55, t1: PRO_END, path: new THREE.CatmullRomCurve3([
+  GLASS.p,
+  V(0.55, 0.24, 0.47),    // first sideways along the glass, clear of her head as she leans in (head ≈ (0.09, 0.1, 0.85))
+  V(0.98, 0.36, 1.25),    // then back past her right side
+  P0.clone(),
+], false, 'centripetal') };
+const _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _look = new THREE.Matrix4();
+function lookQ(q, from, to) { return q.setFromRotationMatrix(_look.lookAt(from, to, camera.up)); }
+function move(t) {
+  if (t < AWAY.t0) return { p: GLASS.p, q: lookQ(_qa, GLASS.p, GLASS.l), fov: GLASS.fov };
+  const u = easeInOutCubic(clamp01((t - AWAY.t0) / (AWAY.t1 - AWAY.t0)));
+  lookQ(_qa, GLASS.p, GLASS.l); lookQ(_qb, P0, L_END);
+  return { p: AWAY.path.getPointAt(u), q: _qa.slerp(_qb, u), fov: mix(GLASS.fov, 35, u) };
 }
 
 // ---- the handkerchief: white lawn with a lace edge and an orange stitched hem; it blends between gathered in her
@@ -1007,12 +1013,12 @@ function prologue(t) {
   const C = CLICK;
 
   // ---- body: powered-down slump, the power-on lock, a lean in for the wipe and the press, the bow ----
-  const lean = track(t, 0.07, [[1.1, 1.3, 0, easeOutBack], [6.05, 6.75, 0.24, easeInOutSine], [8.6, 10.0, 0.2, easeInOutSine],
+  const lean = track(t, 0.07, [[1.1, 1.3, 0, easeOutBack], [6.05, 6.75, 0.24, easeInOutSine], [8.6, 10.6, 0.2, easeInOutSine],
     [C + 0.2, C + 0.7, 0, easeOutBack], [C + 0.85, C + 1.1, 0.4, easeOutCubic], [C + 1.2, C + 1.45, 0, easeOutBack]]);
   const roll = track(t, 0, [[6.05, 6.75, 0.05, easeInOutSine], [C + 0.2, C + 0.7, 0, easeOutBack]]);
   // the swipes swing her shoulders a little with each stroke
   const twist = track(t, 0, [[6.05, 6.75, 0.1, easeInOutSine], ...WIPE.slice(1).map(([t1], i) => [WIPE[i][0], t1, i % 2 ? 0.1 : -0.04, easeInOutSine]),
-    [8.6, 10.0, 0.12, easeInOutSine], [C + 0.2, C + 0.7, 0, easeOutBack]]);
+    [8.6, 10.6, 0.12, easeInOutSine], [C + 0.2, C + 0.7, 0, easeOutBack]]);
   const hips = trackV(t, V(0, 0, 0), [[6.05, 6.75, V(-0.02, -0.01, 0.07), easeInOutSine], [C + 0.2, C + 0.7, V(0, 0, 0)],
     [C + 0.85, C + 1.1, V(0, 0, -0.05)], [C + 1.2, C + 1.45, V(0, 0, 0), easeOutBack]]);
   robot.body({ hips, lean, roll, twist });
@@ -1044,18 +1050,14 @@ function prologue(t) {
   const blink = Math.max(bump((t - 2.0) / 0.14), bump((t - 5.0) / 0.14), bump((t - (C + 0.35)) / 0.14), bump((t - (ASIDE[0] + 0.3)) / 0.14));
   const warm = sstep(ramp(t, [FLIP, FLIP + 0.15]));
   const happy = bump((t - FLIP - 0.12) / 0.75);
-  robot.setEyes(eyeGlow(t) * mix(0.6, 1, warm), sstep(ramp(t, [0.95, 1.2])) * (1 - blink));
-  // cold: a pale machine blue-white; warm: her orange
+  robot.setEyes(eyeGlow(t), sstep(ramp(t, [0.95, 1.2])) * (1 - blink));
+  // cold: a dim, deep red-orange, the iris texture's detail kept but darkened; warm: bright, a light orange matching
+  // the site (#e8823f) over the texture's own highlights
   if (robot.mats.iris) {
-    // the glow comes from the orange iris texture; while she's cold it's a plain pale blue instead
     const iris = robot.mats.iris;
-    iris.userData.map ??= iris.emissiveMap;
-    const map = warm > 0.5 ? iris.userData.map : null;
-    if (iris.emissiveMap !== map) { iris.emissiveMap = map; iris.needsUpdate = true; }
-    // warm: a pale peach tint over the texture, so its own orange, yellow and highlights show rather than a flat red
-    iris.emissive.set('#a9c8ff').lerp(new THREE.Color('#ffd9b8'), warm);
-    iris.emissiveIntensity *= mix(1, 0.8, warm);
-    robot.mats.iris.color.lerp(new THREE.Color('#7f8ea8'), 0.75 * (1 - warm)).multiplyScalar(mix(0.25, 1, warm));   // the orange texture mostly off
+    iris.emissive.set('#ff7a3a').lerp(new THREE.Color('#ffe2c4'), warm);
+    iris.emissiveIntensity *= mix(0.45, 0.75, warm);
+    iris.color.multiplyScalar(mix(0.35, 1, warm));
   }
   if (robot.morph && 'happy' in robot.morph.morphTargetDictionary) {
     robot.morph.morphTargetInfluences[robot.morph.morphTargetDictionary.happy] = Math.max(happy, 0.85 * bump((t - (C + 0.9)) / 0.7));
@@ -1080,13 +1082,13 @@ function prologue(t) {
     [5.68, 6.0, SHOW, easeOutCubic, V(0, 0.05, 0.05)],                   // the cloth, held up
     [6.05, 6.75, palmOnGlass(WIPE[0][1]), easeInOutSine, V(0, 0.08, 0.06)],   // the reach: her real hand enters the frame
     ...WIPE.slice(1).map(([t1, p], i) => [WIPE[i][0], t1, palmOnGlass(p), easeInOutSine, WIPE_LIFT[i + 1]]),
-    [8.6, 10.0, tipAt(0.02), easeInOutSine, V(0, 0.05, 0.04)],           // down to the button, cloth in hand
+    [8.7, 10.8, tipAt(0.02), easeInOutSine, V(0, 0.05, 0.04)],           // down to the button, cloth in hand
     [C + 0.15, C + 0.55, POCKET, easeOutCubic, V(0, 0.04, 0.06)],       // tuck it away
     [C + 0.6, C + 0.85, CLASP.R, easeOutCubic],
     [ASIDE[0], ASIDE[1], R_REST, easeOutCubic],
   ]);
   if (t > 4.2 && t < 4.95) R.copy(pinchAt(tipR, 'R'));   // holding the tip while the headdress swings straight
-  if (t > 10.0 && t < C + 0.15) R.copy(tipAt(press));    // her finger waits on the button while the camera settles
+  if (t > 10.8 && t < C + 0.15) R.copy(tipAt(press));    // her finger waits on the button while the camera settles
   const rDir = trackV(t, REST_DIR, [[2.1, 2.6, UP_DIR.R], [3.75, 4.2, TIDY_DIR.R], [4.95, 5.25, REST_DIR], [5.25, 5.55, POCKET_DIR],
     [5.68, 6.0, SHOW_DIR], [6.05, 6.6, wipeDirL, easeInOutCubic], [8.6, 9.6, dirL(POINT_DIR), easeInOutCubic],
     [C + 0.15, C + 0.55, POCKET_DIR], [C + 0.6, C + 0.85, CLASP_DIR.R], [ASIDE[0], ASIDE[1], REST_DIR]]);
@@ -1115,7 +1117,7 @@ function prologue(t) {
   const wave = (j, amp) => WIGGLE.reduce((acc, t0, k) => acc + amp * bump((t - t0 - 0.03 * (k % 2 ? 4 - j : j)) / 0.15), 0);
   const pinch = track(t, 0, [[4.05, 4.25, 1, easeOutBack], [4.85, 4.95, 0]]);
   const hold = track(t, 0, [[5.5, 5.68, 1, easeOutBack], [6.35, 6.75, 0], [8.5, 8.8, 1], [C + 0.45, C + 0.6, 0]]);
-  const point = track(t, 0, [[9.0, 9.4, 1, easeOutBack], [C + 0.15, C + 0.4, 0]]);
+  const point = track(t, 0, [[9.6, 10.0, 1, easeOutBack], [C + 0.15, C + 0.4, 0]]);
   const fold = track(t, 0, [[C + 0.6, C + 0.85, 1], [ASIDE[0], ASIDE[0] + 0.4, 0]]);
   const open = track(t, 0, [[2.1, 2.6, 1], [3.6, 3.8, 0]]);   // fingers spread to look at them
   const flatHand = track(t, 0, [[6.35, 6.75, 1], [8.5, 8.8, 0]]);   // on the cloth: the thumb tucked in beside the fingers
@@ -1162,9 +1164,9 @@ function prologue(t) {
     if (camera.fov !== 35) { camera.fov = 35; camera.updateProjectionMatrix(); }
     return;
   }
-  const { p, l, fov } = move(t < AWAY.t0 ? TO_SCREEN : AWAY, t);
+  const { p, q, fov } = move(t);
   camera.position.copy(p);
-  camera.lookAt(l);
+  camera.quaternion.copy(q);
   camera.fov = fov;
   camera.updateProjectionMatrix();
 }

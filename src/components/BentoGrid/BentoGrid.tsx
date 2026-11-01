@@ -30,8 +30,8 @@ export interface BentoGridProps extends GridConfig {
   renderCard?: RenderCard;
   /** Desktop: open with only the intro and contact lit; projects light up under the pointer. */
   spotlight?: boolean;
-  /** Desktop: open zoomed out and glide in to the home group. */
-  intro?: boolean;
+  /** Desktop: open zoomed out and glide in to the home group; 'continue' glides in at once, carrying on the prologue's zoom. */
+  intro?: boolean | 'continue';
 }
 
 // =============================================================================

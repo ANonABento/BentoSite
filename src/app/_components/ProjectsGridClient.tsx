@@ -192,7 +192,7 @@ export function ProjectsGridClient({ layout, projects, profile, info, details }:
           breadcrumb="bentOS / Kevin Jiang"
           renderCard={renderCard}
           spotlight
-          intro={boot}
+          intro={boot && (prologue === 'scene' ? 'continue' : true)}
         />
       )}
       {boardOn && <TrayFill active={boot} />}
