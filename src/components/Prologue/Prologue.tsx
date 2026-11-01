@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { PrologueBoard, PrologueControls } from './engine/prologue';
-import tuning from './tuning.json';
+import theatreState from './theatre-state.json';
 
 /*
  * The prologue plays over the page before the board: a robot maid wakes in a dark CRT's reflection, tidies up,
@@ -77,7 +77,7 @@ export function Prologue({ mode, board, projectCount, onHandoff, onDone }: Prolo
         startPrologue({
           container: stage.current!,
           robotUrl: ROBOT_URL,
-          tuning,
+          theatreState,
           board,
           projectCount,
           fonts: {

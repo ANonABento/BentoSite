@@ -19,8 +19,7 @@ await page.waitForFunction(() => window.prologueSeek, { timeout: 120000 });
 await page.addStyleTag({ content: '.lil-gui, #hint, .prologue-sound, .tuning-save { display: none !important; }' });
 const { end } = await page.evaluate(() => {
   const T = window.prologueTimes;
-  let t = 0; while (T.story(t) < T.HANDOFF) t += 0.01;
-  return { end: t + 0.1 };
+  return { end: T.positionAt(T.HANDOFF) + 0.1 };   // the timeline position of the handoff (Retime holds push it later)
 });
 const n = Math.ceil(end * FPS);
 console.log('frames', n, 'seconds', end.toFixed(2));

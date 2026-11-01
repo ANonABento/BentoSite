@@ -16,6 +16,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { Reflector } from 'three/addons/objects/Reflector.js';
 import { loadRobot } from './robot.js';
 import { createSfx } from './sfx.js';
+import { createTimeline } from './timeline.js';
 
 /**
  * Start the prologue in `container` (a positioned element; the canvas fills the window).
@@ -26,10 +27,10 @@ const container = opts.container;
 const FONT = { display: 'Orbitron', mono: 'VT323', sans: '"Instrument Sans"', ...opts.fonts };
 const made = [];
 
-/* The values a person tunes by eye (the tuning page edits them in Theatre.js; src/components/Prologue/tuning.json
- * holds the saved ones, passed in as opts.tuning). Story times in s, positions in her frame unless noted. Most
- * apply live through setTuning(); the click time and the glass shot are read once (the wipe is laid out from them). */
-const TUNE = mergeDeep({
+/* Settings: values tuned by eye, here at their defaults. The timeline's "Settings / …" objects carry the edited ones
+ * (theatre-state.json). Story times in s, positions in her frame unless noted. Most apply live through setTuning();
+ * the click time, the pull-back length and the glass shot are read once (the wipe is laid out from them). */
+const TUNE = {
   timing: { click: 11.4, pullBack: 2.6 },                 // the button press; the camera's pull-back that ends just before it
   camera: { glass: [-0.05, 0.2, 0.44], fov: 46,           // the locked shot on the glass (world)
     via1: [0.55, 0.24, 0.47], via2: [0.98, 0.36, 1.25] }, // the pull-back's path, out along the glass and round her right
@@ -37,7 +38,29 @@ const TUNE = mergeDeep({
   headdress: { roll: 0.17, yaw: 0.1 },                     // how crooked it starts
   eyes: { cold: '#ff7a3a', warm: '#ffe2c4', coldGlow: 0.45, warmGlow: 0.75 },
   light: { darkGlass: 1, ambient: 0.035, rim: 0.25, bloom: 0.9 },
-}, opts.tuning);
+};
+
+/* The timeline (timeline.js, Theatre.js). Settings objects mirror TUNE; the rest are read every frame:
+ *   Retime   hold: seconds the scene runs behind the timeline from here on (keyframe it up to add a pause)
+ *   Camera   nudge/turn on top of the scripted camera; takeover blends to its own position/target/fov
+ *   Her      offsets on top of her scripted motion: hands, head, lean, twist; eye glow, warmth, happy, blink
+ *   Lights   multipliers: room, screen, bloom, the reflection, her fill and rim light */
+const TL = await createTimeline(opts.theatreState);
+const SETTINGS = { timing: 'Settings / timing', camera: 'Settings / camera path', poses: 'Settings / poses',
+  headdress: 'Settings / headdress', eyes: 'Settings / eyes', light: 'Settings / light' };
+const READ_ONCE = new Set(['timing', 'camera.glass']);
+for (const [group, key] of Object.entries(SETTINGS)) {
+  TL.define(key, TUNE[group]);
+  Object.assign(TUNE[group], TL.read(key));
+}
+TL.define('Retime', { hold: 0 }, { hold: { range: [0, 10] } });
+TL.define('Camera', { nudge: [0, 0, 0], turn: [0, 0, 0], takeover: 0, position: TUNE.camera.glass,
+  target: [TUNE.camera.glass[0], TUNE.camera.glass[1], TUNE.camera.glass[2] - 1], fov: TUNE.camera.fov },
+{ turn: { step: 0.002 }, takeover: { range: [0, 1] }, fov: { range: [15, 90], step: 0.1 } });
+TL.define('Her', { rightHand: [0, 0, 0], leftHand: [0, 0, 0], head: [0, 0, 0], lean: 0, twist: 0,
+  eyeGlow: 1, warmth: 0, happy: 0, blink: 0 },
+{ head: { step: 0.002 }, eyeGlow: { range: [0, 3] }, warmth: { range: [-1, 1] }, happy: { range: [0, 1] }, blink: { range: [0, 1] } });
+TL.define('Lights', { room: 1, screen: 1, bloom: 1, reflection: 1, herFill: 1, herRim: 1 });
 const el = (tag, cls) => { const n = document.createElement(tag); n.className = cls; container.append(n); made.push(n); return n; };
 
 /* ------------------------------------------------------------------ *
@@ -1016,6 +1039,7 @@ function placeCloth(wristW, dirW, upW, flat) {
 let ledPulse = 1;
 const _warmEye = new THREE.Color();
 function prologue(t) {
+  const her = TL.read('Her'), lights = TL.read('Lights');   // the timeline's offsets and multipliers, right now
   const r = robot.root;
   // Where she stands: at the TV, then she steps aside to the left before the dive.
   const away = easeInOutCubic(ramp(t, ASIDE));
@@ -1038,7 +1062,7 @@ function prologue(t) {
     [8.6, C - 0.8, 0.12, easeInOutSine], [C + 0.2, C + 0.7, 0, easeOutBack]]);
   const hips = trackV(t, V(0, 0, 0), [[6.05, 6.75, V(-0.02, -0.01, 0.07), easeInOutSine], [C + 0.2, C + 0.7, V(0, 0, 0)],
     [C + 0.85, C + 1.1, V(0, 0, -0.05)], [C + 1.2, C + 1.45, V(0, 0, 0), easeOutBack]]);
-  robot.body({ hips, lean, roll, twist });
+  robot.body({ hips, lean: lean + her.lean, roll, twist: twist + her.twist });
 
   // ---- head: lifts in two servo steps; down at her hands; up at herself for the headdress; the pocket; the glass ----
   const idle = sstep(ramp(t, [2.0, 2.3]));
@@ -1050,7 +1074,8 @@ function prologue(t) {
   // a curious tilt at her hands; she rights her head with the headdress; a happy tilt as the glass comes clean
   const hz = track(t, 0, [[2.5, 2.7, 0.08, easeOutBack], [3.55, 3.8, 0.06], [4.35, 4.7, -0.03, easeOutBack], [4.85, 5.0, 0],
     [5.9, 6.1, 0.1, easeOutBack], [6.75, 7.0, 0], [FLIP + 0.05, FLIP + 0.35, -0.09, easeOutBack], [8.6, 9.2, 0]]);
-  robot.headPivot.rotation.set(hx + idle * servo(t, 1, 0.009), hy + idle * servo(t, 2, 0.007), hz + idle * servo(t, 3, 0.008));
+  robot.headPivot.rotation.set(hx + her.head[0] + idle * servo(t, 1, 0.009), hy + her.head[1] + idle * servo(t, 2, 0.007),
+    hz + her.head[2] + idle * servo(t, 3, 0.008));
 
   // ---- the headdress: crooked from the start; her hands carry it straight, and it locks ----
   const straight = easeOutBack(clamp01((t - 4.35) / 0.4), 1.8);
@@ -1065,9 +1090,9 @@ function prologue(t) {
     [5.6, 5.7, 0, easeOutQuint], [8.55, 8.65, 0.22, easeOutQuint], [C + 0.15, C + 0.3, 0, easeOutQuint]]);
   robot.look(down, right);
   const blink = Math.max(bump((t - 2.0) / 0.14), bump((t - 5.0) / 0.14), bump((t - (C + 0.35)) / 0.14), bump((t - (ASIDE[0] + 0.3)) / 0.14));
-  const warm = sstep(ramp(t, [FLIP, FLIP + 0.15]));
+  const warm = clamp01(sstep(ramp(t, [FLIP, FLIP + 0.15])) + her.warmth);
   const happy = bump((t - FLIP - 0.12) / 0.75);
-  robot.setEyes(eyeGlow(t), sstep(ramp(t, [0.95, 1.2])) * (1 - blink));
+  robot.setEyes(eyeGlow(t) * her.eyeGlow, sstep(ramp(t, [0.95, 1.2])) * (1 - Math.max(blink, her.blink)));
   // cold: a dim, deep red-orange, the iris texture's detail kept but darkened; warm: bright, a light orange matching
   // the site (#e8823f) over the texture's own highlights
   if (robot.mats.iris) {
@@ -1077,7 +1102,7 @@ function prologue(t) {
     iris.color.multiplyScalar(mix(0.35, 1, warm));
   }
   if (robot.morph && 'happy' in robot.morph.morphTargetDictionary) {
-    robot.morph.morphTargetInfluences[robot.morph.morphTargetDictionary.happy] = Math.max(happy, 0.85 * bump((t - (C + 0.9)) / 0.7));
+    robot.morph.morphTargetInfluences[robot.morph.morphTargetDictionary.happy] = clamp01(Math.max(happy, 0.85 * bump((t - (C + 0.9)) / 0.7)) + her.happy);
   }
 
   // ---- arms ----
@@ -1111,7 +1136,7 @@ function prologue(t) {
     [C + 0.15, C + 0.55, POCKET_DIR], [C + 0.6, C + 0.85, CLASP_DIR.R], [ASIDE[0], ASIDE[1], REST_DIR]]);
   const rUp = trackV(t, V(0, 0, 1), [[2.1, 2.6, V(0, 0, 1)], [3.75, 4.2, TIDY_UP.R], [4.95, 5.25, V(0, 0, 1)], [5.68, 6.0, V(0, 1, -0.2)],
     [6.05, 6.6, wipeUpL, easeInOutCubic], [8.6, 9.6, V(0, 1, 0), easeInOutCubic], [C + 0.15, C + 0.55, V(0, 0, 1)]]);
-  robot.reach(R);
+  robot.reach(R.clone().add(V(...her.rightHand)));
   robot.aim(rDir, rUp.normalize(), 0.08 * Math.sin((t - 2.7) * 4) * bump((t - 2.6) / 1.0));
 
   const L = trackV(t, robot.left.hang, [
@@ -1125,7 +1150,7 @@ function prologue(t) {
   const lDir = trackV(t, REST_DIR, [[2.15, 2.65, UP_DIR.L], [3.8, 4.25, TIDY_DIR.L], [4.95, 5.35, REST_DIR], [C + 0.6, C + 0.85, CLASP_DIR.L],
     [ASIDE[0], ASIDE[1], REST_DIR]]);
   const lUp = trackV(t, V(0, 0, 1), [[2.15, 2.65, V(0, 0, 1)], [3.8, 4.25, TIDY_UP.L], [4.95, 5.35, V(0, 0, 1)]]);
-  robot.left.reach(L);
+  robot.left.reach(L.clone().add(V(...her.leftHand)));
   robot.left.aim(lDir, lUp.normalize(), -0.08 * Math.sin((t - 2.75) * 4) * bump((t - 2.65) / 1.0));
 
   // Fingers. Hands up: a quick human wiggle, two passes thumb→pinky and back, on both hands. Headdress: thumb and
@@ -1162,14 +1187,14 @@ function prologue(t) {
   }
 
   // ---- light ----
-  handFill.intensity = 0.25 * sstep(ramp(t, [2.1, 2.6])) * (1 - sstep(ramp(t, [8.0, 8.6])));
-  proRim.intensity = 1.4 * sstep(ramp(t, [8.6, 9.5])) * (1 - sstep(ramp(t, [ASIDE[0], ASIDE[1]])));
+  handFill.intensity = lights.herFill * 0.25 * sstep(ramp(t, [2.1, 2.6])) * (1 - sstep(ramp(t, [8.0, 8.6])));
+  proRim.intensity = lights.herFill * 1.4 * sstep(ramp(t, [8.6, 9.5])) * (1 - sstep(ramp(t, [ASIDE[0], ASIDE[1]])));
   // The standby LED pulses slowly; it brightens as she turns to it.
   ledPulse = (0.85 + 0.25 * Math.sin(t * (2 * Math.PI / 1.4))) * (1 + 0.6 * sstep(ramp(t, [8.6, 9.2])));
   // Toon shading: a dim floor and a cool moonlit rim in the dark; once the screen is on she's lit by it.
   const lit = sstep(ramp(t, [C + WARM + 0.3, C + WARM + 1.0]));
   robot.toon.uAmb.value = mix(TUNE.light.ambient, 0.08, lit);
-  robot.toon.uRim.value = mix(TUNE.light.rim, 0.9, lit);   // the screen behind the glass makes a bright halo on her silhouette
+  robot.toon.uRim.value = lights.herRim * mix(TUNE.light.rim, 0.9, lit);   // the screen behind the glass makes a bright halo on her silhouette
   robot.toon.uRimColor.value.set(lit > 0.5 ? '#e8eefc' : '#9fb4e0');
 
   // ---- camera ----
@@ -1224,13 +1249,61 @@ function master(time) {
   if (t < ASIDE[1]) { const k = sstep(ramp(t, [ASIDE[1] - 1.0, ASIDE[1]])); key.intensity *= k; rim.intensity *= k; }
   // Impact frame: two inverted frames on the click.
   flash.style.opacity = t >= CLICK && t < CLICK + 0.035 ? 1 : 0;
+  const L = TL.read('Lights');
+  key.intensity *= L.room; rim.intensity *= L.room; scene.environmentIntensity *= L.room;
+  screenLight.intensity *= L.screen; bloom.strength *= L.bloom; uniforms.uRefl.value *= L.reflection;
+}
+
+/** The timeline's camera on top of whatever the script placed: a nudge and a turn, then a blend (takeover) to its
+ *  own keyframed position, target and fov. */
+const _camQ = new THREE.Quaternion(), _camM = new THREE.Matrix4();
+function timelineCamera() {
+  const c = TL.read('Camera');
+  camera.position.add(V(...c.nudge));
+  camera.rotateX(c.turn[0]); camera.rotateY(c.turn[1]); camera.rotateZ(c.turn[2]);
+  if (c.takeover > 0) {
+    const p = V(...c.position);
+    _camQ.setFromRotationMatrix(_camM.lookAt(p, V(...c.target), camera.up));
+    camera.position.lerp(p, c.takeover);
+    camera.quaternion.slerp(_camQ, c.takeover);
+    camera.fov = mix(camera.fov, c.fov, c.takeover);
+  }
+  camera.updateProjectionMatrix();
 }
 
 /* ------------------------------------------------------------------ *
  * Loop, controls
  * ------------------------------------------------------------------ */
 let t0 = performance.now(), tPaused = 0;
-function restart() { t0 = performance.now(); P.playing = true; }
+// The clock. On the tuning page (opts.studio) Theatre's playhead is the clock: its timeline scrubs and plays the
+// scene. Elsewhere the wall clock drives the playhead, so keyframed values play back. Either way the scene runs
+// `hold` (Retime) seconds behind the playhead.
+const seq = TL.sheet.sequence;
+const studioClock = !!opts.studio;
+let seqPlaying = false;
+const seekTo = (pos) => { P.playing = false; tPaused = pos; if (studioClock) { seq.pause(); seqPlaying = false; seq.position = pos; } };
+function togglePlay() {
+  if (studioClock) {
+    if (seqPlaying) { seq.pause(); seqPlaying = false; return; }
+    seqPlaying = true;
+    seq.play().then(() => { seqPlaying = false; });
+    return;
+  }
+  P.playing = !P.playing;
+  if (P.playing) t0 = performance.now() - (P.time / P.speed) * 1000; else tPaused = P.time;
+}
+function restart() {
+  if (studioClock) { seq.position = 0; if (!seqPlaying) togglePlay(); return; }
+  t0 = performance.now(); P.playing = true;
+}
+/** Where the playhead is when the scene reaches story time `s` (the holds push it later). */
+function positionAt(s) {
+  const keep = seq.position;
+  let pos = s;
+  for (; pos < s + 60; pos += 0.02) { seq.position = pos; if (story(pos - TL.read('Retime').hold) >= s) break; }
+  seq.position = keep;
+  return pos;
+}
 const HANDOFF = CLICK + WARM - T.led + (opts.handoffAt ?? T.dive[1] - 0.15);   // story time the site takes over: the screen fills the view
 let handedOff = false;
 function handoff() {
@@ -1244,8 +1317,9 @@ if (opts.gui) {
   const { default: GUI } = await import('three/addons/libs/lil-gui.module.min.js');
   const gui = new GUI({ title: 'bentOS prologue' });
   made.push(gui.domElement);   // removed with everything else on dispose
-  gui.add(P, 'time', 0, TOTAL + 0.5, 0.01).listen().onChange((v) => { P.playing = false; tPaused = v; });
-  gui.add(P, 'playing').listen().onChange((v) => { if (v) t0 = performance.now() - (P.time / P.speed) * 1000; });
+  if (studioClock) gui.close();   // the studio has the timeline; this keeps the render settings
+  gui.add(P, 'time', 0, TOTAL + 0.5, 0.01).listen().onChange((v) => seekTo(v));
+  if (!studioClock) gui.add(P, 'playing').listen().onChange((v) => { if (v) t0 = performance.now() - (P.time / P.speed) * 1000; });
   gui.add(P, 'speed', 0.25, 2, 0.05);
   gui.add(P, 'palette', ['category', 'mono', 'rgb']);
   gui.add(P, 'ppc', [4, 6, 8, 12, 16]).name('pixels / cell').onChange(() => { textSig = ''; });
@@ -1256,9 +1330,9 @@ if (opts.gui) {
   gui.add(P, 'replay');
   listen(window, 'keydown', (e) => {
     if (e.target.closest?.('input, textarea, [contenteditable]')) return;   // typing in the studio's fields
-    if (e.code === 'Space') { e.preventDefault(); restart(); }
-    if (e.key === 'p') { P.playing = !P.playing; if (P.playing) t0 = performance.now() - (P.time / P.speed) * 1000; else tPaused = P.time; }
-    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { P.playing = false; tPaused = Math.max(0, P.time + (e.key === 'ArrowRight' ? 0.1 : -0.1)); }
+    if (e.code === 'Space') { e.preventDefault(); if (studioClock) togglePlay(); else restart(); }
+    if (e.key === 'p') togglePlay();
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') seekTo(Math.max(0, (studioClock ? seq.position : P.time) + (e.key === 'ArrowRight' ? 0.1 : -0.1)));
   });
 }
 listen(window, 'resize', () => {
@@ -1275,18 +1349,31 @@ if (opts.probe) setTimeout(() => {
   const pre = el('pre', 'probe'); pre.id = 'probe'; pre.textContent = JSON.stringify(out);
 }, 500);
 // startAt opens paused at that moment (for screenshots).
-if (opts.startAt != null) { P.playing = false; tPaused = opts.startAt; }
+if (opts.startAt != null) seekTo(opts.startAt);
 // debug: window.prologueSeek(t) pauses at story-clock time t (frame-by-frame recording); returns the length.
-if (opts.debug) Object.assign(window, { prologueSeek: (t) => { P.playing = false; tPaused = t; return TOTAL; }, prologueTimes: { CLICK, WARM, TOTAL, SLOW_EXTRA, HANDOFF, story: (t) => story(t) }, prologueNow: () => P.time });
+if (opts.debug) Object.assign(window, { prologueSeek: (t) => { seekTo(t); return TOTAL; }, prologueTimes: { CLICK, WARM, TOTAL, SLOW_EXTRA, HANDOFF, story: (t) => story(t), positionAt }, prologueNow: () => (studioClock ? seq.position : P.time) });
 
 renderer.setAnimationLoop(() => {
-  if (P.playing) P.time = Math.min(((performance.now() - t0) / 1000) * P.speed, TOTAL + 0.5);
-  else P.time = tPaused;
+  let pos;
+  if (studioClock) pos = seq.position;
+  else { pos = P.playing ? ((performance.now() - t0) / 1000) * P.speed : tPaused; seq.position = pos; }
+  P.time = Math.min(Math.max(0, pos - TL.read('Retime').hold), TOTAL + 0.5);
   master(P.time);
+  timelineCamera();
   if (opts.onHandoff && story(P.time) >= HANDOFF) handoff();
   if (uniforms.uRefl.value > 0.001) renderReflection();
   composer.render();
 });
+
+// Settings edited in the studio (or keyframed) apply live; the read-once ones ask the page to restart the scene.
+for (const [group, key] of Object.entries(SETTINGS)) {
+  TL.onChange(key, (vals) => {
+    const changed = Object.keys(vals).filter((k) => JSON.stringify(vals[k]) !== JSON.stringify(TUNE[group][k]));
+    if (!changed.length) return;
+    if (changed.some((k) => READ_ONCE.has(group) || READ_ONCE.has(`${group}.${k}`))) { Object.assign(TUNE[group], vals); opts.onRestartNeeded?.(); }
+    else setTuning({ [group]: vals });
+  });
+}
 
 /** Apply edited values live (see TUNE). The click time and the glass shot need a restart to take effect. */
 function setTuning(partial) {
@@ -1302,8 +1389,7 @@ function setTuning(partial) {
 
 return {
   sfx,
-  tuning: TUNE,
-  setTuning,
+  timeline: TL,
   /** Jump straight to the handoff (the visitor skipped). */
   skip: handoff,
   dispose() {
