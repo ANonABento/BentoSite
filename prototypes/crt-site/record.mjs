@@ -14,9 +14,9 @@ const browser = await puppeteer.launch({
 });
 const page = await browser.newPage();
 await page.setViewport({ width: W, height: H, deviceScaleFactor: 1 });
-await page.goto('http://127.0.0.1:4173/prototypes/crt-site/index.html?t=0', { waitUntil: 'load' });
+await page.goto('http://127.0.0.1:4173/prototypes/crt-site/index.html?t=0&nostudio', { waitUntil: 'load' });
 await page.waitForFunction(() => window.prologueSeek, { timeout: 120000 });
-await page.addStyleTag({ content: '.lil-gui, #hint, .prologue-sound { display: none !important; }' });
+await page.addStyleTag({ content: '.lil-gui, #hint, .prologue-sound, .tuning-save { display: none !important; }' });
 const { end } = await page.evaluate(() => {
   const T = window.prologueTimes;
   let t = 0; while (T.story(t) < T.HANDOFF) t += 0.01;
