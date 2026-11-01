@@ -9,13 +9,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600&family=Orbitron:wght@700&family=VT323&display=swap" rel="stylesheet" />
 <style>
   html, body { margin: 0; height: 100%; background: #0a0807; overflow: hidden; }
-  canvas.stage { display: block; width: 100vw; height: 100vh; }
+  canvas.stage { display: block; width: 100%; height: 100%; }
+  #stage { position: fixed; inset: 0; }
+  body.studio #stage { bottom: 38vh; }   /* the scene sits above the studio's timeline */
+  body.studio #hint { display: none; }
+  #readout { position: fixed; top: 34px; left: 50%; transform: translateX(-50%); z-index: 6; pointer-events: none;
+    font: 15px/1.3 VT323, monospace; letter-spacing: 0.05em; color: #f2ece2; background: rgba(10, 8, 7, 0.7);
+    border: 1px solid rgba(232, 130, 63, 0.35); border-radius: 4px; padding: 3px 10px; white-space: nowrap; }
+  #readout b { color: #e8823f; font-weight: normal; }
+  #readout i { color: #a39a90; font-style: normal; }
   #hint { position: fixed; left: 16px; bottom: 14px; font: 13px/1.4 'VT323', monospace; color: #a39a90; letter-spacing: 0.04em; pointer-events: none; }
   .prologue-flash { position: fixed; inset: 0; background: #fff; mix-blend-mode: difference; opacity: 0; pointer-events: none; z-index: 5; }
   .lil-gui.root { position: fixed; top: 8px !important; right: auto !important; left: 50%; transform: translateX(-50%); }   /* the studio takes the sides and the bottom */
   .tuning-save { position: fixed; right: 14px; bottom: 14px; z-index: 6; font: 15px VT323, monospace; letter-spacing: 0.06em; color: #0a0807;
     background: #e8823f; border: 0; border-radius: 4px; padding: 6px 12px; cursor: pointer; }
-  .prologue-sound { position: fixed; left: 14px; bottom: 30px; z-index: 6; font: 15px VT323, monospace; letter-spacing: 0.06em; color: #e8823f;
+  .prologue-sound { position: absolute; left: 14px; bottom: 14px; z-index: 6; font: 15px VT323, monospace; letter-spacing: 0.06em; color: #e8823f;
     background: rgba(10, 8, 7, 0.6); border: 1px solid rgba(232, 130, 63, 0.4); border-radius: 4px; padding: 4px 9px; cursor: pointer; }
 </style>
 <script type="importmap">
@@ -27,6 +35,7 @@
 </script>
 </head>
 <body>
+<div id="stage"></div>
 <div id="hint">SPACE play/pause · ← → step · drag the timeline (studio, bottom)</div>
 <script type="module">
 // The prologue engine lives in the site (src/components/Prologue/engine); this page runs it with the Theatre.js studio
@@ -41,13 +50,13 @@ const q = new URLSearchParams(location.search);
 const robot = q.get('robot');
 const withStudio = !q.has('nostudio');
 // the saved file is the only state (no browser copy to conflict with it); leaving with unsaved edits asks first
-if (withStudio) studio.initialize({ usePersistentStorage: false });
+if (withStudio) { studio.initialize({ usePersistentStorage: false }); document.body.classList.add('studio'); }
 const theatreState = await fetch('/src/components/Prologue/theatre-state.json').then((r) => r.json());
 let controls = null, restartTimer = 0;
 const start = async (startAt) => {
   controls?.dispose();
   controls = await startPrologue({
-    container: document.body,
+    container: document.getElementById('stage'),
     robotUrl: robot?.endsWith('.glb') ? `./assets/${robot}` : '/public/prologue/robot-maid.glb',
     boardUrl: '../crt-boot/board.json',
     assetBase: '/public',
@@ -67,6 +76,18 @@ await start(q.has('t') ? parseFloat(q.get('t')) : null);
 if (withStudio) {
   // open with "Her" selected, so her values (right) and the timeline (bottom) show straight away
   studio.setSelection([controls.timeline.objects.Her]);
+  // the readout: where the playhead is, the scene time when holds shift it, and which beat that is
+  const readout = Object.assign(document.createElement('div'), { id: 'readout' });
+  document.body.append(readout);
+  let last = '';
+  (function tick() {
+    const pos = window.prologueNow(), scene = window.prologueScene(), beats = window.prologueTimes.BEATS;
+    const beat = beats.filter(([t]) => t <= scene.story + 1e-3).at(-1)?.[1] ?? '';
+    const held = pos - scene.time > 0.005;   // Retime holds put the scene behind the playhead
+    const text = `<b>${pos.toFixed(2)} s</b>${held ? ` <i>(scene ${scene.time.toFixed(2)})</i>` : ''} · ${beat} <i>· SPACE play · ← → step · SAVE writes the file</i>`;
+    if (text !== last) readout.innerHTML = last = text;
+    requestAnimationFrame(tick);
+  })();
   const snapshot = () => JSON.stringify(studio.createContentOfSaveFile(PROJECT_ID).sheetsById);
   let saved = snapshot();
   addEventListener('beforeunload', (e) => { if (snapshot() !== saved) e.preventDefault(); });

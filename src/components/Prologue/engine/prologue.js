@@ -115,7 +115,8 @@ const SPAN0 = 34;                // cells across the screen while it shows text
 const INTRO_ZOOM = 0.4;          // the board opens at this multiple of its fit zoom (the site's INTRO.zoom)
 
 /* ------------------------------------------------------------------ */
-const vpW = () => window.innerWidth, vpH = () => window.innerHeight;
+// the container's size (the site's is the whole window; the tuning page's leaves room for the timeline)
+const vpW = () => container.clientWidth || window.innerWidth, vpH = () => container.clientHeight || window.innerHeight;
 const fitZoom = () => Math.min(Math.max(Math.min(vpW() / 1760, vpH() / 1040), 0.7), 1.25);
 const clamp01 = (x) => Math.min(Math.max(x, 0), 1);
 const ramp = (t, [a, b]) => clamp01((t - a) / (b - a));
@@ -1305,6 +1306,14 @@ function positionAt(s) {
   return pos;
 }
 const HANDOFF = CLICK + WARM - T.led + (opts.handoffAt ?? T.dive[1] - 0.15);   // story time the site takes over: the screen fills the view
+// The story beats, in story time (for the tuning page's readout; PROLOGUE.md has the script).
+const BEATS = [[0, 'dark glass'], [0.6, 'eyes wake'], [2.1, 'hands up'], [2.75, 'finger wiggle'], [3.75, 'headdress fix'],
+  [5.25, 'apron pocket'], [5.68, 'handkerchief shown'], [6.05, 'reach: her hand enters'],
+  [WIPE[0][0], 'wipe 1'], [WIPE[1][0], 'wipe 2'], [WIPE[2][0], 'wipe 3'], [WIPE[3][0], 'wipe 4: eyes go warm'],
+  [AWAY.t0, 'pull-back'], [CLICK, 'click'], [CLICK + WARM, 'TV warms up'], [CLICK + 0.85, 'bow'], [ASIDE[0], 'steps aside'],
+  [CLICK + WARM - T.led + T.wordmark[0], 'bentOS boot screen'], [CLICK + WARM - T.led + T.dive[0], 'dive into the screen'],
+  [HANDOFF, 'board takes over (site)'], [CLICK + WARM - T.led + T.merge[0], 'pixels → cards (tuning page only)']];
+
 let handedOff = false;
 function handoff() {
   if (handedOff) return;
@@ -1351,7 +1360,8 @@ if (opts.probe) setTimeout(() => {
 // startAt opens paused at that moment (for screenshots).
 if (opts.startAt != null) seekTo(opts.startAt);
 // debug: window.prologueSeek(t) pauses at story-clock time t (frame-by-frame recording); returns the length.
-if (opts.debug) Object.assign(window, { prologueSeek: (t) => { seekTo(t); return TOTAL; }, prologueTimes: { CLICK, WARM, TOTAL, SLOW_EXTRA, HANDOFF, story: (t) => story(t), positionAt }, prologueNow: () => (studioClock ? seq.position : P.time) });
+if (opts.debug) Object.assign(window, { prologueSeek: (t) => { seekTo(t); return TOTAL; }, prologueTimes: { CLICK, WARM, TOTAL, SLOW_EXTRA, HANDOFF, story: (t) => story(t), positionAt, BEATS },
+  prologueNow: () => (studioClock ? seq.position : P.time), prologueScene: () => ({ time: P.time, story: story(P.time) }) });
 
 renderer.setAnimationLoop(() => {
   let pos;
