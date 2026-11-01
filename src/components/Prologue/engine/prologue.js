@@ -25,6 +25,19 @@ export async function startPrologue(opts) {
 const container = opts.container;
 const FONT = { display: 'Orbitron', mono: 'VT323', sans: '"Instrument Sans"', ...opts.fonts };
 const made = [];
+
+/* The values a person tunes by eye (the tuning page edits them in Theatre.js; src/components/Prologue/tuning.json
+ * holds the saved ones, passed in as opts.tuning). Story times in s, positions in her frame unless noted. Most
+ * apply live through setTuning(); the click time and the glass shot are read once (the wipe is laid out from them). */
+const TUNE = mergeDeep({
+  timing: { click: 11.4, pullBack: 2.6 },                 // the button press; the camera's pull-back that ends just before it
+  camera: { glass: [-0.05, 0.2, 0.44], fov: 46,           // the locked shot on the glass (world)
+    via1: [0.55, 0.24, 0.47], via2: [0.98, 0.36, 1.25] }, // the pull-back's path, out along the glass and round her right
+  poses: { handsUp: [-0.16, 0.26, 0.44], showCloth: [-0.16, 0.46, 0.34], pocket: [-0.17, -0.4, 0.3], bow: [-0.06, -0.5, 0.26] },
+  headdress: { roll: 0.17, yaw: 0.1 },                     // how crooked it starts
+  eyes: { cold: '#ff7a3a', warm: '#ffe2c4', coldGlow: 0.45, warmGlow: 0.75 },
+  light: { darkGlass: 1, ambient: 0.035, rim: 0.25, bloom: 0.9 },
+}, opts.tuning);
 const el = (tag, cls) => { const n = document.createElement(tag); n.className = cls; container.append(n); made.push(n); return n; };
 
 /* ------------------------------------------------------------------ *
@@ -50,7 +63,7 @@ const P = {
   palette: 'category',     // category | mono | rgb
   ppc: 8,                  // phosphor pixels per board cell
   maskGain: 2.4,
-  bloom: 0.9,
+  bloom: TUNE.light.bloom,
   dim: true,
   darkGlass: true,         // the moody reflection (crushed shadows); off: the earlier, softer grey one
   replay: () => restart(),
@@ -755,7 +768,7 @@ function apply(t) {
   drawText(t);
   const u = uniforms;
   u.uTime.value = t;
-  u.uDarkGlass.value = P.darkGlass ? 1 : 0;
+  u.uDarkGlass.value = P.darkGlass ? TUNE.light.darkGlass : 0;
   u.uPower.value = ramp(t, T.power);
   u.uSnow.value = sstep(ramp(t, T.snow));
   u.uTextAmt.value = 1;
@@ -812,9 +825,9 @@ function apply(t) {
  * as she reaches down to click the TV on. She tucks the cloth away, bows in the screen's glow and steps aside.
  * Story time s; the boot runs on tb, which reaches T.led as the button clicks (s = CLICK).
  * ------------------------------------------------------------------ */
-const CLICK = 11.4;
+const CLICK = TUNE.timing.click;
 const WARM = 0.6;        // CRT warm-up: the LED lights on the click, the screen a moment later
-const PRO_END = 11.15;   // the prologue's camera has settled over her shoulder; the boot's camera takes over
+const PRO_END = CLICK - 0.25;   // the prologue's camera has settled over her shoulder; the boot's camera takes over
 const ASIDE = [CLICK + 1.3, CLICK + 2.1];   // she steps out of the boot camera's way
 // Speed ramp: story time runs at 0.6× through the press.
 const SLOW = [CLICK - 0.2, CLICK], SLOW_K = 0.6, SLOW_EXTRA = (SLOW[1] - SLOW[0]) * (1 / SLOW_K - 1);
@@ -878,22 +891,23 @@ const skew = (p) => (x) => (x < p ? (x * x) / p : 1 - ((1 - x) * (1 - x)) / (1 -
 
 // Hand poses in her frame (robot-local: +z forward, her right is -x, origin at the chest, head centre y≈0.59).
 const R_REST = V(-0.3, -0.72, 0.12), REST_DIR = V(0, -1, 0.25);
-const UP = { R: V(-0.16, 0.26, 0.44), L: V(0.16, 0.26, 0.44) };          // both hands up in front of her, in the reflection
+const mirrorX = ([x, y, z]) => V(-x, y, z);
+const UP = { R: V(...TUNE.poses.handsUp), L: mirrorX(TUNE.poses.handsUp) };   // both hands up in front of her, in the reflection
 const UP_DIR = { R: V(0.1, 1, 0.3), L: V(-0.1, 1, 0.3) };
 const TIDY_DIR = { R: V(0.4, 1, -0.4), L: V(-0.4, 1, -0.4) };            // fingers up, in and back: the hands at her temples, in front of the hair
 const TIDY_UP = { R: V(-1, 0.1, 0.3), L: V(1, 0.1, 0.3) };
 const PINCH_REACH = 0.27;                                  // wrist to the pinch between thumb and index
-const ASKEW = { roll: 0.17, yaw: 0.1 };                    // how crooked the headdress starts
-const POCKET = V(-0.17, -0.4, 0.3), POCKET_DIR = V(0.05, -1, 0.2);         // fingers into the apron pocket
-const SHOW = V(-0.16, 0.46, 0.34), SHOW_DIR = V(0.2, 0.3, 1);   // the cloth held up by her face, hanging from her fingers
-const CLASP = { R: V(-0.06, -0.5, 0.26), L: V(0.06, -0.5, 0.26) };         // hands folded in front for the bow
+const ASKEW = TUNE.headdress;                              // how crooked the headdress starts
+const POCKET = V(...TUNE.poses.pocket), POCKET_DIR = V(0.05, -1, 0.2);         // fingers into the apron pocket
+const SHOW = V(...TUNE.poses.showCloth), SHOW_DIR = V(0.2, 0.3, 1);   // the cloth held up by her face, hanging from her fingers
+const CLASP = { R: V(...TUNE.poses.bow), L: mirrorX(TUNE.poses.bow) };         // hands folded in front for the bow
 const CLASP_DIR = { R: V(0.8, -0.6, 0.3), L: V(-0.8, -0.6, 0.3) };
 const FINGER_TIP = 0.3;                                   // wrist to index fingertip
 const POINT_DIR = V(0.2, -0.3, -1).normalize();          // world: the press goes in along this
 // The wipe, in world space on the glass (x, y), laid around where her reflected face shows from the wipe camera:
 // three swipes around it, and the last one across it (the flip). Her eyes during the wipe are measured with ?probe.
 const GLASS_Z = 0.045;                                    // palm height off the glass, with the cloth under it
-const WIPE_CAM = V(-0.05, 0.2, 0.44);                     // clear of her head (eyes at z≈0.74) and her elbow
+const WIPE_CAM = V(...TUNE.camera.glass);                  // clear of her head (eyes at z≈0.74) and her elbow
 const EYES_WIPING = V(0.085, 0.05, 0.74);
 const FACE_ON_GLASS = (() => {
   const mirrored = V(EYES_WIPING.x, EYES_WIPING.y, -EYES_WIPING.z);
@@ -912,11 +926,11 @@ const WIGGLE = [2.75, 2.97, 3.19, 3.41];                   // forward, back, for
 // 2. Once the wipe is done, as she reaches down for the button, one slow pull-back out to her right and round
 //    behind her shoulder, settling on her finger at the button. Even speed along its path (no surges between keys),
 //    eased at both ends, and the view turns by one slerp from the glass to the button. She clicks once it settles.
-const GLASS = { p: WIPE_CAM.clone(), l: WIPE_CAM.clone().add(V(0, 0, -1)), fov: 46 };
-const AWAY = { t0: 8.55, t1: PRO_END, path: new THREE.CatmullRomCurve3([
+const GLASS = { p: WIPE_CAM.clone(), l: WIPE_CAM.clone().add(V(0, 0, -1)), fov: TUNE.camera.fov };
+const AWAY = { t0: PRO_END - TUNE.timing.pullBack, t1: PRO_END, path: new THREE.CatmullRomCurve3([
   GLASS.p,
-  V(0.55, 0.24, 0.47),    // first sideways along the glass, clear of her head as she leans in (head ≈ (0.09, 0.1, 0.85))
-  V(0.98, 0.36, 1.25),    // then back past her right side
+  V(...TUNE.camera.via1), // first sideways along the glass, clear of her head as she leans in (head ≈ (0.09, 0.1, 0.85))
+  V(...TUNE.camera.via2), // then back past her right side
   P0.clone(),
 ], false, 'centripetal') };
 const _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _look = new THREE.Matrix4();
@@ -1000,6 +1014,7 @@ function placeCloth(wristW, dirW, upW, flat) {
 }
 
 let ledPulse = 1;
+const _warmEye = new THREE.Color();
 function prologue(t) {
   const r = robot.root;
   // Where she stands: at the TV, then she steps aside to the left before the dive.
@@ -1015,12 +1030,12 @@ function prologue(t) {
   const C = CLICK;
 
   // ---- body: powered-down slump, the power-on lock, a lean in for the wipe and the press, the bow ----
-  const lean = track(t, 0.07, [[1.1, 1.3, 0, easeOutBack], [6.05, 6.75, 0.24, easeInOutSine], [8.6, 10.6, 0.2, easeInOutSine],
+  const lean = track(t, 0.07, [[1.1, 1.3, 0, easeOutBack], [6.05, 6.75, 0.24, easeInOutSine], [8.6, C - 0.8, 0.2, easeInOutSine],
     [C + 0.2, C + 0.7, 0, easeOutBack], [C + 0.85, C + 1.1, 0.4, easeOutCubic], [C + 1.2, C + 1.45, 0, easeOutBack]]);
   const roll = track(t, 0, [[6.05, 6.75, 0.05, easeInOutSine], [C + 0.2, C + 0.7, 0, easeOutBack]]);
   // the swipes swing her shoulders a little with each stroke
   const twist = track(t, 0, [[6.05, 6.75, 0.1, easeInOutSine], ...WIPE.slice(1).map(([t1], i) => [WIPE[i][0], t1, i % 2 ? 0.1 : -0.04, easeInOutSine]),
-    [8.6, 10.6, 0.12, easeInOutSine], [C + 0.2, C + 0.7, 0, easeOutBack]]);
+    [8.6, C - 0.8, 0.12, easeInOutSine], [C + 0.2, C + 0.7, 0, easeOutBack]]);
   const hips = trackV(t, V(0, 0, 0), [[6.05, 6.75, V(-0.02, -0.01, 0.07), easeInOutSine], [C + 0.2, C + 0.7, V(0, 0, 0)],
     [C + 0.85, C + 1.1, V(0, 0, -0.05)], [C + 1.2, C + 1.45, V(0, 0, 0), easeOutBack]]);
   robot.body({ hips, lean, roll, twist });
@@ -1057,8 +1072,8 @@ function prologue(t) {
   // the site (#e8823f) over the texture's own highlights
   if (robot.mats.iris) {
     const iris = robot.mats.iris;
-    iris.emissive.set('#ff7a3a').lerp(new THREE.Color('#ffe2c4'), warm);
-    iris.emissiveIntensity *= mix(0.45, 0.75, warm);
+    iris.emissive.set(TUNE.eyes.cold).lerp(_warmEye.set(TUNE.eyes.warm), warm);
+    iris.emissiveIntensity *= mix(TUNE.eyes.coldGlow, TUNE.eyes.warmGlow, warm);
     iris.color.multiplyScalar(mix(0.35, 1, warm));
   }
   if (robot.morph && 'happy' in robot.morph.morphTargetDictionary) {
@@ -1084,13 +1099,13 @@ function prologue(t) {
     [5.68, 6.0, SHOW, easeOutCubic, V(0, 0.05, 0.05)],                   // the cloth, held up
     [6.05, 6.75, palmOnGlass(WIPE[0][1]), easeInOutSine, V(0, 0.08, 0.06)],   // the reach: her real hand enters the frame
     ...WIPE.slice(1).map(([t1, p], i) => [WIPE[i][0], t1, palmOnGlass(p), easeInOutSine, WIPE_LIFT[i + 1]]),
-    [8.7, 10.8, tipAt(0.02), easeInOutSine, V(0, 0.05, 0.04)],           // down to the button, cloth in hand
+    [8.7, C - 0.6, tipAt(0.02), easeInOutSine, V(0, 0.05, 0.04)],           // down to the button, cloth in hand
     [C + 0.15, C + 0.55, POCKET, easeOutCubic, V(0, 0.04, 0.06)],       // tuck it away
     [C + 0.6, C + 0.85, CLASP.R, easeOutCubic],
     [ASIDE[0], ASIDE[1], R_REST, easeOutCubic],
   ]);
   if (t > 4.2 && t < 4.95) R.copy(pinchAt(tipR, 'R'));   // holding the tip while the headdress swings straight
-  if (t > 10.8 && t < C + 0.15) R.copy(tipAt(press));    // her finger waits on the button while the camera settles
+  if (t > C - 0.6 && t < C + 0.15) R.copy(tipAt(press));    // her finger waits on the button while the camera settles
   const rDir = trackV(t, REST_DIR, [[2.1, 2.6, UP_DIR.R], [3.75, 4.2, TIDY_DIR.R], [4.95, 5.25, REST_DIR], [5.25, 5.55, POCKET_DIR],
     [5.68, 6.0, SHOW_DIR], [6.05, 6.6, wipeDirL, easeInOutCubic], [8.6, 9.6, dirL(POINT_DIR), easeInOutCubic],
     [C + 0.15, C + 0.55, POCKET_DIR], [C + 0.6, C + 0.85, CLASP_DIR.R], [ASIDE[0], ASIDE[1], REST_DIR]]);
@@ -1119,7 +1134,7 @@ function prologue(t) {
   const wave = (j, amp) => WIGGLE.reduce((acc, t0, k) => acc + amp * bump((t - t0 - 0.03 * (k % 2 ? 4 - j : j)) / 0.15), 0);
   const pinch = track(t, 0, [[4.05, 4.25, 1, easeOutBack], [4.85, 4.95, 0]]);
   const hold = track(t, 0, [[5.5, 5.68, 1, easeOutBack], [6.35, 6.75, 0], [8.5, 8.8, 1], [C + 0.45, C + 0.6, 0]]);
-  const point = track(t, 0, [[9.6, 10.0, 1, easeOutBack], [C + 0.15, C + 0.4, 0]]);
+  const point = track(t, 0, [[C - 1.8, C - 1.4, 1, easeOutBack], [C + 0.15, C + 0.4, 0]]);
   const fold = track(t, 0, [[C + 0.6, C + 0.85, 1], [ASIDE[0], ASIDE[0] + 0.4, 0]]);
   const open = track(t, 0, [[2.1, 2.6, 1], [3.6, 3.8, 0]]);   // fingers spread to look at them
   const flatHand = track(t, 0, [[6.35, 6.75, 1], [8.5, 8.8, 0]]);   // on the cloth: the thumb tucked in beside the fingers
@@ -1153,8 +1168,8 @@ function prologue(t) {
   ledPulse = (0.85 + 0.25 * Math.sin(t * (2 * Math.PI / 1.4))) * (1 + 0.6 * sstep(ramp(t, [8.6, 9.2])));
   // Toon shading: a dim floor and a cool moonlit rim in the dark; once the screen is on she's lit by it.
   const lit = sstep(ramp(t, [C + WARM + 0.3, C + WARM + 1.0]));
-  robot.toon.uAmb.value = mix(0.035, 0.08, lit);
-  robot.toon.uRim.value = mix(0.25, 0.9, lit);   // the screen behind the glass makes a bright halo on her silhouette
+  robot.toon.uAmb.value = mix(TUNE.light.ambient, 0.08, lit);
+  robot.toon.uRim.value = mix(TUNE.light.rim, 0.9, lit);   // the screen behind the glass makes a bright halo on her silhouette
   robot.toon.uRimColor.value.set(lit > 0.5 ? '#e8eefc' : '#9fb4e0');
 
   // ---- camera ----
@@ -1228,6 +1243,7 @@ const listen = (target, type, fn) => { target.addEventListener(type, fn); listen
 if (opts.gui) {
   const { default: GUI } = await import('three/addons/libs/lil-gui.module.min.js');
   const gui = new GUI({ title: 'bentOS prologue' });
+  made.push(gui.domElement);   // removed with everything else on dispose
   gui.add(P, 'time', 0, TOTAL + 0.5, 0.01).listen().onChange((v) => { P.playing = false; tPaused = v; });
   gui.add(P, 'playing').listen().onChange((v) => { if (v) t0 = performance.now() - (P.time / P.speed) * 1000; });
   gui.add(P, 'speed', 0.25, 2, 0.05);
@@ -1239,6 +1255,7 @@ if (opts.gui) {
   gui.add(P, 'dim').name('spotlight dim');
   gui.add(P, 'replay');
   listen(window, 'keydown', (e) => {
+    if (e.target.closest?.('input, textarea, [contenteditable]')) return;   // typing in the studio's fields
     if (e.code === 'Space') { e.preventDefault(); restart(); }
     if (e.key === 'p') { P.playing = !P.playing; if (P.playing) t0 = performance.now() - (P.time / P.speed) * 1000; else tPaused = P.time; }
     if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { P.playing = false; tPaused = Math.max(0, P.time + (e.key === 'ArrowRight' ? 0.1 : -0.1)); }
@@ -1260,7 +1277,7 @@ if (opts.probe) setTimeout(() => {
 // startAt opens paused at that moment (for screenshots).
 if (opts.startAt != null) { P.playing = false; tPaused = opts.startAt; }
 // debug: window.prologueSeek(t) pauses at story-clock time t (frame-by-frame recording); returns the length.
-if (opts.debug) Object.assign(window, { prologueSeek: (t) => { P.playing = false; tPaused = t; return TOTAL; }, prologueTimes: { CLICK, WARM, TOTAL, SLOW_EXTRA, HANDOFF, story: (t) => story(t) } });
+if (opts.debug) Object.assign(window, { prologueSeek: (t) => { P.playing = false; tPaused = t; return TOTAL; }, prologueTimes: { CLICK, WARM, TOTAL, SLOW_EXTRA, HANDOFF, story: (t) => story(t) }, prologueNow: () => P.time });
 
 renderer.setAnimationLoop(() => {
   if (P.playing) P.time = Math.min(((performance.now() - t0) / 1000) * P.speed, TOTAL + 0.5);
@@ -1271,8 +1288,22 @@ renderer.setAnimationLoop(() => {
   composer.render();
 });
 
+/** Apply edited values live (see TUNE). The click time and the glass shot need a restart to take effect. */
+function setTuning(partial) {
+  mergeDeep(TUNE, partial);
+  const { camera: c, poses: p } = TUNE;
+  GLASS.p.set(...c.glass); GLASS.l.copy(GLASS.p).add(V(0, 0, -1)); GLASS.fov = c.fov;
+  AWAY.path.points[1].set(...c.via1); AWAY.path.points[2].set(...c.via2); AWAY.path.updateArcLengths();
+  UP.R.set(...p.handsUp); UP.L.copy(mirrorX(p.handsUp));
+  SHOW.set(...p.showCloth); POCKET.set(...p.pocket);
+  CLASP.R.set(...p.bow); CLASP.L.copy(mirrorX(p.bow));
+  P.bloom = TUNE.light.bloom;
+}
+
 return {
   sfx,
+  tuning: TUNE,
+  setTuning,
   /** Jump straight to the handoff (the visitor skipped). */
   skip: handoff,
   dispose() {
@@ -1285,4 +1316,13 @@ return {
     renderer.domElement.remove();
   },
 };
+}
+
+/** Copy b's leaves onto a (arrays and values replace; objects merge). */
+function mergeDeep(a, b) {
+  for (const [k, v] of Object.entries(b ?? {})) {
+    if (v && typeof v === 'object' && !Array.isArray(v) && a[k] && typeof a[k] === 'object') mergeDeep(a[k], v);
+    else a[k] = v;
+  }
+  return a;
 }

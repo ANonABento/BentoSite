@@ -12,6 +12,9 @@
   canvas.stage { display: block; width: 100vw; height: 100vh; }
   #hint { position: fixed; left: 16px; bottom: 14px; font: 13px/1.4 'VT323', monospace; color: #a39a90; letter-spacing: 0.04em; pointer-events: none; }
   .prologue-flash { position: fixed; inset: 0; background: #fff; mix-blend-mode: difference; opacity: 0; pointer-events: none; z-index: 5; }
+  .lil-gui.root { position: fixed; top: auto !important; right: auto !important; left: 14px; bottom: 64px; }   /* the studio's panel takes the right */
+  .tuning-save { position: fixed; right: 14px; bottom: 14px; z-index: 6; font: 15px VT323, monospace; letter-spacing: 0.06em; color: #0a0807;
+    background: #e8823f; border: 0; border-radius: 4px; padding: 6px 12px; cursor: pointer; }
   .prologue-sound { position: fixed; left: 14px; bottom: 30px; z-index: 6; font: 15px VT323, monospace; letter-spacing: 0.06em; color: #e8823f;
     background: rgba(10, 8, 7, 0.6); border: 1px solid rgba(232, 130, 63, 0.4); border-radius: 4px; padding: 4px 9px; cursor: pointer; }
 </style>
@@ -25,23 +28,71 @@
 <body>
 <div id="hint">SPACE replay · P pause · ← → scrub</div>
 <script type="module">
-// The prologue engine lives in the site (src/components/Prologue/engine); this page runs it with the tuning GUI.
+// The prologue engine lives in the site (src/components/Prologue/engine); this page runs it with the tuning GUI and
+// the Theatre.js studio, which edits the values in src/components/Prologue/tuning.json (SAVE writes them back; needs
+// serve.py). The site reads that file; it never loads Theatre.
 //   ?t=5.2 opens paused there · ?probe writes bone positions into the page · ?robot=<file>.glb loads assets/<file>
-//   ?handoff stops where the site takes over instead of playing the in-TV board
+//   ?handoff stops where the site takes over instead of playing the in-TV board · ?nostudio hides the studio
 import { startPrologue } from '../../src/components/Prologue/engine/prologue.js';
 const q = new URLSearchParams(location.search);
 const robot = q.get('robot');
-await startPrologue({
-  container: document.body,
-  robotUrl: robot?.endsWith('.glb') ? `./assets/${robot}` : '/public/prologue/robot-maid.glb',
-  boardUrl: '../crt-boot/board.json',
-  assetBase: '/public',
-  gui: true,
-  debug: true,
-  probe: q.has('probe'),
-  startAt: q.has('t') ? parseFloat(q.get('t')) : null,
-  onHandoff: q.has('handoff') ? () => console.log('handoff') : undefined,
-});
+const tuning = await fetch('/src/components/Prologue/tuning.json').then((r) => r.json());
+let controls = null;
+const start = async (startAt) => {
+  controls?.dispose();
+  controls = await startPrologue({
+    container: document.body,
+    robotUrl: robot?.endsWith('.glb') ? `./assets/${robot}` : '/public/prologue/robot-maid.glb',
+    boardUrl: '../crt-boot/board.json',
+    assetBase: '/public',
+    tuning: structuredClone(tuning),
+    gui: true,
+    debug: true,
+    probe: q.has('probe'),
+    startAt,
+    onHandoff: q.has('handoff') ? () => console.log('handoff') : undefined,
+  });
+};
+await start(q.has('t') ? parseFloat(q.get('t')) : null);
+if (!q.has('nostudio')) await studioPanel();
+
+/** One Theatre object per group of tuning.json; each prop's default is the saved value. */
+async function studioPanel() {
+  const deps = '?deps=@theatre/core@0.7.2';
+  const [coreMod, { default: studio }] = await Promise.all([
+    import(`https://esm.sh/@theatre/core@0.7.2${deps}`), import(`https://esm.sh/@theatre/studio@0.7.2${deps}`)]);
+  const { getProject, types } = coreMod.getProject ? coreMod : coreMod.default;   // a CommonJS bundle: exports may sit on default
+  studio.initialize();
+  const sheet = getProject('bentOS prologue').sheet('Tuning');
+  const hex = (h) => { const n = parseInt(h.slice(1), 16); return { r: (n >> 16 & 255) / 255, g: (n >> 8 & 255) / 255, b: (n & 255) / 255, a: 1 }; };
+  const toHex = ({ r, g, b }) => '#' + [r, g, b].map((c) => Math.round(c * 255).toString(16).padStart(2, '0')).join('');
+  const prop = (v) => Array.isArray(v) ? types.compound({ x: types.number(v[0], { nudgeMultiplier: 0.005 }), y: types.number(v[1], { nudgeMultiplier: 0.005 }), z: types.number(v[2], { nudgeMultiplier: 0.005 }) })
+    : typeof v === 'string' ? types.rgba(hex(v)) : types.number(v, { nudgeMultiplier: 0.01 });
+  const back = (v) => typeof v === 'number' ? +v.toFixed(4) : 'x' in v ? [v.x, v.y, v.z].map((n) => +n.toFixed(4)) : toHex(v);
+  // these are read once (the wipe is laid out from them): changing one restarts the scene where it was
+  const RESTART = new Set(['timing', 'camera.glass']);
+  let restartTimer = 0;
+  for (const [group, values] of Object.entries(tuning)) {
+    const obj = sheet.object(group, Object.fromEntries(Object.entries(values).map(([k, v]) => [k, prop(v)])));
+    obj.onValuesChange((vals) => {
+      const next = Object.fromEntries(Object.entries(vals).map(([k, v]) => [k, back(v)]));
+      const changed = Object.keys(next).filter((k) => JSON.stringify(next[k]) !== JSON.stringify(tuning[group][k]));
+      if (!changed.length) return;
+      Object.assign(tuning[group], next);
+      if (changed.some((k) => RESTART.has(group) || RESTART.has(`${group}.${k}`))) {
+        clearTimeout(restartTimer);
+        restartTimer = setTimeout(() => start(window.prologueNow?.() ?? 0), 400);
+      } else controls.setTuning({ [group]: next });
+    });
+  }
+  const save = Object.assign(document.createElement('button'), { className: 'tuning-save', textContent: 'SAVE TUNING' });
+  save.onclick = async () => {
+    const r = await fetch('/__save-tuning', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(tuning) });
+    save.textContent = r.ok ? 'SAVED ✓' : `SAVE FAILED (${r.status})`;
+    setTimeout(() => { save.textContent = 'SAVE TUNING'; }, 1800);
+  };
+  document.body.append(save);
+}
 </script>
 </body>
 </html>
