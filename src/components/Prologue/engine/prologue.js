@@ -52,6 +52,7 @@ const P = {
   maskGain: 2.4,
   bloom: 0.9,
   dim: true,
+  darkGlass: true,         // the moody reflection (crushed shadows); off: the earlier, softer grey one
   replay: () => restart(),
 };
 
@@ -427,7 +428,7 @@ const uniforms = {
   uCenter: { value: HOME }, uTile: { value: new THREE.Vector2(cols, rows) },
   uGap: { value: GAP }, uRadius: { value: RADIUS },
   uText: { value: textTex }, uCellMap: { value: cellMap }, uCardInfo: { value: cardInfo }, uAtlas: { value: atlasTex },
-  tReflect: { value: null }, uReflMat: { value: new THREE.Matrix4() }, uRefl: { value: 0 },
+  tReflect: { value: null }, uReflMat: { value: new THREE.Matrix4() }, uRefl: { value: 0 }, uDarkGlass: { value: 1 },
   uPhosphor: { value: lin('#f3e9dc') }, uWall: { value: lin(COLORS.wall) }, uOff: { value: lin('#0b0c0b') },
 };
 
@@ -449,7 +450,7 @@ const screenMat = new THREE.ShaderMaterial({
     varying vec3 vWorld;
     uniform sampler2D tReflect;
     uniform mat4 uReflMat;
-    uniform float uRefl;
+    uniform float uRefl, uDarkGlass;
     uniform float uTime, uPower, uTextAmt, uSnow, uSpan, uSpan0, uAspect, uPPC, uMerge, uResolve;
     uniform float uMaskAmt, uMaskGain, uFx, uTint, uDim, uPalette, uMaxR, uGap, uRadius;
     uniform vec2 uCenter, uTile;
@@ -625,7 +626,7 @@ const screenMat = new THREE.ShaderMaterial({
         vec3 refl = texture(tReflect, rc.xy / rc.w).rgb;
         // dark glass: crushed shadows (on brightness only, so her colours keep their hue), so she comes out of the
         // black and her eyes and whites pop
-        refl *= pow(dot(refl, vec3(0.2126, 0.7152, 0.0722)) + 1e-4, 0.7) * 1.9;
+        refl *= mix(1.0, pow(dot(refl, vec3(0.2126, 0.7152, 0.0722)) + 1e-4, 0.7) * 1.9, uDarkGlass);
         float grain = 0.85 + 0.15 * phosphor(fp, aa, 0.06, 0.0).r * maskVis;
         col += refl * uRefl * 0.75 * grain;
       }
@@ -754,6 +755,7 @@ function apply(t) {
   drawText(t);
   const u = uniforms;
   u.uTime.value = t;
+  u.uDarkGlass.value = P.darkGlass ? 1 : 0;
   u.uPower.value = ramp(t, T.power);
   u.uSnow.value = sstep(ramp(t, T.snow));
   u.uTextAmt.value = 1;
@@ -1233,6 +1235,7 @@ if (opts.gui) {
   gui.add(P, 'ppc', [4, 6, 8, 12, 16]).name('pixels / cell').onChange(() => { textSig = ''; });
   gui.add(P, 'maskGain', 1, 6, 0.1).name('mask gain');
   gui.add(P, 'bloom', 0, 2.5, 0.05);
+  gui.add(P, 'darkGlass').name('dark glass');
   gui.add(P, 'dim').name('spotlight dim');
   gui.add(P, 'replay');
   listen(window, 'keydown', (e) => {

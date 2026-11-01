@@ -327,6 +327,14 @@ def robot_hands():
         attach(f'{S}_thumb_pad', pad, ceramic, arm, f'{S}Hand')
 
 
+def flatten(bm, c, axis, k):
+    """Squash a mesh toward c along axis by k (1 = unchanged): rounded-rectangle sections, like machined finger shells."""
+    ax = axis.normalized()
+    for v in bm.verts:
+        v.co -= ax * (v.co - c).dot(ax) * (1 - k)
+    return bm
+
+
 def pill(a, b, r, seg=24):
     """A rounded cylinder from a to b: its end edges bevelled into soft domes (never more than the length allows)."""
     d = b - a
@@ -337,9 +345,11 @@ def pill(a, b, r, seg=24):
 
 
 def robot_hands_sculpt():
-    """Robot hands after the FLUX concept (vendor/explore/hand/hand-s377.png): a smooth one-piece palm shell (metaballs
-    blended along the palm, the knuckles and the thumb's root), capsule finger segments that nearly touch, and thin
-    dark joint rings sunk in the gaps instead of big balls. Every piece rides its own bone, as before."""
+    """Robot hands after the FLUX concept (vendor/explore/hand/hand-s377.png) and real dexterous hands (Inspire RH56,
+    Sharpa Wave, XHand): a thin one-piece palm shell (metaballs blended along the palm, the knuckles and the thumb's
+    root) with a dark seam panel on the back, slim finger segments with flattened rounded-rectangle sections, a sunk
+    dark core at each joint with hinge-pin caps either side, and dark tactile pads on the fingertips. Every piece
+    rides its own bone, as before."""
     arm = next(o for o in bpy.data.objects if o.type == 'ARMATURE')
     body = bpy.data.objects['Body']
     W = lambda b: arm.matrix_world @ arm.data.bones[b].head_local
@@ -367,38 +377,56 @@ def robot_hands_sculpt():
             e.size_x, e.size_y, e.size_z = hx / 0.0104, hy / 0.0104, hz / 0.0104
             e.rotation = q
         c = w0 + fwd * 0.5
-        blob(c, acr.length * 0.6, 0.011, fwd.length * 0.42)                  # the palm
-        blob(w0 + fwd * 0.12, acr.length * 0.42, 0.0105, fwd.length * 0.2)    # the heel, narrowing into the wrist
+        blob(c, acr.length * 0.58, 0.0082, fwd.length * 0.42)                 # the palm
+        blob(w0 + fwd * 0.12, acr.length * 0.4, 0.008, fwd.length * 0.2)      # the heel, narrowing into the wrist
         for f in ('Index', 'Middle', 'Ring', 'Pinky'):                         # knuckles: the shell rounds over each
-            blob(W(f'{S}Hand{f}1') - fwd_n * 0.006, 0.0095, 0.0095, 0.009)
+            blob(W(f'{S}Hand{f}1') - fwd_n * 0.006, 0.0075, 0.0075, 0.007)
         t1 = W(f'{S}HandThumb1'); heel = c - fwd * 0.25 + acr * 0.3
         span = t1 - heel
-        blob((t1 + heel) / 2, 0.012, 0.0105, span.length * 0.5,
+        blob((t1 + heel) / 2, 0.0095, 0.0082, span.length * 0.5,
              Vector((0, 0, 1)).rotation_difference(span.normalized()))       # the thumb's root
         dg = bpy.context.evaluated_depsgraph_get()
         pm = bpy.data.meshes.new_from_object(mo.evaluated_get(dg))
         bpy.data.objects.remove(mo); bpy.data.metaballs.remove(mb)
         pb = bmesh.new(); pb.from_mesh(pm); bpy.data.meshes.remove(pm)
         attach(f'{S}_palm', pb, ceramic, arm, f'{S}Hand')
+        panel = bmesh.new()
+        bmesh.ops.create_cube(panel, size=1, matrix=Matrix.Translation(c + up * 0.0072 + fwd * 0.05)
+                              @ Matrix((acr_n, up, fwd_n)).transposed().to_4x4() @ Matrix.Diagonal((acr.length * 0.62, 0.002, fwd.length * 0.5, 1)))
+        bmesh.ops.bevel(panel, geom=panel.edges[:], offset=0.0009, segments=2, affect='EDGES')
+        attach(f'{S}_palm_panel', panel, gun, arm, f'{S}Hand')
 
         # fingers: capsules a little shorter than each bone, a sunk dark ring in each gap
-        for f, r in (('Thumb', 0.0098), ('Index', 0.0088), ('Middle', 0.0091), ('Ring', 0.0085), ('Pinky', 0.0074)):
+        for f, r in (('Thumb', 0.0078), ('Index', 0.0068), ('Middle', 0.007), ('Ring', 0.0066), ('Pinky', 0.0058)):
             pts = [W(f'{S}Hand{f}{i}') for i in (1, 2, 3)]
             pts.append(pts[2] + (pts[2] - pts[1]) * 0.9)
             for i in range(3):
                 bone = f'{S}Hand{f}{i + 1}'
                 a, b_ = pts[i], pts[i + 1]; d = b_ - a
-                rr = r * (1 - 0.08 * i)
-                gap = d.length * 0.12
+                rr = r * (1 - 0.07 * i)
+                gap = d.length * 0.14
                 dn = d.normalized()
-                attach(f'{bone}_seg', pill(a + dn * gap * 0.5, b_ - dn * (gap * 0.5 if i < 2 else 0), rr * 0.95), ceramic, arm, bone)
-                attach(f'{bone}_ring', ring(a, d, rr * 0.8, gap * 1.4, 24), gun, arm, bone)
-
+                side = dn.cross(up).normalized()                  # the hinge axis
+                back = side.cross(dn).normalized()                 # the back of this segment
+                if back.dot(up) < 0: back = -back
+                a2, b2 = a + dn * gap * 0.5, b_ - dn * (gap * 0.5 if i < 2 else 0)
+                attach(f'{bone}_seg', flatten(pill(a2, b2, rr), (a2 + b2) / 2, back, 0.78), ceramic, arm, bone)
+                # the joint: a dark core in the gap and a pin cap on each side
+                attach(f'{bone}_ring', ring(a, d, rr * 0.7, gap * 1.3, 20), gun, arm, bone)
+                attach(f'{bone}_pins', merge(ring(a + side * rr * 0.98, side, rr * 0.42, rr * 0.25, 16),
+                                             ring(a - side * rr * 0.98, side, rr * 0.42, rr * 0.25, 16)), gun, arm, bone)
+                if i == 2:                                        # tactile pad on the fingertip's palm side
+                    pc = b2 - dn * (b2 - a2).length * 0.38 - back * rr * 0.62
+                    pad = sphere(pc, 1, 14)
+                    for v in pad.verts:
+                        o = v.co - pc
+                        v.co = pc + dn * o.dot(dn) * (b2 - a2).length * 0.34 + side * o.dot(side) * rr * 0.72 + back * o.dot(back) * rr * 0.22
+                    attach(f'{bone}_pad', pad, gun, arm, bone)
 
 def before_export():
     restyle_textures()
     add_hardware()
-    robot_hands_sculpt() if os.environ.get('MAID_HANDS') == 'sculpt' else robot_hands()
+    robot_hands() if os.environ.get('MAID_HANDS') == 'primitive' else robot_hands_sculpt()
 
 
 if __name__ == '__main__':
