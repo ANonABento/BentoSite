@@ -938,7 +938,7 @@ for (let i = 0; i < clothFlat.length; i += 3) {
   // and the corners, out past her palm, lift off the glass toward her hand
   clothFlat[i + 2] = 0.004 * Math.sin(x * 9 + y * 4) + 0.003 * Math.sin(y * 13 - x * 5) - 0.09 * Math.max(0, Math.abs(x) + Math.abs(y) - 0.55) ** 1.5;
   // gathered: pinched at the top centre, hanging in soft folds that open out toward the bottom
-  const g = 0.5 - y;                                                  // 0 at the fingers, 1 at the far edge
+  const g = Math.max(0, 0.5 - y);                                     // 0 at the fingers, 1 at the far edge (rounding can dip below 0)
   const open = 0.12 + 0.5 * Math.pow(g, 0.8);
   clothBunch[i] = x * CLOTH * open;
   clothBunch[i + 1] = -g * CLOTH * 0.8;
@@ -1173,10 +1173,11 @@ function prologue(t) {
 
 // Sound cues, in story time (sfx.js; off until the visitor turns it on).
 const POWER_ON = CLICK + WARM - T.led + T.power[0];
-const CUES = [[0.6, 'wake'], [1.3, 'servo'], [1.7, 'servo'], [2.1, 'servo'], [3.75, 'servo'], [4.72, 'lock'], [5.25, 'servo'],
+const CUES = [[0.6, 'wake'], [1.3, 'servo'], [1.7, 'servo'], [2.1, 'servo'], ...WIGGLE.map((t) => [t, 'fine']), [3.55, 'servo'], [3.75, 'servo'],
+  [4.1, 'fine'], [4.72, 'lock'], [5.2, 'servo'], [5.5, 'fine'],
   [6.05, 'servo'], ...WIPE.slice(0, 4).map(([t]) => [t, 'squeak']), [8.6, 'servo'], [CLICK, 'click'], [POWER_ON, 'degauss'],
   [CLICK + 0.85, 'servo'], [ASIDE[0], 'servo']];
-const sfx = opts.sfx ?? createSfx();
+const sfx = opts.sfx ?? createSfx({ base: `${opts.assetBase ?? ''}/prologue/sfx/` });
 const soundBtn = el('button', 'prologue-sound'); soundBtn.type = 'button';
 const showSound = () => { soundBtn.textContent = `SOUND: ${sfx.on ? 'ON' : 'OFF'}`; };
 soundBtn.addEventListener('click', () => { sfx.setOn(!sfx.on); showSound(); });
