@@ -14,6 +14,7 @@
   /* the scene, then the control bar, then the studio's timeline across the bottom (38vh) */
   body.studio #stage { bottom: calc(38vh + 34px); }
   body.studio #hint { display: none; }
+  body.studio .prologue-sound { left: auto; right: 14px; }   /* clear of the studio's object list */
   #bar { position: fixed; left: 0; right: 0; bottom: 38vh; height: 34px; z-index: 6; display: flex; align-items: center; gap: 8px;
     padding: 0 10px; box-sizing: border-box; background: #14100e; border-top: 1px solid #2a2421;
     font: 16px/1 VT323, monospace; letter-spacing: 0.05em; color: #f2ece2; }
@@ -22,6 +23,7 @@
   #bar button:hover, #bar select:hover { border-color: #e8823f; }
   #bar .play { width: 64px; color: #0a0807; background: #e8823f; border-color: #e8823f; }
   #bar .time { color: #e8823f; min-width: 64px; }
+  #bar .beat { min-width: 180px; }   /* the beat: a steady width, so the controls don't shift */
   #bar i { color: #a39a90; font-style: normal; }
   #bar .grow { flex: 1; }
   #hint { position: fixed; left: 16px; bottom: 14px; font: 13px/1.4 'VT323', monospace; color: #a39a90; letter-spacing: 0.04em; pointer-events: none; }
@@ -102,11 +104,11 @@ if (withStudio) {
   beats.append(new Option('jump to beat…', ''), ...T.BEATS.map(([t, name]) => new Option(`${t.toFixed(2)}  ${name}`, String(t))));
   beats.onchange = () => { if (beats.value) seek(T.positionAt(+beats.value)); beats.value = ''; beats.blur(); };
   const time = Object.assign(document.createElement('span'), { className: 'time' });
-  const beat = document.createElement('span');
+  const beat = Object.assign(document.createElement('span'), { className: 'beat' });
   const keys = Object.assign(document.createElement('i'), { textContent: 'SPACE play · ← → 0.1 s' });
   const grow = Object.assign(document.createElement('span'), { className: 'grow' });
   const save = button('SAVE', 'Write the keyframes and settings to src/components/Prologue/theatre-state.json', null, 'play');
-  bar.append(rewind, play, beats, time, beat, grow, keys, save);
+  bar.append(grow.cloneNode(), rewind, play, beats, time, beat, grow, keys, save);   // centred: the studio's object list hangs over the left
   document.body.append(bar);
   let last = '';
   (function tick() {

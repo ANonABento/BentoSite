@@ -12,35 +12,41 @@ From the repo root: `python3 prototypes/crt-site/serve.py`, then open http://127
 
 ## How it works
 
-Most of the animation is code: her arms, fingers, wipe strokes and cloth come from a script (`prologue.js`). The
-timeline holds what you can change by hand:
+Her motion, the camera and the lights on her are all keyframes now, sampled from the script (`prologue.js`) so they
+start out playing it exactly. What's still code: her fingers, which way her hands point, the cloth, and the boot screen.
 
-- **Camera**: the whole shot is on the timeline. Its keys: 0:00 and 8.57 s are the locked glass shot (same values,
-  so it holds still), then six keys make the pull-back to her shoulder, ending at 11.17 s. The camera after that (the
-  dive into the TV) is still the script's.
-- **Her**, **Lights**, **Retime**: one key at 0:00 at a neutral value. They're *offsets on top of* the script, so
-  they do nothing until you change them.
+- **Camera**: the shot up to the dive. 0:00 and 8.57 s are the locked glass shot (same values, so it holds still),
+  then the pull-back to her shoulder ending at 11.17 s. The dive into the TV after that is still the script's.
+- **Her / body** (lean, roll, twist, hips), **Her / head** (head pitch, yaw, roll; where the eyes look),
+  **Her / eyes** (glow, open, warm, happy), **Her / hands** (where each hand is; the arm bends itself to reach it),
+  **Lights / scene** (the fill on her hands, the rim light, the screen lighting her, the room light).
+- Each of those has a `use` value: 1 plays the keys, 0 plays the script again (to compare, or to undo everything).
 
 ## Doing things
 
-**Change the camera at a moment** (e.g. the pull-back passing closer to her):
-1. Click **Camera** in the objects list.
-2. Put the playhead on the moment (drag it, or jump to beat → *pull-back*).
-3. In the values panel drag `position` (x, y, z) or `target` (where it looks) sideways. If the playhead sits on a
-   key, that key changes; if not, a new key appears there.
+**Change anything at a moment** (the camera passing closer to her, a hand higher, a longer look):
+1. Click the object in the list (e.g. **Her / hands**).
+2. Put the playhead on the moment (drag it, or *jump to beat…*).
+3. In the values panel drag the value sideways (double-click to type). On a key that key changes; between keys a new
+   one appears.
 4. Play it back. Drag ◆ left/right to retime; click the line between two ◆ to change the easing; right-click a ◆ to
-   delete it.
+   delete it. To shift a whole move, shift-drag a box around its ◆ and drag them together.
 
-**Change the whole glass shot**: change it at 0:00 and at 8.57 s (both keys), or it drifts between them.
+The fast moves have keys every few frames, so they keep their snap; change the key at the end of a move, not the ones
+in its middle, and the move eases there on its own.
 
-**Move her**: Her → playhead to the moment → change e.g. `rightHand` y. The value eases from the key before. To make
-it a quick gesture that goes back, add a key a little later with it back at 0.
+**Change the whole glass shot**: change the Camera at 0:00 and at 8.57 s (both keys), or it drifts between them.
+
+**Start over from the script**: set the object's `use` to 0, or ask me to re-seed it (`seed.js`, below).
 
 **Add a pause**: Retime → playhead where it should freeze → set a key with `hold` 0, then a key 0.5 s later with
 `hold` 0.5. The scene stops for half a second there and everything after plays later.
 
-**Base values** (`Settings / …`): click time, hand poses, headdress tilt, eye colours, light. Not keyframed, just
-values. Changing the click time rebuilds the scene where the playhead is.
+**Base values** (`Settings / …`): click time, headdress tilt, eye colours, light. Not keyframed, just values. The keys
+don't follow the click time or the headdress tilt: after changing those, re-seed (below).
+
+**Re-seed** (rewrites those objects' keys from the script, losing hand edits to them; with the page open, in the
+browser console): `await (await import('/prototypes/crt-site/seed.js')).seed()`, or `.seed(['Her / hands'])` for one.
 
 Then **SAVE** (writes `src/components/Prologue/theatre-state.json`; the site plays exactly that file). Unsaved edits
 are lost on reload (the browser asks first). After saving, re-record the phone video:
@@ -50,11 +56,15 @@ are lost on reload (the browser asks first). After saving, re-record the phone v
 
 | Object | What it does |
 |---|---|
-| **Camera** | `position`, `target` (the point it looks at), `fov`: the shot, keyframed up to the dive (it hands back to the scripted dive camera over 0.5 s from 11.15 s). `takeover` 0 brings back the scripted camera. |
-| **Her** | Offsets on her scripted motion: `rightHand` / `leftHand` (x toward her left, y up, z toward the glass), `head` (pitch, yaw, roll), `lean`, `twist`; `eyeGlow` (×), `warmth` (pushes cold → warm eyes), `happy`, `blink`. |
-| **Lights** | Multipliers: `room`, `screen`, `bloom`, `reflection`, `herFill`, `herRim`. |
+| **Camera** | `position`, `target` (the point it looks at), `fov`: the shot up to the dive (it hands back to the scripted dive camera over 0.5 s from 11.15 s). `takeover` 0 brings back the scripted camera. |
+| **Her / body** | `lean` forward, `roll` sideways, `twist` (shoulders), `hips` (x, y, z). |
+| **Her / head** | `head` (pitch, yaw, roll), `lookDown`, `lookRight` (the eyes). |
+| **Her / eyes** | `glow`, `open` (0 = shut: blinks are dips), `warm` (cold red-orange → warm), `happy` (the smile). |
+| **Her / hands** | `right`, `left`: where each hand goes, in her frame (x toward her left, y up, z toward the glass). |
+| **Lights / scene** | `handFill` (on her hands), `rim` (behind her), `screenLit` (the TV lighting her), `room`. |
+| **Lights / gain** | Multipliers: `room`, `screen`, `bloom`, `reflection`, `herFill`, `herRim`. |
 | **Retime** | `hold`: how many seconds the scene runs behind the timeline from that point on. |
-| **Settings / …** | timing (the click), poses, headdress, eyes, light. |
+| **Settings / …** | timing (the click), headdress, eyes, light. |
 
 Theatre's markers don't survive a reload here; the bar's beat readout and *jump to beat* stand in for them. Anything
 else you want on the timeline is one line in `prologue.js` (`TL.define`), plus reading it where it's used.

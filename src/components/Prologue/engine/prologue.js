@@ -45,10 +45,11 @@ const TUNE = {
  *   Retime   hold: seconds the scene runs behind the timeline from here on (keyframe it up to add a pause)
  *   Camera   the shot (position, target, fov), keyframed up to the dive, where the boot's camera takes over;
  *            takeover 0 gives the scripted camera back
- *   Her      offsets on top of her scripted motion: hands, head, lean, twist; eye glow, warmth, happy, blink
- *   Lights   multipliers: room, screen, bloom, the reflection, her fill and rim light */
+ *   Her / …, Lights / scene   the script's own channels (body, head and eye look, eyes, hand positions, the lights
+ *            on her), seeded into keys from the script (prototypes/crt-site/seed.js); `use` 0 gives the script back
+ *   Lights / gain   multipliers: room, screen, bloom, the reflection, her fill and rim light */
 const TL = await createTimeline(opts.theatreState);
-const SETTINGS = { timing: 'Settings / timing', poses: 'Settings / poses',
+const SETTINGS = { timing: 'Settings / timing',
   headdress: 'Settings / headdress', eyes: 'Settings / eyes', light: 'Settings / light' };
 const READ_ONCE = new Set(['timing']);
 for (const [group, key] of Object.entries(SETTINGS)) {
@@ -58,10 +59,22 @@ for (const [group, key] of Object.entries(SETTINGS)) {
 TL.define('Retime', { hold: 0 }, { hold: { range: [0, 10] } });
 TL.define('Camera', { position: TUNE.camera.glass, target: [TUNE.camera.glass[0], TUNE.camera.glass[1], TUNE.camera.glass[2] - 1],
   fov: TUNE.camera.fov, takeover: 1 }, { takeover: { range: [0, 1] }, fov: { range: [15, 90], step: 0.1 } });
-TL.define('Her', { rightHand: [0, 0, 0], leftHand: [0, 0, 0], head: [0, 0, 0], lean: 0, twist: 0,
-  eyeGlow: 1, warmth: 0, happy: 0, blink: 0 },
-{ head: { step: 0.002 }, eyeGlow: { range: [0, 3] }, warmth: { range: [-1, 1] }, happy: { range: [0, 1] }, blink: { range: [0, 1] } });
-TL.define('Lights', { room: 1, screen: 1, bloom: 1, reflection: 1, herFill: 1, herRim: 1 });
+const USE = { use: { range: [0, 1] } };
+TL.define('Her / body', { lean: 0, roll: 0, twist: 0, hips: [0, 0, 0], use: 0 }, USE);
+TL.define('Her / head', { head: [0, 0, 0], lookDown: 0, lookRight: 0, use: 0 }, { ...USE, head: { step: 0.002 } });
+TL.define('Her / eyes', { glow: 0, open: 0, warm: 0, happy: 0, use: 0 }, USE);
+TL.define('Her / hands', { right: [0, 0, 0], left: [0, 0, 0], use: 0 }, USE);
+TL.define('Lights / scene', { handFill: 0, rim: 0, screenLit: 0, room: 0, use: 0 }, USE);
+// The script's values on the last frame, by object (seed.js samples them into keys); once keyed (`use` 1) the keys play.
+const SCRIPT = {};
+let scriptOnly = false;
+function keyed(key, vals) {
+  SCRIPT[key] = vals;
+  const k = scriptOnly ? null : TL.read(key);
+  if (!k || k.use <= 0) return vals;
+  return Object.fromEntries(Object.entries(vals).map(([p, v]) => [p, Array.isArray(v) ? v.map((x, i) => mix(x, k[p][i], k.use)) : mix(v, k[p], k.use)]));
+}
+TL.define('Lights / gain', { room: 1, screen: 1, bloom: 1, reflection: 1, herFill: 1, herRim: 1 });
 const el = (tag, cls) => { const n = document.createElement(tag); n.className = cls; container.append(n); made.push(n); return n; };
 
 /* ------------------------------------------------------------------ *
@@ -1040,8 +1053,18 @@ function placeCloth(wristW, dirW, upW, flat) {
 
 let ledPulse = 1;
 const _warmEye = new THREE.Color();
+/** Where her eyes look (down, right): they lead every turn of her head. */
+function eyeLook(t) {
+  const C = CLICK;
+  const down = track(t, 0, [[2.05, 2.15, 0.28, easeOutQuint], [3.5, 3.6, -0.04, easeOutQuint], [5.15, 5.25, 0.32, easeOutQuint],
+    [5.6, 5.7, 0.04, easeOutQuint], [8.55, 8.65, 0.18, easeOutQuint], [C + 0.15, C + 0.3, 0, easeOutQuint]]);
+  const right = track(t, 0, [[2.05, 2.15, 0.05, easeOutQuint], [3.5, 3.6, 0, easeOutQuint], [5.15, 5.25, 0.15, easeOutQuint],
+    [5.6, 5.7, 0, easeOutQuint], [8.55, 8.65, 0.22, easeOutQuint], [C + 0.15, C + 0.3, 0, easeOutQuint]]);
+  return { down, right };
+}
+
 function prologue(t) {
-  const her = TL.read('Her'), lights = TL.read('Lights');   // the timeline's offsets and multipliers, right now
+  const lights = TL.read('Lights / gain');   // the timeline's multipliers, right now
   const r = robot.root;
   // Where she stands: at the TV, then she steps aside to the left before the dive.
   const away = easeInOutCubic(ramp(t, ASIDE));
@@ -1064,7 +1087,8 @@ function prologue(t) {
     [8.6, C - 0.8, 0.12, easeInOutSine], [C + 0.2, C + 0.7, 0, easeOutBack]]);
   const hips = trackV(t, V(0, 0, 0), [[6.05, 6.75, V(-0.02, -0.01, 0.07), easeInOutSine], [C + 0.2, C + 0.7, V(0, 0, 0)],
     [C + 0.85, C + 1.1, V(0, 0, -0.05)], [C + 1.2, C + 1.45, V(0, 0, 0), easeOutBack]]);
-  robot.body({ hips, lean: lean + her.lean, roll, twist: twist + her.twist });
+  const body = keyed('Her / body', { lean, roll, twist, hips: hips.toArray() });
+  robot.body({ hips: V(...body.hips), lean: body.lean, roll: body.roll, twist: body.twist });
 
   // ---- head: lifts in two servo steps; down at her hands; up at herself for the headdress; the pocket; the glass ----
   const idle = sstep(ramp(t, [2.0, 2.3]));
@@ -1076,8 +1100,11 @@ function prologue(t) {
   // a curious tilt at her hands; she rights her head with the headdress; a happy tilt as the glass comes clean
   const hz = track(t, 0, [[2.5, 2.7, 0.08, easeOutBack], [3.55, 3.8, 0.06], [4.35, 4.7, -0.03, easeOutBack], [4.85, 5.0, 0],
     [5.9, 6.1, 0.1, easeOutBack], [6.75, 7.0, 0], [FLIP + 0.05, FLIP + 0.35, -0.09, easeOutBack], [8.6, 9.2, 0]]);
-  robot.headPivot.rotation.set(hx + her.head[0] + idle * servo(t, 1, 0.009), hy + her.head[1] + idle * servo(t, 2, 0.007),
-    hz + her.head[2] + idle * servo(t, 3, 0.008));
+  // (the eye look is below, but keyed with the head)
+  const { down, right } = eyeLook(t);
+  const hd = keyed('Her / head', { head: [hx, hy, hz], lookDown: down, lookRight: right });
+  robot.headPivot.rotation.set(hd.head[0] + idle * servo(t, 1, 0.009), hd.head[1] + idle * servo(t, 2, 0.007),
+    hd.head[2] + idle * servo(t, 3, 0.008));
 
   // ---- the headdress: crooked from the start; her hands carry it straight, and it locks ----
   const straight = easeOutBack(clamp01((t - 4.35) / 0.4), 1.8);
@@ -1086,15 +1113,12 @@ function prologue(t) {
   const [tipR, tipL] = robot.headdressEnds();
 
   // ---- eyes: they lead every look; cold until the last swipe clears them, then warm and a happy blink ----
-  const down = track(t, 0, [[2.05, 2.15, 0.28, easeOutQuint], [3.5, 3.6, -0.04, easeOutQuint], [5.15, 5.25, 0.32, easeOutQuint],
-    [5.6, 5.7, 0.04, easeOutQuint], [8.55, 8.65, 0.18, easeOutQuint], [C + 0.15, C + 0.3, 0, easeOutQuint]]);
-  const right = track(t, 0, [[2.05, 2.15, 0.05, easeOutQuint], [3.5, 3.6, 0, easeOutQuint], [5.15, 5.25, 0.15, easeOutQuint],
-    [5.6, 5.7, 0, easeOutQuint], [8.55, 8.65, 0.22, easeOutQuint], [C + 0.15, C + 0.3, 0, easeOutQuint]]);
-  robot.look(down, right);
+  robot.look(hd.lookDown, hd.lookRight);
   const blink = Math.max(bump((t - 2.0) / 0.14), bump((t - 5.0) / 0.14), bump((t - (C + 0.35)) / 0.14), bump((t - (ASIDE[0] + 0.3)) / 0.14));
-  const warm = clamp01(sstep(ramp(t, [FLIP, FLIP + 0.15])) + her.warmth);
-  const happy = bump((t - FLIP - 0.12) / 0.75);
-  robot.setEyes(eyeGlow(t) * her.eyeGlow, sstep(ramp(t, [0.95, 1.2])) * (1 - Math.max(blink, her.blink)));
+  const eyes = keyed('Her / eyes', { glow: eyeGlow(t), open: sstep(ramp(t, [0.95, 1.2])) * (1 - blink),
+    warm: sstep(ramp(t, [FLIP, FLIP + 0.15])), happy: Math.max(bump((t - FLIP - 0.12) / 0.75), 0.85 * bump((t - (C + 0.9)) / 0.7)) });
+  const warm = clamp01(eyes.warm);
+  robot.setEyes(eyes.glow, clamp01(eyes.open));
   // cold: a dim, deep red-orange, the iris texture's detail kept but darkened; warm: bright, a light orange matching
   // the site (#e8823f) over the texture's own highlights
   if (robot.mats.iris) {
@@ -1104,7 +1128,7 @@ function prologue(t) {
     iris.color.multiplyScalar(mix(0.35, 1, warm));
   }
   if (robot.morph && 'happy' in robot.morph.morphTargetDictionary) {
-    robot.morph.morphTargetInfluences[robot.morph.morphTargetDictionary.happy] = clamp01(Math.max(happy, 0.85 * bump((t - (C + 0.9)) / 0.7)) + her.happy);
+    robot.morph.morphTargetInfluences[robot.morph.morphTargetDictionary.happy] = clamp01(eyes.happy);
   }
 
   // ---- arms ----
@@ -1138,9 +1162,6 @@ function prologue(t) {
     [C + 0.15, C + 0.55, POCKET_DIR], [C + 0.6, C + 0.85, CLASP_DIR.R], [ASIDE[0], ASIDE[1], REST_DIR]]);
   const rUp = trackV(t, V(0, 0, 1), [[2.1, 2.6, V(0, 0, 1)], [3.75, 4.2, TIDY_UP.R], [4.95, 5.25, V(0, 0, 1)], [5.68, 6.0, V(0, 1, -0.2)],
     [6.05, 6.6, wipeUpL, easeInOutCubic], [8.6, 9.6, V(0, 1, 0), easeInOutCubic], [C + 0.15, C + 0.55, V(0, 0, 1)]]);
-  robot.reach(R.clone().add(V(...her.rightHand)));
-  robot.aim(rDir, rUp.normalize(), 0.08 * Math.sin((t - 2.7) * 4) * bump((t - 2.6) / 1.0));
-
   const L = trackV(t, robot.left.hang, [
     [2.15, 2.65, UP.L, easeOutCubic, V(0, 0.04, 0.1)],
     [3.8, 4.25, pinchAt(tipL, 'L'), easeOutCubic, V(0, 0.05, 0.05)],
@@ -1149,10 +1170,14 @@ function prologue(t) {
     [ASIDE[0], ASIDE[1], robot.left.hang, easeOutCubic],
   ]);
   if (t > 4.25 && t < 4.95) L.copy(pinchAt(tipL, 'L'));
+  const hands = keyed('Her / hands', { right: R.toArray(), left: L.toArray() });
+  robot.reach(V(...hands.right));
+  robot.aim(rDir, rUp.normalize(), 0.08 * Math.sin((t - 2.7) * 4) * bump((t - 2.6) / 1.0));
+
   const lDir = trackV(t, REST_DIR, [[2.15, 2.65, UP_DIR.L], [3.8, 4.25, TIDY_DIR.L], [4.95, 5.35, REST_DIR], [C + 0.6, C + 0.85, CLASP_DIR.L],
     [ASIDE[0], ASIDE[1], REST_DIR]]);
   const lUp = trackV(t, V(0, 0, 1), [[2.15, 2.65, V(0, 0, 1)], [3.8, 4.25, TIDY_UP.L], [4.95, 5.35, V(0, 0, 1)]]);
-  robot.left.reach(L.clone().add(V(...her.leftHand)));
+  robot.left.reach(V(...hands.left));
   robot.left.aim(lDir, lUp.normalize(), -0.08 * Math.sin((t - 2.75) * 4) * bump((t - 2.65) / 1.0));
 
   // Fingers. Hands up: a quick human wiggle, two passes thumb→pinky and back, on both hands. Headdress: thumb and
@@ -1189,12 +1214,17 @@ function prologue(t) {
   }
 
   // ---- light ----
-  handFill.intensity = lights.herFill * 0.25 * sstep(ramp(t, [2.1, 2.6])) * (1 - sstep(ramp(t, [8.0, 8.6])));
-  proRim.intensity = lights.herFill * 1.4 * sstep(ramp(t, [8.6, 9.5])) * (1 - sstep(ramp(t, [ASIDE[0], ASIDE[1]])));
+  const sl = keyed('Lights / scene', { handFill: 0.25 * sstep(ramp(t, [2.1, 2.6])) * (1 - sstep(ramp(t, [8.0, 8.6]))),
+    rim: 1.4 * sstep(ramp(t, [8.6, 9.5])) * (1 - sstep(ramp(t, [ASIDE[0], ASIDE[1]]))),
+    screenLit: sstep(ramp(t, [C + WARM + 0.3, C + WARM + 1.0])),
+    room: t < PRO_END ? 0 : t < ASIDE[1] ? sstep(ramp(t, [ASIDE[1] - 1.0, ASIDE[1]])) : 1 });
+  handFill.intensity = lights.herFill * Math.max(0, sl.handFill);
+  proRim.intensity = lights.herFill * Math.max(0, sl.rim);
   // The standby LED pulses slowly; it brightens as she turns to it.
   ledPulse = (0.85 + 0.25 * Math.sin(t * (2 * Math.PI / 1.4))) * (1 + 0.6 * sstep(ramp(t, [8.6, 9.2])));
   // Toon shading: a dim floor and a cool moonlit rim in the dark; once the screen is on she's lit by it.
-  const lit = sstep(ramp(t, [C + WARM + 0.3, C + WARM + 1.0]));
+  const lit = clamp01(sl.screenLit);
+  roomLight = Math.max(0, sl.room);
   robot.toon.uAmb.value = mix(TUNE.light.ambient, 0.08, lit);
   robot.toon.uRim.value = lights.herRim * mix(TUNE.light.rim, 0.9, lit);   // the screen behind the glass makes a bright halo on her silhouette
   robot.toon.uRimColor.value.set(lit > 0.5 ? '#e8eefc' : '#9fb4e0');
@@ -1226,7 +1256,7 @@ const soundBtn = el('button', 'prologue-sound'); soundBtn.type = 'button';
 const showSound = () => { soundBtn.textContent = `SOUND: ${sfx.on ? 'ON' : 'OFF'}`; };
 soundBtn.addEventListener('click', () => { sfx.setOn(!sfx.on); showSound(); });
 showSound();
-let prevStory = 0;
+let prevStory = 0, roomLight = 1;
 
 const flash = el('div', 'prologue-flash');
 function master(time) {
@@ -1243,15 +1273,14 @@ function master(time) {
     ledMat.emissiveIntensity *= ledPulse; ledLight.intensity *= ledPulse;
     uniforms.uRefl.value = 1;
   }
+  key.intensity *= roomLight; rim.intensity *= roomLight;   // (prologue's Lights / scene: off until she's out of the boot's shot)
   if (t < PRO_END) {
-    key.intensity = 0; rim.intensity = 0; scene.environmentIntensity = 0;
+    scene.environmentIntensity = 0;
     bloom.strength = Math.max(bloom.strength * 0.7, P.bloom * 0.6);
   }
-  // Room light waits until she has stepped out of the boot's shot (it blows out her hair).
-  if (t < ASIDE[1]) { const k = sstep(ramp(t, [ASIDE[1] - 1.0, ASIDE[1]])); key.intensity *= k; rim.intensity *= k; }
   // Impact frame: two inverted frames on the click.
   flash.style.opacity = t >= CLICK && t < CLICK + 0.035 ? 1 : 0;
-  const L = TL.read('Lights');
+  const L = TL.read('Lights / gain');
   key.intensity *= L.room; rim.intensity *= L.room; scene.environmentIntensity *= L.room;
   screenLight.intensity *= L.screen; bloom.strength *= L.bloom; uniforms.uRefl.value *= L.reflection;
 }
@@ -1269,6 +1298,17 @@ function timelineCamera() {
   camera.quaternion.slerp(_camQ, k);
   camera.fov = mix(camera.fov, c.fov, k);
   camera.updateProjectionMatrix();
+}
+/** The script's keyable values at each story time in `times` ({ object: [{ prop: value }, …] }), for seed.js. */
+function sampleScript(times) {
+  const out = {};
+  scriptOnly = true;
+  for (const t of times) {
+    prologue(t);
+    for (const [k, v] of Object.entries(SCRIPT)) (out[k] ??= []).push(v);
+  }
+  scriptOnly = false;
+  return out;
 }
 /** The scripted camera at story time t, as a position, a target 1 m ahead and a fov (to seed the Camera's keys). */
 function scriptCamera(t) {
@@ -1365,10 +1405,10 @@ if (opts.probe) setTimeout(() => {
 if (opts.startAt != null) seekTo(opts.startAt);
 // debug: window.prologueSeek(t) pauses at story-clock time t (frame-by-frame recording); returns the length.
 if (opts.debug) Object.assign(window, { prologueSeek: (t) => { seekTo(t); return TOTAL; }, prologueTimes: { CLICK, WARM, TOTAL, SLOW_EXTRA, HANDOFF, story: (t) => story(t), positionAt, BEATS,
-  pullBack: [AWAY.t0, PRO_END], scriptCamera },
+  pullBack: [AWAY.t0, PRO_END], scriptCamera, sampleScript },
   prologueNow: () => (studioClock ? seq.position : P.time),
   prologuePlay: () => togglePlay(), prologuePlaying: () => (studioClock ? seqPlaying : P.playing),
-  prologueCamera: () => ({ position: camera.position.toArray(), fov: camera.fov }), prologueScene: () => ({ time: P.time, story: story(P.time) }) });
+  prologueCamera: () => ({ position: camera.position.toArray(), fov: camera.fov }), prologueTimeline: TL, prologueScene: () => ({ time: P.time, story: story(P.time) }) });
 
 renderer.setAnimationLoop(() => {
   let pos;
