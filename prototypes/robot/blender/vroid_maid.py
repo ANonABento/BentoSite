@@ -327,10 +327,78 @@ def robot_hands():
         attach(f'{S}_thumb_pad', pad, ceramic, arm, f'{S}Hand')
 
 
+def pill(a, b, r, seg=24):
+    """A rounded cylinder from a to b: its end edges bevelled into soft domes (never more than the length allows)."""
+    d = b - a
+    bm = ring((a + b) / 2, d, r, d.length, seg)
+    caps = [e for e in bm.edges if all(len(v.link_edges) >= 3 for v in e.verts) and abs((e.verts[0].co - e.verts[1].co).normalized().dot(d.normalized())) < 0.5]
+    bmesh.ops.bevel(bm, geom=caps, offset=min(r * 0.7, d.length * 0.45), segments=5, affect='EDGES', profile=0.5)
+    return bm
+
+
+def robot_hands_sculpt():
+    """Robot hands after the FLUX concept (vendor/explore/hand/hand-s377.png): a smooth one-piece palm shell (metaballs
+    blended along the palm, the knuckles and the thumb's root), capsule finger segments that nearly touch, and thin
+    dark joint rings sunk in the gaps instead of big balls. Every piece rides its own bone, as before."""
+    arm = next(o for o in bpy.data.objects if o.type == 'ARMATURE')
+    body = bpy.data.objects['Body']
+    W = lambda b: arm.matrix_world @ arm.data.bones[b].head_local
+    ceramic, gun = bpy.data.materials['B01_hw_ceramic'], bpy.data.materials['B01_hw_gun']
+    me = body.data
+    for S in ('Right', 'Left'):
+        names = {f'{S}Hand'} | {f'{S}Hand{f}{i}' for f in ('Thumb', 'Index', 'Middle', 'Ring', 'Pinky') for i in (1, 2, 3)}
+        gi = {g.index for g in body.vertex_groups if g.name in names}
+        hand_v = {v.index for v in me.vertices if sum(g.weight for g in v.groups if g.group in gi) > 0.5}
+        bm = bmesh.new(); bm.from_mesh(me)
+        bmesh.ops.delete(bm, geom=[f for f in bm.faces if all(v.index in hand_v for v in f.verts)], context='FACES')
+        bm.to_mesh(me); bm.free()
+
+        w0, m1, i1, p1 = W(f'{S}Hand'), W(f'{S}HandMiddle1'), W(f'{S}HandIndex1'), W(f'{S}HandPinky1')
+        fwd = (m1 - w0); acr = (i1 - p1); up = fwd.cross(acr).normalized()
+        if S == 'Left': up = -up
+        fwd_n, acr_n = fwd.normalized(), acr.normalized()
+
+        # palm: metaballs in the world frame, converted to one smooth mesh
+        mb = bpy.data.metaballs.new(f'{S}_palm_mb'); mb.resolution = 0.0016; mb.threshold = 0.6
+        mo = bpy.data.objects.new(f'{S}_palm_mb', mb); bpy.context.scene.collection.objects.link(mo)
+        rot = Matrix((acr_n, up, fwd_n)).transposed().to_quaternion()
+        def blob(c, hx, hy, hz, q=rot):
+            e = mb.elements.new(); e.type = 'ELLIPSOID'; e.co = c; e.radius = 0.02
+            e.size_x, e.size_y, e.size_z = hx / 0.0104, hy / 0.0104, hz / 0.0104
+            e.rotation = q
+        c = w0 + fwd * 0.5
+        blob(c, acr.length * 0.6, 0.011, fwd.length * 0.42)                  # the palm
+        blob(w0 + fwd * 0.12, acr.length * 0.42, 0.0105, fwd.length * 0.2)    # the heel, narrowing into the wrist
+        for f in ('Index', 'Middle', 'Ring', 'Pinky'):                         # knuckles: the shell rounds over each
+            blob(W(f'{S}Hand{f}1') - fwd_n * 0.006, 0.0095, 0.0095, 0.009)
+        t1 = W(f'{S}HandThumb1'); heel = c - fwd * 0.25 + acr * 0.3
+        span = t1 - heel
+        blob((t1 + heel) / 2, 0.012, 0.0105, span.length * 0.5,
+             Vector((0, 0, 1)).rotation_difference(span.normalized()))       # the thumb's root
+        dg = bpy.context.evaluated_depsgraph_get()
+        pm = bpy.data.meshes.new_from_object(mo.evaluated_get(dg))
+        bpy.data.objects.remove(mo); bpy.data.metaballs.remove(mb)
+        pb = bmesh.new(); pb.from_mesh(pm); bpy.data.meshes.remove(pm)
+        attach(f'{S}_palm', pb, ceramic, arm, f'{S}Hand')
+
+        # fingers: capsules a little shorter than each bone, a sunk dark ring in each gap
+        for f, r in (('Thumb', 0.0098), ('Index', 0.0088), ('Middle', 0.0091), ('Ring', 0.0085), ('Pinky', 0.0074)):
+            pts = [W(f'{S}Hand{f}{i}') for i in (1, 2, 3)]
+            pts.append(pts[2] + (pts[2] - pts[1]) * 0.9)
+            for i in range(3):
+                bone = f'{S}Hand{f}{i + 1}'
+                a, b_ = pts[i], pts[i + 1]; d = b_ - a
+                rr = r * (1 - 0.08 * i)
+                gap = d.length * 0.12
+                dn = d.normalized()
+                attach(f'{bone}_seg', pill(a + dn * gap * 0.5, b_ - dn * (gap * 0.5 if i < 2 else 0), rr * 0.95), ceramic, arm, bone)
+                attach(f'{bone}_ring', ring(a, d, rr * 0.8, gap * 1.4, 24), gun, arm, bone)
+
+
 def before_export():
     restyle_textures()
     add_hardware()
-    robot_hands()
+    robot_hands_sculpt() if os.environ.get('MAID_HANDS') == 'sculpt' else robot_hands()
 
 
 if __name__ == '__main__':

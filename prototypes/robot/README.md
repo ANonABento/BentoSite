@@ -17,6 +17,12 @@ cd ../crt-site && npx @gltf-transform/cli optimize assets/x-vroid-e.glb assets/r
   --compress meshopt --texture-compress webp --texture-size 1024 --join false
 ```
 
+### Hands
+`MAID_HANDS=sculpt` swaps the primitive hands for ones after the FLUX concept (`vendor/explore/hand/hand-s377.png`):
+a smooth palm shell blended from metaballs, rounded finger segments and thin sunk joint rings. `renders/hands.png`
+compares current, sculpted, a Hunyuan3D-2 generation from the concept (`vendor/explore/hand/hand-hy2.glb`: one fused
+mesh in a fixed pose, so it would have to be cut along her bones to animate) and the concept (2026-10-31, undecided).
+
 ### Other bases
 `MAID_CLOTH=generic` makes `vroid_maid.py` recolour any outfit: its main colour goes black, other colours orange,
 light neutrals white. `renders/bases.png` compares the CC0 samples D, Sendagaya Shino, F, G, D Darkness and Sakurada
