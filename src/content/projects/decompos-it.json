@@ -16,8 +16,9 @@
     "github": "https://github.com/ANonABento/Decompos_It"
   },
   "media": {
-    "featuredImage": "/projects/decompos-it/hero.png",
+    "featuredImage": "/projects/decompos-it/app-label.webp",
     "images": [
+      "/projects/decompos-it/app-label.webp",
       "/projects/decompos-it/hero.png",
       "/projects/decompos-it/screen-2.png"
     ]

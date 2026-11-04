@@ -43,6 +43,11 @@
         "kind": "video",
         "src": "/projects/venturesauce/walkthrough.mp4",
         "label": "Walkthrough"
+      },
+      {
+        "kind": "pdf",
+        "src": "/projects/venturesauce/pitch-deck.pdf",
+        "label": "Pitch deck"
       }
     ]
   },

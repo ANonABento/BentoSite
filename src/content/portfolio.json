@@ -22,6 +22,7 @@
   "highlights": [
     "flowto",
     "pomme",
+    "waldo",
     "shoulder-cupid"
   ],
   "about": "Forward Deployed Engineer at RLWRLD, turning teleoperation data into robot foundation-model training sets, and a Computer Engineering student at the University of Waterloo. I've built exoskeleton controllers and AprilTag tracking for robot-arm teleop in Tokyo, on-device AI for robots at hackathons, and production AI systems at a YC startup.",

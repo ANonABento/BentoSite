@@ -57,7 +57,8 @@
         "src": "https://youtu.be/-jQ8fRKn3Ms",
         "label": "Demo video"
       }
-    ]
+    ],
+    "preview": "/projects/litter-caching/preview.mp4"
   },
   "dateCompleted": "2025-02"
 }

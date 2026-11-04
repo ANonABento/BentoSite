@@ -37,6 +37,11 @@
         "kind": "embed",
         "src": "https://drive.google.com/file/d/1KMhThLVdrVpf-7rpTI65tPrrdOK7BGvP/preview",
         "label": "Demo video"
+      },
+      {
+        "kind": "pdf",
+        "src": "/projects/wreckless/deck.pdf",
+        "label": "Pitch deck"
       }
     ]
   },

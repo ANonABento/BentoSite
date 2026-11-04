@@ -1,0 +1,50 @@
+{
+  "id": "how-to-robot",
+  "name": "How To Robot",
+  "shortDescription": "Research pipeline that turns web video of people's hands into robot training data: 3D hand trajectories, retargeted to an arm, exported as LeRobot datasets.",
+  "description": "Teleoperation can't produce the volume of trajectories robot foundation models need, so How To Robot treats web video as the corpus instead. Give it a task (\"how to pour tea\"), and it finds clips, recovers 3D hand trajectories, re-expresses them relative to the object, retargets them onto a robot and exports LeRobot datasets and policies.\n\nHighlights:\n- Pipeline math tested end to end on toy data: hand pose to a 7-DOF task vector, atomic action segmentation (reach / grasp / manipulate / release), jitter augmentation, trajectory clustering and evaluation stats with a rollout logger.\n- SO-101 retargeting and a MuJoCo sim environment, LeRobot dataset export, an ACT training script and closed-loop sim evaluation; the first toy ACT policy succeeds 10/10 in sim.\n- Scoped as a research project: a feasibility review, research plan, open-questions log, an evaluation plan with three tasks and baselines, and a novel-view idea for synthesising robot-eye views from egocentric clips.",
+  "category": "Robotics",
+  "context": "Research",
+  "status": "In Progress",
+  "technologies": [
+    "Python",
+    "MuJoCo",
+    "LeRobot",
+    "ACT",
+    "PyTorch",
+    "MediaPipe",
+    "WiLoR",
+    "GVHMR",
+    "Rerun"
+  ],
+  "links": {},
+  "media": {
+    "featuredImage": "/projects/how-to-robot/sim-45.webp",
+    "images": [
+      "/projects/how-to-robot/sim-45.webp",
+      "/projects/how-to-robot/sim-90.webp",
+      "/projects/how-to-robot/contact-strip.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/how-to-robot/sim-45.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/how-to-robot/sim-90.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/how-to-robot/contact-strip.webp"
+      },
+      {
+        "kind": "video",
+        "src": "/projects/how-to-robot/replay.mp4",
+        "label": "Sim replay"
+      }
+    ],
+    "preview": "/projects/how-to-robot/preview.mp4"
+  },
+  "dateCompleted": "2026-10"
+}

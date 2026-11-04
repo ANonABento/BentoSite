@@ -51,7 +51,8 @@
         "src": "https://youtu.be/eU16VdNeQ-E",
         "label": "Demo video"
       }
-    ]
+    ],
+    "preview": "/projects/snapfire/preview.mp4"
   },
   "dateCompleted": "2023-11"
 }

@@ -1,0 +1,21 @@
+{
+  "id": "nps",
+  "name": "NPS: Non-Player-Soul",
+  "shortDescription": "Local-first runtime for living game NPCs: a Unity package that gives characters memory, personality and tools, with the engine keeping the final say.",
+  "description": "NPS is the base of a reusable, plug-and-play NPC runtime for Unity. The language model isn't the game engine: it's a constrained planner and dialogue layer, and Unity owns sensing, validation, movement and every state change. Many NPCs share one local model behind a sidecar; each keeps its own profile, memories, goals and tool permissions.\n\nHighlights:\n- A portable runtime MVP: agent and command loops, typed tools with an authoring API, world-rule validation, world-state and memory types, and local model providers.\n- A typed-command bank sample scene for the first proving game, Bobbie & Claude, a small bank robbery where you talk your AI partner through guards and keycards.\n- An evaluation harness with traces, provider smoke tests and trial reports, so behaviour can be compared across models.",
+  "category": "Games",
+  "context": "Personal",
+  "status": "In Progress",
+  "technologies": [
+    "C#",
+    "Unity",
+    "llama.cpp",
+    "Ollama",
+    "whisper.cpp"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento/nps"
+  },
+  "media": {},
+  "dateCompleted": "2026-05"
+}

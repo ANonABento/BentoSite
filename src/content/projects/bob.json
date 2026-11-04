@@ -1,0 +1,37 @@
+{
+  "id": "bob",
+  "name": "BOB: Baseline Object Broker",
+  "shortDescription": "Measure real objects from a photo in the browser: OpenCV.js finds a $1 coin for scale, then gives every edge and perimeter in millimetres.",
+  "description": "BOB is a client-side measurement tool. A Canadian $1 coin (26.5 mm) in the photo sets the pixels-per-millimetre scale, and every other object's edges and perimeter follow from it. All the vision runs in the browser with OpenCV.js.\n\nHighlights:\n- Contour detection with edge detection and polygon approximation, drawn as overlays that follow each object's real shape and scale with the view.\n- Automatic coin detection by circularity and size, or manual calibration by clicking two points.\n- Select, name and colour objects, or click out a custom polygon to measure something the detector missed.",
+  "category": "Software",
+  "context": "Personal",
+  "status": "Completed",
+  "technologies": [
+    "JavaScript",
+    "React",
+    "Vite",
+    "OpenCV.js",
+    "Tailwind"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento/BOB-BaselineObjectBroker"
+  },
+  "media": {
+    "featuredImage": "/projects/bob/measure.webp",
+    "images": [
+      "/projects/bob/measure.webp",
+      "/projects/bob/app.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/bob/app.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/bob/measure.webp"
+      }
+    ]
+  },
+  "dateCompleted": "2025-11"
+}

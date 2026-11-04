@@ -78,6 +78,8 @@ export interface ProjectCardData extends BaseCardData {
   date?: string;
   /** How the card frames its image, from the layout. */
   look?: CardLook;
+  /** A few seconds of real footage, muted and looped while the card is hovered. */
+  preview?: string;
 }
 
 export interface PhotoCardData extends BaseCardData {

@@ -61,3 +61,6 @@ prototypes/crt-site/assets/robot-c1.glb
 prototypes/crt-site/assets/robot-t3.glb
 prototypes/crt-site/assets/x-*.glb
 prototypes/crt-site/.frames/
+
+# python
+__pycache__/

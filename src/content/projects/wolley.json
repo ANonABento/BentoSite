@@ -1,0 +1,38 @@
+{
+  "id": "wolley",
+  "name": "Wolley",
+  "shortDescription": "Drone autonomy for GPS- and comms-denied flight: reads cues from its camera, carries them through a blackout and picks the one real target among decoys, in sim.",
+  "description": "Wolley (\"yellow\", reversed) is a ROS 2 autonomy stack for a drone in Project AirSim, built in six hours on a course the team had never seen. The course is a puzzle standing in for a real mission: a green arrow sets the first turn, a count of blue spheres sets the second, and the pair decides which of four vehicles (three of them decoys) is the target. The ice-cream truck has to be landed beside, not flown into.\n\nHighlights:\n- Onboard-camera vision for the cues (arrow colour and direction, sphere count) and a cue tracker that remembers them long after they leave the frame.\n- A mission state machine, planner and path follower that fly the route without GPS or a pilot, then discriminate the correct vehicle and deliver.\n- Pure logic modules with unit tests (vision, cue tracking, flight geometry, mission FSM, planning), a mock mission, Docker for the ROS 2 side and a Foxglove layout for watching runs.",
+  "category": "Robotics",
+  "context": "Hackathon (6 hours)",
+  "status": "Completed",
+  "technologies": [
+    "Python",
+    "ROS2",
+    "Project AirSim",
+    "OpenCV",
+    "Docker",
+    "Foxglove"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento/TeamWolley"
+  },
+  "media": {
+    "featuredImage": "/projects/wolley/hero.webp",
+    "images": [
+      "/projects/wolley/hero.webp",
+      "/projects/wolley/close.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/wolley/hero.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/wolley/close.webp"
+      }
+    ]
+  },
+  "dateCompleted": "2026-06"
+}

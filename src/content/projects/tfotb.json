@@ -28,6 +28,34 @@
       "/projects/tfotb/dossier.webp",
       "/projects/tfotb/evidence.webp",
       "/projects/tfotb/robotics.webp"
-    ]
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/tfotb/hero.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/tfotb/graph.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/tfotb/dossier.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/tfotb/evidence.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/tfotb/robotics.webp"
+      },
+      {
+        "kind": "video",
+        "src": "/projects/tfotb/walkthrough.mp4",
+        "label": "Walkthrough"
+      }
+    ],
+    "preview": "/projects/tfotb/preview.mp4"
   }
 }

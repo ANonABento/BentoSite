@@ -11,12 +11,14 @@
  * The footer carries the title, the category (in its own hue) and the date,
  * or `wip` for work in progress, so the grid scans without hovering and the
  * text never sits on top of a busy screenshot, plus the one-line
- * description. The award badge sits in the image's corner, spelled out
+ * description. A card with a `preview` (a few seconds of real footage)
+ * plays it, muted and looped, over the image while it's hovered. The award badge sits in the image's corner, spelled out
  * when the card has room. Card click navigates; github/demo links live on the project page.
  */
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useReducedMotion } from 'framer-motion';
 import type { ProjectCardData, CardPosition, ThemeConfig } from '../BentoGrid.types';
 import { cardSpan } from '../BentoGrid.constants';
 import { BaseCard } from './BaseCard';
@@ -72,6 +74,8 @@ export function ProjectCard({
   const zoom = look.zoom ?? 1;
   // A one-row card has no room for the description under its image.
   const showDescription = Boolean(card.description) && (look.description ?? position.height > 300);
+  const reducedMotion = useReducedMotion();
+  const playPreview = Boolean(card.preview) && isHovered && !reducedMotion;
 
   return (
     <BaseCard
@@ -136,6 +140,7 @@ export function ProjectCard({
                 </span>
               </div>
             )}
+            {playPreview && <PreviewClip src={card.preview!} />}
             {card.award && (
               <span
                 className="absolute right-2 top-2 max-w-[calc(100%-1rem)] truncate rounded-md bg-black/75 px-1.5 py-1 text-[11px] font-medium leading-none text-orange backdrop-blur-sm"
@@ -226,5 +231,29 @@ function TextBody({ card, hue, big, highlighted }: { card: ProjectCardData; hue:
       ) : null}
       {card.description ? <p className="line-clamp-[8] min-h-0 overflow-hidden text-sm leading-snug text-ash">{card.description}</p> : null}
     </div>
+  );
+}
+
+/**
+ * The hover clip. It mounts only while the card is hovered (so a board of
+ * repeated tiles never holds dozens of videos) and fades in once it's
+ * actually playing, so a slow load shows the still rather than a black box.
+ */
+function PreviewClip({ src }: { src: string }) {
+  const [playing, setPlaying] = useState(false);
+  return (
+    <video
+      src={src}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="auto"
+      aria-hidden
+      onPlaying={() => setPlaying(true)}
+      className={`pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${
+        playing ? 'opacity-100' : 'opacity-0'
+      }`}
+    />
   );
 }

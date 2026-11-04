@@ -89,7 +89,15 @@ export const DesktopCardLayer = memo(function DesktopCardLayer({
           return (
             <div
               key={key}
-              className={`transition-opacity duration-500 ${faded ? 'opacity-15' : dark ? 'opacity-40 hover:opacity-100 hover:duration-200' : ''}`}
+              // Muted cards lose their colour rather than turning see-through, so the tray doesn't muddy
+              // them and a lit card's colour is what pops. A dark (unlit) card gets its colour back on hover.
+              className={`transition-[filter,opacity] duration-500 ${
+                faded
+                  ? 'opacity-30 [filter:grayscale(1)_brightness(0.6)]'
+                  : dark
+                    ? '[filter:grayscale(1)_brightness(0.6)] hover:[filter:none] hover:duration-200'
+                    : ''
+              }`}
               style={{ pointerEvents: faded ? 'none' : undefined }}
             >
               {renderCard(
@@ -137,7 +145,7 @@ function StandIn({ layout, card, radius, dark }: { layout: CardPosition; card: C
         width: layout.width,
         height: layout.height,
         transform: `translate(${layout.x}px, ${layout.y}px)`,
-        opacity: dark ? 0.4 : undefined,
+        filter: dark ? 'grayscale(1) brightness(0.6)' : undefined,
       }}
     >
       <div

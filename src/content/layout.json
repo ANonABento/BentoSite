@@ -1,51 +1,24 @@
 {
-  "cols": 17,
+  "cols": 18,
   "rows": 9,
   "cards": [
     {
-      "id": "pcb-design",
-      "col": 3,
+      "id": "one-handed-keyboard",
+      "col": 0,
       "row": 0,
       "w": 2,
-      "h": 2
+      "h": 3
     },
     {
-      "id": "unity-game-dev",
-      "col": 5,
+      "id": "wreckless",
+      "col": 2,
       "row": 0,
-      "w": 2,
-      "h": 2,
-      "look": {
-        "image": "/projects/unity-game-dev/entitled-goose-game.png"
-      }
-    },
-    {
-      "id": "vr-haptic-gloves",
-      "col": 7,
-      "row": 0,
-      "w": 3,
-      "h": 2
-    },
-    {
-      "id": "tfotb",
-      "col": 10,
-      "row": 0,
-      "w": 3,
-      "h": 2,
-      "look": {
-        "image": "/projects/tfotb/graph.webp"
-      }
-    },
-    {
-      "id": "the-closet",
-      "col": 13,
-      "row": 0,
-      "w": 2,
-      "h": 2
+      "w": 4,
+      "h": 1
     },
     {
       "id": "ar-gesture-robot",
-      "col": 15,
+      "col": 6,
       "row": 0,
       "w": 2,
       "h": 3,
@@ -54,127 +27,116 @@
       }
     },
     {
-      "id": "litter-caching",
-      "col": 1,
-      "row": 1,
+      "id": "venturesauce",
+      "col": 8,
+      "row": 0,
       "w": 2,
-      "h": 2,
+      "h": 3,
+      "look": {
+        "image": "/projects/venturesauce/inbox.webp",
+        "focus": [
+          45,
+          0
+        ]
+      }
+    },
+    {
+      "id": "bob",
+      "col": 10,
+      "row": 0,
+      "w": 2,
+      "h": 1
+    },
+    {
+      "id": "litter-caching",
+      "col": 12,
+      "row": 0,
+      "w": 2,
+      "h": 3,
       "look": {
         "image": "/projects/litter-caching/grabber.webp"
       }
     },
     {
-      "id": "one-handed-keyboard",
-      "col": 3,
-      "row": 2,
+      "id": "slothing",
+      "col": 14,
+      "row": 0,
       "w": 2,
-      "h": 3
+      "h": 3,
+      "look": {
+        "focus": [
+          25,
+          50
+        ]
+      }
+    },
+    {
+      "id": "choomfie",
+      "col": 16,
+      "row": 0,
+      "w": 2,
+      "h": 3,
+      "look": {
+        "variant": "text"
+      }
     },
     {
       "id": "baseline",
-      "col": 5,
-      "row": 2,
+      "col": 2,
+      "row": 1,
       "w": 4,
       "h": 2
     },
     {
-      "id": "ftc-robotics",
-      "col": 9,
-      "row": 2,
+      "id": "expressive-ai-robot-head",
+      "col": 10,
+      "row": 1,
       "w": 2,
       "h": 2
     },
     {
-      "id": "snapfire",
-      "col": 11,
-      "row": 2,
-      "w": 2,
-      "h": 2
-    },
-    {
-      "id": "flowto",
+      "id": "decompos-it",
       "col": 0,
+      "row": 3,
+      "w": 1,
+      "h": 2
+    },
+    {
+      "id": "unity-game-dev",
+      "col": 1,
+      "row": 3,
+      "w": 3,
+      "h": 2,
+      "look": {
+        "image": "/projects/unity-game-dev/entitled-goose-game.png"
+      }
+    },
+    {
+      "id": "vr-haptic-gloves",
+      "col": 4,
       "row": 3,
       "w": 3,
       "h": 2
     },
     {
-      "id": "choomfie",
-      "col": 13,
-      "row": 3,
-      "w": 2,
-      "h": 3
-    },
-    {
-      "id": "decompos-it",
-      "col": 15,
-      "row": 3,
-      "w": 2,
-      "h": 3
-    },
-    {
       "id": "intro",
-      "col": 5,
-      "row": 4,
+      "col": 7,
+      "row": 3,
       "w": 3,
       "h": 2
     },
     {
       "id": "search",
-      "col": 8,
-      "row": 4,
-      "w": 2,
-      "h": 1
-    },
-    {
-      "id": "expressive-ai-robot-head",
       "col": 10,
-      "row": 4,
-      "w": 2,
-      "h": 2
-    },
-    {
-      "id": "trash-can-robot",
-      "col": 12,
-      "row": 4,
-      "w": 1,
-      "h": 2,
-      "look": {
-        "focus": [
-          49,
-          41
-        ]
-      }
-    },
-    {
-      "id": "component-cop",
-      "col": 0,
-      "row": 5,
-      "w": 2,
-      "h": 2
-    },
-    {
-      "id": "robotic-arm-puppeteer",
-      "col": 2,
-      "row": 5,
-      "w": 3,
-      "h": 2,
-      "look": {
-        "image": "/projects/robotic-arm-puppeteer/render.webp"
-      }
-    },
-    {
-      "id": "contact",
-      "col": 8,
-      "row": 5,
+      "row": 3,
       "w": 2,
       "h": 1
     },
     {
       "id": "pomme",
-      "col": 5,
-      "row": 6,
-      "w": 2,
+      "col": 12,
+      "row": 3,
+      "w": 3,
       "h": 2,
       "look": {
         "image": "/projects/pomme/robot-side.webp",
@@ -187,8 +149,8 @@
     },
     {
       "id": "taser-derby",
-      "col": 7,
-      "row": 6,
+      "col": 15,
+      "row": 3,
       "w": 2,
       "h": 2,
       "look": {
@@ -196,67 +158,175 @@
       }
     },
     {
-      "id": "slothing",
-      "col": 9,
-      "row": 6,
-      "w": 3,
-      "h": 2
+      "id": "trash-can-robot",
+      "col": 17,
+      "row": 3,
+      "w": 1,
+      "h": 2,
+      "look": {
+        "focus": [
+          49,
+          41
+        ]
+      }
     },
     {
-      "id": "dead-internet-reality",
-      "col": 12,
-      "row": 6,
-      "w": 2,
-      "h": 2
-    },
-    {
-      "id": "shoulder-cupid",
-      "col": 14,
-      "row": 6,
+      "id": "contact",
+      "col": 10,
+      "row": 4,
       "w": 2,
       "h": 1
     },
     {
-      "id": "bentosite",
-      "col": 1,
-      "row": 7,
+      "id": "wolley",
+      "col": 0,
+      "row": 5,
       "w": 2,
-      "h": 2
+      "h": 1,
+      "look": {
+        "variant": "text"
+      }
     },
     {
-      "id": "venturesauce",
-      "col": 3,
-      "row": 7,
+      "id": "clanker-spanker",
+      "col": 2,
+      "row": 5,
       "w": 2,
       "h": 2,
       "look": {
-        "image": "/projects/venturesauce/inbox.webp",
+        "zoom": 1.5,
         "focus": [
-          45,
+          0,
           0
         ]
       }
     },
     {
-      "id": "bento-ya",
+      "id": "bentosite",
+      "col": 4,
+      "row": 5,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "robotic-arm-puppeteer",
+      "col": 6,
+      "row": 5,
+      "w": 3,
+      "h": 2,
+      "look": {
+        "image": "/projects/robotic-arm-puppeteer/render.webp"
+      }
+    },
+    {
+      "id": "flowto",
+      "col": 9,
+      "row": 5,
+      "w": 3,
+      "h": 2
+    },
+    {
+      "id": "shoulder-cupid",
+      "col": 12,
+      "row": 5,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "ftc-robotics",
       "col": 14,
+      "row": 5,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "dead-internet-reality",
+      "col": 16,
+      "row": 5,
+      "w": 2,
+      "h": 2,
+      "look": {
+        "variant": "text"
+      }
+    },
+    {
+      "id": "the-closet",
+      "col": 0,
+      "row": 6,
+      "w": 2,
+      "h": 1,
+      "look": {
+        "focus": [
+          50,
+          62
+        ]
+      }
+    },
+    {
+      "id": "nps",
+      "col": 0,
+      "row": 7,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "waldo",
+      "col": 2,
       "row": 7,
       "w": 3,
       "h": 2
     },
     {
-      "id": "wreckless",
+      "id": "component-cop",
       "col": 5,
-      "row": 8,
-      "w": 4,
-      "h": 1
+      "row": 7,
+      "w": 2,
+      "h": 2
     },
     {
-      "id": "waldo",
+      "id": "pcb-design",
+      "col": 7,
+      "row": 7,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "how-to-robot",
       "col": 9,
-      "row": 8,
+      "row": 7,
+      "w": 2,
+      "h": 2
+    },
+    {
+      "id": "bento-ya",
+      "col": 11,
+      "row": 7,
+      "w": 2,
+      "h": 2,
+      "look": {
+        "zoom": 1.35,
+        "focus": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "tfotb",
+      "col": 13,
+      "row": 7,
       "w": 3,
-      "h": 1
+      "h": 2,
+      "look": {
+        "image": "/projects/tfotb/graph.webp"
+      }
+    },
+    {
+      "id": "snapfire",
+      "col": 16,
+      "row": 7,
+      "w": 2,
+      "h": 2
     }
   ]
 }

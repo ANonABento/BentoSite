@@ -17,7 +17,11 @@
     "liveDemo": "https://bento-site-sepia.vercel.app"
   },
   "media": {
-    "featuredImage": "/projects/bentosite/hero.png"
+    "featuredImage": "/projects/bentosite/board.webp",
+    "images": [
+      "/projects/bentosite/board.webp",
+      "/projects/bentosite/hero.png"
+    ]
   },
   "dateCompleted": "2026-05"
 }

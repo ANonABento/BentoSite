@@ -1,0 +1,39 @@
+{
+  "id": "clanker-spanker",
+  "name": "Clanker Spanker",
+  "shortDescription": "macOS app that watches your GitHub pull requests and has Claude or Codex fix failing CI and review comments until they're mergeable.",
+  "description": "Clanker Spanker is a Tauri desktop app for the round trip between \"PR opened\" and \"PR mergeable\". It lists your open pull requests and, for the ones you put on watch, runs a loop: check CI, fetch the unresolved review threads, and hand each blocker to the AI provider you picked to fix.\n\nHighlights:\n- A card grid of open PRs with CI status, review status, labels and comment counts.\n- A monitor loop per PR that reads CI failure logs and review threads and invokes Claude Code or Codex in a local clone of the repo to push fixes.\n- Live terminal output, progress bars and iteration counters while it works; merged PRs stay until dismissed and monitor history is kept.",
+  "category": "Developer Tools",
+  "context": "Personal",
+  "status": "Completed",
+  "technologies": [
+    "Rust",
+    "Tauri 2",
+    "React",
+    "TypeScript",
+    "GitHub GraphQL API",
+    "Claude Code CLI",
+    "Codex CLI"
+  ],
+  "links": {
+    "github": "https://github.com/ANonABento/clanker-spanker"
+  },
+  "media": {
+    "featuredImage": "/projects/clanker-spanker/pr-grid.webp",
+    "images": [
+      "/projects/clanker-spanker/pr-grid.webp",
+      "/projects/clanker-spanker/monitor.webp"
+    ],
+    "viewfinder": [
+      {
+        "kind": "image",
+        "src": "/projects/clanker-spanker/pr-grid.webp"
+      },
+      {
+        "kind": "image",
+        "src": "/projects/clanker-spanker/monitor.webp"
+      }
+    ]
+  },
+  "dateCompleted": "2026-03"
+}

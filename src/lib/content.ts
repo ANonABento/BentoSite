@@ -17,6 +17,8 @@ export type Project = {
     images?: string[];
     /** What the viewfinder shows, in order. Without it: the images, then the live demo. */
     viewfinder?: ViewfinderItem[];
+    /** A short muted loop (mp4) cut from real footage; the board card plays it on hover. */
+    preview?: string;
   };
   /** Where it was built: a hackathon, course, job, or "Personal". */
   context?: string;

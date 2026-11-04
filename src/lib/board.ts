@@ -21,6 +21,7 @@ export function projectCard(p: Project, placed?: LayoutCard): ProjectCardData {
     title: p.name,
     description: p.shortDescription,
     thumbnail: p.media.featuredImage,
+    preview: p.media.preview,
     category: p.category,
     technologies: p.technologies,
     status: p.status,

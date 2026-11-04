@@ -18,7 +18,10 @@
     "github": "https://github.com/ANonABento/TheCloset"
   },
   "media": {
-    "featuredImage": "/projects/the-closet/hero.jpg"
+    "featuredImage": "/projects/the-closet/chatbot.webp",
+    "images": [
+      "/projects/the-closet/chatbot.webp"
+    ]
   },
   "dateCompleted": "2024-01"
 }

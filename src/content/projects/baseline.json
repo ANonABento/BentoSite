@@ -61,8 +61,14 @@
       {
         "kind": "video",
         "src": "/projects/baseline/walkthrough.mp4"
+      },
+      {
+        "kind": "pdf",
+        "src": "/projects/baseline/deck.pdf",
+        "label": "Pitch deck"
       }
-    ]
+    ],
+    "preview": "/projects/baseline/preview.mp4"
   },
   "dateCompleted": "2026-10"
 }
