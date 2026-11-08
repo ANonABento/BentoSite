@@ -1,6 +1,7 @@
 'use client';
 
 import { memo } from 'react';
+import Image from 'next/image';
 import { AnimatePresence } from 'framer-motion';
 import { SEARCH_CARD_ID } from '../BentoGrid.constants';
 import { SEARCH_DOCK_PREFIX } from '../core/useTiledBoard';
@@ -129,14 +130,16 @@ export const DesktopCardLayer = memo(function DesktopCardLayer({
 
 /**
  * A card during the intro, while it's only seen small and far off: its
- * compartment and a block of its category's colour, with no image, text or
- * motion component. It drops in like the real cards (the block is the cell's
+ * compartment and its image over a block of its category's colour, with no
+ * text, hover or motion component. It drops in like the real cards (the block is the cell's
  * contents) and is swapped for the real card once the intro has landed.
  */
 function StandIn({ layout, card, radius, dark }: { layout: CardPosition; card: CardData; radius: number; dark: boolean }) {
   const hue = card.category
     ? `var(--cat-${card.category.toLowerCase().replace(/[^a-z0-9]+/g, '-')}, var(--color-ash))`
     : 'var(--color-ash)';
+  const loose = card as unknown as { look?: { image?: string }; thumbnail?: string };
+  const image = loose.look?.image ?? loose.thumbnail;
   return (
     <div
       aria-hidden
@@ -157,7 +160,20 @@ function StandIn({ layout, card, radius, dark }: { layout: CardPosition; card: C
           border: `1px solid color-mix(in srgb, ${hue} 32%, transparent)`,
         }}
       >
-        <div className="h-full w-full" style={{ background: `color-mix(in srgb, ${hue} 22%, var(--color-cell-raised))` }} />
+        <div className="relative h-full w-full" style={{ background: `color-mix(in srgb, ${hue} 22%, var(--color-cell-raised))` }}>
+          {/* The card's own image, at the size the real card asks for, so it's the same cached file when the card goes live. */}
+          {image && (
+            <Image
+              src={image}
+              alt=""
+              fill
+              className="object-cover"
+              loading="eager"
+              sizes={`${Math.round(layout.width * 1.5)}px`}
+              draggable={false}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
