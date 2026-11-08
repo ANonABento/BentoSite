@@ -1,0 +1,16 @@
+--- a/src/components/Prologue/engine/prologue.js
++++ b/src/components/Prologue/engine/prologue.js
+@@ -1005,10 +1005,10 @@
+ const _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _look = new THREE.Matrix4();
+ function lookQ(q, from, to) { return q.setFromRotationMatrix(_look.lookAt(from, to, camera.up)); }
+ function move(t) {
++  // Hard cut on action (was a 2.6 s pull-back through the TV frame): the glass shot holds until she turns to reach
++  // for the button, then we cut straight to the over-shoulder framing it used to settle on.
+   if (t < AWAY.t0) return { p: GLASS.p, q: lookQ(_qa, GLASS.p, GLASS.l), fov: GLASS.fov };
+-  const u = easeInOutCubic(clamp01((t - AWAY.t0) / (AWAY.t1 - AWAY.t0)));
+-  lookQ(_qa, GLASS.p, GLASS.l); lookQ(_qb, P0, L_END);
+-  return { p: AWAY.path.getPointAt(u), q: _qa.slerp(_qb, u), fov: mix(GLASS.fov, 35, u) };
++  return { p: P0, q: lookQ(_qb, P0, L_END), fov: 35 };
+ }
+ 
+ // ---- the handkerchief: white lawn with a lace edge and an orange stitched hem; it blends between gathered in her
