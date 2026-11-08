@@ -1,0 +1,66 @@
+--- a/src/app/_components/ProjectsGridClient.tsx
++++ b/src/app/_components/ProjectsGridClient.tsx
+@@ -101,6 +101,12 @@
+   const cards = useMemo<CardData[]>(() => [INTRO, CONTACT, ...projects], [projects]);
+   // Decided once, before the board mounts, so the camera can open zoomed out for it.
+   const [boot] = useState(shouldBoot);
++  // Every other load still zooms in (quickly) so the repeating board shows; not for deep links or reduced motion.
++  const [zoomIn] = useState(
++    () =>
++      !new URLSearchParams(window.location.search).has('project') &&
++      !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
++  );
+   // A visit that gets the boot first gets the prologue; the board mounts when it hands off (and boots then).
+   const [prologue] = useState<PrologueMode>(() => (boot ? prologueMode() : 'none'));
+   const [boardOn, setBoardOn] = useState(prologue === 'none');
+@@ -192,7 +198,7 @@
+           breadcrumb="bentOS / Kevin Jiang"
+           renderCard={renderCard}
+           spotlight
+-          intro={boot && (prologue === 'scene' ? 'continue' : true)}
++          intro={boot ? (prologue === 'scene' ? 'continue' : true) : zoomIn ? 'quick' : false}
+         />
+       )}
+       {boardOn && <TrayFill active={boot} />}
+--- a/src/components/BentoGrid/BentoGrid.tsx
++++ b/src/components/BentoGrid/BentoGrid.tsx
+@@ -31,7 +31,7 @@
+   /** Desktop: open with only the intro and contact lit; projects light up under the pointer. */
+   spotlight?: boolean;
+   /** Desktop: open zoomed out and glide in to the home group; 'continue' glides in at once, carrying on the prologue's zoom. */
+-  intro?: boolean | 'continue';
++  intro?: boolean | 'continue' | 'quick';
+ }
+ 
+ // =============================================================================
+--- a/src/components/BentoGrid/views/DesktopCanvasView.tsx
++++ b/src/components/BentoGrid/views/DesktopCanvasView.tsx
+@@ -50,7 +50,7 @@
+ }
+ 
+ /** The intro's opening zoom (a multiple of the fit zoom), how long it holds there, and its glide in. */
+-const INTRO = { zoom: 0.4, holdMs: 750, glideMs: 1100, continueMs: 1700, hurryMs: 250 };
++const INTRO = { zoom: 0.4, holdMs: 750, glideMs: 1100, continueMs: 1700, hurryMs: 250, quickHoldMs: 120, quickMs: 1100 };
+ 
+ /** How long the search card glides when it docks in another copy of the board, or its drawer opens or closes. */
+ const DOCK_GLIDE_MS = 320;
+@@ -85,7 +85,7 @@
+   spotlight?: boolean;
+   /** Open zoomed out while the cards fall in, then glide in to the home group. 'continue': no hold, and the glide
+    *  starts at speed and eases out, carrying on the prologue's zoom into the screen. */
+-  intro?: boolean | 'continue';
++  intro?: boolean | 'continue' | 'quick';
+ }
+ 
+ export function DesktopCanvasView({
+@@ -129,7 +129,9 @@
+     };
+     const timer = intro === 'continue'
+       ? window.setTimeout(() => glide(INTRO.continueMs, true), 0)
+-      : window.setTimeout(() => glide(INTRO.glideMs), INTRO.holdMs);
++      : intro === 'quick'
++        ? window.setTimeout(() => glide(INTRO.quickMs), INTRO.quickHoldMs)
++        : window.setTimeout(() => glide(INTRO.glideMs), INTRO.holdMs);
+     const hurry = () => glide(INTRO.hurryMs);
+     const events = ['wheel', 'pointerdown', 'keydown'] as const;
+     for (const e of events) window.addEventListener(e, hurry, { once: true, passive: true });
