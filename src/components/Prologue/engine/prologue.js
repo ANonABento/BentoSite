@@ -18,6 +18,7 @@ import { loadRobot } from './robot.js';
 import { createSfx } from './sfx.js';
 import { createTimeline } from './timeline.js';
 import { fetchWithRetry } from './net.js';
+import { createChalk, loadChalkFont } from './chalk.js';
 
 /**
  * Start the prologue in `container` (a positioned element; the canvas fills the window).
@@ -149,6 +150,7 @@ const mix = (a, b, t) => a + (b - a) * t;
 // The canvas text wants the web fonts, but a font that won't load (document.fonts.load rejects with
 // "NetworkError: A network error occurred.") isn't worth skipping the scene for: the text falls back to a system
 // font and the console says which face failed. (A failed face can't be re-requested by the page, so no retry here.)
+const chalkFontP = loadChalkFont();   // in parallel with the others; never rejects
 await Promise.all([
   `700 64px ${FONT.display}`,
   `32px ${FONT.mono}`,
@@ -157,6 +159,7 @@ await Promise.all([
 ].map((font) => document.fonts.load(font).catch((e) => {
   console.warn(`[prologue] font "${font}" failed to load (${e?.name}: ${e?.message}); the canvas text uses a fallback`);
 })));
+const chalkFont = await chalkFontP;
 const board = opts.board ?? await fetchWithRetry(opts.boardUrl, 'json', { label: 'board' });
 const projectCount = opts.projectCount ?? board.cards.filter((c) => c.title).length;
 
@@ -1081,6 +1084,10 @@ const cloth = new THREE.Mesh(clothGeo, new THREE.MeshStandardMaterial({ map: clo
   emissive: '#ffffff', emissiveMap: clothTex, emissiveIntensity: 0.07, alphaTest: 0.5 }));
 cloth.visible = false;
 scene.add(cloth);
+
+// The chalk title on the glass, just in front of its bulge; the cloth wipes it off (chalk.js).
+const chalk = createChalk(THREE, { font: chalkFont, z: SCREEN_Z + BULGE + 0.006, aspect: vpW() / vpH() });
+scene.add(chalk.mesh);
 const _cx = new THREE.Vector3(), _cy = new THREE.Vector3(), _cz = new THREE.Vector3(), _cm = new THREE.Matrix4();
 /** Place the cloth from the hand's pose (world): `flat` 0 = bunched in the fingers, 1 = spread under the palm. */
 function placeCloth(wristW, dirW, upW, flat) {
@@ -1258,6 +1265,7 @@ function prologue(t) {
     const flat = (0.8 + 0.06 * Math.sin(t * 9)) * sstep(ramp(t, [6.4, 6.75])) * (1 - sstep(ramp(t, [8.5, 8.8])));
     placeCloth(hw, dirW(rDir), dirW(rUp), flat);
   }
+  chalk.update(t, cloth.visible ? cloth.position : null);
 
   // ---- light ----
   const sl = keyed('Lights / scene', { handFill: 0.25 * sstep(ramp(t, [2.1, 2.6])) * (1 - sstep(ramp(t, [8.0, 8.6]))),
@@ -1438,6 +1446,7 @@ listen(window, 'resize', () => {
   renderer.setSize(vpW(), vpH()); composer.setSize(vpW(), vpH());
   camera.aspect = vpW() / vpH(); camera.updateProjectionMatrix();
   reflector.getRenderTarget().setSize(...reflSize());
+  chalk.layout(vpW() / vpH());
 });
 // probe: after the first frame, write key world positions into the page (read with --dump-dom).
 if (opts.probe) setTimeout(() => {
