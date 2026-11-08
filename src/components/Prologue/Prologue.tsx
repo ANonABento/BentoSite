@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import type { PrologueBoard, PrologueControls } from './engine/prologue';
 import theatreState from './theatre-state.json';
 
@@ -8,7 +8,8 @@ import theatreState from './theatre-state.json';
  * The prologue plays over the page before the board: a robot maid wakes in a dark CRT's reflection, tidies up,
  * wipes the glass and switches the TV on; the camera dives into the screen. At the dive it hands off: the board
  * mounts underneath (its own boot runs) and this fades out. Desktop gets the live 3D scene (engine/), phones a
- * recording of it. Esc, Enter or the Skip button hand off at once; any failure (no WebGL, a missing file) does too.
+ * recording of it. Esc, Enter or the Skip button hand off at once; so does a failure (no WebGL, or a file that still
+ * won't load after its retries), which is logged to the console with the file's name.
  */
 
 export type PrologueMode = 'scene' | 'video' | 'none';
@@ -16,6 +17,26 @@ export type PrologueMode = 'scene' | 'video' | 'none';
 const ROBOT_URL = '/prologue/robot-maid.glb';
 const VIDEO_URL = '/prologue/prologue.mp4';
 const FADE_MS = 600;
+/** Nothing on screen by then (a slow network or GPU): go to the board. Room for the downloads' retries (engine/net.js). */
+const WATCHDOG_MS = 30000;
+/** Tries for the engine's code chunk and the phone video, and the backoff between them. */
+const TRIES = 3;
+const backoff = (attempt: number) => 600 * 2 ** attempt;
+const wait = (ms: number) => new Promise((r) => window.setTimeout(r, ms));
+const describe = (e: unknown) => (e instanceof Error ? `${e.name}: ${e.message}` : String(e));
+
+/** The engine's chunk (three.js and Theatre.js come with it), retried: a dropped chunk shouldn't skip the scene. */
+async function loadEngine() {
+  for (let i = 0; ; i++) {
+    try {
+      return await import('./engine/prologue.js');
+    } catch (e) {
+      if (i + 1 >= TRIES) throw e;
+      console.warn(`[prologue] engine code: try ${i + 1}/${TRIES} failed (${describe(e)})`);
+      await wait(backoff(i));
+    }
+  }
+}
 
 /** Which prologue this visit gets. Only called when the visit gets the boot at all (see TrayFill's shouldBoot). */
 export function prologueMode(): PrologueMode {
@@ -53,6 +74,7 @@ export function Prologue({ mode, board, projectCount, onHandoff, onDone }: Prolo
   });
 
   const leave = useRef(() => {});
+  const videoTries = useRef(0);
   useEffect(() => {
     let gone = false;
     leave.current = () => {
@@ -70,9 +92,13 @@ export function Prologue({ mode, board, projectCount, onHandoff, onDone }: Prolo
     let cancelled = false;
     const css = getComputedStyle(document.documentElement);
     const family = (v: string, fallback: string) => css.getPropertyValue(v).trim() || fallback;
-    // Nothing on screen within 10 s (a slow network or GPU): go straight to the board.
-    const watchdog = window.setTimeout(() => !controls.current && leave.current(), 10000);
-    import('./engine/prologue.js')
+    // Nothing on screen in time (a slow network or GPU): go straight to the board, and say so.
+    const watchdog = window.setTimeout(() => {
+      if (controls.current) return;
+      console.warn(`[prologue] still loading after ${WATCHDOG_MS / 1000} s; going to the board`);
+      leave.current();
+    }, WATCHDOG_MS);
+    loadEngine()
       .then(({ startPrologue }) =>
         startPrologue({
           container: stage.current!,
@@ -93,7 +119,9 @@ export function Prologue({ mode, board, projectCount, onHandoff, onDone }: Prolo
         else controls.current = c;
       })
       .catch((e) => {
-        console.warn('prologue', e);
+        // Only once every retry is spent (engine/net.js logs each try). StrictMode's throwaway run doesn't count.
+        if (cancelled) return;
+        console.warn(`[prologue] falling back to the board: ${describe(e)}`, e);
         leave.current();
       });
     return () => {
@@ -115,6 +143,23 @@ export function Prologue({ mode, board, projectCount, onHandoff, onDone }: Prolo
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  // The phone video: a failed load is retried with backoff before giving up on it.
+  const onVideoError = (e: SyntheticEvent<HTMLVideoElement>) => {
+    const video = e.currentTarget;
+    const why = video.error ? `MediaError ${video.error.code}${video.error.message ? `: ${video.error.message}` : ''}` : 'error';
+    const attempt = videoTries.current++;
+    if (attempt + 1 >= TRIES) {
+      console.warn(`[prologue] ${VIDEO_URL} failed after ${TRIES} tries (${why}); falling back to the board`);
+      leave.current();
+      return;
+    }
+    console.warn(`[prologue] ${VIDEO_URL}: try ${attempt + 1}/${TRIES} failed (${why})`);
+    window.setTimeout(() => {
+      video.load();
+      video.play().catch(() => {});
+    }, backoff(attempt));
+  };
+
   return (
     <div
       ref={stage}
@@ -132,7 +177,7 @@ export function Prologue({ mode, board, projectCount, onHandoff, onDone }: Prolo
           muted
           playsInline
           onEnded={() => leave.current()}
-          onError={() => leave.current()}
+          onError={onVideoError}
         />
       )}
       <button type="button" className="prologue-skip" onClick={() => leave.current()}>

@@ -207,6 +207,14 @@ body {
     radial-gradient(120% 90% at 50% 50%, transparent 55%, rgb(0 0 0 / 0.55) 100%);
 }
 
+/* At rest the overlay is not drawn at all, so a leftover --sig value (a
+ * throttled frame, the boot dive ending mid-decay) can never leave faint
+ * scanlines over the finished board. useSignal clears data-signal once the
+ * fade-out above has finished. */
+.board-canvas:not([data-signal])::after {
+  display: none;
+}
+
 .board-canvas[data-signal] .board-layer {
   filter: drop-shadow(var(--sig-x) var(--sig-y) 0 rgb(255 46 96 / calc(var(--sig) * 0.65)))
     drop-shadow(calc(var(--sig-x) * -1) calc(var(--sig-y) * -1) 0 rgb(40 210 255 / calc(var(--sig) * 0.55)));

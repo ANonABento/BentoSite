@@ -17,6 +17,7 @@ import { Reflector } from 'three/addons/objects/Reflector.js';
 import { loadRobot } from './robot.js';
 import { createSfx } from './sfx.js';
 import { createTimeline } from './timeline.js';
+import { fetchWithRetry } from './net.js';
 
 /**
  * Start the prologue in `container` (a positioned element; the canvas fills the window).
@@ -139,13 +140,18 @@ const easeInOutCubic = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2
 const easeInOutSine = (x) => -(Math.cos(Math.PI * x) - 1) / 2;
 const mix = (a, b, t) => a + (b - a) * t;
 
+// The canvas text wants the web fonts, but a font that won't load (document.fonts.load rejects with
+// "NetworkError: A network error occurred.") isn't worth skipping the scene for: the text falls back to a system
+// font and the console says which face failed. (A failed face can't be re-requested by the page, so no retry here.)
 await Promise.all([
-  document.fonts.load(`700 64px ${FONT.display}`),
-  document.fonts.load(`32px ${FONT.mono}`),
-  document.fonts.load(`600 24px ${FONT.sans}`),
-  document.fonts.load(`400 24px ${FONT.sans}`),
-]);
-const board = opts.board ?? await (await fetch(opts.boardUrl)).json();
+  `700 64px ${FONT.display}`,
+  `32px ${FONT.mono}`,
+  `600 24px ${FONT.sans}`,
+  `400 24px ${FONT.sans}`,
+].map((font) => document.fonts.load(font).catch((e) => {
+  console.warn(`[prologue] font "${font}" failed to load (${e?.name}: ${e?.message}); the canvas text uses a fallback`);
+})));
+const board = opts.board ?? await fetchWithRetry(opts.boardUrl, 'json', { label: 'board' });
 const projectCount = opts.projectCount ?? board.cards.filter((c) => c.title).length;
 
 /* ------------------------------------------------------------------ *
@@ -333,9 +339,21 @@ function drawText(t) {
     g.fillText('bentOS', W / 2, H * 0.12 + size);
     g.restore();
   }
-  const fs = Math.max(9, Math.round(H * 0.072));
+  let fs = Math.max(9, Math.round(H * 0.072));
   g.font = `${fs}px ${FONT.mono}`; g.textBaseline = 'top'; g.textAlign = 'left';
   const x0 = Math.round(W * 0.13);
+  // Keep every line inside the glass, with the same margin on the right as on the left (the bezel's curve hides
+  // the edges). Too wide: the type shrinks (to 80% at most), and if the subtitle still doesn't fit it wraps after
+  // its '·'.
+  const room = W - 2 * x0;
+  const widthOf = ([body, ok]) => g.measureText(body + ok).width;
+  const widest = Math.max(...BOOT_LINES.map(widthOf));
+  if (widest > room) {
+    fs = Math.max(8, Math.floor(fs * Math.max(0.8, room / widest)));
+    g.font = `${fs}px ${FONT.mono}`;
+  }
+  const subtitle = BOOT_LINES[0][0], cut = subtitle.indexOf(' · ');
+  const subLines = widthOf(BOOT_LINES[0]) > room && cut > 0 ? [subtitle.slice(0, cut + 2), subtitle.slice(cut + 3)] : [subtitle];
   let y = Math.round(H * 0.47);
   let lastTyping = -1;
   BOOT_LINES.forEach(([body, ok], i) => {
@@ -344,6 +362,17 @@ function drawText(t) {
     lastTyping = i;
     const full = body + ok;
     const n = Math.floor(full.length * k);
+    if (i === 0 && subLines.length > 1) {
+      // The wrapped subtitle types across both of its rows.
+      g.fillStyle = COLORS.orange;
+      let left = n;
+      subLines.forEach((row, j) => {
+        if (left > 0) g.fillText(row.slice(0, left), x0, y + j * Math.round(fs * 1.08));
+        left -= row.length + 1;   // + the space the wrap took out
+      });
+      y += Math.round(fs * 1.08) * (subLines.length - 1) + Math.round(fs * 1.45);
+      return;
+    }
     const shown = full.slice(0, n);
     const bodyPart = shown.slice(0, body.length), okPart = shown.slice(body.length);
     g.fillStyle = i === 0 ? COLORS.orange : COLORS.phosphor;
@@ -865,7 +894,9 @@ function apply(t) {
  * ------------------------------------------------------------------ */
 const CLICK = TUNE.timing.click;
 const WARM = 0.6;        // CRT warm-up: the LED lights on the click, the screen a moment later
-const PRO_END = CLICK - 0.25;   // the prologue's camera has settled over her shoulder; the boot's camera takes over
+const PULL_END = CLICK - 0.25;   // the prologue's pull-back has settled over her shoulder (lights still key off this)
+const PRO_END = CLICK + 1.5;   // camera handoff: hold the over-shoulder shot through press, warm-up and bow (bow-up ends ≈ C+1.47), then the boot's camera takes over
+INTO[0] = Math.max(T.power[0], PRO_END - CLICK - WARM + T.led);   // the boot camera's push starts from P0 at the handoff, not under the held shot
 const ASIDE = [CLICK + 1.3, CLICK + 2.1];   // she steps out of the boot camera's way
 // Speed ramp: story time runs at 0.6× through the press.
 const SLOW = [CLICK - 0.2, CLICK], SLOW_K = 0.6, SLOW_EXTRA = (SLOW[1] - SLOW[0]) * (1 / SLOW_K - 1);
@@ -965,7 +996,7 @@ const WIGGLE = [2.75, 2.97, 3.19, 3.41];                   // forward, back, for
 //    behind her shoulder, settling on her finger at the button. Even speed along its path (no surges between keys),
 //    eased at both ends, and the view turns by one slerp from the glass to the button. She clicks once it settles.
 const GLASS = { p: WIPE_CAM.clone(), l: WIPE_CAM.clone().add(V(0, 0, -1)), fov: TUNE.camera.fov };
-const AWAY = { t0: PRO_END - TUNE.camera.pullBack, t1: PRO_END, path: new THREE.CatmullRomCurve3([
+const AWAY = { t0: PULL_END - TUNE.camera.pullBack, t1: PULL_END, path: new THREE.CatmullRomCurve3([
   GLASS.p,
   V(...TUNE.camera.via1), // first sideways along the glass, clear of her head as she leans in (head ≈ (0.09, 0.1, 0.85))
   V(...TUNE.camera.via2), // then back past her right side
@@ -1217,7 +1248,7 @@ function prologue(t) {
   const sl = keyed('Lights / scene', { handFill: 0.25 * sstep(ramp(t, [2.1, 2.6])) * (1 - sstep(ramp(t, [8.0, 8.6]))),
     rim: 1.4 * sstep(ramp(t, [8.6, 9.5])) * (1 - sstep(ramp(t, [ASIDE[0], ASIDE[1]]))),
     screenLit: sstep(ramp(t, [C + WARM + 0.3, C + WARM + 1.0])),
-    room: t < PRO_END ? 0 : t < ASIDE[1] ? sstep(ramp(t, [ASIDE[1] - 1.0, ASIDE[1]])) : 1 });
+    room: t < PULL_END ? 0 : t < ASIDE[1] ? sstep(ramp(t, [ASIDE[1] - 1.0, ASIDE[1]])) : 1 });
   handFill.intensity = lights.herFill * Math.max(0, sl.handFill);
   proRim.intensity = lights.herFill * Math.max(0, sl.rim);
   // The standby LED pulses slowly; it brightens as she turns to it.
@@ -1274,7 +1305,7 @@ function master(time) {
     uniforms.uRefl.value = 1;
   }
   key.intensity *= roomLight; rim.intensity *= roomLight;   // (prologue's Lights / scene: off until she's out of the boot's shot)
-  if (t < PRO_END) {
+  if (t < PULL_END) {
     scene.environmentIntensity = 0;
     bloom.strength = Math.max(bloom.strength * 0.7, P.bloom * 0.6);
   }
@@ -1405,7 +1436,7 @@ if (opts.probe) setTimeout(() => {
 if (opts.startAt != null) seekTo(opts.startAt);
 // debug: window.prologueSeek(t) pauses at story-clock time t (frame-by-frame recording); returns the length.
 if (opts.debug) Object.assign(window, { prologueSeek: (t) => { seekTo(t); return TOTAL; }, prologueTimes: { CLICK, WARM, TOTAL, SLOW_EXTRA, HANDOFF, story: (t) => story(t), positionAt, BEATS,
-  pullBack: [AWAY.t0, PRO_END], scriptCamera, sampleScript },
+  pullBack: [AWAY.t0, AWAY.t1], scriptCamera, sampleScript },
   prologueNow: () => (studioClock ? seq.position : P.time),
   prologuePlay: () => togglePlay(), prologuePlaying: () => (studioClock ? seqPlaying : P.playing),
   prologueCamera: () => ({ position: camera.position.toArray(), fov: camera.fov }), prologueTimeline: TL, prologueScene: () => ({ time: P.time, story: story(P.time) }) });

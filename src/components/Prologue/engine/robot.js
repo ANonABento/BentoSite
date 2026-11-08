@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { fetchWithRetry } from './net.js';
 
 /*
  * The robot maid from a rigged GLB: public/prologue/robot-maid.glb, CC0 VRoid sample E restyled with robot hardware
@@ -20,7 +21,9 @@ const _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
 
 export async function loadRobot(url) {
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
-  const gltf = await loader.loadAsync(url);
+  // Downloaded with retries (net.js), then parsed: a dropped connection on the GLB used to skip the prologue.
+  const data = await fetchWithRetry(url, 'arrayBuffer', { label: url.split('/').pop() });
+  const gltf = await loader.parseAsync(data, url.slice(0, url.lastIndexOf('/') + 1));
   const model = gltf.scene;
 
   const root = new THREE.Group();
