@@ -106,7 +106,11 @@ export function ProjectCard({
         <TextBody card={card} hue={hue} big={big} highlighted={highlighted} />
       ) : (
         <>
-          <div className="relative min-h-0 flex-1 overflow-hidden bg-cell-raised">
+          <div
+            className="relative min-h-0 flex-1 overflow-hidden"
+            // The category colour shows at once; the image fades in over it.
+            style={{ background: `color-mix(in srgb, ${hue} 22%, var(--color-cell-raised))` }}
+          >
             {image ? (
               // The zoom wrapper scales about the focal point; the hover lift scales the image inside it.
               <div

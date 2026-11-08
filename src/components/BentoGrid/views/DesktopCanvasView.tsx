@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { getImageProps } from 'next/image';
 import { holdInsideEdges, searchCardShape, useSearchCardState } from '../cards';
 import {
   canvasToScreen,
@@ -18,10 +19,10 @@ import {
 } from '../core';
 import { SEARCH_DOCK_PREFIX, useTiledBoard } from '../core/useTiledBoard';
 import { useSignal } from '../core/useSignal';
-import { SEARCH_CARD, SEARCH_CARD_ID } from '../BentoGrid.constants';
+import { GRID_STEP, SEARCH_CARD, SEARCH_CARD_ID, getCardDimensions } from '../BentoGrid.constants';
 import { CloseIcon, RefreshIcon, SearchIcon, ZoomInIcon, ZoomOutIcon } from '@/components/ui/Icons';
 import type { CardData, CardPosition, CardSizeMode, Rect, RenderCard, ThemeConfig } from '../BentoGrid.types';
-import type { BoardLayout } from '../layout/boardLayout';
+import { sizeOf, type BoardLayout } from '../layout/boardLayout';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
 /** Cards keyboard focus can land on: not the search card or the empty docks. */
@@ -50,7 +51,51 @@ function inSpotlight(instance: string, card: CardData): boolean {
 }
 
 /** The intro's opening zoom (a multiple of the fit zoom), how long it holds there, and its glide in. */
-const INTRO = { zoom: 0.4, holdMs: 750, glideMs: 1100, continueMs: 1700, hurryMs: 250, quickHoldMs: 120, quickMs: 1100 };
+const INTRO = {
+  // Opening zoom: about copiesX x copiesY copies of the tile fill the window, clamped to this range of the fit zoom.
+  copiesX: 3,
+  copiesY: 2,
+  minZoom: 0.15,
+  maxZoom: 0.4,
+  holdMs: 750,
+  glideMs: 1300,
+  continueMs: 1700,
+  hurryMs: 250,
+  quickHoldMs: 120,
+  quickMs: 1300,
+};
+
+/** The intro's opening zoom, as a multiple of the fit zoom: sized so ~3 copies of the tile fit across and ~2 down. */
+function introZoomFor(layout: BoardLayout, windowSize: { width: number; height: number }): number {
+  const tileW = Math.max(1, layout.cols * GRID_STEP);
+  const tileH = Math.max(1, layout.rows * GRID_STEP);
+  const zoom = Math.min(windowSize.width / (INTRO.copiesX * tileW), windowSize.height / (INTRO.copiesY * tileH));
+  const multiple = zoom / fitZoom(windowSize);
+  return Math.min(INTRO.maxZoom, Math.max(INTRO.minZoom, multiple));
+}
+
+/** Start loading every board image now (during the prologue), at the sizes the cards will ask for. */
+const preloaded = new Set<string>();
+function preloadBoardImages(cards: CardData[], layout: BoardLayout) {
+  if (typeof window === 'undefined') return;
+  const byId = new Map(cards.map((card) => [card.id, card]));
+  for (const slot of layout.cards) {
+    const card = byId.get(slot.id) as unknown as { look?: { image?: string; zoom?: number }; thumbnail?: string } | undefined;
+    const image = card?.look?.image ?? card?.thumbnail;
+    if (!image) continue;
+    const width = getCardDimensions(sizeOf(slot)).width * (card?.look?.zoom ?? 1);
+    const sizes = `${Math.round(width * 1.5)}px`;
+    const key = `${image}|${sizes}`;
+    if (preloaded.has(key)) continue;
+    preloaded.add(key);
+    const { props } = getImageProps({ src: image, alt: '', fill: true, sizes });
+    const img = new window.Image();
+    img.decoding = 'async';
+    if (props.sizes) img.sizes = props.sizes;
+    if (props.srcSet) img.srcset = props.srcSet;
+    img.src = props.src;
+  }
+}
 
 /** How long the search card glides when it docks in another copy of the board, or its drawer opens or closes. */
 const DOCK_GLIDE_MS = 320;
@@ -105,8 +150,9 @@ export function DesktopCanvasView({
   const navigation = useCamera({
     enabled: true,
     windowSize,
-    introZoom: intro ? INTRO.zoom : undefined,
+    introZoom: intro ? introZoomFor(layout, windowSize) : undefined,
   });
+  useEffect(() => preloadBoardImages(cards, layout), [cards, layout]);
 
   // The intro: the board opens zoomed out so its scale shows while the cards
   // fall in (and their images load), then the camera glides in to the home
