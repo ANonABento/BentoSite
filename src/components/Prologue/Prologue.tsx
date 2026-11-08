@@ -81,6 +81,7 @@ export function Prologue({ mode, board, projectCount, onHandoff, onDone }: Prolo
       if (gone) return;
       gone = true;
       setLeaving(true);
+      document.documentElement.classList.remove('prologue-pending');
       cb.current.onHandoff();
       window.setTimeout(() => cb.current.onDone(), FADE_MS);
     };
@@ -118,7 +119,10 @@ export function Prologue({ mode, board, projectCount, onHandoff, onDone }: Prolo
       )
       .then((c) => {
         if (cancelled) c.dispose();
-        else controls.current = c;
+        else {
+          controls.current = c;
+          document.documentElement.classList.remove('prologue-pending');
+        }
       })
       .catch((e) => {
         // Only once every retry is spent (engine/net.js logs each try). StrictMode's throwaway run doesn't count.

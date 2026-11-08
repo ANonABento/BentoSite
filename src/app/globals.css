@@ -344,3 +344,31 @@ body {
 .scrollbar-hide { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar,
 .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* perf-3: poster frame shown from server HTML until the prologue's first frame */
+html.prologue-pending body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 55%, #15121a 0%, #08070a 60%, #000 100%);
+}
+html.prologue-pending body::after {
+  content: '';
+  position: fixed;
+  right: 22%;
+  bottom: 18%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  z-index: 2147483647;
+  pointer-events: none;
+  background: #ff3030;
+  box-shadow: 0 0 8px 2px rgba(255, 48, 48, 0.6);
+  animation: prologue-led 1.6s ease-in-out infinite;
+}
+@keyframes prologue-led {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}

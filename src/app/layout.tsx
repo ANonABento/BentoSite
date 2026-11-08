@@ -19,9 +19,14 @@ export const metadata: Metadata = {
   twitter: { card: 'summary_large_image' },
 };
 
+const POSTER_SCRIPT = `(function(){try{var q=location.search;if(/[?&](project|noprologue)(=|&|$)/.test(q))return;var c=navigator.connection;if(c&&c.saveData)return;if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;if(sessionStorage.getItem('bentOS.booted'))return;if(!matchMedia('(pointer: fine)').matches)return;if(innerWidth<900||innerHeight<560)return;var h=document.documentElement;h.classList.add('prologue-pending');setTimeout(function(){h.classList.remove('prologue-pending')},30000)}catch(e){}})();`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${instrument.variable} ${orbitron.variable} ${vt323.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${instrument.variable} ${orbitron.variable} ${vt323.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: POSTER_SCRIPT }} />
+      </head>
       <body className="min-h-dvh">
         {children}
         <Analytics />
