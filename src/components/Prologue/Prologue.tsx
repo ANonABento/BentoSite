@@ -112,6 +112,8 @@ export function Prologue({ mode, board, projectCount, onHandoff, onDone }: Prolo
             sans: family('--font-instrument', 'sans-serif'),
           },
           onHandoff: () => leave.current(),
+          // ?debug: the engine logs its load timings ([prologue] start / robot-loaded / compiled / first-frame).
+          debug: new URLSearchParams(window.location.search).has('debug'),
         }),
       )
       .then((c) => {
