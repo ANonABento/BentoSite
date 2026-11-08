@@ -1,0 +1,39 @@
+diff --git a/src/components/Prologue/theatre-state.json b/src/components/Prologue/theatre-state.json
+--- a/src/components/Prologue/theatre-state.json
++++ b/src/components/Prologue/theatre-state.json
+@@ -58,7 +58,7 @@
+                     "connectedRight": true,
+                     "handles": [0.667, 1, 0.333, 0],
+                     "type": "bezier",
+-                    "value": -0.05
++                    "value": 0.085
+                   },
+                   {
+                     "id": "0cnfwolamq",
+@@ -66,7 +66,7 @@
+                     "connectedRight": true,
+                     "handles": [0.667, 1, 0.333, 0],
+                     "type": "bezier",
+-                    "value": -0.05
++                    "value": 0.085
+                   },
+                   {
+                     "id": "y164gyi5td",
+@@ -268,7 +268,7 @@
+                     "connectedRight": true,
+                     "handles": [0.667, 1, 0.333, 0],
+                     "type": "bezier",
+-                    "value": -0.05
++                    "value": 0.085
+                   },
+                   {
+                     "id": "kp9w29az2d",
+@@ -276,7 +276,7 @@
+                     "connectedRight": true,
+                     "handles": [0.667, 1, 0.333, 0],
+                     "type": "bezier",
+-                    "value": -0.05
++                    "value": 0.085
+                   },
+                   {
+                     "id": "znwqjvi6jh",
