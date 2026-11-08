@@ -24,7 +24,7 @@ we see only her reflection. Her hand is the reveal.
 wipe, the button click, the CRT whine and the degauss thunk.
 
 **Model:** the one-piece generated anime maid is retired. The new direction is picked from a 3D
-style × face matrix (`prototypes/robot/renders/matrix.png`). Styles: PS1, PS2 low-poly, cel-shaded
+style × face matrix (`lochara/renders/matrix.png`). Styles: PS1, PS2 low-poly, cel-shaded
 hard-surface. Faces: doll faceplate, screen visor, anime, mostly mech. Whichever wins, she's built in
 segmented rigid parts parented to bones, with no skinning.
 

@@ -4,7 +4,7 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
 /*
  * The robot maid from a rigged GLB: public/prologue/robot-maid.glb, CC0 VRoid sample E restyled with robot hardware
- * by prototypes/robot/blender/vroid_maid.py (bones renamed to Mixamo names; morphs blink, happy, irisOff; an emissive
+ * by lochara/blender/vroid_maid.py (bones renamed to Mixamo names; morphs blink, happy, irisOff; an emissive
  * iris; hardware parts parented to bones, the neon ones named hw_glow). Any GLB with the same bones and morphs drops in.
  * Interface: { root, head, headPivot, hand, reach, aim, grip, setEyes, left, body, look, ... }.
  *

@@ -737,7 +737,7 @@ function renderReflection() {
  * The robot, and a cold moonlight so silhouettes read in the dark
  * ------------------------------------------------------------------ */
 // The robot maid (assets/robot-maid.glb: CC0 VRoid sample E restyled with robot hardware by
-// prototypes/robot/blender/vroid_maid.py). ?robot=t3 / c1 load the earlier generated maids (gitignored), ?robot=vroid
+// lochara/blender/vroid_maid.py). ?robot=t3 / c1 load the earlier generated maids (gitignored), ?robot=vroid
 // the first placeholder, ?robot=shapes the procedural robot, ?robot=<file>.glb any model in assets/.
 const robot = await loadRobot(opts.robotUrl);
 scene.add(robot.root);

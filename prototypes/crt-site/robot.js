@@ -3,7 +3,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 
 /*
  * The bentOS maid robot, built from simple shapes after concept C
- * (prototypes/robot/concept-c.webp): ceramic doll face, black bob,
+ * (lochara/concept-c.webp): ceramic doll face, black bob,
  * frilled headdress, ringed neck, glowing orange eyes behind lid shutters,
  * and a jointed right hand driven by two-bone IK.
  *

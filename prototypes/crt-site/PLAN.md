@@ -3,7 +3,7 @@
 Launch waits on Kevin choosing a domain and host. Everything up to deployment is done on `crt-site`,
 committed locally and **not pushed** (a push can trigger a Vercel preview).
 
-1. **Model** (`prototypes/robot/blender/vroid_maid.py`, CC0 VRoid sample E):
+1. **Model** (`lochara/blender/vroid_maid.py`, CC0 VRoid sample E):
    - fit the headdress to the hair and slim the joint rings;
    - give her a segmented robot right hand, after the FLUX reference;
    - add a handkerchief prop that can be shown and hidden;

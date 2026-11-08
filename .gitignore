@@ -55,8 +55,6 @@ null
 /.playwright-mcp/
 
 # Licensed / purchased models: never commit (public repo)
-prototypes/robot/vendor/
-prototypes/robot/build/
 prototypes/crt-site/assets/robot-c1.glb
 prototypes/crt-site/assets/robot-t3.glb
 prototypes/crt-site/assets/x-*.glb
