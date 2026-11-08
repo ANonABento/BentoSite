@@ -101,6 +101,12 @@ export function ProjectsGridClient({ layout, projects, profile, info, details }:
   const cards = useMemo<CardData[]>(() => [INTRO, CONTACT, ...projects], [projects]);
   // Decided once, before the board mounts, so the camera can open zoomed out for it.
   const [boot] = useState(shouldBoot);
+  // Every other load still zooms in (quickly) so the repeating board shows; not for deep links or reduced motion.
+  const [zoomIn] = useState(
+    () =>
+      !new URLSearchParams(window.location.search).has('project') &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
   // A visit that gets the boot first gets the prologue; the board mounts when it hands off (and boots then).
   const [prologue] = useState<PrologueMode>(() => (boot ? prologueMode() : 'none'));
   const [boardOn, setBoardOn] = useState(prologue === 'none');
@@ -192,7 +198,7 @@ export function ProjectsGridClient({ layout, projects, profile, info, details }:
           breadcrumb="bentOS / Kevin Jiang"
           renderCard={renderCard}
           spotlight
-          intro={boot && (prologue === 'scene' ? 'continue' : true)}
+          intro={boot ? (prologue === 'scene' ? 'continue' : true) : zoomIn ? 'quick' : false}
         />
       )}
       {boardOn && <TrayFill active={boot} />}

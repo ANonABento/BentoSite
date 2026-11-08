@@ -50,7 +50,7 @@ function inSpotlight(instance: string, card: CardData): boolean {
 }
 
 /** The intro's opening zoom (a multiple of the fit zoom), how long it holds there, and its glide in. */
-const INTRO = { zoom: 0.4, holdMs: 750, glideMs: 1100, continueMs: 1700, hurryMs: 250 };
+const INTRO = { zoom: 0.4, holdMs: 750, glideMs: 1100, continueMs: 1700, hurryMs: 250, quickHoldMs: 120, quickMs: 1100 };
 
 /** How long the search card glides when it docks in another copy of the board, or its drawer opens or closes. */
 const DOCK_GLIDE_MS = 320;
@@ -85,7 +85,7 @@ interface DesktopCanvasViewProps {
   spotlight?: boolean;
   /** Open zoomed out while the cards fall in, then glide in to the home group. 'continue': no hold, and the glide
    *  starts at speed and eases out, carrying on the prologue's zoom into the screen. */
-  intro?: boolean | 'continue';
+  intro?: boolean | 'continue' | 'quick';
 }
 
 export function DesktopCanvasView({
@@ -129,7 +129,9 @@ export function DesktopCanvasView({
     };
     const timer = intro === 'continue'
       ? window.setTimeout(() => glide(INTRO.continueMs, true), 0)
-      : window.setTimeout(() => glide(INTRO.glideMs), INTRO.holdMs);
+      : intro === 'quick'
+        ? window.setTimeout(() => glide(INTRO.quickMs), INTRO.quickHoldMs)
+        : window.setTimeout(() => glide(INTRO.glideMs), INTRO.holdMs);
     const hurry = () => glide(INTRO.hurryMs);
     const events = ['wheel', 'pointerdown', 'keydown'] as const;
     for (const e of events) window.addEventListener(e, hurry, { once: true, passive: true });
