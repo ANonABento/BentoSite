@@ -1,0 +1,11 @@
+--- a/src/components/Prologue/engine/prologue.js
++++ b/src/components/Prologue/engine/prologue.js
+@@ -909,7 +909,7 @@
+ const WARM = 0.6;        // CRT warm-up: the LED lights on the click, the screen a moment later
+ const PULL_END = CLICK - 0.25;   // the prologue's pull-back has settled over her shoulder (lights still key off this)
+ const PRO_END = CLICK + 1.5;   // camera handoff: hold the over-shoulder shot through press, warm-up and bow (bow-up ends ≈ C+1.47), then the boot's camera takes over
+-INTO[0] = Math.max(T.power[0], PRO_END - CLICK - WARM + T.led);   // the boot camera's push starts from P0 at the handoff, not under the held shot
++INTO[0] = Math.max(T.power[0], PRO_END - CLICK - WARM + T.led) + H;   // push starts after the handoff + REVEAL_HOLD, so the finished screen sits still and the dive keeps its pre-hold pace
+ const ASIDE = [CLICK + 1.3, CLICK + 2.1];   // she steps out of the boot camera's way
+ // Speed ramp: story time runs at 0.6× through the press.
+ const SLOW = [CLICK - 0.2, CLICK], SLOW_K = 0.6, SLOW_EXTRA = (SLOW[1] - SLOW[0]) * (1 / SLOW_K - 1);
