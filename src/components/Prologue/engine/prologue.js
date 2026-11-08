@@ -910,6 +910,10 @@ const easeOutQuint = (x) => 1 - Math.pow(1 - x, 5);
 const easeOutCubic = (x) => 1 - Math.pow(1 - x, 3);
 const easeInQuad = (x) => x * x;
 const easeOutBack = (x, o = 1.4) => 1 + (o + 1) * Math.pow(x - 1, 3) + o * Math.pow(x - 1, 2);
+// Snap-and-settle: fast in, a ~4% overshoot, settle. Used for the reach so it lands with weight instead of drifting.
+const easeSnap = (x) => easeOutBack(x, 1.0);
+// Wipe strokes: fast out of each turn and slowing into the next, varied so the four swipes don't read as a metronome.
+const STROKE_EASE = [easeOutCubic, easeOutQuint, (x) => easeOutBack(x, 0.5), easeOutCubic];
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const bump = (x) => Math.sin(Math.PI * clamp01(x)) ** 2;   // 0 → 1 → 0 over x in [0, 1]
 
@@ -1179,8 +1183,9 @@ function prologue(t) {
     [4.95, 5.25, R_REST, easeInOutSine],
     [5.25, 5.55, POCKET, easeOutCubic, V(0, 0.03, 0.06)],                // into the apron pocket
     [5.68, 6.0, SHOW, easeOutCubic, V(0, 0.05, 0.05)],                   // the cloth, held up
-    [6.05, 6.75, palmOnGlass(WIPE[0][1]), easeInOutSine, V(0, 0.08, 0.06)],   // the reach: her real hand enters the frame
-    ...WIPE.slice(1).map(([t1, p], i) => [WIPE[i][0], t1, palmOnGlass(p), easeInOutSine, WIPE_LIFT[i + 1]]),
+    [5.97, 6.05, SHOW.clone().add(V(0, -0.015, 0.03)), easeOutCubic],       // wind-up: a small pull back before the reach
+    [6.05, 6.5, palmOnGlass(WIPE[0][1]), easeSnap, V(0, 0.08, 0.06)],      // the reach: fast in, ~4% overshoot, settle on the glass
+    ...WIPE.slice(1).map(([t1, p], i) => [WIPE[i][0], t1, palmOnGlass(p), STROKE_EASE[i % STROKE_EASE.length], WIPE_LIFT[i + 1]]),
     [8.7, C - 0.6, tipAt(0.02), easeInOutSine, V(0, 0.05, 0.04)],           // down to the button, cloth in hand
     [C + 0.15, C + 0.55, POCKET, easeOutCubic, V(0, 0.04, 0.06)],       // tuck it away
     [C + 0.6, C + 0.85, CLASP.R, easeOutCubic],
