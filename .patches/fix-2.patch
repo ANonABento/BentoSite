@@ -1,3 +1,4 @@
+fix-2: hard cut to over-shoulder instead of the pull-back (retrigger)
 --- a/src/components/Prologue/engine/prologue.js
 +++ b/src/components/Prologue/engine/prologue.js
 @@ -1005,10 +1005,10 @@
