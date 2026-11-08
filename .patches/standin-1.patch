@@ -8,7 +8,7 @@
  import { AnimatePresence } from 'framer-motion';
  import { SEARCH_CARD_ID } from '../BentoGrid.constants';
  import { SEARCH_DOCK_PREFIX } from '../core/useTiledBoard';
-@@ -129,14 +130,15 @@
+@@ -129,14 +130,16 @@
  
  /**
   * A card during the intro, while it's only seen small and far off: its
@@ -22,11 +22,12 @@
    const hue = card.category
      ? `var(--cat-${card.category.toLowerCase().replace(/[^a-z0-9]+/g, '-')}, var(--color-ash))`
      : 'var(--color-ash)';
-+  const image = card.look?.image ?? card.thumbnail;
++  const loose = card as unknown as { look?: { image?: string }; thumbnail?: string };
++  const image = loose.look?.image ?? loose.thumbnail;
    return (
      <div
        aria-hidden
-@@ -157,7 +159,20 @@
+@@ -157,7 +160,20 @@
            border: `1px solid color-mix(in srgb, ${hue} 32%, transparent)`,
          }}
        >
