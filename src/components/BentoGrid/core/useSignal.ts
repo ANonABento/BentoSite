@@ -26,7 +26,7 @@ const FRINGE = 7;
  *  (a busy main thread during the boot, a background tab) and the fade never reached zero. */
 const SETTLE_MS = 700;
 
-export function useSignal(root: RefObject<HTMLElement | null>, camera: Camera) {
+export function useSignal(root: RefObject<HTMLElement | null>, camera: Camera, active = true) {
   const last = useRef({ ...camera, t: 0 });
   const state = useRef({ v: 0, dx: 0, dy: 0, frame: 0, at: 0, settle: 0 });
   const reduced = useRef(false);
@@ -46,7 +46,8 @@ export function useSignal(root: RefObject<HTMLElement | null>, camera: Camera) {
     const now = performance.now();
     const prev = last.current;
     last.current = { ...camera, t: now };
-    if (reduced.current || !prev.t) return;
+    // The intro zoom moves the camera without a pan. Leave the picture clean until it has landed.
+    if (!active || reduced.current || !prev.t) return;
     const frames = Math.max(1, (now - prev.t) / 16.7);
     // Movement on screen: pan in screen px, plus zoom as a fraction of the screen.
     const mx = ((camera.x - prev.x) * camera.zoom) / frames;
@@ -94,5 +95,5 @@ export function useSignal(root: RefObject<HTMLElement | null>, camera: Camera) {
       el.style.setProperty('--sig-y', `${(s.dy * s.v * FRINGE).toFixed(2)}px`);
       s.frame = requestAnimationFrame(tick);
     }
-  }, [camera, root]);
+  }, [active, camera, root]);
 }

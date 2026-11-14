@@ -40,6 +40,8 @@ interface ViewfinderProps {
 
 const LINK_LABELS = { github: 'Source', docs: 'Write-up', liveDemo: 'Live', site: 'Website' } as const;
 const EASE = [0.2, 0.8, 0.2, 1] as const;
+/** Short enough that the panel reads as the card opening, not as one photo turning into another. */
+const OPEN_MS = 0.2;
 
 function categoryColor(category: string) {
   return `var(--cat-${category.toLowerCase().replace(/[^a-z0-9]+/g, '-')}, var(--color-ash))`;
@@ -98,26 +100,28 @@ export function Viewfinder({ project, origin, onClose }: ViewfinderProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.25 }}
+        transition={{ duration: 0.16 }}
         onClick={close}
       />
       <motion.div
-        className="absolute overflow-hidden bg-wall shadow-[0_30px_80px_rgb(0_0_0/0.6)]"
+        className="absolute overflow-hidden bg-cell shadow-[0_30px_80px_rgb(0_0_0/0.6)]"
         style={{ borderRadius: 18 }}
         initial={{ left: from.x, top: from.y, width: from.width, height: from.height }}
         animate={{ left: target.x, top: target.y, width: target.width, height: target.height }}
-        exit={{ left: from.x, top: from.y, width: from.width, height: from.height, opacity: origin ? 1 : 0 }}
-        transition={{ duration: 0.38, ease: EASE }}
+        exit={{ left: from.x, top: from.y, width: from.width, height: from.height, opacity: 0 }}
+        transition={{
+          duration: OPEN_MS,
+          ease: EASE,
+          // The shrink lands on the card while the panel is already gone, so the thumbnail doesn't cut in on the last frame.
+          opacity: { duration: 0.12, delay: 0.04, ease: 'easeIn' },
+        }}
       >
-        {/* Laid out at the final size, so growing never reflows it. */}
-        <motion.div
+        {/* Laid out at the final size and clipped by the frame, so the module itself is what grows and shrinks. */}
+        <div
           className={`grid h-full gap-1.5 p-1.5 ${
             hasMedia ? 'max-md:grid-rows-[minmax(0,45%)_minmax(0,1fr)] md:grid-cols-[minmax(0,1fr)_minmax(0,380px)]' : ''
           }`}
           style={{ width: target.width, height: target.height }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1, transition: { delay: 0.12, duration: 0.25 } }}
-          exit={{ opacity: 0, transition: { duration: 0.12 } }}
         >
           {/* Media */}
           {hasMedia && (
@@ -139,7 +143,11 @@ export function Viewfinder({ project, origin, onClose }: ViewfinderProps) {
                 </nav>
               )}
               <div className="min-h-0 flex-1">
-                {tab ? <TabViewer tab={tab} project={project} imageIndex={imageIndex} onImageIndex={setImageIndex} /> : <Fallback text="Nothing to show for this one yet." />}
+                {tab ? (
+                  <TabViewer tab={tab} project={project} imageIndex={imageIndex} onImageIndex={setImageIndex} />
+                ) : (
+                  <Fallback text="Nothing to show for this one yet." />
+                )}
               </div>
             </section>
           )}
@@ -202,7 +210,7 @@ export function Viewfinder({ project, origin, onClose }: ViewfinderProps) {
               </ul>
             </div>
           </section>
-        </motion.div>
+        </div>
       </motion.div>
     </div>
   );

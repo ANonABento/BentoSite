@@ -38,8 +38,6 @@ export interface ProjectCardProps {
 
 /** Featured (3-wide) compartments get the larger title. */
 const BIG_CARD_WIDTH = 600;
-/** Images that have loaded once; later copies of the card skip the fade-in. */
-const loadedImages = new Set<string>();
 /** Cards at least this wide spell the award out on the badge; narrower ones show the star. */
 const AWARD_LABEL_MIN_WIDTH = 240;
 /** With no variant chosen, cards this many columns wide or more get the footer. */
@@ -61,8 +59,6 @@ export function ProjectCard({
 }: ProjectCardProps) {
   const look = card.look ?? {};
   const image = look.image ?? card.thumbnail;
-  // A card mounting for an image already seen (another copy of the tile) shows it at once.
-  const [imageLoaded, setImageLoaded] = useState(() => Boolean(image && loadedImages.has(image)));
   const { isHovered, onHoverStart, onHoverEnd } = useCardHover();
   const big = position.width >= BIG_CARD_WIDTH;
   const hue = categoryColor(card.category);
@@ -121,14 +117,8 @@ export function ProjectCard({
                   src={image}
                   alt={card.title}
                   fill
-                  className={`object-cover transition-[opacity,transform] duration-500 group-hover:scale-[1.04] ${
-                    imageLoaded ? 'opacity-100' : 'opacity-0'
-                  }`}
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                   style={{ objectPosition: `${focus[0]}% ${focus[1]}%`, transformOrigin: `${focus[0]}% ${focus[1]}%` }}
-                  onLoad={() => {
-                    loadedImages.add(image);
-                    setImageLoaded(true);
-                  }}
                   // The board is a few dozen images that repeat; load them all up front so panning never waits.
                   loading="eager"
                   sizes={`${Math.round(position.width * zoom * 1.5)}px`}

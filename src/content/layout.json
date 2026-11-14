@@ -1,5 +1,5 @@
 {
-  "cols": 18,
+  "cols": 22,
   "rows": 9,
   "cards": [
     {
@@ -67,7 +67,8 @@
         "focus": [
           25,
           50
-        ]
+        ],
+        "variant": "image"
       }
     },
     {
@@ -75,10 +76,7 @@
       "col": 16,
       "row": 0,
       "w": 2,
-      "h": 3,
-      "look": {
-        "variant": "text"
-      }
+      "h": 3
     },
     {
       "id": "baseline",
@@ -116,7 +114,10 @@
       "col": 4,
       "row": 3,
       "w": 3,
-      "h": 2
+      "h": 2,
+      "look": {
+        "variant": "image"
+      }
     },
     {
       "id": "intro",
@@ -144,7 +145,8 @@
         "focus": [
           48,
           46
-        ]
+        ],
+        "variant": "image"
       }
     },
     {
@@ -215,7 +217,12 @@
       "w": 3,
       "h": 2,
       "look": {
-        "image": "/projects/robotic-arm-puppeteer/render.webp"
+        "image": "/projects/robotic-arm-puppeteer/render.webp",
+        "variant": "image",
+        "focus": [
+          29,
+          36
+        ]
       }
     },
     {
@@ -223,7 +230,10 @@
       "col": 9,
       "row": 5,
       "w": 3,
-      "h": 2
+      "h": 2,
+      "look": {
+        "variant": "image"
+      }
     },
     {
       "id": "shoulder-cupid",

@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { getImageProps } from 'next/image';
 import { holdInsideEdges, searchCardShape, useSearchCardState } from '../cards';
 import {
@@ -19,10 +18,11 @@ import {
 } from '../core';
 import { SEARCH_DOCK_PREFIX, useTiledBoard } from '../core/useTiledBoard';
 import { useSignal } from '../core/useSignal';
-import { GRID_STEP, SEARCH_CARD, SEARCH_CARD_ID, getCardDimensions } from '../BentoGrid.constants';
+import { GRID, GRID_STEP, SEARCH_CARD, SEARCH_CARD_ID, getCardDimensions } from '../BentoGrid.constants';
 import { CloseIcon, RefreshIcon, SearchIcon, ZoomInIcon, ZoomOutIcon } from '@/components/ui/Icons';
 import type { CardData, CardPosition, CardSizeMode, Rect, RenderCard, ThemeConfig } from '../BentoGrid.types';
 import { sizeOf, type BoardLayout } from '../layout/boardLayout';
+import { BoardField } from './BoardField';
 import { DesktopCardLayer } from './DesktopCardLayer';
 
 /** Cards keyboard focus can land on: not the search card or the empty docks. */
@@ -30,48 +30,44 @@ function navigable(layouts: Map<string, CardPosition>): Map<string, CardPosition
   return new Map([...layouts].filter(([id]) => id !== SEARCH_CARD_ID && !id.startsWith(SEARCH_DOCK_PREFIX)));
 }
 
-/** Set once the visitor has lit the board up, so it opens lit for the rest of the tab session. */
-const EXPLORED_KEY = 'bentOS.explored';
-
-function readExplored(): boolean {
-  try {
-    return sessionStorage.getItem(EXPLORED_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-/**
- * The cards lit while the board opens in its spotlight: the intro and
- * contact in the home copy. Every project starts dark and lights up while
- * the pointer is over it.
- */
-function inSpotlight(instance: string, card: CardData): boolean {
-  return instance.endsWith('@0,0') && (card.type === 'intro' || card.type === 'info');
-}
-
 /** The intro's opening zoom (a multiple of the fit zoom), how long it holds there, and its glide in. */
 const INTRO = {
-  // Opening zoom: about copiesX x copiesY copies of the tile fill the window, clamped to this range of the fit zoom.
-  copiesX: 3,
-  copiesY: 2,
-  minZoom: 0.15,
-  maxZoom: 0.4,
-  holdMs: 750,
-  glideMs: 1300,
+  // Margin around the tile so the repeat peeks in at the edges of the wide shot.
+  pad: 1.08,
+  holdMs: 1100,
+  glideMs: 1800,
   continueMs: 1700,
   hurryMs: 250,
   quickHoldMs: 120,
   quickMs: 1300,
 };
 
-/** The intro's opening zoom, as a multiple of the fit zoom: sized so ~3 copies of the tile fit across and ~2 down. */
+/**
+ * Opening zoom, as a multiple of the fit zoom. The camera stays on the home
+ * group, so the shot is sized to the furthest card in each direction: every
+ * project is on screen, then the glide comes back in to the default view.
+ */
 function introZoomFor(layout: BoardLayout, windowSize: { width: number; height: number }): number {
-  const tileW = Math.max(1, layout.cols * GRID_STEP);
-  const tileH = Math.max(1, layout.rows * GRID_STEP);
-  const zoom = Math.min(windowSize.width / (INTRO.copiesX * tileW), windowSize.height / (INTRO.copiesY * tileH));
-  const multiple = zoom / fitZoom(windowSize);
-  return Math.min(INTRO.maxZoom, Math.max(INTRO.minZoom, multiple));
+  const home = layout.cards.filter((card) => card.id === 'intro' || card.id === 'search' || card.id === 'contact');
+  const originX = home.length
+    ? (Math.min(...home.map((card) => card.col)) * GRID_STEP + Math.max(...home.map((card) => card.col + card.w)) * GRID_STEP - GRID.GAP) / 2
+    : (layout.cols * GRID_STEP) / 2;
+  const originY = home.length
+    ? (Math.min(...home.map((card) => card.row)) * GRID_STEP + Math.max(...home.map((card) => card.row + card.h)) * GRID_STEP - GRID.GAP) / 2
+    : (layout.rows * GRID_STEP) / 2;
+
+  let halfW = 1;
+  let halfH = 1;
+  for (const card of layout.cards) {
+    const x = card.col * GRID_STEP - originX;
+    const y = card.row * GRID_STEP - originY;
+    const w = card.w * GRID.CELL_SIZE + (card.w - 1) * GRID.GAP;
+    const h = card.h * GRID.CELL_SIZE + (card.h - 1) * GRID.GAP;
+    halfW = Math.max(halfW, -x, x + w);
+    halfH = Math.max(halfH, -y, y + h);
+  }
+  const zoom = Math.min(windowSize.width / (2 * halfW * INTRO.pad), windowSize.height / (2 * halfH * INTRO.pad));
+  return zoom / fitZoom(windowSize);
 }
 
 /** Start loading every board image now (during the prologue), at the sizes the cards will ask for. */
@@ -126,8 +122,6 @@ interface DesktopCanvasViewProps {
   onCardSelect?: (card: CardData, origin?: Rect) => void;
   renderCard?: RenderCard;
   onBack?: () => void;
-  /** Open with only the highlights lit (inSpotlight) until the visitor lights the rest. */
-  spotlight?: boolean;
   /** Open zoomed out while the cards fall in, then glide in to the home group. 'continue': no hold, and the glide
    *  starts at speed and eases out, carrying on the prologue's zoom into the screen. */
   intro?: boolean | 'continue' | 'quick';
@@ -143,7 +137,6 @@ export function DesktopCanvasView({
   onCardSelect,
   renderCard,
   onBack,
-  spotlight = false,
   intro = false,
 }: DesktopCanvasViewProps) {
   const windowSize = useWindowSize();
@@ -375,7 +368,7 @@ export function DesktopCanvasView({
   }, []);
 
   // CRT in motion: scanlines and colour fringes while the camera moves.
-  useSignal(rootRef, navigation.camera);
+  useSignal(rootRef, navigation.camera, !booting);
 
   // Counts shown to the visitor are projects, not board occupancy: the board
   // shows every card many times over.
@@ -384,26 +377,6 @@ export function DesktopCanvasView({
     () => countContentCards(filterCards(cards, searchState.searchTerm, searchState.category)),
     [cards, searchState.searchTerm, searchState.category],
   );
-
-  // Spotlight: the board opens with only the highlights lit, so a first look
-  // lands on who Kevin is. The pill at the bottom lights
-  // the rest; so does wandering off the home group, or searching.
-  const [lit, setLit] = useState(!spotlight);
-  useLayoutEffect(() => {
-    if (spotlight && readExplored()) setLit(true);
-  }, [spotlight]);
-  const lightUp = useCallback(() => {
-    setLit(true);
-    try {
-      sessionStorage.setItem(EXPLORED_KEY, '1');
-    } catch {}
-  }, []);
-  const wandered =
-    Math.abs(camera.x) * camera.zoom > windowSize.width / 2 || Math.abs(camera.y) * camera.zoom > windowSize.height / 2;
-  const searching = searchState.searchTerm !== '' || searchState.category !== null;
-  useEffect(() => {
-    if (!lit && (wandered || searching)) lightUp();
-  }, [lit, wandered, searching, lightUp]);
 
   // Tracks the timestamp of the last wheel event that reached the canvas
   // pan handler. If the cursor crosses an element that normally swallows
@@ -437,8 +410,9 @@ export function DesktopCanvasView({
       tabIndex={-1}
       style={navBindings.style}
     >
-      {/* Canvas layer — clips the transformed card grid */}
-      <div className="absolute inset-0 overflow-hidden">
+      {/* Canvas layer — clips the transformed card grid. The field sits in the walls. */}
+      <div className="absolute inset-0 isolate overflow-hidden">
+        <BoardField cameraRef={cameraRef} />
         <div
           className="board-layer absolute will-change-transform"
           style={{
@@ -452,7 +426,6 @@ export function DesktopCanvasView({
             theme={theme}
             focusedCardId={focusedCardId}
             dimmed={board.dimmed}
-            spotlit={lit ? null : inSpotlight}
             live={landing}
             renderCard={renderCard}
             onCardClick={handleCardClick}
@@ -524,26 +497,6 @@ export function DesktopCanvasView({
         </div>
       </div>
 
-      <AnimatePresence>
-        {!lit && (
-          <motion.div
-            className="pointer-events-none absolute inset-x-0 bottom-6 z-20 flex justify-center"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0, transition: { delay: 0.6, duration: 0.3 } }}
-            exit={{ opacity: 0, y: 12, transition: { duration: 0.2 } }}
-          >
-            <button
-              onClick={lightUp}
-              className="pointer-events-auto flex items-center gap-2 rounded-full px-4 py-2 text-sm shadow-[0_10px_30px_rgb(0_0_0/0.45)] transition-transform hover:scale-[1.03]"
-              style={{ background: 'var(--board-dock-bg)', color: 'var(--board-dock-fg)' }}
-            >
-              <span className="opacity-70">Highlights</span>
-              <span aria-hidden className="opacity-40">·</span>
-              <span className="font-semibold">Show all {projectTotal}</span>
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

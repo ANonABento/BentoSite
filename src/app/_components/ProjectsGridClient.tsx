@@ -5,8 +5,6 @@ import type { ReactNode } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { Viewfinder } from '@/components/Viewfinder/Viewfinder';
 import { TrayFill, shouldBoot } from './TrayFill';
-import { Prologue, prologueMode, type PrologueMode } from '@/components/Prologue/Prologue';
-import type { PrologueBoard } from '@/components/Prologue/engine/prologue';
 import type { ViewfinderProject } from '@/components/Viewfinder/types';
 import { InfoCard, IntroCard, ProjectCard, type InfoContent, type IntroProfile } from '@/components/BentoGrid/cards';
 import {
@@ -107,33 +105,6 @@ export function ProjectsGridClient({ layout, projects, profile, info, details }:
       !new URLSearchParams(window.location.search).has('project') &&
       !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   );
-  // A visit that gets the boot first gets the prologue; the board mounts when it hands off (and boots then).
-  const [prologue] = useState<PrologueMode>(() => (boot ? prologueMode() : 'none'));
-  const [boardOn, setBoardOn] = useState(prologue === 'none');
-  const [prologueOn, setPrologueOn] = useState(prologue !== 'none');
-  // The board the TV boots into. No images: the site takes over as the pixels start merging, before they'd show,
-  // and loading every card's image would hold up the prologue's start.
-  const tvBoard = useMemo<PrologueBoard>(() => {
-    const byId = new Map(projects.map((p) => [p.id, p]));
-    return {
-      cols: layout.cols,
-      rows: layout.rows,
-      cards: layout.cards.map(({ id, col, row, w, h, look }) => {
-        const p = byId.get(id);
-        return {
-          id,
-          col,
-          row,
-          w,
-          h,
-          title: p?.title,
-          category: p?.category,
-          desc: p?.description,
-          variant: look?.variant ?? null,
-        };
-      }),
-    };
-  }, [layout, projects]);
 
   // Clicking a project opens it in the viewfinder over the board. The URL
   // follows (`/?project=<id>`), so the link can be shared and Back closes it.
@@ -188,29 +159,17 @@ export function ProjectsGridClient({ layout, projects, profile, info, details }:
 
   return (
     <>
-      {boardOn && (
-        <BentoGrid
-          theme="premium"
-          cards={cards}
-          layout={layout}
-          cardSizeMode="detail"
-          onCardSelect={handleCardSelect}
-          breadcrumb="bentOS / Kevin Jiang"
-          renderCard={renderCard}
-          spotlight
-          intro={boot ? (prologue === 'scene' ? 'continue' : true) : zoomIn ? 'quick' : false}
-        />
-      )}
-      {boardOn && <TrayFill active={boot} />}
-      {prologueOn && prologue !== 'none' && (
-        <Prologue
-          mode={prologue}
-          board={tvBoard}
-          projectCount={projects.length}
-          onHandoff={() => setBoardOn(true)}
-          onDone={() => setPrologueOn(false)}
-        />
-      )}
+      <BentoGrid
+        theme="premium"
+        cards={cards}
+        layout={layout}
+        cardSizeMode="detail"
+        onCardSelect={handleCardSelect}
+        breadcrumb="bentOS / Kevin Jiang"
+        renderCard={renderCard}
+        intro={boot ? true : zoomIn ? 'quick' : false}
+      />
+      <TrayFill active={boot} />
       <AnimatePresence>
         {open && <Viewfinder key={open.id} project={details[open.id]} origin={open.origin} onClose={close} />}
       </AnimatePresence>

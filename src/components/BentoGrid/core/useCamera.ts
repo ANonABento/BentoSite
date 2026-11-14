@@ -47,11 +47,15 @@ export function useCamera({
   introZoom,
 }: UseCameraOptions): UseCameraReturn {
   const baseZoom = fitZoom(windowSize);
+  // The opening shot can sit further out than the visitor's own zoom limit, so the whole tile fits.
+  const openingZoom = introZoom != null ? baseZoom * introZoom : null;
+  const zoomMinRef = useRef<number>(CAMERA.minZoom);
+  zoomMinRef.current = openingZoom == null ? CAMERA.minZoom : Math.min(CAMERA.minZoom, openingZoom);
   const [camera, setCameraState] = useState<Camera>(
     () =>
       initialCamera ?? {
         ...DEFAULT_CAMERA,
-        zoom: introZoom ? clamp(baseZoom * introZoom, CAMERA.minZoom, baseZoom) : baseZoom,
+        zoom: openingZoom ?? baseZoom,
       },
   );
   // While the intro holds the camera zoomed out, resizes don't snap it back.
@@ -97,7 +101,7 @@ export function useCamera({
       return {
         x: updated.x,
         y: updated.y,
-        zoom: clamp(updated.zoom, CAMERA.minZoom, CAMERA.maxZoom),
+        zoom: clamp(updated.zoom, zoomMinRef.current, CAMERA.maxZoom),
       };
     });
   }, []);

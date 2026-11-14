@@ -28,8 +28,6 @@ export interface BentoGridProps extends GridConfig {
   className?: string;
   /** Custom card renderer (isFocused indicates keyboard focus for accessibility) */
   renderCard?: RenderCard;
-  /** Desktop: open with only the intro and contact lit; projects light up under the pointer. */
-  spotlight?: boolean;
   /** Desktop: open zoomed out and glide in to the home group; 'continue' glides in at once, carrying on the prologue's zoom. */
   intro?: boolean | 'continue' | 'quick';
 }
@@ -48,7 +46,6 @@ export function BentoGrid({
   onBack,
   breadcrumb,
   renderCard,
-  spotlight,
   intro,
 }: BentoGridProps) {
   const windowSize = useWindowSize();
@@ -91,7 +88,6 @@ export function BentoGrid({
       onCardSelect={onCardSelect}
       renderCard={renderCard}
       onBack={onBack}
-      spotlight={spotlight}
       intro={intro}
     />
   );

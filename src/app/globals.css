@@ -78,6 +78,19 @@
   background-color: var(--board-bg);
 }
 
+/* Violet current in the tray walls. Fades in over the wall colour.
+   Negative z-index keeps it behind the cards; the parent is isolated so it
+   stays above the page background. */
+.board-field {
+  z-index: -1;
+  opacity: 0;
+  animation: board-field-in 1.6s ease 0.15s forwards;
+}
+
+@keyframes board-field-in {
+  to { opacity: 1; }
+}
+
 html {
   /* No rubber-band or swipe-to-navigate: a sideways trackpad pan on the
      board must never turn into Back. */
@@ -311,8 +324,13 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .crt-on,
-  .cursor {
+  .cursor,
+  .board-field {
     animation: none;
+  }
+
+  .board-field {
+    opacity: 1;
   }
 }
 

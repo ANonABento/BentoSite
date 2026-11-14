@@ -20,8 +20,6 @@ interface DesktopCardLayerProps {
   focusedCardId: string | null;
   /** Card ids the filter leaves out; they fade back rather than leave. */
   dimmed: Set<string>;
-  /** While set, cards it rejects (by instance id) are darkened, light up under the pointer, and still open on click. */
-  spotlit: ((instance: string, card: CardData) => boolean) | null;
   /** While set (the intro), cards outside this canvas area are drawn as stand-ins. */
   live: Bounds | null;
   renderCard?: RenderCard;
@@ -62,7 +60,6 @@ export const DesktopCardLayer = memo(function DesktopCardLayer({
   theme,
   focusedCardId,
   dimmed,
-  spotlit,
   live,
   renderCard,
   onCardClick,
@@ -106,19 +103,11 @@ export const DesktopCardLayer = memo(function DesktopCardLayer({
 
         if (renderCard) {
           const faded = dimmed.has(cardData.id);
-          const dark = !faded && spotlit !== null && !spotlit(cardId, cardData);
           return (
             <div
               key={key}
-              // Muted cards lose their colour rather than turning see-through, so the tray doesn't muddy
-              // them and a lit card's colour is what pops. A dark (unlit) card gets its colour back on hover.
-              className={`transition-[filter,opacity] duration-500 ${
-                faded
-                  ? 'opacity-30 [filter:grayscale(1)_brightness(0.6)]'
-                  : dark
-                    ? '[filter:grayscale(1)_brightness(0.6)] hover:[filter:none] hover:duration-200'
-                    : ''
-              }`}
+              // A filtered-out card loses its colour rather than turning see-through, so the tray doesn't muddy it.
+              className={faded ? 'opacity-30 [filter:grayscale(1)_brightness(0.6)] transition-[filter,opacity] duration-500' : undefined}
               style={{ pointerEvents: faded ? 'none' : undefined }}
             >
               {renderCard(
@@ -151,8 +140,7 @@ export const DesktopCardLayer = memo(function DesktopCardLayer({
 /**
  * A card during the intro, while it's only seen small and far off: the same
  * rim, image, title and footer as the real card (ProjectCard), drawn flat, with
- * no hover or motion component, so the swap to the real card doesn't show. It
- * never darkens; the spotlight only applies once the intro has landed.
+ * no hover or motion component, so the swap to the real card doesn't show.
  */
 function StandIn({ layout, card, theme }: { layout: CardPosition; card: CardData; theme: ThemeConfig }) {
   const hue = card.category

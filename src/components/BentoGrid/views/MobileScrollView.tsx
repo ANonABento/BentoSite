@@ -1,11 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { SearchMenuCard, useSearchCardState } from '../cards';
 import { countContentCards, filterCards, useWindowSize } from '../core';
 import { MOBILE, isPinnedCard } from '../BentoGrid.constants';
-import type { CardData, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
+import type { Camera, CardData, CardPosition, RenderCard, ThemeConfig } from '../BentoGrid.types';
+import { BoardField } from './BoardField';
 import { DefaultCard } from './DefaultCard';
 
 interface MobileScrollViewProps {
@@ -52,6 +53,7 @@ export function MobileScrollView({
   }, [localFilteredCards]);
 
   const select = (card: CardData) => onCardSelect?.(card);
+  const cameraRef = useRef<Camera>({ x: 0, y: 0, zoom: 1 });
   const trayWidth = Math.min(windowSize.width, MOBILE.TRAY_MAX_WIDTH) - MOBILE.SCROLL_PADDING * 2;
   const columnWidth = (trayWidth - MOBILE.TRAY_GAP) / 2;
 
@@ -69,10 +71,11 @@ export function MobileScrollView({
   return (
     <div
       id="main-content"
-      className={['h-full overflow-hidden flex flex-col', className].filter(Boolean).join(' ')}
+      className={['relative isolate h-full overflow-hidden flex flex-col', className].filter(Boolean).join(' ')}
       tabIndex={-1}
       style={{ background: theme.background }}
     >
+      <BoardField cameraRef={cameraRef} />
       <SearchMenuCard
         theme={theme}
         expanded={searchState.expanded}
