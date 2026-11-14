@@ -7,9 +7,8 @@
  *   - Which edge is closest and the compression ratio (0 = free, 1 = fully squashed)
  *   - The screen-space position for rendering the fixed overlay, clamped to that edge
  *
- * Its shape squeezes on each axis separately: past a side it narrows to a
- * tab, past the top or bottom it folds to the input row, and in a corner it
- * becomes the tab, so it morphs continuously as the camera moves between edges.
+ * Its shape squeezes on each axis separately: past a side it narrows, past
+ * the top or bottom it folds to the input row, and in a corner it does both.
  *
  * While the slot is off screen the card stays stuck to the edge. It comes
  * free when its slot is back in view, or when DesktopCanvasView docks it in
@@ -19,6 +18,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { Position, SearchCardState, SearchCardEdge, Camera, CardPosition } from '../BentoGrid.types';
 import { SEARCH_CARD } from '../BentoGrid.constants';
+import { fitZoom } from '../core/useCamera';
 import { canvasToScreen, screenToCanvas } from '../core/useViewport';
 
 interface UseSearchCardStateOptions {
@@ -39,6 +39,9 @@ interface UseSearchCardStateReturn extends SearchCardState {
   clearFilters: () => void;
   squeeze: SearchCardPresentation['squeeze'];
   side: SearchCardPresentation['side'];
+  fullWidth: number;
+  fullHeight: number;
+  scale: number;
   slotCenter: Position;
   /** Overridden canvas position when compressed (null when free) */
   stickyCanvasPosition: CardPosition | null;
@@ -55,12 +58,29 @@ interface SearchCardPresentation {
   /** Where its slot is on screen, before it's held inside the edges. */
   slotCenter: Position;
   screenPosition: Position;
-  /** CSS pixel dimensions for the fixed overlay. */
+  /** CSS pixel dimensions for the fixed overlay, after the edge squeeze. */
   width: number;
   height: number;
+  /**
+   * Screen size before the squeeze. Docked, this is the slot times the camera
+   * zoom; stuck to an edge it eases back to the fit-zoom size, so the control
+   * stays a constant size while the board zooms under it.
+   */
+  fullWidth: number;
+  fullHeight: number;
+  /** Multiplier from the fit-zoom layout size up to `fullWidth` / `fullHeight`. */
+  scale: number;
   /** Canvas dimensions for collision/navigation layout while sticky. */
   canvasWidth: number;
   canvasHeight: number;
+}
+
+/** The overlay's box, centre and size, in screen px. */
+export interface SearchCardBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -79,9 +99,9 @@ function lerp(from: number, to: number, progress: number): number {
 export function searchCardShape(squeezeX: number, squeezeY: number, fullWidth: number, fullHeight: number) {
   return {
     width: lerp(fullWidth, SEARCH_CARD.SQUASHED_SIDE_WIDTH, squeezeX),
-    // Folded by the top or bottom first, then pressed by a side into a tab:
-    // in a corner it's the tab, whichever edge it came from.
-    height: lerp(lerp(fullHeight, SEARCH_CARD.COLLAPSED_HEIGHT, squeezeY), SEARCH_CARD.SQUASHED_SIDE_HEIGHT, squeezeX),
+    // Each edge squashes its own axis. A side keeps the card's height; the
+    // top or bottom keeps its width. A corner does both.
+    height: lerp(fullHeight, SEARCH_CARD.COLLAPSED_HEIGHT, squeezeY),
   };
 }
 
@@ -92,6 +112,28 @@ export function holdInsideEdges(slotCenter: Position, width: number, height: num
     x: clamp(slotCenter.x, padding + width / 2, windowSize.width - padding - width / 2),
     y: clamp(slotCenter.y, padding + height / 2, windowSize.height - padding - height / 2),
   };
+}
+
+/**
+ * The full card opened off an edge: pinned to that edge, the free axis kept
+ * in line with the folded card, then clamped inside the screen.
+ */
+export function openedSearchCardBox(
+  edge: Exclude<SearchCardEdge, 'none'>,
+  fullWidth: number,
+  fullHeight: number,
+  closed: SearchCardBox,
+  windowSize: { width: number; height: number },
+): SearchCardBox {
+  const padding = SEARCH_CARD.EDGE_PADDING;
+  let x = closed.x;
+  let y = closed.y;
+  if (edge === 'left') x = padding + fullWidth / 2;
+  else if (edge === 'right') x = windowSize.width - padding - fullWidth / 2;
+  else if (edge === 'top') y = padding + fullHeight / 2;
+  else y = windowSize.height - padding - fullHeight / 2;
+  const held = holdInsideEdges({ x, y }, fullWidth, fullHeight, windowSize);
+  return { x: held.x, y: held.y, w: fullWidth, h: fullHeight };
 }
 
 /**
@@ -119,9 +161,11 @@ export function getSearchCardPresentation(
     windowSize,
   );
 
+  const padding = SEARCH_CARD.EDGE_PADDING;
+  // How far the slot itself has crossed an edge. The drawn control is a
+  // different size once it sticks; that size is applied after this.
   const scaledWidth = cardWidth * camera.zoom;
   const scaledHeight = cardHeight * camera.zoom;
-  const padding = SEARCH_CARD.EDGE_PADDING;
 
   const cardLeft = screenCenter.x - scaledWidth / 2;
   const cardRight = screenCenter.x + scaledWidth / 2;
@@ -155,7 +199,13 @@ export function getSearchCardPresentation(
     x: clamp(sideDistance / SEARCH_CARD.COMPRESSION_DISTANCE, 0, 1),
     y: clamp(Math.max(edgeDistances.top, edgeDistances.bottom) / SEARCH_CARD.COMPRESSION_DISTANCE, 0, 1),
   };
-  const { width, height } = searchCardShape(squeeze.x, squeeze.y, scaledWidth, scaledHeight);
+  // Stuck to an edge, the control returns to fit-zoom size. In its slot it
+  // scales with the camera, and the blend between them is the compression.
+  const fit = fitZoom(windowSize);
+  const scale = camera.zoom / fit + (1 - camera.zoom / fit) * compression;
+  const fullWidth = cardWidth * fit * scale;
+  const fullHeight = cardHeight * fit * scale;
+  const { width, height } = searchCardShape(squeeze.x, squeeze.y, fullWidth, fullHeight);
 
   return {
     edge,
@@ -166,6 +216,9 @@ export function getSearchCardPresentation(
     slotCenter: screenCenter,
     width,
     height,
+    fullWidth,
+    fullHeight,
+    scale,
     canvasWidth: width / camera.zoom,
     canvasHeight: height / camera.zoom,
     screenPosition: compression > 0 ? holdInsideEdges(screenCenter, width, height, windowSize) : screenCenter,
@@ -191,6 +244,9 @@ function getMobilePresentation(
     slotCenter: { x: windowSize.width / 2, y: SEARCH_CARD.EDGE_PADDING + height / 2 },
     width,
     height,
+    fullWidth: width,
+    fullHeight: expanded ? SEARCH_CARD.EXPANDED_HEIGHT : height,
+    scale: 1,
     canvasWidth: width,
     canvasHeight: height,
     screenPosition: {
@@ -230,6 +286,9 @@ export function useSearchCardState(
         slotCenter: { x: windowSize.width / 2, y: windowSize.height / 2 },
         width: SEARCH_CARD.EXPANDED_WIDTH,
         height: SEARCH_CARD.EXPANDED_HEIGHT,
+        fullWidth: SEARCH_CARD.EXPANDED_WIDTH,
+        fullHeight: SEARCH_CARD.EXPANDED_HEIGHT,
+        scale: 1,
         canvasWidth: SEARCH_CARD.EXPANDED_WIDTH,
         canvasHeight: SEARCH_CARD.EXPANDED_HEIGHT,
         screenPosition: { x: windowSize.width / 2, y: windowSize.height / 2 },
@@ -299,6 +358,9 @@ export function useSearchCardState(
     slotCenter: effectivePresentation.slotCenter,
     width: effectivePresentation.width,
     height: effectivePresentation.height,
+    fullWidth: effectivePresentation.fullWidth,
+    fullHeight: effectivePresentation.fullHeight,
+    scale: effectivePresentation.scale,
     searchTerm,
     category,
     categories,

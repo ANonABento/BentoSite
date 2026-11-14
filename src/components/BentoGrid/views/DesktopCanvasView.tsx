@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { getImageProps } from 'next/image';
-import { holdInsideEdges, searchCardShape, useSearchCardState } from '../cards';
+import { openedSearchCardBox, useSearchCardState, type SearchCardBox } from '../cards';
 import {
   canvasToScreen,
   countContentCards,
@@ -18,9 +18,9 @@ import {
 } from '../core';
 import { SEARCH_DOCK_PREFIX, useTiledBoard } from '../core/useTiledBoard';
 import { useSignal } from '../core/useSignal';
-import { GRID, GRID_STEP, SEARCH_CARD, SEARCH_CARD_ID, getCardDimensions } from '../BentoGrid.constants';
-import { CloseIcon, RefreshIcon, SearchIcon, ZoomInIcon, ZoomOutIcon } from '@/components/ui/Icons';
-import type { CardData, CardPosition, CardSizeMode, Rect, RenderCard, ThemeConfig } from '../BentoGrid.types';
+import { CAMERA, GRID, GRID_STEP, SEARCH_CARD, SEARCH_CARD_ID, getCardDimensions } from '../BentoGrid.constants';
+import { ChevronDownIcon, CloseIcon, RefreshIcon, SearchIcon, ZoomInIcon, ZoomOutIcon } from '@/components/ui/Icons';
+import type { CardData, CardPosition, CardSizeMode, Rect, RenderCard, SearchCardEdge, ThemeConfig } from '../BentoGrid.types';
 import { sizeOf, type BoardLayout } from '../layout/boardLayout';
 import { BoardField } from './BoardField';
 import { DesktopCardLayer } from './DesktopCardLayer';
@@ -93,18 +93,35 @@ function preloadBoardImages(cards: CardData[], layout: BoardLayout) {
   }
 }
 
-/** How long the search card glides when it docks in another copy of the board, or its drawer opens or closes. */
-const DOCK_GLIDE_MS = 320;
+/** Same spring as the camera, slightly overdamped, so a dock or an open settles without a bounce. */
+const SEARCH_SPRING = { k: CAMERA.spring.stiffness, c: CAMERA.spring.damping };
 
-interface ScreenBox {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
+function zeroBox(): SearchCardBox {
+  return { x: 0, y: 0, w: 0, h: 0 };
 }
 
-function lerpBox(a: ScreenBox, b: ScreenBox, t: number): ScreenBox {
-  return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, w: a.w + (b.w - a.w) * t, h: a.h + (b.h - a.h) * t };
+function addBox(a: SearchCardBox, b: SearchCardBox): SearchCardBox {
+  return { x: a.x + b.x, y: a.y + b.y, w: a.w + b.w, h: a.h + b.h };
+}
+
+function subBox(a: SearchCardBox, b: SearchCardBox): SearchCardBox {
+  return { x: a.x - b.x, y: a.y - b.y, w: a.w - b.w, h: a.h - b.h };
+}
+
+/** Springs `box` toward zero. The result is an offset from the grid, never a screen position. */
+function springStep(box: SearchCardBox, vel: SearchCardBox, dt: number) {
+  const next: SearchCardBox = { ...box };
+  const nextVel: SearchCardBox = { ...vel };
+  for (const key of ['x', 'y', 'w', 'h'] as const) {
+    const accel = -SEARCH_SPRING.k * box[key] - SEARCH_SPRING.c * vel[key];
+    nextVel[key] = vel[key] + accel * dt;
+    next[key] = box[key] + nextVel[key] * dt;
+  }
+  return { box: next, vel: nextVel };
+}
+
+function springSettled(box: SearchCardBox, vel: SearchCardBox) {
+  return (['x', 'y', 'w', 'h'] as const).every((key) => Math.abs(box[key]) < 0.5 && Math.abs(vel[key]) < 8);
 }
 
 function clamp01(value: number) {
@@ -210,63 +227,147 @@ export function DesktopCanvasView({
 
   const isSearchSticky = searchState.compression > 0;
 
-  // Where the search card is drawn, in screen px (centre and size). Normally
-  // that's where useSearchCardState puts it. When it docks in another copy of
-  // the board it glides from where it was to the dock, and the dock's position
-  // is recomputed every frame, so the glide follows the camera instead of
-  // chasing a stale target.
-  const stuckToSide = isSearchSticky && searchState.side !== null;
-  // Against a side the card is a drawer tab; opening it slides the input bar
-  // out from that edge, at the tab's height, without moving the camera.
-  const [drawer, setDrawer] = useState(false);
-  if (drawer && !stuckToSide) setDrawer(false);
-  const drawerOpen = drawer && stuckToSide;
-  // Docked, the card zooms with the board (its content scaled, not
-  // reflowed); stuck to an edge it's a control again, at default-zoom size.
-  const layoutW = SEARCH_CARD.EXPANDED_WIDTH * fitZoom(windowSize);
-  const layoutH = SEARCH_CARD.EXPANDED_HEIGHT * fitZoom(windowSize);
-  const zoomRatio = navigation.camera.zoom / fitZoom(windowSize);
-  const cardScale = zoomRatio + (1 - zoomRatio) * searchState.compression;
-  const fullW = layoutW * cardScale;
-  const fullH = layoutH * cardScale;
-  const squished = searchCardShape(searchState.squeeze.x, searchState.squeeze.y, fullW, fullH);
-  const held = holdInsideEdges(searchState.slotCenter, squished.width, squished.height, windowSize);
-  const target: ScreenBox = drawerOpen
-    ? {
-        x: searchState.side === 'right' ? windowSize.width - SEARCH_CARD.EDGE_PADDING - fullW / 2 : SEARCH_CARD.EDGE_PADDING + fullW / 2,
-        y: searchState.screenPosition.y,
-        w: fullW,
-        h: SEARCH_CARD.COLLAPSED_HEIGHT,
-      }
-    : { x: held.x, y: held.y, w: squished.width, h: squished.height };
-  const shownRef = useRef<ScreenBox>(target);
-  const [glide, setGlide] = useState<{ from: ScreenBox; t: number } | null>(null);
-  const firstAnchor = useRef(true);
-  useLayoutEffect(() => {
-    if (firstAnchor.current) {
-      firstAnchor.current = false;
-      return;
-    }
-    setGlide({ from: shownRef.current, t: 0 });
-    const startedAt = performance.now();
-    let frame = requestAnimationFrame(function step(now) {
-      const t = Math.min(1, (now - startedAt) / DOCK_GLIDE_MS);
-      setGlide((g) => (g && t < 1 ? { ...g, t } : null));
-      if (t < 1) frame = requestAnimationFrame(step);
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [board.anchorKey, drawerOpen]);
-  const shown = glide ? lerpBox(glide.from, target, 1 - (1 - glide.t) ** 3) : target;
-  useLayoutEffect(() => {
-    shownRef.current = shown;
+  // Opening the card off an edge. The edge it opened from is remembered so a
+  // pan onto a different edge folds it back up instead of retargeting mid-flight.
+  const [panelEdge, setPanelEdge] = useState<SearchCardEdge | null>(null);
+  if (panelEdge && searchState.edge !== panelEdge) setPanelEdge(null);
+
+  // The card is drawn on the grid every frame. Opening, closing, and docking
+  // only spring the gap closed: an offset from that grid position, so a pan
+  // during the flight carries the card with the board instead of leaving it
+  // behind in screen space.
+  const closed: SearchCardBox = {
+    x: searchState.screenPosition.x,
+    y: searchState.screenPosition.y,
+    w: searchState.width,
+    h: searchState.height,
+  };
+  const target: SearchCardBox = panelEdge && panelEdge !== 'none'
+    ? openedSearchCardBox(panelEdge, searchState.fullWidth, searchState.fullHeight, closed, windowSize)
+    : closed;
+  const releaseKey = `${board.anchorKey}|${panelEdge ?? ''}`;
+  // A new dock or an open/close starts a spring. Comparing during render is
+  // the supported way to react to a changed input without an effect.
+  const [trackedRelease, setTrackedRelease] = useState(releaseKey);
+  const [springing, setSpringing] = useState(false);
+  if (releaseKey !== trackedRelease) {
+    setTrackedRelease(releaseKey);
+    setSpringing(true);
+  }
+  const targetRef = useRef(target);
+  // `shown` is the last box drawn. `offset` is how far that still is from the grid.
+  const springRef = useRef({ live: false, offset: zeroBox(), vel: zeroBox(), shown: target });
+  const releaseRef = useRef(releaseKey);
+  const shellRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const tabRef = useRef<HTMLDivElement>(null);
+  const motionRef = useRef({
+    fullW: searchState.fullWidth,
+    fullH: searchState.fullHeight,
+    pinRight: false,
+    closed,
+    radius: theme.card.borderRadius,
   });
 
-  // How open the card is, from its drawn size: against a top or bottom edge
-  // it folds down to the input row; against a side it narrows to a tab.
-  const unfold = clamp01((shown.h - SEARCH_CARD.COLLAPSED_HEIGHT) / (fullH - SEARCH_CARD.COLLAPSED_HEIGHT));
-  const narrow = 1 - clamp01((shown.w - SEARCH_CARD.SQUASHED_SIDE_WIDTH) / (fullW - SEARCH_CARD.SQUASHED_SIDE_WIDTH));
-  const contentOpacity = clamp01(1 - narrow * 2);
-  const tabOpacity = clamp01(narrow * 2 - 1);
+  const writeOverlay = useCallback((shown: SearchCardBox) => {
+    const motion = motionRef.current;
+    const shell = shellRef.current;
+    if (shell) {
+      const w = Math.max(1, Math.min(shown.w, motion.fullW));
+      const h = Math.max(1, Math.min(shown.h, motion.fullH));
+      const clipLeft = motion.pinRight ? motion.fullW - w : 0;
+      const shellLeft = shown.x - w / 2 - clipLeft;
+      const shellTop = shown.y - h / 2;
+      if (shell.style.width !== `${motion.fullW}px`) {
+        shell.style.width = `${motion.fullW}px`;
+        shell.style.height = `${motion.fullH}px`;
+      }
+      shell.style.transform = `translate3d(${shellLeft}px, ${shellTop}px, 0)`;
+      shell.style.clipPath = `inset(0px ${Math.max(0, motion.fullW - clipLeft - w)}px ${Math.max(0, motion.fullH - h)}px ${clipLeft}px round ${motion.radius}px)`;
+      const widthSpan = motion.fullW - SEARCH_CARD.SQUASHED_SIDE_WIDTH;
+      const heightSpan = motion.fullH - SEARCH_CARD.COLLAPSED_HEIGHT;
+      const narrow = widthSpan <= 1 ? 0 : 1 - clamp01((w - SEARCH_CARD.SQUASHED_SIDE_WIDTH) / widthSpan);
+      const unfold = heightSpan <= 1 ? 1 : clamp01((h - SEARCH_CARD.COLLAPSED_HEIGHT) / heightSpan);
+      const contentOpacity = clamp01(1 - narrow * 2);
+      const detail = Math.max(0, unfold * 1.6 - 0.6);
+      shell.style.setProperty('--search-detail', detail.toFixed(3));
+      shell.style.setProperty('--search-detail-pe', unfold > 0.6 ? 'auto' : 'none');
+      const content = contentRef.current;
+      if (content) {
+        content.style.opacity = String(contentOpacity);
+        content.style.pointerEvents = contentOpacity > 0.5 ? '' : 'none';
+      }
+      const tab = tabRef.current;
+      const tabBox = motion.closed;
+      if (tab) {
+        const tabOpacity = clamp01(narrow * 2 - 1);
+        if (tab.style.width !== `${tabBox.w}px`) {
+          tab.style.width = `${tabBox.w}px`;
+          tab.style.height = `${tabBox.h}px`;
+        }
+        tab.style.transform = `translate3d(${tabBox.x - tabBox.w / 2}px, ${tabBox.y - tabBox.h / 2}px, 0)`;
+        tab.style.opacity = String(tabOpacity);
+        tab.style.pointerEvents = tabOpacity > 0.5 ? '' : 'none';
+        tab.setAttribute('aria-hidden', tabOpacity > 0.5 ? 'false' : 'true');
+      }
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    targetRef.current = target;
+    motionRef.current = {
+      fullW: searchState.fullWidth,
+      fullH: searchState.fullHeight,
+      pinRight: (panelEdge ?? searchState.edge) === 'right',
+      closed,
+      radius: theme.card.borderRadius,
+    };
+    const releaseChanged = releaseRef.current !== releaseKey;
+    releaseRef.current = releaseKey;
+    const spring = springRef.current;
+    if (springing && (!spring.live || releaseChanged)) {
+      // Keep the pixels where they were, and let that distance fall to zero.
+      spring.live = true;
+      spring.offset = subBox(spring.shown, target);
+      spring.vel = zeroBox();
+    }
+    if (spring.live) {
+      spring.shown = addBox(target, spring.offset);
+      writeOverlay(spring.shown);
+      return;
+    }
+    spring.offset = zeroBox();
+    spring.shown = target;
+    writeOverlay(target);
+  });
+
+  useEffect(() => {
+    if (!springing) return;
+    let frame = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const spring = springRef.current;
+      const stepped = springStep(spring.offset, spring.vel, dt);
+      spring.offset = stepped.box;
+      spring.vel = stepped.vel;
+      if (springSettled(spring.offset, spring.vel)) {
+        spring.offset = zeroBox();
+        spring.vel = zeroBox();
+        spring.live = false;
+        spring.shown = targetRef.current;
+        writeOverlay(spring.shown);
+        setSpringing(false);
+        return;
+      }
+      spring.shown = addBox(targetRef.current, spring.offset);
+      writeOverlay(spring.shown);
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [springing, writeOverlay]);
 
   // Display layouts: content cards at grid positions.
   // Search card uses sticky override when compressed, grid position when free.
@@ -302,17 +403,32 @@ export function DesktopCanvasView({
     [selectCard, setFocusedCardId, cameraRef, windowSize],
   );
 
-  // Focus the search input. Docked, or folded to a bar at the top or bottom,
-  // it's right there; stuck to a side, the drawer slides it out first.
+  // Focus the search input. In its slot, or folded along the top or bottom,
+  // the field is already there. Against a side, open the card first.
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const summonSearch = useCallback(() => {
-    if (stuckToSide) setDrawer(true);
+    if (searchState.side) setPanelEdge(searchState.edge);
     searchInputRef.current?.focus({ preventScroll: true });
-  }, [stuckToSide]);
-  const closeDrawer = useCallback(() => {
-    setDrawer(false);
+  }, [searchState.side, searchState.edge]);
+  const closePanel = useCallback(() => {
+    setPanelEdge(null);
     searchInputRef.current?.blur();
   }, []);
+  const togglePanel = useCallback(() => {
+    setPanelEdge((open) => (open ? null : searchState.edge === 'none' ? null : searchState.edge));
+  }, [searchState.edge]);
+
+  useEffect(() => {
+    if (!panelEdge) return;
+    const closeOnOutside = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (shellRef.current?.contains(target) || tabRef.current?.contains(target)) return;
+      setPanelEdge(null);
+    };
+    window.addEventListener('pointerdown', closeOnOutside, true);
+    return () => window.removeEventListener('pointerdown', closeOnOutside, true);
+  }, [panelEdge]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -320,7 +436,7 @@ export function DesktopCanvasView({
         event.preventDefault();
         summonSearch();
       }
-      if (event.key === 'Escape' && drawerOpen) closeDrawer();
+      if (event.key === 'Escape' && panelEdge) closePanel();
 
       if (event.key === 'Backspace' && onBack) {
         if (!isEditableTarget(event.target)) {
@@ -332,7 +448,7 @@ export function DesktopCanvasView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onBack, summonSearch, drawerOpen, closeDrawer]);
+  }, [onBack, summonSearch, panelEdge, closePanel]);
 
   const transform = useMemo(
     () => getCameraTransform(navigation.camera, windowSize),
@@ -435,35 +551,35 @@ export function DesktopCanvasView({
 
       {/* Search overlay — `pointer-events-none` shell lets the canvas underneath
           receive any non-card clicks; the panel itself is `pointer-events-auto`
-          but its events bubble up to the gesture handler on the wrapper. */}
+          but its events bubble up to the gesture handler on the wrapper.
+          Position, clip and the tab fade are written straight to the nodes so
+          the open and the dock glide don't re-render the board. */}
       <div className="absolute inset-0 pointer-events-none z-10">
         <div
-          className="pointer-events-auto absolute"
-          style={{ left: shown.x - shown.w / 2, top: shown.y - shown.h / 2, width: shown.w, height: shown.h }}
-          onBlur={(event) => {
-            // Clicking or tabbing away tucks the drawer back in.
-            if (drawerOpen && !event.currentTarget.contains(event.relatedTarget as Node | null)) setDrawer(false);
-          }}
+          className="pointer-events-none absolute inset-0"
+          style={{ filter: isSearchSticky || panelEdge ? 'drop-shadow(0 10px 30px rgb(0 0 0 / 0.45))' : undefined }}
         >
           <div
-            className="relative h-full w-full overflow-hidden"
+            ref={shellRef}
+            className="pointer-events-auto absolute left-0 top-0 will-change-transform"
             style={{
               background: 'var(--board-dock-bg)',
               color: 'var(--board-dock-fg)',
-              // Lifted off the board while stuck to an edge, flush in its compartment when docked.
-              boxShadow: isSearchSticky ? '0 10px 30px rgb(0 0 0 / 0.45)' : 'none',
               borderRadius: theme.card.borderRadius,
             }}
+            onBlur={(event) => {
+              // Clicking or tabbing away folds the opened card back up.
+              if (panelEdge && !event.currentTarget.contains(event.relatedTarget as Node | null)) setPanelEdge(null);
+            }}
           >
-            {/* Laid out at full size and clipped, so folding never reflows it; the input row stays put on top. */}
+            {/* Laid out at the fit-zoom size and scaled, so zooming never reflows it. The shell clips it to the folded window. */}
             <div
-              className="absolute left-0 top-0 origin-top-left"
+              ref={contentRef}
+              className="origin-top-left"
               style={{
-                width: layoutW,
-                height: layoutH,
-                transform: cardScale === 1 ? undefined : `scale(${cardScale})`,
-                opacity: contentOpacity,
-                pointerEvents: contentOpacity > 0.5 ? undefined : 'none',
+                width: searchState.fullWidth / searchState.scale,
+                height: searchState.fullHeight / searchState.scale,
+                transform: searchState.scale === 1 ? undefined : `scale(${searchState.scale})`,
               }}
             >
               <FullSearchContent
@@ -481,19 +597,30 @@ export function DesktopCanvasView({
                 filteredCards={projectMatches}
                 panAtRef={panAtRef}
                 inputRef={searchInputRef}
-                unfold={unfold}
+                showHint={!isSearchSticky}
+                showExpand={isSearchSticky && (searchState.edge === 'top' || searchState.edge === 'bottom')}
+                panelOpen={panelEdge !== null}
+                edge={searchState.edge}
+                onTogglePanel={togglePanel}
               />
             </div>
-            {tabOpacity > 0 && (
-              <div className="absolute inset-0" style={{ opacity: tabOpacity, pointerEvents: tabOpacity > 0.5 ? undefined : 'none' }}>
-                <SideTabContent
-                  onOpen={summonSearch}
-                  matches={projectMatches !== projectTotal ? projectMatches : null}
-                  query={searchState.searchTerm}
-                />
-              </div>
-            )}
           </div>
+        </div>
+        <div
+          ref={tabRef}
+          className="pointer-events-auto absolute left-0 top-0 overflow-hidden"
+          style={{
+            background: 'var(--board-dock-bg)',
+            color: 'var(--board-dock-fg)',
+            borderRadius: theme.card.borderRadius,
+          }}
+        >
+          <SideTabContent
+            onOpen={summonSearch}
+            matches={projectMatches !== projectTotal ? projectMatches : null}
+            query={searchState.searchTerm}
+            category={searchState.category}
+          />
         </div>
       </div>
 
@@ -501,20 +628,32 @@ export function DesktopCanvasView({
   );
 }
 
-/** The search card as a drawer tab against a side edge. Opening it slides the input bar out. */
-function SideTabContent({ onOpen, matches, query }: { onOpen: () => void; matches: number | null; query: string }) {
+/** The search card as a tab against a side edge. It stays this size and fades; the card opens beside it. */
+function SideTabContent({ onOpen, matches, query, category }: { onOpen: () => void; matches: number | null; query: string; category: string | null }) {
+  const name = query.trim() || category;
+  const aria = name
+    ? `Search projects, filtered by ${name}${matches !== null ? `, ${matches} shown` : ''}`
+    : 'Search projects';
   return (
     <button
       onClick={onOpen}
-      className="flex h-full w-full flex-col items-center justify-center gap-2 transition-colors hover:bg-black/10"
-      aria-label={query ? `Search projects (filtered by “${query}”)` : 'Search projects'}
+      className="flex h-full w-full flex-col items-center justify-center gap-2 overflow-hidden px-1 py-3 transition-colors hover:bg-black/10"
+      aria-label={aria}
       title="Search (/)"
+      tabIndex={-1}
     >
       <SearchIcon className="h-5 w-5 shrink-0" />
-      <span className="font-crt text-lg leading-none [writing-mode:vertical-rl]">{query ? query.slice(0, 10) : 'search'}</span>
+      {name && (
+        <span
+          className="min-h-0 overflow-hidden font-crt text-sm leading-none [writing-mode:vertical-rl]"
+          style={{ maskImage: 'linear-gradient(to bottom, #000 75%, transparent)', WebkitMaskImage: 'linear-gradient(to bottom, #000 75%, transparent)' }}
+        >
+          {name}
+        </span>
+      )}
       {matches !== null && (
         <span
-          className="min-w-5 rounded-full px-1.5 py-0.5 text-center text-[10px] font-semibold leading-none"
+          className="min-w-5 shrink-0 rounded-full px-1.5 py-0.5 text-center text-[10px] font-semibold leading-none"
           style={{ background: 'var(--board-dock-chip-on)', color: 'var(--board-dock-chip-on-fg)' }}
         >
           {matches}
@@ -529,7 +668,7 @@ function SideTabContent({ onOpen, matches, query }: { onOpen: () => void; matche
  *  stutter. ~100ms covers a typical trackpad wheel inter-event gap. */
 const MID_PAN_BUBBLE_WINDOW_MS = 120;
 
-function FullSearchContent({ searchTerm, category, categories, onSearchChange, onCategoryChange, onRecenter, onZoom, zoomLevel, canZoomIn, canZoomOut, totalCards, filteredCards, panAtRef, inputRef, unfold }: {
+function FullSearchContent({ searchTerm, category, categories, onSearchChange, onCategoryChange, onRecenter, onZoom, zoomLevel, canZoomIn, canZoomOut, totalCards, filteredCards, panAtRef, inputRef, showHint, showExpand, panelOpen, edge, onTogglePanel }: {
   searchTerm: string;
   category: string | null;
   categories: string[];
@@ -544,11 +683,18 @@ function FullSearchContent({ searchTerm, category, categories, onSearchChange, o
   filteredCards: number;
   panAtRef: React.MutableRefObject<number>;
   inputRef: React.Ref<HTMLInputElement>;
-  /** 1 when the card is fully open; falls to 0 as it folds down to the input row. */
-  unfold: number;
+  /** The explore hint, shown while the card sits in its slot. */
+  showHint: boolean;
+  /** Chevron that opens the full card off the top or bottom edge. */
+  showExpand: boolean;
+  panelOpen: boolean;
+  edge: SearchCardEdge;
+  onTogglePanel: () => void;
 }) {
   // The chips and footer fade out as the card folds, a little ahead of being clipped.
-  const detail = { opacity: Math.max(0, unfold * 1.6 - 0.6), pointerEvents: unfold > 0.6 ? undefined : ('none' as const) };
+  // The overlay writes these while it springs, so the fade doesn't need a re-render.
+  const detail: React.CSSProperties = { opacity: 'var(--search-detail, 1)', pointerEvents: 'var(--search-detail-pe, auto)' as React.CSSProperties['pointerEvents'] };
+  const expandUp = (edge === 'top' && panelOpen) || (edge === 'bottom' && !panelOpen);
   const allCount = filteredCards !== totalCards ? `${filteredCards}/${totalCards}` : `${totalCards}`;
 
   // Same chips as the dock, so the card and the bar read as one object.
@@ -574,32 +720,44 @@ function FullSearchContent({ searchTerm, category, categories, onSearchChange, o
   };
 
   return (
-    <div className="h-full min-w-0 p-4 flex flex-col gap-3">
-      <label
-        {...stopGesture}
-        className="flex items-center gap-2 rounded-lg px-3 py-2"
-        style={{ background: 'var(--board-dock-field)' }}
-      >
-        <span className="font-crt text-xl leading-none">&gt;</span>
-        <input
-          ref={inputRef}
-          type="text"
-          placeholder="search projects"
-          value={searchTerm}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)}
-          className="flex-1 min-w-0 bg-transparent font-crt text-xl leading-none placeholder:text-current placeholder:opacity-55 outline-none"
-          aria-label="Search projects"
-        />
-        {searchTerm && (
+    <div className="flex h-full min-w-0 flex-col gap-3 p-4">
+      <div className="flex items-center gap-2">
+        <label
+          {...stopGesture}
+          className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-3 py-2"
+          style={{ background: 'var(--board-dock-field)' }}
+        >
+          <span className="font-crt text-xl leading-none">&gt;</span>
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder="search projects"
+            value={searchTerm}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)}
+            className="flex-1 min-w-0 bg-transparent font-crt text-xl leading-none placeholder:text-current placeholder:opacity-55 outline-none"
+            aria-label="Search projects"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => onSearchChange('')}
+              className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-black/10"
+              aria-label="Clear search"
+            >
+              <CloseIcon className="w-3 h-3" />
+            </button>
+          )}
+        </label>
+        {showExpand && (
           <button
-            onClick={() => onSearchChange('')}
-            className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-black/10"
-            aria-label="Clear search"
+            onClick={onTogglePanel}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg hover:bg-black/10"
+            aria-label={panelOpen ? 'Hide filters' : 'Show filters'}
+            title={panelOpen ? 'Hide filters' : 'Show filters'}
           >
-            <CloseIcon className="w-3 h-3" />
+            <ChevronDownIcon className="h-4 w-4 transition-transform" style={{ transform: expandUp ? 'rotate(180deg)' : undefined }} />
           </button>
         )}
-      </label>
+      </div>
 
       {/* Categories wrap rather than scroll, so every one is visible. */}
       <div className="flex flex-wrap gap-1.5" style={detail}>
@@ -622,8 +780,8 @@ function FullSearchContent({ searchTerm, category, categories, onSearchChange, o
         ))}
       </div>
 
-      <div className="mt-auto flex items-center justify-between gap-2 text-[11px]" style={{ ...detail, opacity: detail.opacity * 0.7 }}>
-        <span>Drag or WASD to explore</span>
+      <div className="mt-auto flex items-center justify-between gap-2 text-[11px]" style={{ ...detail, opacity: 'calc(var(--search-detail, 1) * 0.7)' }}>
+        {showHint && <span className="mr-auto">Drag or WASD to explore</span>}
         <div className="ml-auto flex items-center">
           <button
             onClick={() => onZoom(-1)}

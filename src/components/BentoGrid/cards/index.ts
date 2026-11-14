@@ -4,7 +4,8 @@
 
 // Search card
 export { SearchMenuCard, type SearchMenuCardProps } from './SearchMenuCard';
-export { holdInsideEdges, searchCardShape, useSearchCardState } from './useSearchCardState';
+export { holdInsideEdges, openedSearchCardBox, searchCardShape, useSearchCardState } from './useSearchCardState';
+export type { SearchCardBox } from './useSearchCardState';
 
 // Themed cards
 export { PhotoCard, type PhotoCardProps } from './PhotoCard';

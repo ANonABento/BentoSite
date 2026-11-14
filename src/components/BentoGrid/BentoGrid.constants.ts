@@ -119,9 +119,8 @@ const SEARCH_CARD_VALUES = {
   expandedHeight: SEARCH_CARD_DIMENSIONS.height,
   // Just the input row: the full card folds down to this against a top or bottom edge.
   collapsedHeight: 72,
-  // Against a side edge it shrinks to a drawer tab this size.
+  // Against a side edge it narrows to a tab this wide. The height stays the card's.
   squashedSideWidth: 56,
-  squashedSideHeight: 148,
   // How far past an edge the slot goes before the card is fully a tab or bar.
   compressionDistance: 80,
   stickyThreshold: 60,
@@ -134,7 +133,6 @@ export const SEARCH_CARD = {
   EXPANDED_HEIGHT: SEARCH_CARD_VALUES.expandedHeight,
   COLLAPSED_HEIGHT: SEARCH_CARD_VALUES.collapsedHeight,
   SQUASHED_SIDE_WIDTH: SEARCH_CARD_VALUES.squashedSideWidth,
-  SQUASHED_SIDE_HEIGHT: SEARCH_CARD_VALUES.squashedSideHeight,
   COMPRESSION_DISTANCE: SEARCH_CARD_VALUES.compressionDistance,
   STICKY_THRESHOLD: SEARCH_CARD_VALUES.stickyThreshold,
   EDGE_PADDING: SEARCH_CARD_VALUES.edgePadding,
